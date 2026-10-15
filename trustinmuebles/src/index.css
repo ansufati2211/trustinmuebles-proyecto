@@ -1,0 +1,66 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+@import 'tailwindcss';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-border: var(--border);
+  --color-ring: var(--ring);
+  
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: var(--radius);
+  --radius-lg: calc(var(--radius) + 4px);
+  --radius-xl: calc(var(--radius) + 8px);
+
+  --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+}
+
+:root {
+  /* Emerald Green and related trust colors */
+  --background: #FFFFFF;
+  --foreground: #1A2E24;
+  --card: #FFFFFF;
+  --card-foreground: #1A2E24;
+  --primary: #2E7D5B; /* Emerald Green */
+  --primary-foreground: #FFFFFF;
+  --secondary: #E8F5EE; /* Light green */
+  --secondary-foreground: #2E7D5B;
+  --muted: #F3F4F6;
+  --muted-foreground: #6B7280;
+  --accent: #E8F5EE;
+  --accent-foreground: #2E7D5B;
+  --border: #E5E7EB;
+  --ring: #2E7D5B;
+  --radius: 0.5rem; /* 8px */
+
+  /* Semaphore colors */
+  --success: #22C55E;
+  --success-foreground: #FFFFFF;
+  --warning: #F59E0B;
+  --warning-foreground: #FFFFFF;
+  --danger: #EF4444;
+  --danger-foreground: #FFFFFF;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}

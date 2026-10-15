@@ -1,0 +1,20 @@
+{
+  "numeroPartida": "11000004",
+  "zonaRegistral": "Zona Registral N.° IX - Sede Lima",
+  "titularActual": "Jorge Villanueva Paz",
+  "areaRegistralM2": 120.0,
+  "asientos": [
+    {
+      "tipo": "DOMINIO",
+      "descripcion": "Compraventa a favor de Jorge Villanueva Paz",
+      "vigente": true,
+      "fecha": "2017-11-02"
+    },
+    {
+      "tipo": "HIPOTECA",
+      "descripcion": "Hipoteca a favor de entidad bancaria por 150 000 USD",
+      "vigente": true,
+      "fecha": "2021-04-15"
+    }
+  ]
+}

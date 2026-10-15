@@ -1,0 +1,20 @@
+{
+  "numeroPartida": "11000005",
+  "zonaRegistral": "Zona Registral N.° IX - Sede Lima",
+  "titularActual": "Inversiones Barranco S.A.C.",
+  "areaRegistralM2": 220.0,
+  "asientos": [
+    {
+      "tipo": "DOMINIO",
+      "descripcion": "Compraventa a favor de Inversiones Barranco S.A.C.",
+      "vigente": true,
+      "fecha": "2019-08-18"
+    },
+    {
+      "tipo": "EMBARGO",
+      "descripcion": "Embargo en forma de inscripción por proceso de cobranza",
+      "vigente": true,
+      "fecha": "2024-02-09"
+    }
+  ]
+}

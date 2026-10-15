@@ -1,0 +1,20 @@
+{
+  "numeroPartida": "11000001",
+  "zonaRegistral": "Zona Registral N.° IX - Sede Lima",
+  "titularActual": "Carlos Ramos Quispe",
+  "areaRegistralM2": 280.0,
+  "asientos": [
+    {
+      "tipo": "DOMINIO",
+      "descripcion": "Compraventa a favor de Carlos Ramos Quispe",
+      "vigente": true,
+      "fecha": "2018-03-12"
+    },
+    {
+      "tipo": "HIPOTECA",
+      "descripcion": "Hipoteca cancelada por pago total",
+      "vigente": false,
+      "fecha": "2019-06-30"
+    }
+  ]
+}
