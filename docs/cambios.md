@@ -35,3 +35,5 @@ revisión formal (PA1). Los cambios de contenido de reglas y glosario pasan por 
 | `a546946` | Backend: identidad, expedientes, clasificación, checklist y glosario |
 | `07ec86a` | Frontend: casos, expediente, glosario por teclado y edición del revisor |
 | `9ccfeab` | Carga de PDF desde la interfaz del revisor y medición de REQ-NF02 |
+| `c1bb783` | Documentación del MVP |
+| `18fc803` | Prueba desde un clon limpio para CP-07 y REQ-NF05 |
