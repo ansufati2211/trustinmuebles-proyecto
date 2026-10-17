@@ -6,9 +6,9 @@
     "titularidad": "Titular Delta",
     "completitud": "COMPLETA",
     "fechaReferencial": "2026-10-17",
-    "nota": null,
+    "nota": "No se representa otra anotación.",
     "anotaciones": [
-      { "referencia": "B1", "estado": "CANCELADA", "descripcion": "Anotación B1: cancelada. No se representa otra anotación." }
+      { "referencia": "B1", "estado": "CANCELADA", "descripcion": null }
     ],
     "checklist": [
       { "nombre": "Ficha del caso", "estado": "REVISADO" },

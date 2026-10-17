@@ -1,65 +1,47 @@
-// DTOs que devuelve el backend (trustinmuebles-backend)
+// DTOs que devuelve el backend (trustinmuebles-backend). Todo el contenido es sintético.
 
-export type Nivel = "VERDE" | "AMARILLO" | "ROJO";
+export type Rol = "COMPRADOR" | "REVISOR";
+export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
+export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
+export type Completitud = "COMPLETA" | "INCOMPLETA" | "DESCONOCIDA";
+export type EstadoItem = "PENDIENTE" | "REVISADO" | "OBSERVADO";
 
-export interface Usuario { id: number; nombre: string; email: string; rol: string }
+export interface Usuario { id: number; codigoCuenta: string; rol: Rol }
 export interface Sesion { token: string; usuario: Usuario }
 
-export interface Tarjeta {
-  id: number; title: string; location: string; price: number; beds: number; baths: number;
-  area: number; legal: Nivel | null; struct: Nivel | null; img: string;
+export interface ResumenCaso {
+  codigo: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null; pendientes: number;
 }
 
-export interface Hallazgo {
-  categoria: string; nivel: Nivel; codigo: string; titulo: string;
-  explicacionSimple: string; recomendacion: string; textoRegistral: string | null;
-}
-export interface EvaluacionLegal {
-  id: number; inmuebleId: number; nivel: Nivel; dominio: Nivel; gravamenes: Nivel; procesos: Nivel;
-  hashCopia: string; fecha: string; desactualizada: boolean; hallazgos: Hallazgo[];
-}
-export interface Pin { id: number; x: number; y: number; severidad: Nivel; titulo: string; descripcion: string | null }
-export interface Inspeccion {
-  id: number; inmuebleId: number; planoId: number; inspector: string; dictamen: string | null;
-  estado: string; nivel: Nivel; fecha: string; pines: Pin[];
-}
-export interface Plano { id: number; nombre: string; imagenUrl: string }
-export interface InmuebleDetalle {
-  id: number; titulo: string; ubicacion: string; direccion: string; descripcion: string | null;
-  precioUsd: number; habitaciones: number; banos: number; areaM2: number; numeroPartida: string;
-  vendedor: string; imagenUrl: string | null; semaforo: EvaluacionLegal | null;
-  inspeccion: { inspeccion: Inspeccion; plano: Plano | null } | null;
-}
-export interface PartidaTraducida {
-  numeroPartida: string; zonaRegistral: string; titularActual: string; areaRegistralM2: number;
-  asientos: { tipo: string; textoRegistral: string; vigente: boolean; fecha: string | null; explicacionSimple: string }[];
+export interface Anotacion { referencia: string; estado: EstadoAnotacion; descripcion: string | null }
+
+export interface Expediente {
+  version: number; condicionRepresentada: string; titularidad: string; completitud: Completitud;
+  fechaReferencial: string; nota: string | null; tieneDocumento: boolean; anotaciones: Anotacion[];
 }
 
-export type EtapaCodigo = "OFERTA_ACEPTADA" | "AUDITORIA_APROBADA" | "FIRMA_MINUTA" | "ESCRITURA_PUBLICA" | "FINALIZADA";
-export interface EtapaDto { codigo: EtapaCodigo; titulo: string; descripcion: string; estado: "COMPLETADA" | "ACTUAL" | "PENDIENTE"; fecha: string | null }
-export interface DocumentoDto {
-  id: number; nombre: string; tipo: string; estadoFirma: "NO_REQUIERE" | "PENDIENTE" | "FIRMADO";
-  sha256: string; subidoEn: string; firmadoEn: string | null;
+export interface Motivo { tipo: "FALTANTE" | "ALERTA" | "CONDICION" | "LIMITE"; texto: string }
+export interface Alerta {
+  regla: string; prioridad: "PRIORITARIA" | "REVISION"; titulo: string; explicacion: string;
+  referencia: string; descripcion: string | null;
 }
-export interface TransaccionResumen {
-  id: number; inmueble: { id: number; titulo: string; ubicacion: string; direccion: string; imagenUrl: string | null };
-  etapa: EtapaCodigo; precioAcordado: number; creadaEn: string;
-}
-export interface TransaccionDetalle extends TransaccionResumen {
-  gestor: Usuario | null; etapas: EtapaDto[]; documentos: DocumentoDto[];
-  timeline: { id: number; tipo: string; descripcion: string; fecha: string; hash: string }[];
-  mensajes: { id: number; autorId: number; autor: string; texto: string; fecha: string }[];
-}
-export interface Integridad { valida: boolean; eventos: number; primerEventoInvalido: number | null; ultimoHash: string }
 
-export interface Propiedad {
-  id: number; inmueble: { id: number; titulo: string; ubicacion: string; direccion: string };
-  transaccionId: number; fechaCompra: string; valorCompra: number; valorEstimado: number; plusvaliaPct: number;
+export interface Evaluacion {
+  estado: EstadoSemaforo; etiqueta: string; motivos: Motivo[]; faltantes: string[]; alertas: Alerta[];
+  noDescartaOtras: boolean; versionReglas: string; reglasAplicadas: string[]; limite: string;
+  calculadaEn: string; expedienteVersion: number;
 }
-export interface ResumenPostventa { propietario: string; propiedades: Propiedad[] }
-export interface Mantenimiento { id: number; propiedadId: number; fecha: string; servicio: string; inversionUsd: number; comprobanteUrl: string | null }
-export interface Ticket {
-  id: number; propiedadId: number; titulo: string; descripcion: string | null; proveedor: string | null;
-  estado: "REPORTADO" | "INSPECCION_PROGRAMADA" | "EN_PROCESO" | "RESUELTO";
-  prioridad: string; planoId: number; creadoEn: string; actualizadoEn: string;
+
+export interface ItemChecklist { id: number; nombre: string; estado: EstadoItem; observacion: string | null }
+export interface Termino { concepto: string; explicacion: string; version: string; estadoRevision: string }
+
+export interface DetalleCaso {
+  codigo: string; contexto: string; sintetico: boolean; expediente: Expediente;
+  evaluacion: Evaluacion | null; checklist: ItemChecklist[]; terminos: Termino[];
+}
+
+export interface PeticionExpediente {
+  condicionRepresentada: string; titularidad: string; completitud: Completitud; fechaReferencial: string;
+  nota: string | null; anotaciones: { referencia: string; estado: EstadoAnotacion; descripcion: string | null }[];
+  versionEsperada: number;
 }

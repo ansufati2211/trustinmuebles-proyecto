@@ -155,7 +155,11 @@ class CasosSeeder implements ApplicationRunner {
         agregarLinea(l, "Titularidad: " + x.titularidad());
         l.add("Anotaciones:");
         if (x.anotaciones().isEmpty()) l.add("  (no se representan anotaciones)");
-        for (AnotacionJson a : x.anotaciones()) agregarLinea(l, "  " + a.descripcion());
+        // El estado sale del dato estructurado, no de un texto aparte, para que nunca se contradigan.
+        for (AnotacionJson a : x.anotaciones()) {
+            String detalle = a.descripcion() == null ? "" : " " + a.descripcion();
+            agregarLinea(l, "  Anotación " + a.referencia() + ": " + a.estado().name().toLowerCase() + "." + detalle);
+        }
         l.add("Checklist:");
         for (ItemJson it : x.checklist()) {
             l.add("  " + it.nombre() + ": " + it.estado().name().toLowerCase() + ".");

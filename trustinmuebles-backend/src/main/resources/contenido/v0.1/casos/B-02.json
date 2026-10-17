@@ -8,8 +8,8 @@
     "fechaReferencial": "2026-10-17",
     "nota": null,
     "anotaciones": [
-      { "referencia": "B2", "estado": "VIGENTE", "descripcion": "Anotación B2: vigente." },
-      { "referencia": "B3", "estado": "CANCELADA", "descripcion": "Anotación B3: cancelada." }
+      { "referencia": "B2", "estado": "VIGENTE", "descripcion": null },
+      { "referencia": "B3", "estado": "CANCELADA", "descripcion": null }
     ],
     "checklist": [
       { "nombre": "Ficha del caso", "estado": "REVISADO" },

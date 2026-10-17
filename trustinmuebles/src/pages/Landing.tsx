@@ -1,214 +1,175 @@
-import { Link } from "react-router";
+import { useEffect } from "react";
+import { Link, useLocation } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { 
-  ShieldCheck, 
-  Search as SearchIcon, 
-  CheckCircle2, 
-  FileSignature,
-  Building,
-  ArrowRight,
-  Shield,
-  MapPin,
-  TrendingUp
+import {
+  AlertTriangle, ArrowRight, BookOpen, ClipboardList, FileText, Shield, ShieldOff, TrafficCone, Clock,
 } from "lucide-react";
 
+const LIMITES = [
+  "No certifica saneamiento",
+  "No recomienda comprar",
+  "No consulta fuentes oficiales",
+  "No reemplaza asesoría especializada",
+];
+
 export default function Landing() {
+  const location = useLocation();
+
+  // Con el enrutador por hash no sirven las anclas normales: el menú envía el destino por estado.
+  useEffect(() => {
+    const destino = (location.state as { desplazarA?: string } | null)?.desplazarA;
+    if (destino) document.getElementById(destino)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [location]);
+
   return (
     <div className="flex-1 flex flex-col w-full">
-      
-      {/* 1. Hero Section Asimétrico (Espaciado Corregido) */}
+
+      {/* 1. Hero */}
       <section className="relative overflow-hidden bg-gradient-to-b from-secondary/40 to-background pt-8 pb-20 lg:pt-16 lg:pb-32">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10">
           <div className="grid lg:grid-cols-2 gap-12 lg:gap-8 items-center">
-            
-            {/* Hero Text */}
+
             <div className="max-w-2xl">
               <Badge variant="outline" className="mb-6 bg-white border-primary/20 text-primary px-4 py-1.5 text-sm shadow-sm">
-                <Shield className="w-4 h-4 mr-2" />
-                La nueva forma de comprar inmuebles
+                <Shield className="w-4 h-4 mr-2" aria-hidden="true" />
+                MVP académico · datos sintéticos
               </Badge>
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight text-foreground leading-[1.1] mb-6">
-                Compra tu casa con <span className="text-primary">100% de certeza</span> legal y estructural.
+                Entiende un expediente de lote urbano, <span className="text-primary">paso a paso</span>.
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Olvídate de las sorpresas ocultas. Integramos auditoría legal, inspección estructural con planos 2D y trazabilidad comercial en una sola plataforma.
+                Trustinmuebles muestra casos ficticios con sus anotaciones, explica los términos con un glosario cerrado
+                y señala qué información está pendiente. Es una herramienta de práctica, no un dictamen.
               </p>
-              
+
               <div className="flex flex-col sm:flex-row gap-4">
                 <Button size="lg" asChild className="rounded-xl h-14 px-8 text-base shadow-lg shadow-primary/20 transition-transform hover:-translate-y-0.5">
-                  <Link to="/search">
-                    Explorar Propiedades <ArrowRight className="ml-2 w-5 h-5" />
+                  <Link to="/casos">
+                    Ver casos de práctica <ArrowRight className="ml-2 w-5 h-5" aria-hidden="true" />
                   </Link>
                 </Button>
-                <Button size="lg" variant="outline" className="rounded-xl h-14 px-8 text-base bg-white transition-transform hover:-translate-y-0.5">
-                  Vender con Trustinmuebles
+                <Button size="lg" variant="outline" asChild className="rounded-xl h-14 px-8 text-base bg-white transition-transform hover:-translate-y-0.5">
+                  <Link to="/" state={{ desplazarA: "como-funciona" }}>Cómo funciona</Link>
                 </Button>
               </div>
-              
-              <div className="mt-10 flex items-center gap-4 text-sm text-muted-foreground font-medium">
-                <div className="flex -space-x-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-200 border-2 border-white"></div>
-                  <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-white"></div>
-                  <div className="w-8 h-8 rounded-full bg-gray-400 border-2 border-white flex items-center justify-center text-xs text-white">+1k</div>
-                </div>
-                <p>Familias ya compraron seguro este año</p>
-              </div>
             </div>
 
-            {/* Hero Visual (Mockup flotante - Badges Corregidos) */}
+            {/* Ejemplo ilustrativo (estático) */}
             <div className="relative mx-auto w-full max-w-lg lg:max-w-none lg:ml-auto mt-4 lg:mt-0">
               <div className="absolute inset-0 bg-primary/5 rounded-[3rem] transform rotate-3 scale-105 -z-10"></div>
-              <Card className="rounded-3xl border-border/50 shadow-2xl bg-white overflow-hidden transform transition-transform duration-500 hover:scale-[1.02]">
-                <div className="aspect-[4/3] bg-muted relative">
-                  <img 
-                    src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&q=80&w=800" 
-                    alt="Casa moderna" 
-                    className="w-full h-full object-cover"
-                  />
-                  {/* Nuevos Badges: Fondo blanco, texto oscuro, ícono de color para legibilidad perfecta */}
-                  <div className="absolute top-4 left-4 flex flex-col gap-2.5">
-                    <div className="inline-flex items-center rounded-full bg-white/95 backdrop-blur shadow-lg px-4 py-2 text-sm font-bold text-foreground">
-                      <CheckCircle2 className="w-4 h-4 mr-2 text-success" /> Legal Aprobado
-                    </div>
-                    <div className="inline-flex items-center rounded-full bg-white/95 backdrop-blur shadow-lg px-4 py-2 text-sm font-bold text-foreground">
-                      <ShieldCheck className="w-4 h-4 mr-2 text-success" /> Estructura OK
-                    </div>
-                  </div>
-                </div>
-                <CardContent className="p-6">
-                  <div className="flex justify-between items-start mb-4">
+              <Card className="rounded-3xl border-border/50 shadow-2xl bg-white overflow-hidden">
+                <div className="h-3 bg-warning" aria-hidden="true"></div>
+                <CardContent className="p-6 pt-6">
+                  <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground mb-3">
+                    Ejemplo ilustrativo · datos sintéticos
+                  </p>
+                  <div className="flex justify-between items-start mb-4 gap-3">
                     <div>
-                      <h3 className="font-bold text-xl mb-1 text-foreground">Casa en San Isidro</h3>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-4 h-4" /> Calle Los Pinos 404
-                      </p>
+                      <h3 className="font-bold text-xl mb-1 text-foreground">Caso de ejemplo</h3>
+                      <p className="text-sm text-muted-foreground">Lote urbano inscrito, según el escenario.</p>
                     </div>
-                    <span className="font-bold text-2xl text-primary">$420,000</span>
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-warning/40 bg-warning/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
+                      <AlertTriangle className="w-4 h-4 mr-1.5" aria-hidden="true" /> Estado: Amarillo
+                    </span>
                   </div>
-                  <div className="flex items-center gap-4 text-sm pt-4 border-t border-gray-100">
-                    <div className="flex items-center gap-1.5 text-muted-foreground">
-                      <Building className="w-4 h-4" /> 280 m²
-                    </div>
-                    <div className="flex items-center gap-1.5 text-success font-bold">
-                      <FileSignature className="w-4 h-4" /> Lista para firmar
-                    </div>
-                  </div>
+                  <ul className="text-sm text-foreground space-y-2 pt-4 border-t border-gray-100">
+                    <li className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> Anotación vigente registrada en el caso</li>
+                    <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> 1 elemento del checklist pendiente</li>
+                  </ul>
+                  <p className="mt-5 text-xs text-muted-foreground leading-relaxed">
+                    El color resume reglas aplicadas a los datos del caso y siempre viene con sus motivos.
+                  </p>
                 </CardContent>
               </Card>
-
-              {/* Floating elements */}
-              <div className="absolute -right-6 top-20 bg-white p-4 rounded-2xl shadow-xl border border-gray-100 animate-bounce" style={{ animationDuration: '3s' }}>
-                <div className="flex items-center gap-3">
-                  <div className="bg-primary/10 p-2 rounded-full text-primary">
-                    <TrendingUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-muted-foreground font-semibold">Plusvalía estimada</p>
-                    <p className="text-sm font-bold text-foreground">+8.5% anual</p>
-                  </div>
-                </div>
-              </div>
             </div>
 
           </div>
         </div>
       </section>
 
-      {/* 2. Trust Band (Social Proof) */}
-      <section className="border-y border-gray-100 bg-white py-8">
+      {/* 2. Límites */}
+      <section aria-label="Límites del MVP" className="border-y border-gray-100 bg-white py-8">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <p className="text-center text-sm font-bold text-muted-foreground uppercase tracking-wider mb-6">
-            Auditorías y transacciones respaldadas por
+            Lo que este MVP no hace
           </p>
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-16 opacity-60 grayscale hover:grayscale-0 transition-all duration-500">
-            <span className="text-xl font-bold font-serif">CAPSTER</span>
-            <span className="text-xl font-bold font-mono">SUNARP</span>
-            <span className="text-xl font-bold flex items-center gap-1"><Building className="w-5 h-5"/> COLEGIO DE INGENIEROS</span>
-            <span className="text-xl font-bold">Notarías Afiliadas</span>
-          </div>
+          <ul className="flex flex-wrap justify-center items-center gap-x-10 gap-y-3">
+            {LIMITES.map((l) => (
+              <li key={l} className="flex items-center gap-2 text-base font-bold text-foreground">
+                <ShieldOff className="w-5 h-5 text-muted-foreground" aria-hidden="true" /> {l}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
 
-      {/* 3. Propuesta de Valor (Features Grid) */}
+      {/* 3. Qué ofrece */}
       <section className="py-24 bg-gray-50/50">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">
-              ¿Por qué somos diferentes?
-            </h2>
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Qué encuentras en cada caso</h2>
             <p className="text-lg text-muted-foreground">
-              Hemos digitalizado y asegurado los tres pilares fundamentales de la compra inmobiliaria para que tú solo te preocupes por mudarte.
+              Tres apoyos para leer un expediente sin suponer lo que el documento no dice.
             </p>
           </div>
 
           <div className="grid md:grid-cols-3 gap-8">
-            <Card className="border-gray-100 shadow-sm bg-white hover:shadow-xl hover:border-primary/30 transition-all duration-300 transform hover:-translate-y-1 group">
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
-                  <ShieldCheck className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Semáforo Legal</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Conoce el estado exacto (Dominio, Gravámenes, Litigios) al instante. Traducimos el papeleo legal complejo a un sistema visual de colores directo.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-gray-100 shadow-sm bg-white hover:shadow-xl hover:border-primary/30 transition-all duration-300 transform hover:-translate-y-1 group">
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
-                  <Building className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Inspección Estructural 2D</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Cada propiedad incluye un reporte técnico con planos marcados. Ubica exactamente el estado de tuberías, techos y paredes antes de ofertar.
-                </p>
-              </CardContent>
-            </Card>
-
-            <Card className="border-gray-100 shadow-sm bg-white hover:shadow-xl hover:border-primary/30 transition-all duration-300 transform hover:-translate-y-1 group">
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
-                  <FileSignature className="w-7 h-7 text-primary group-hover:text-white transition-colors" />
-                </div>
-                <h3 className="text-xl font-bold mb-3 text-foreground">Trazabilidad End-to-End</h3>
-                <p className="text-muted-foreground leading-relaxed">
-                  Acompañamiento digital total. Desde la oferta y firma de contratos hasta el portal de postventa para gestionar garantías y revalorizar tu hogar.
-                </p>
-              </CardContent>
-            </Card>
+            {[
+              { Icono: FileText, titulo: "Expediente estructurado", texto: "Condición representada, titularidad, anotaciones con su estado y la completitud del extracto, en campos ordenados." },
+              { Icono: BookOpen, titulo: "Glosario cerrado", texto: "Cada término del caso se explica con un texto breve que se abre al seleccionarlo. Si un dato no aparece, el caso lo dice." },
+              { Icono: TrafficCone, titulo: "Semáforo informativo y checklist", texto: "Un estado con motivos, alertas conocidas y datos faltantes, más una lista de elementos pendientes, revisados u observados." },
+            ].map(({ Icono, titulo, texto }) => (
+              <Card key={titulo} className="border-gray-100 shadow-sm bg-white hover:shadow-xl hover:border-primary/30 transition-all duration-300 transform hover:-translate-y-1 group">
+                <CardContent className="p-8">
+                  <div className="w-14 h-14 bg-secondary rounded-2xl flex items-center justify-center mb-6 group-hover:bg-primary transition-colors duration-300">
+                    <Icono className="w-7 h-7 text-primary group-hover:text-white transition-colors" aria-hidden="true" />
+                  </div>
+                  <h3 className="text-xl font-bold mb-3 text-foreground">{titulo}</h3>
+                  <p className="text-muted-foreground leading-relaxed">{texto}</p>
+                </CardContent>
+              </Card>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* 4. Search CTA Inmersivo */}
-      <section className="py-24 bg-primary relative overflow-hidden">
-        {/* Fondo decorativo */}
-        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 2px 2px, white 1px, transparent 0)', backgroundSize: '32px 32px' }}></div>
-        
-        <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">
-            Encuentra una propiedad verificada hoy
-          </h2>
-          <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto">
-            Todas nuestras propiedades pasan por un riguroso filtro legal y estructural. Busca en las mejores zonas con total tranquilidad.
-          </p>
-          
-          <div className="bg-white p-2 rounded-2xl shadow-2xl flex flex-col sm:flex-row gap-2 max-w-2xl mx-auto">
-            <div className="relative flex-1 flex items-center">
-              <SearchIcon className="absolute left-4 w-5 h-5 text-muted-foreground" />
-              <input 
-                type="text" 
-                placeholder="Ej. Miraflores, San Isidro, Surco..." 
-                className="w-full h-14 pl-12 pr-4 rounded-xl bg-transparent text-foreground placeholder:text-muted-foreground font-medium focus:outline-none"
-              />
-            </div>
-            <Button size="lg" asChild className="rounded-xl h-14 px-8 text-base shrink-0">
-              <Link to="/search">Buscar Ahora</Link>
-            </Button>
+      {/* 4. Cómo funciona */}
+      <section id="como-funciona" className="py-24 bg-white scroll-mt-32">
+        <div className="container mx-auto max-w-5xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Cómo funciona</h2>
+            <p className="text-lg text-muted-foreground">El recorrido empieza al elegir un caso y termina al revisar sus alertas y pendientes.</p>
           </div>
+          <ol className="grid md:grid-cols-3 gap-8">
+            {[
+              { n: 1, titulo: "Elige un caso", texto: "Ingresa con una cuenta de prueba y abre uno de los casos sintéticos de la lista." },
+              { n: 2, titulo: "Lee y consulta", texto: "Revisa los datos del expediente y selecciona cualquier término para ver su explicación." },
+              { n: 3, titulo: "Revisa el estado", texto: "Mira el estado con sus motivos, las alertas conocidas, lo que falta y el checklist." },
+            ].map((p) => (
+              <li key={p.n} className="rounded-3xl border border-gray-100 bg-gray-50/60 p-8">
+                <span className="inline-flex w-10 h-10 items-center justify-center rounded-full bg-primary text-white font-bold mb-5" aria-hidden="true">{p.n}</span>
+                <h3 className="text-lg font-bold text-foreground mb-2">{p.titulo}</h3>
+                <p className="text-muted-foreground leading-relaxed">{p.texto}</p>
+              </li>
+            ))}
+          </ol>
+        </div>
+      </section>
+
+      {/* 5. CTA */}
+      <section className="py-24 bg-primary relative overflow-hidden">
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 2px 2px, white 1px, transparent 0)", backgroundSize: "32px 32px" }}></div>
+        <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+          <ClipboardList className="w-10 h-10 text-white/80 mx-auto mb-5" aria-hidden="true" />
+          <h2 className="text-3xl md:text-4xl font-bold text-white mb-6">Empieza con un caso de práctica</h2>
+          <p className="text-primary-foreground/80 text-lg mb-10 max-w-2xl mx-auto">
+            Cada caso es ficticio y solo sirve para practicar la lectura de un expediente.
+          </p>
+          <Button size="lg" asChild className="rounded-xl h-14 px-8 text-base bg-white text-primary hover:bg-white/90">
+            <Link to="/casos">Ver casos</Link>
+          </Button>
         </div>
       </section>
 

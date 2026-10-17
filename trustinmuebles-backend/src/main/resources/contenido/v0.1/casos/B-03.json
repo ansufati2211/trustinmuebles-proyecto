@@ -8,7 +8,7 @@
     "fechaReferencial": "2026-10-17",
     "nota": "Titularidad: no informado en el extracto entregado. El extracto no permite descartar otras anotaciones.",
     "anotaciones": [
-      { "referencia": "B4", "estado": "VIGENTE", "descripcion": "Anotación B4: vigente." }
+      { "referencia": "B4", "estado": "VIGENTE", "descripcion": null }
     ],
     "checklist": [
       { "nombre": "Ficha del caso", "estado": "REVISADO" },

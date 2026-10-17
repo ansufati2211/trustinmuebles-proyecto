@@ -6,8 +6,7 @@ import type { Sesion, Usuario } from "./types";
 interface AuthCtx {
   usuario: Usuario | null;
   cargando: boolean;
-  login: (email: string, password: string) => Promise<void>;
-  registrar: (nombre: string, email: string, password: string) => Promise<void>;
+  login: (codigoCuenta: string, password: string) => Promise<void>;
   logout: () => void;
 }
 
@@ -31,12 +30,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return () => window.removeEventListener("tm:sesion-expirada", salir);
   }, []);
 
-  const iniciar = (s: Sesion) => { setToken(s.token); setUsuario(s.usuario); };
-  const login = useCallback(async (email: string, password: string) => iniciar(await post<Sesion>("/auth/login", { email, password })), []);
-  const registrar = useCallback(async (nombre: string, email: string, password: string) => iniciar(await post<Sesion>("/auth/register", { nombre, email, password })), []);
+  const login = useCallback(async (codigoCuenta: string, password: string) => {
+    const s = await post<Sesion>("/auth/login", { codigoCuenta, password });
+    setToken(s.token);
+    setUsuario(s.usuario);
+  }, []);
   const logout = useCallback(() => { setToken(null); setUsuario(null); }, []);
 
-  return <Ctx.Provider value={{ usuario, cargando, login, registrar, logout }}>{children}</Ctx.Provider>;
+  return <Ctx.Provider value={{ usuario, cargando, login, logout }}>{children}</Ctx.Provider>;
 }
 
 export function useAuth() {
