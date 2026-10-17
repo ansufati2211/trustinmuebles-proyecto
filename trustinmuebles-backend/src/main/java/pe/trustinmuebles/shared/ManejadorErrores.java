@@ -3,6 +3,7 @@ package pe.trustinmuebles.shared;
 import java.util.stream.Collectors;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ProblemDetail;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -20,9 +21,11 @@ public class ManejadorErrores {
         return ProblemDetail.forStatusAndDetail(HttpStatus.UNPROCESSABLE_ENTITY, e.getMessage());
     }
 
-    @ExceptionHandler(ServicioNoDisponibleException.class)
-    ProblemDetail noDisponible(ServicioNoDisponibleException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.SERVICE_UNAVAILABLE, e.getMessage());
+    @ExceptionHandler({ConflictoException.class, org.springframework.dao.OptimisticLockingFailureException.class})
+    ProblemDetail conflicto(RuntimeException e) {
+        String detalle = e instanceof ConflictoException ? e.getMessage()
+                : "El expediente cambió mientras lo editaba. Recargue e intente de nuevo.";
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detalle);
     }
 
     @ExceptionHandler(DemasiadosIntentosException.class)
@@ -42,12 +45,19 @@ public class ManejadorErrores {
 
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     ProblemDetail demasiadoGrande(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, "El archivo supera el tamaño máximo (15 MB)");
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, "El archivo supera el tamaño máximo (5 MB)");
     }
 
     @ExceptionHandler(IllegalArgumentException.class)
     ProblemDetail argumento(IllegalArgumentException e) {
         return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST, e.getMessage());
+    }
+
+    /** JSON mal formado o con un valor fuera de las enumeraciones permitidas. */
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    ProblemDetail cuerpoIlegible(HttpMessageNotReadableException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.BAD_REQUEST,
+                "El cuerpo no es válido: revise el formato JSON y los valores permitidos. No se guardó ningún cambio.");
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

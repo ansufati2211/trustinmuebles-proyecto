@@ -6,7 +6,10 @@ import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
-/** Crea los usuarios de demostración (uno por rol) si la base está vacía. */
+/**
+ * Crea las dos cuentas de prueba (comprador-01 y revisor-01) si la base está vacía.
+ * La contraseña viene de APP_SEED_PASSWORD y nunca se guarda en texto plano.
+ */
 @Component
 @Order(10)
 class DemoUsuariosSeeder implements ApplicationRunner {
@@ -24,10 +27,12 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     @Override
     public void run(ApplicationArguments args) {
         if (!habilitado || auth.hayUsuarios()) return;
-        auth.registrar("Juan Pérez", "juan.perez@demo.pe", password, Rol.COMPRADOR);
-        auth.registrar("María Fernandez", "maria.fernandez@demo.pe", password, Rol.GESTOR_LEGAL);
-        auth.registrar("Ing. Luis Paredes", "luis.paredes@demo.pe", password, Rol.INSPECTOR);
-        auth.registrar("Rosa Huamán", "rosa.huaman@demo.pe", password, Rol.VENDEDOR);
-        auth.registrar("Administrador", "admin@demo.pe", password, Rol.ADMIN);
+        if (password == null || password.length() < 8) {
+            throw new IllegalStateException(
+                    "Define APP_SEED_PASSWORD (mínimo 8 caracteres) para crear las cuentas de prueba, "
+                            + "o desactiva la carga con app.seed.enabled=false.");
+        }
+        auth.crearCuentaDePrueba("comprador-01", password, Rol.COMPRADOR);
+        auth.crearCuentaDePrueba("revisor-01", password, Rol.REVISOR);
     }
 }

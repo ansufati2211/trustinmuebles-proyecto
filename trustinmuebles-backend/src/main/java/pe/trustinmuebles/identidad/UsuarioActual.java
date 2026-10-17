@@ -5,18 +5,18 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.oauth2.jwt.Jwt;
 
 /** Acceso al usuario autenticado a partir del JWT. */
-public record UsuarioActual(Long id, String email, Rol rol) {
+public record UsuarioActual(Long id, String codigoCuenta, Rol rol) {
 
     public static UsuarioActual actual() {
         Authentication a = SecurityContextHolder.getContext().getAuthentication();
         if (a == null || !(a.getPrincipal() instanceof Jwt jwt)) {
             throw new org.springframework.security.access.AccessDeniedException("No autenticado");
         }
-        return new UsuarioActual(Long.valueOf(jwt.getSubject()), jwt.getClaimAsString("email"),
+        return new UsuarioActual(Long.valueOf(jwt.getSubject()), jwt.getClaimAsString("codigo"),
                 Rol.valueOf(jwt.getClaimAsString("rol")));
     }
 
-    public boolean esStaff() {
-        return rol == Rol.ADMIN || rol == Rol.GESTOR_LEGAL;
+    public boolean esRevisor() {
+        return rol == Rol.REVISOR;
     }
 }

@@ -4,7 +4,6 @@ import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.Optional;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.jose.jws.MacAlgorithm;
@@ -17,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 import pe.trustinmuebles.shared.NoEncontradoException;
 import pe.trustinmuebles.shared.ReglaNegocioException;
 
-/** API pública del módulo de identidad (autenticación y directorio de usuarios). */
+/** API pública del módulo de identidad (autenticación y directorio de cuentas de prueba). */
 @Service
 @Transactional
 public class AuthService {
@@ -27,7 +26,7 @@ public class AuthService {
     private final PasswordEncoder encoder;
     private final JwtEncoder jwtEncoder;
     private final long ttlHoras;
-    /** Hash ficticio para gastar el mismo tiempo cuando el correo no existe. */
+    /** Hash ficticio para gastar el mismo tiempo cuando la cuenta no existe. */
     private final String hashFicticio;
 
     AuthService(UsuarioRepository repo, PasswordEncoder encoder, JwtEncoder jwtEncoder,
@@ -39,27 +38,23 @@ public class AuthService {
         this.hashFicticio = encoder.encode("contraseña-ficticia");
     }
 
-    public Sesion registrar(String nombre, String email, String password) {
-        return registrar(nombre, email, password, Rol.COMPRADOR);
-    }
-
-    public Sesion registrar(String nombre, String email, String password, Rol rol) {
-        if (repo.findByEmailIgnoreCase(email).isPresent()) {
-            throw new ReglaNegocioException("Ya existe una cuenta con ese correo");
+    /** Crea una cuenta de prueba. No se expone por HTTP: el registro abierto está fuera del alcance (1.7). */
+    public UsuarioDto crearCuentaDePrueba(String codigoCuenta, String password, Rol rol) {
+        if (repo.findByCodigoCuenta(codigoCuenta).isPresent()) {
+            throw new ReglaNegocioException("Ya existe la cuenta " + codigoCuenta);
         }
         Usuario u = new Usuario();
-        u.setNombre(nombre);
-        u.setEmail(email.toLowerCase());
+        u.setCodigoCuenta(codigoCuenta);
         u.setPasswordHash(encoder.encode(password));
         u.setRol(rol);
-        return sesion(repo.save(u));
+        return UsuarioDto.de(repo.save(u));
     }
 
     @Transactional(readOnly = true)
-    public Sesion login(String email, String password) {
-        Usuario u = repo.findByEmailIgnoreCase(email).orElse(null);
+    public Sesion login(String codigoCuenta, String password) {
+        Usuario u = repo.findByCodigoCuenta(codigoCuenta).orElse(null);
         boolean ok = encoder.matches(password, u == null ? hashFicticio : u.getPasswordHash());
-        if (u == null || !ok) throw new BadCredentialsException("Correo o contraseña incorrectos");
+        if (u == null || !ok) throw new BadCredentialsException("Código de cuenta o contraseña incorrectos");
         return sesion(u);
     }
 
@@ -68,15 +63,10 @@ public class AuthService {
         return repo.findById(id).map(UsuarioDto::de).orElseThrow(() -> new NoEncontradoException("Usuario", id));
     }
 
+    /** Revisor responsable del registro de los casos cargados. */
     @Transactional(readOnly = true)
-    public Optional<UsuarioDto> buscarPorEmail(String email) {
-        return repo.findByEmailIgnoreCase(email).map(UsuarioDto::de);
-    }
-
-    /** Gestor legal asignado por defecto a las nuevas transacciones. */
-    @Transactional(readOnly = true)
-    public Optional<UsuarioDto> primerGestor() {
-        return repo.findFirstByRolOrderByIdAsc(Rol.GESTOR_LEGAL).map(UsuarioDto::de);
+    public Optional<UsuarioDto> primerRevisor() {
+        return repo.findFirstByRolOrderByIdAsc(Rol.REVISOR).map(UsuarioDto::de);
     }
 
     @Transactional(readOnly = true)
@@ -91,8 +81,7 @@ public class AuthService {
                 .subject(String.valueOf(u.getId()))
                 .issuedAt(ahora)
                 .expiresAt(ahora.plus(ttlHoras, ChronoUnit.HOURS))
-                .claim("email", u.getEmail())
-                .claim("nombre", u.getNombre())
+                .claim("codigo", u.getCodigoCuenta())
                 .claim("rol", u.getRol().name())
                 .build();
         String token = jwtEncoder

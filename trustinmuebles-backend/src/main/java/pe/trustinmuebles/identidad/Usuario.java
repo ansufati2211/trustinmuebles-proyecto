@@ -5,6 +5,7 @@ import java.time.Instant;
 import lombok.Getter;
 import lombok.Setter;
 
+/** Cuenta de prueba. No guarda nombres ni datos de participantes reales (PA2). */
 @Entity
 @Table(name = "usuario")
 @Getter
@@ -14,11 +15,8 @@ public class Usuario {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false)
-    private String nombre;
-
-    @Column(nullable = false, unique = true)
-    private String email;
+    @Column(name = "codigo_cuenta", nullable = false, unique = true)
+    private String codigoCuenta;
 
     @Column(name = "password_hash", nullable = false)
     private String passwordHash;

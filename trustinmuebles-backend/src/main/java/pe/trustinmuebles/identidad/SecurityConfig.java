@@ -81,18 +81,13 @@ class SecurityConfig {
                 .authorizeHttpRequests(a -> a
                         .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/error").permitAll()
-                        .requestMatchers("/api/v1/auth/login", "/api/v1/auth/register").permitAll()
+                        .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/v1/inmuebles/**", "/api/v1/archivos/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/api/v1/inmuebles/*/planos",
-                                "/api/v1/inmuebles/*/inspecciones")
-                                .hasAnyRole("INSPECTOR", "ADMIN")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/inmuebles/*/semaforo/evaluar")
-                                .hasAnyRole("GESTOR_LEGAL", "ADMIN")
-                        .requestMatchers("/api/v1/inspecciones/**").hasAnyRole("INSPECTOR", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/transacciones/*/etapa").hasAnyRole("GESTOR_LEGAL", "ADMIN")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/tickets/*/estado").hasAnyRole("GESTOR_LEGAL", "ADMIN")
-                        .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
+                        // PA4: solo el revisor modifica. El rol se verifica aquí, en el servidor, no solo en la interfaz.
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/**").hasRole("REVISOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/**").hasRole("REVISOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/casos/**").hasRole("REVISOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/casos/**").hasRole("REVISOR")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));
