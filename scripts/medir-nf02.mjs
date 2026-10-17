@@ -14,7 +14,7 @@ const PASSWORD = process.env.APP_SEED_PASSWORD;
 const EJECUCIONES = 20;
 const UMBRAL_MS = 2000;
 const MINIMO_OK = 19;
-const CASO = process.env.CASO ?? "B-01";
+const CASO = process.env.CASO ?? "SIM-11048217";
 
 if (!PASSWORD) {
   console.error("Define APP_SEED_PASSWORD con la contraseña de las cuentas de prueba.");

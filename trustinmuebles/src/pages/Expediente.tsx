@@ -8,8 +8,8 @@ import { BookOpen, ChevronRight, ExternalLink, FileText, Info, ListChecks } from
 import { abrirPdf, patch } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
-import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD, ITEM, fecha } from "@/lib/semaforo";
-import type { DetalleCaso, EstadoItem, ItemChecklist, Termino } from "@/lib/types";
+import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD, ITEM, RUBROS, fecha } from "@/lib/semaforo";
+import type { Asiento, DetalleCaso, EstadoItem, ItemChecklist, Termino } from "@/lib/types";
 
 const OPCIONES_ITEM: EstadoItem[] = ["PENDIENTE", "REVISADO", "OBSERVADO"];
 
@@ -65,6 +65,61 @@ function Glosario({ terminos }: { terminos: Termino[] }) {
         </div>
       </CardContent>
     </Card>
+  );
+}
+
+const fechaCorta = (iso: string) => new Date(`${iso}T00:00:00`).toLocaleDateString("es-PE");
+
+function TarjetaAsiento({ a }: { a: Asiento }) {
+  const meta = [
+    a.tituloNumero ? `Título archivado N.° ${a.tituloNumero}` : null,
+    a.fechaPresentacion ? `presentado el ${fechaCorta(a.fechaPresentacion)}` : null,
+    a.fechaInscripcion ? `inscrito el ${fechaCorta(a.fechaInscripcion)}` : null,
+  ].filter(Boolean).join(" · ");
+  const vigente = a.estado === "VIGENTE";
+  return (
+    <div className="rounded-xl border border-gray-200 bg-white p-4">
+      <div className="flex items-start justify-between gap-3">
+        <p className="font-black text-foreground">{a.referencia}<span className="font-bold"> · {a.tipoActoEtiqueta}</span></p>
+        {a.rubro === "D" && a.estado && (
+          <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${
+            vigente ? "border-warning/40 bg-warning/10 text-[#B45309]" : "border-gray-200 bg-gray-50 text-muted-foreground"}`}>
+            {ETIQUETA_ANOTACION[a.estado]}
+          </span>
+        )}
+      </div>
+      {a.titulares && <p className="mt-2 text-sm text-foreground"><strong>Titulares:</strong> {a.titulares}</p>}
+      {a.canceloNumero && <p className="mt-2 text-sm font-semibold text-foreground">Cancela el asiento {a.canceloNumero}.</p>}
+      {a.texto && <p className="mt-2 text-sm leading-relaxed text-foreground">{a.texto}</p>}
+      {meta && <p className="mt-2 text-xs text-muted-foreground">{meta}</p>}
+    </div>
+  );
+}
+
+/** Asientos agrupados por rubro, en paneles que se abren con teclado (details/summary). */
+function AsientosPorRubro({ asientos, parcial }: { asientos: Asiento[]; parcial: boolean }) {
+  return (
+    <div className="space-y-4">
+      {Object.entries(RUBROS).map(([letra, nombre]) => {
+        const delRubro = asientos.filter((a) => a.rubro === letra);
+        const vacio = parcial && letra === "C" ? "No incluido en este extracto." : "No se representan asientos.";
+        return (
+          <details key={letra} open={letra !== "F"} className="rounded-2xl border border-gray-100 bg-gray-50/60">
+            <summary className="flex cursor-pointer list-none items-center justify-between gap-3 rounded-2xl px-5 py-4 font-bold text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50">
+              <span>{nombre}</span>
+              <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                {delRubro.length === 0 ? "Sin asientos" : `${delRubro.length} asiento${delRubro.length === 1 ? "" : "s"}`}
+              </span>
+            </summary>
+            <div className="space-y-3 px-5 pb-5">
+              {delRubro.length === 0
+                ? <p className="text-sm text-muted-foreground">{vacio}</p>
+                : delRubro.map((a) => <TarjetaAsiento key={a.referencia} a={a} />)}
+            </div>
+          </details>
+        );
+      })}
+    </div>
   );
 }
 
@@ -168,12 +223,12 @@ export default function Expediente() {
           <nav aria-label="Ruta" className="flex items-center text-sm font-medium text-muted-foreground mb-4">
             <Link to="/casos" className="hover:text-primary transition-colors">Casos</Link>
             <ChevronRight className="w-4 h-4 mx-1" aria-hidden="true" />
-            <span className="text-foreground font-bold">{d.codigo}</span>
+            <span className="text-foreground font-bold">Partida {d.codigo}</span>
           </nav>
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
             <div>
-              <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight">Caso {d.codigo}</h1>
-              <p className="text-muted-foreground font-medium mt-1">{d.contexto}</p>
+              <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{d.denominacion}</h1>
+              <p className="text-muted-foreground font-medium mt-1">Partida N.° {d.codigo} · {d.contexto}</p>
             </div>
             <EstadoBadge estado={ev?.estado} />
           </div>
@@ -220,7 +275,8 @@ export default function Expediente() {
                       <h3 id="alertas" className="font-bold text-foreground mb-3">Alertas conocidas</h3>
                       <ul className="space-y-3">
                         {ev.alertas.map((a, i) => (
-                          <li key={i} className="rounded-2xl border border-warning/40 bg-warning/10 p-4">
+                          <li key={i} className={`rounded-2xl border p-4 ${
+                            a.prioridad === "PRIORITARIA" ? "border-danger/30 bg-danger/10" : "border-warning/40 bg-warning/10"}`}>
                             <p className="font-bold text-foreground">{a.titulo} · {a.referencia}</p>
                             <p className="text-sm text-foreground mt-1">{a.explicacion}</p>
                             <p className="text-xs font-semibold text-muted-foreground mt-2">
@@ -250,15 +306,20 @@ export default function Expediente() {
               </Card>
             )}
 
-            {/* Datos del expediente */}
+            {/* Partida registral (simulada) */}
             <Card className="rounded-3xl border-gray-100 shadow-sm">
               <CardContent className="p-8">
                 <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-6">
-                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Datos del expediente
+                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Partida registral simulada
                 </h2>
                 <dl className="grid sm:grid-cols-2 gap-6">
+                  <Dato titulo="Zona y oficina registral">{x.zonaRegistral ?? "No informada"}{x.oficinaRegistral ? ` · ${x.oficinaRegistral}` : ""}</Dato>
                   <Dato titulo="Condición representada">{x.condicionRepresentada}</Dato>
-                  <Dato titulo="Titularidad">{x.titularidad}</Dato>
+                  <Dato titulo="Ubicación">{x.ubicacion ?? "No informada"}</Dato>
+                  <Dato titulo="Área">{x.areaM2 == null ? "No informada" : `${x.areaM2.toFixed(2)} m²`}</Dato>
+                  <Dato titulo="Linderos y medidas perimétricas">{x.linderos ?? "No informados"}</Dato>
+                  <Dato titulo="Antecedente dominial">{x.antecedenteDominial ?? "No informado"}</Dato>
+                  <Dato titulo="Titularidad (según el último asiento de títulos de dominio)">{x.titularidad}</Dato>
                   <Dato titulo="Completitud del extracto">{ETIQUETA_COMPLETITUD[x.completitud]}</Dato>
                   <Dato titulo="Fecha referencial">
                     {fecha(x.fechaReferencial)}
@@ -266,22 +327,18 @@ export default function Expediente() {
                   </Dato>
                 </dl>
                 {x.nota && <p className="mt-6 text-sm text-muted-foreground rounded-2xl bg-gray-50 border border-gray-100 p-4">{x.nota}</p>}
+              </CardContent>
+            </Card>
 
-                <h3 className="font-bold text-foreground mt-8 mb-3">Anotaciones</h3>
-                {x.anotaciones.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">El caso no representa anotaciones.</p>
-                ) : (
-                  <ul className="space-y-2.5">
-                    {x.anotaciones.map((a) => (
-                      <li key={a.referencia} className="flex items-center justify-between gap-3 rounded-2xl border border-gray-100 bg-gray-50/60 px-4 py-3">
-                        <span className="font-semibold text-foreground"><span className="font-black">{a.referencia}</span>{a.descripcion ? ` · ${a.descripcion}` : ""}</span>
-                        <span className="shrink-0 rounded-full border border-gray-200 bg-white px-3 py-1 text-xs font-bold uppercase tracking-wider text-foreground">
-                          {ETIQUETA_ANOTACION[a.estado]}
-                        </span>
-                      </li>
-                    ))}
-                  </ul>
-                )}
+            <Card className="rounded-3xl border-gray-100 shadow-sm">
+              <CardContent className="p-8">
+                <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-2">
+                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Asientos de la partida
+                </h2>
+                <p className="text-sm text-muted-foreground mb-5">
+                  Cada asiento lleva la letra de su rubro y un número. Abre o cierra un rubro con Enter.
+                </p>
+                <AsientosPorRubro asientos={x.asientos} parcial={x.completitud !== "COMPLETA"} />
               </CardContent>
             </Card>
 
@@ -320,7 +377,9 @@ export default function Expediente() {
                 {x.tieneDocumento ? (
                   <>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
-                      Extracto sintético en PDF. No tiene valor jurídico.
+                      {x.documentoGenerado
+                        ? "Copia literal simulada, generada por el sistema a partir de la partida. No tiene valor legal."
+                        : "PDF subido por el revisor. No tiene valor legal."}
                     </p>
                     <Button variant="outline" className="w-full rounded-xl" onClick={verPdf}>
                       Abrir documento <ExternalLink className="w-4 h-4" aria-hidden="true" />

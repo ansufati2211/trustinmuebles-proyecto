@@ -17,7 +17,7 @@ export default function Casos() {
         <div className="max-w-7xl mx-auto">
           <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-2">Casos de práctica</h1>
           <p className="text-muted-foreground font-medium text-lg">
-            Expedientes sintéticos para consultar. Abre uno para ver sus datos, su estado y lo que falta.
+            Partidas simuladas para consultar. Abre uno para ver sus datos, su estado y lo que falta.
           </p>
         </div>
       </div>
@@ -43,11 +43,10 @@ export default function Casos() {
                     <div className={`h-3 ${c.estado ? ESTADOS[c.estado].banda : "bg-gray-300"}`} aria-hidden="true"></div>
                     <CardContent className="p-6 flex-1 flex flex-col justify-between pt-6">
                       <div>
-                        <div className="flex items-start justify-between gap-3 mb-3">
-                          <h2 className="font-bold text-2xl text-foreground">{c.codigo}</h2>
-                          <EstadoBadge estado={c.estado} />
-                        </div>
-                        <p className="text-sm text-muted-foreground font-medium mb-4 leading-relaxed">{c.contexto}</p>
+                        <EstadoBadge estado={c.estado} className="mb-4" />
+                        <h2 className="font-bold text-xl text-foreground leading-snug mb-3">{c.denominacion}</h2>
+                        <p className="text-sm text-muted-foreground font-medium mb-1">Partida N.° {c.codigo}</p>
+                        <p className="text-sm text-muted-foreground font-medium mb-4">{c.contexto}</p>
                         {c.etiqueta && <p className="text-sm font-semibold text-foreground mb-6">{c.etiqueta}</p>}
                       </div>
 
@@ -57,7 +56,7 @@ export default function Casos() {
                           {c.pendientes === 0 ? "Sin pendientes" : `${c.pendientes} pendiente${c.pendientes === 1 ? "" : "s"}`}
                         </div>
                         <Button variant="outline" className="rounded-xl border-2 hover:bg-primary hover:border-primary hover:text-white transition-all font-bold" asChild>
-                          <Link to={`/casos/${c.codigo}`} aria-label={`Abrir expediente ${c.codigo}`}>Abrir expediente</Link>
+                          <Link to={`/casos/${c.codigo}`} aria-label={`Abrir expediente de la partida ${c.codigo}`}>Abrir expediente</Link>
                         </Button>
                       </div>
                     </CardContent>

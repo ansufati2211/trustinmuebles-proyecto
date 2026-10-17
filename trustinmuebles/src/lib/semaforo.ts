@@ -1,5 +1,5 @@
 import { AlertTriangle, CheckCircle2, CircleHelp, Clock, Eye, ShieldAlert, type LucideIcon } from "lucide-react";
-import type { Completitud, EstadoAnotacion, EstadoItem, EstadoSemaforo } from "./types";
+import type { Completitud, EstadoAnotacion, EstadoItem, EstadoSemaforo, TipoActo } from "./types";
 
 export type Tono = "success" | "warning" | "danger" | "pending";
 
@@ -28,6 +28,30 @@ export const ESTADOS: Record<EstadoSemaforo, {
 
 export const ETIQUETA_ANOTACION: Record<EstadoAnotacion, string> = {
   VIGENTE: "Vigente", CANCELADA: "Cancelada", DESCONOCIDO: "Desconocido",
+};
+
+/** Rubros de la partida que se editan como asientos. Las letras A y B del informe no se usan: ver docs/decisiones.md. */
+export const RUBROS: Record<string, string> = {
+  C: "Títulos de dominio",
+  D: "Gravámenes y cargas",
+  E: "Cancelaciones",
+  F: "Otros",
+};
+
+export const ETIQUETA_ACTO: Record<TipoActo, string> = {
+  PRIMERA_INSCRIPCION: "Primera inscripción",
+  INDEPENDIZACION: "Independización",
+  COMPRAVENTA: "Compraventa",
+  SUCESION: "Sucesión",
+  HIPOTECA: "Hipoteca",
+  EMBARGO: "Embargo",
+  ANOTACION_DEMANDA: "Anotación de demanda",
+  MEDIDA_CAUTELAR: "Medida cautelar",
+  BLOQUEO: "Bloqueo registral",
+  CARGA_TECNICA: "Carga técnica",
+  SERVIDUMBRE: "Servidumbre",
+  CANCELACION: "Cancelación",
+  OTRO: "Otro acto",
 };
 
 export const ETIQUETA_COMPLETITUD: Record<Completitud, string> = {

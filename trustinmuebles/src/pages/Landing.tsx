@@ -75,7 +75,7 @@ export default function Landing() {
                     </span>
                   </div>
                   <ul className="text-sm text-foreground space-y-2 pt-4 border-t border-gray-100">
-                    <li className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> Anotación vigente registrada en el caso</li>
+                    <li className="flex items-center gap-2"><FileText className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> Hipoteca vigente en gravámenes y cargas</li>
                     <li className="flex items-center gap-2"><Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> 1 elemento del checklist pendiente</li>
                   </ul>
                   <p className="mt-5 text-xs text-muted-foreground leading-relaxed">

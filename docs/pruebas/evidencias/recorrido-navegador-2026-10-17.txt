@@ -1,31 +1,43 @@
-== Recorrido de navegador (Chrome headless + puppeteer-core) — 2026-10-17T07:48:27-05:00 ==
-Frontend: Vite dev en localhost:5173 · Backend: Spring Boot en 127.0.0.1:8080 · H2 en archivo
+== Recorrido de navegador (Chrome headless + puppeteer-core) — 2026-10-17T15:44:09-05:00 ==
+Frontend: Vite dev en localhost:5173 · Backend: Spring Boot en 127.0.0.1:8080 · H2 en archivo · reglas v0.2
 Google Chrome 149.0.7827.200 
 
 PASS  Inicio: aviso de caso sintético visible
 PASS  Inicio: lista lo que el MVP no hace
 PASS  Inicio: sin promesas comerciales antiguas
 PASS  Casos sin sesión redirige a login
-PASS  Casos: aparecen los 4 casos
+PASS  Casos: aparecen las 4 partidas con su denominación
+PASS  Casos: no delatan el diseño del estudio
 PASS  Casos: cada estado va con texto
 PASS  Casos: muestra pendientes
 PASS  Barra: muestra cuenta y rol
-PASS  B-02: estado Amarillo con etiqueta
-PASS  B-02: motivo y alerta B2 visibles
-PASS  B-02: límite 'No certifica saneamiento' en el panel
-PASS  B-02: fecha referencial con advertencia
+PASS  La Tinguiña: estado Amarillo con etiqueta
+PASS  La Tinguiña: alerta por hipoteca vigente
+PASS  La Tinguiña: partida con zona, ubicación, área y linderos
+PASS  La Tinguiña: rubros con sus asientos
+PASS  La Tinguiña: titulares en copropiedad desde el asiento C
+PASS  La Tinguiña: la cancelación indica qué asiento cancela
+PASS  La Tinguiña: límite en el panel
+PASS  La Tinguiña: fecha referencial con advertencia
 PASS  Comprador no ve el editor ni selectores
 PASS  Glosario: se abre con Enter (teclado) y marca aria-expanded
+PASS  Rubros: los paneles de asientos son desplegables
 PASS  Documento: se abre el PDF autenticado
-PASS  B-03: GRIS, faltantes y alerta B4 conservada
+PASS  Subtanjalla: GRIS con faltantes y alerta prioritaria conservada
+PASS  Subtanjalla: el extracto parcial no inventa los títulos de dominio
+PASS  Parcona: VERDE con hipoteca cancelada
 PASS  Revisor ve el editor y los selectores
-PASS  Editar: B2 cancelada recalcula a Verde
-PASS  Editar: entrada inválida muestra el error del servidor
-PASS  Documento: el revisor asocia un PDF (201)
-PASS  Restaurar: B-02 vuelve a Amarillo
+PASS  Editar: guardar la cancelación responde 200
+PASS  Editar: cancelar la hipoteca recalcula a Verde
+PASS  Editar: entrada inválida responde 400
+PASS  Editar: el error del servidor se muestra
+PASS  Restaurar: guardar sin la cancelación responde 200
+PASS  Restaurar: La Tinguiña vuelve a Amarillo
+PASS  Documento: figura como generado por el sistema
 PASS  Checklist: PATCH del revisor responde 200
-PASS  Checklist: el revisor cambia un ítem a Observado
 PASS  Checklist: se restaura el valor inicial
+PASS  Documento: el revisor asocia un PDF (201)
+PASS  Documento: tras subir uno propio ya no lo regenera el sistema
 PASS  Sin errores de consola ni de página
 PASS  Solo falla la validación provocada a propósito (400)
-26/26 verificaciones correctas
+38/38 verificaciones correctas
