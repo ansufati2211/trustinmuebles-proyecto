@@ -30,8 +30,8 @@ public abstract class BaseApiTest {
     protected static final String TINGUINA = "SIM-11052690";
     /** Partida simulada de Subtanjalla: extracto parcial con una anotación de demanda vigente. Debe dar GRIS. */
     protected static final String SUBTANJALLA = "SIM-11061555";
-    /** Caso de práctica (familiarización). Debe dar GRIS. */
-    protected static final String PRACTICA = "SIM-99000001";
+    /** Los Aquijes: sin copia literal ni asientos. Debe dar GRIS. */
+    protected static final String LOS_AQUIJES = "SIM-11070419";
 
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;

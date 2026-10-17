@@ -113,7 +113,7 @@ class CopiaLiteralPdfTest {
     @Test
     @DisplayName("Una partida sin asientos dice que no se representan, y los caracteres raros no rompen la generación")
     void sinAsientosYCaracteresRaros() throws Exception {
-        DatosCopia d = new DatosCopia("SIM-99000001", null, null, "Ubicación con símbolo raro → ★", null, null, null, true,
+        DatosCopia d = new DatosCopia("SIM-11070419", null, null, "Ubicación con símbolo raro → ★", null, null, null, true,
                 null, List.of());
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(d))) {
             String texto = new PDFTextStripper().getText(doc);

@@ -17,7 +17,7 @@ const MAX_ASIENTOS = 40;
 
 const rubroDe = (f: Fila) => f.referencia.charAt(0).toUpperCase();
 
-/** Asociar el PDF sintético del caso (REQ-F03). El servidor acepta solo PDF de hasta 5 MB. */
+/** Asociar el PDF del expediente (REQ-F03). El servidor acepta solo PDF de hasta 5 MB. */
 function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -47,9 +47,9 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
       <h3 className="text-sm font-bold mb-1.5">Documento PDF</h3>
       <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
         {generado
-          ? "El sistema genera la copia literal simulada a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
-          : "Este caso usa un PDF subido por el revisor y no se regenera al guardar."}
-        {" "}Solo PDF, hasta 5 MB. Debe ser un documento simulado, nunca uno real.
+          ? "El sistema genera la copia literal a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
+          : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
+        {" "}Solo PDF, hasta 5 MB. No subas documentos con datos reales de personas o predios.
       </p>
       <div className="flex flex-wrap items-center gap-3">
         <label htmlFor="ed-pdf" className="sr-only">Archivo PDF</label>

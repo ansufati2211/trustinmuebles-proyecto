@@ -48,12 +48,12 @@ class CasosApiTest extends BaseApiTest {
     void cadaCodigoDevuelveSusDatos() throws Exception {
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador())).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[*].codigo", contains(PARCONA, TINGUINA, SUBTANJALLA, PRACTICA)))
+                .andExpect(jsonPath("$[*].codigo", contains(PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES)))
                 .andExpect(jsonPath("$[0].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
                 .andExpect(jsonPath("$[0].estado").value("VERDE"))
                 .andExpect(jsonPath("$[0].pendientes").value(1))
                 .andExpect(jsonPath("$[2].pendientes").value(2));
-        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, PRACTICA}) {
+        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES}) {
             mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.codigo").value(codigo))
                     .andExpect(jsonPath("$.sintetico").value(true));
@@ -72,11 +72,15 @@ class CasosApiTest extends BaseApiTest {
     void sinRastrosDelEstudio() throws Exception {
         String lista = mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
                 .andReturn().getResponse().getContentAsString().toLowerCase();
-        assertThat(lista).doesNotContain("postest", "pretest", "forma b", "forma a", "sintético de");
-        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, PRACTICA}) {
-            String detalle = mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
-                    .andReturn().getResponse().getContentAsString().toLowerCase();
-            assertThat(detalle).doesNotContain("postest", "pretest", "forma b", "titular alfa", "titular delta");
+        assertThat(lista).doesNotContain("postest", "pretest", "forma b", "forma a", "sintético de",
+                "práctica", "simulad", "mvp", "ejemplo", "escenario", "académic");
+        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES}) {
+            // El término «Documento simulado» del glosario se queda; se revisan el expediente, la evaluación y el checklist.
+            ObjectNode detalle = (ObjectNode) leer(codigo).deepCopy();
+            detalle.remove("terminos");
+            String texto = detalle.toString().toLowerCase();
+            assertThat(texto).doesNotContain("postest", "pretest", "forma b", "titular alfa", "titular delta",
+                    "práctica", "simulad", "mvp", "ejemplo", "escenario", "académic");
         }
     }
 
@@ -123,9 +127,9 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("El caso de práctica da GRIS por información insuficiente")
-    void practicaGris() throws Exception {
-        mvc.perform(get("/api/v1/casos/" + PRACTICA).header("Authorization", comprador()))
+    @DisplayName("Sin copia literal (Los Aquijes) da GRIS por información insuficiente")
+    void sinCopiaLiteralGris() throws Exception {
+        mvc.perform(get("/api/v1/casos/" + LOS_AQUIJES).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"))
                 .andExpect(jsonPath("$.evaluacion.faltantes", hasItem("Titularidad")))
                 .andExpect(jsonPath("$.checklist[0].estado").value("PENDIENTE"));
@@ -414,17 +418,17 @@ class CasosApiTest extends BaseApiTest {
     void subirDocumento() throws Exception {
         String revisor = revisor();
         var falso = new MockMultipartFile("documento", "x.pdf", "application/pdf", "esto no es un pdf".getBytes());
-        mvc.perform(multipart("/api/v1/casos/" + PRACTICA + "/documento").file(falso).header("Authorization", revisor))
+        mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(falso).header("Authorization", revisor))
                 .andExpect(status().isUnprocessableEntity());
         var svg = new MockMultipartFile("documento", "x.svg", "image/svg+xml", "<svg onload=alert(1)/>".getBytes());
-        mvc.perform(multipart("/api/v1/casos/" + PRACTICA + "/documento").file(svg).header("Authorization", revisor))
+        mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(svg).header("Authorization", revisor))
                 .andExpect(status().isUnprocessableEntity());
         var bueno = new MockMultipartFile("documento", "demo.pdf", "application/pdf",
                 "%PDF-1.4\n%simulado de prueba\n".getBytes());
-        mvc.perform(multipart("/api/v1/casos/" + PRACTICA + "/documento").file(bueno).header("Authorization", revisor))
-                .andExpect(status().isCreated()).andExpect(jsonPath("$.codigo").value(PRACTICA))
+        mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(bueno).header("Authorization", revisor))
+                .andExpect(status().isCreated()).andExpect(jsonPath("$.codigo").value(LOS_AQUIJES))
                 .andExpect(jsonPath("$.sha256", hasLength(64)));
-        JsonNode despues = leer(PRACTICA);
+        JsonNode despues = leer(LOS_AQUIJES);
         assertThat(despues.get("evaluacion").get("expedienteVersion").asLong())
                 .as("la evaluación corresponde a la versión vigente del expediente")
                 .isEqualTo(despues.get("expediente").get("version").asLong());

@@ -15,27 +15,27 @@ export default function Casos() {
 
       <div className="bg-white border-b border-gray-100 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
         <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-2">Casos de práctica</h1>
+          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-2">Expedientes</h1>
           <p className="text-muted-foreground font-medium text-lg">
-            Partidas simuladas para consultar. Abre uno para ver sus datos, su estado y lo que falta.
+            Lotes urbanos en evaluación de precompra. Abre uno para ver su partida, su estado y lo que falta.
           </p>
         </div>
       </div>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
         {loading ? (
-          <div className="text-center py-24 text-muted-foreground font-semibold">Cargando casos…</div>
+          <div className="text-center py-24 text-muted-foreground font-semibold">Cargando expedientes…</div>
         ) : error ? (
           <div role="alert" className="text-center py-24 text-[#B91C1C] font-semibold">{error.message}</div>
         ) : !casos || casos.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
             <FolderOpen className="w-10 h-10 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">No hay casos cargados</h2>
-            <p className="text-muted-foreground">El equipo debe cargar el contenido antes de usar el MVP.</p>
+            <h2 className="text-2xl font-bold text-foreground mb-2">Todavía no hay expedientes registrados</h2>
+            <p className="text-muted-foreground">Cuando se registre uno, aparecerá en esta lista.</p>
           </div>
         ) : (
           <>
-            <p className="mb-6 text-muted-foreground font-semibold">{casos.length} casos disponibles</p>
+            <p className="mb-6 text-muted-foreground font-semibold">{casos.length} expedientes disponibles</p>
             <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
               {casos.map((c) => (
                 <li key={c.codigo}>

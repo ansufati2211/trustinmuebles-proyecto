@@ -45,7 +45,7 @@ export default function Login() {
             <div className="bg-primary/10 p-2 rounded-xl"><Shield className="h-6 w-6 text-primary" aria-hidden="true" /></div>
             <div>
               <h1 className="text-2xl font-black text-foreground">Ingresar</h1>
-              <p className="text-sm text-muted-foreground font-medium">Usa una cuenta de prueba del MVP.</p>
+              <p className="text-sm text-muted-foreground font-medium">Ingresa con el código de cuenta que te asignaron.</p>
             </div>
           </div>
 

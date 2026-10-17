@@ -13,8 +13,7 @@ export function Footer() {
               <span className="text-2xl font-bold tracking-tight text-white">Trustinmuebles</span>
             </Link>
             <p className="text-sm text-gray-400 leading-relaxed">
-              MVP académico de orientación documental para tareas simuladas de precompra de lotes urbanos en Ica.
-              Todos los expedientes son casos sintéticos.
+              Orientación documental para la precompra de lotes urbanos en Ica: la partida, sus términos y lo que falta por revisar.
             </p>
           </div>
 
@@ -22,17 +21,17 @@ export function Footer() {
             <h3 className="font-semibold text-lg mb-4 text-white">Navegación</h3>
             <ul className="space-y-3">
               <li><Link to="/" className="text-sm text-gray-400 hover:text-white transition-colors">Inicio</Link></li>
-              <li><Link to="/casos" className="text-sm text-gray-400 hover:text-white transition-colors">Casos de práctica</Link></li>
-              <li><Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Ingresar con cuenta de prueba</Link></li>
+              <li><Link to="/casos" className="text-sm text-gray-400 hover:text-white transition-colors">Expedientes</Link></li>
+              <li><Link to="/login" className="text-sm text-gray-400 hover:text-white transition-colors">Ingresar</Link></li>
             </ul>
           </div>
 
           <div>
-            <h3 className="font-semibold text-lg mb-4 text-white">Límites del MVP</h3>
+            <h3 className="font-semibold text-lg mb-4 text-white">Alcance del servicio</h3>
             <ul className="space-y-2 text-sm text-gray-400 leading-relaxed list-disc pl-5">
               <li>No certifica saneamiento ni recomienda comprar.</li>
               <li>No consulta fuentes oficiales ni comprueba autenticidad.</li>
-              <li>Las reglas y el glosario están pendientes de revisión especializada.</li>
+              <li>Los criterios y el glosario están en revisión especializada.</li>
               <li>No reemplaza asesoría legal.</li>
             </ul>
           </div>
@@ -40,7 +39,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-gray-800">
           <p className="text-sm text-gray-500">
-            © {new Date().getFullYear()} Trustinmuebles · Proyecto académico del curso Diseño e Implementación de Arquitectura Empresarial.
+            © {new Date().getFullYear()} Trustinmuebles · Ica, Perú.
           </p>
         </div>
       </div>

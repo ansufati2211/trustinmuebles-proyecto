@@ -16,7 +16,7 @@ import pe.trustinmuebles.clasificacion.ResultadoClasificacion.Motivo;
  */
 final class MotorClasificacion {
     static final String LIMITE =
-            "Salida informativa sobre datos de un caso sintético. No certifica saneamiento ni recomienda comprar.";
+            "Resultado informativo sobre los datos registrados en el expediente. No certifica saneamiento ni recomienda comprar.";
 
     private MotorClasificacion() {}
 

@@ -28,7 +28,7 @@ export function Navbar() {
 
               <nav aria-label="Principal" className="flex items-center gap-1">
                 <NavLink to="/" end className={({ isActive }) => enlace(isActive)}>Inicio</NavLink>
-                <NavLink to="/casos" className={({ isActive }) => enlace(isActive)}>Casos</NavLink>
+                <NavLink to="/casos" className={({ isActive }) => enlace(isActive)}>Expedientes</NavLink>
                 <Link
                   to="/"
                   state={{ desplazarA: "como-funciona", t: location.key }}

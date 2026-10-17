@@ -30,7 +30,7 @@ function Glosario({ terminos }: { terminos: Termino[] }) {
     <Card className="rounded-3xl border-gray-100 shadow-sm">
       <CardContent className="p-8">
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-2">
-          <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" /> Glosario de este caso
+          <BookOpen className="w-5 h-5 text-primary" aria-hidden="true" /> Glosario de este expediente
         </h2>
         <p className="text-sm text-muted-foreground mb-5">Selecciona un término para ver su explicación.</p>
         <ul className="flex flex-wrap gap-2.5">
@@ -194,9 +194,9 @@ export default function Expediente() {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-32 gap-4 text-center px-4">
         <p role="alert" className="text-[#B91C1C] font-semibold">
-          {error?.status === 404 ? "No encontramos este caso." : (error?.message ?? "No se pudo cargar el caso.")}
+          {error?.status === 404 ? "No encontramos este expediente." : (error?.message ?? "No se pudo cargar el expediente.")}
         </p>
-        <Button asChild><Link to="/casos">Volver a los casos</Link></Button>
+        <Button asChild><Link to="/casos">Volver a los expedientes</Link></Button>
       </div>
     );
   }
@@ -221,7 +221,7 @@ export default function Expediente() {
       <div className="bg-white border-b border-gray-100">
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
           <nav aria-label="Ruta" className="flex items-center text-sm font-medium text-muted-foreground mb-4">
-            <Link to="/casos" className="hover:text-primary transition-colors">Casos</Link>
+            <Link to="/casos" className="hover:text-primary transition-colors">Expedientes</Link>
             <ChevronRight className="w-4 h-4 mx-1" aria-hidden="true" />
             <span className="text-foreground font-bold">Partida {d.codigo}</span>
           </nav>
@@ -293,7 +293,7 @@ export default function Expediente() {
                     <div className="text-sm text-muted-foreground leading-relaxed">
                       <p className="font-bold text-foreground">{ev.limite}</p>
                       <p className="mt-1">
-                        Reglas {ev.versionReglas}, borrador del equipo pendiente de revisión especializada.
+                        Criterios {ev.versionReglas} (en revisión especializada).
                         Calculado sobre la versión {ev.expedienteVersion} del expediente.
                       </p>
                     </div>
@@ -302,15 +302,15 @@ export default function Expediente() {
               </Card>
             ) : (
               <Card className="rounded-3xl border-gray-100 shadow-sm">
-                <CardContent className="p-8 text-muted-foreground font-semibold">Este caso todavía no tiene una evaluación.</CardContent>
+                <CardContent className="p-8 text-muted-foreground font-semibold">Este expediente todavía no tiene una evaluación.</CardContent>
               </Card>
             )}
 
-            {/* Partida registral (simulada) */}
+            {/* Partida registral */}
             <Card className="rounded-3xl border-gray-100 shadow-sm">
               <CardContent className="p-8">
                 <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-6">
-                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Partida registral simulada
+                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Partida registral
                 </h2>
                 <dl className="grid sm:grid-cols-2 gap-6">
                   <Dato titulo="Zona y oficina registral">{x.zonaRegistral ?? "No informada"}{x.oficinaRegistral ? ` · ${x.oficinaRegistral}` : ""}</Dato>
@@ -355,7 +355,7 @@ export default function Expediente() {
                   <ListChecks className="w-5 h-5 text-primary" aria-hidden="true" /> Checklist
                 </h2>
                 <p className="text-xs text-muted-foreground mb-4 leading-relaxed">
-                  «Revisado» indica solo que el material académico fue revisado. No acredita validez jurídica.
+                  «Revisado» indica que el documento se revisó en la plataforma. No acredita validez jurídica.
                 </p>
                 <ul className="space-y-3">
                   {d.checklist.map((i) => (
@@ -372,13 +372,13 @@ export default function Expediente() {
             <Card className="rounded-3xl border-gray-100 shadow-sm">
               <CardContent className="p-8">
                 <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-4">
-                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Documento del caso
+                  <FileText className="w-5 h-5 text-primary" aria-hidden="true" /> Documento del expediente
                 </h2>
                 {x.tieneDocumento ? (
                   <>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                       {x.documentoGenerado
-                        ? "Copia literal simulada, generada por el sistema a partir de la partida. No tiene valor legal."
+                        ? "Copia literal generada a partir de la partida. Es referencial y no tiene valor legal."
                         : "PDF subido por el revisor. No tiene valor legal."}
                     </p>
                     <Button variant="outline" className="w-full rounded-xl" onClick={verPdf}>
@@ -387,7 +387,7 @@ export default function Expediente() {
                     {errorPdf && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{errorPdf}</p>}
                   </>
                 ) : (
-                  <p className="text-sm text-muted-foreground">Este caso no tiene un documento asociado.</p>
+                  <p className="text-sm text-muted-foreground">Este expediente no tiene un documento asociado.</p>
                 )}
               </CardContent>
             </Card>
