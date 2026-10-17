@@ -1,27 +1,83 @@
-# Trustinmuebles — plataforma PropTech (proyecto completo)
+# Trustinmuebles — MVP académico de orientación documental
+
+Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Es un MVP que muestra **casos sintéticos** de lotes
+urbanos, explica sus términos y señala qué información falta. **No certifica saneamiento, no recomienda comprar, no
+consulta fuentes oficiales y no reemplaza asesoría legal.** El informe lo llama InmoClaro (ver `docs/decisiones.md`, D2).
 
 Dos carpetas:
-- `trustinmuebles-backend/` — API Spring Boot 4 (Java 21). Ver su README.md.
-- `trustinmuebles/` — front React + Vite.
+- `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21. Ver su README.
+- `trustinmuebles/` — interfaz de React 19 con Vite.
+
+Documentación en `docs/`: entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe.
 
 ## Requisitos
-Java 21, Maven 3.9+, Node 20+ y pnpm 9.
+
+- Java 21. Maven no hace falta: `./mvnw` lo descarga.
+- Node.js 20 o superior. Se usa `npx pnpm@9`, porque el `pnpm` del sistema puede exigir Node 22.
+- No hace falta instalar ninguna base de datos: el backend usa H2 en archivo.
 
 ## Cómo correrlo (dos terminales)
-1. Backend:  `cd trustinmuebles-backend && mvn spring-boot:run`   → http://localhost:8080 (Swagger: /swagger-ui.html)
-2. Front:    `cd trustinmuebles && pnpm install && pnpm dev`      → http://localhost:5173/trustinmuebles/
 
-No hace falta instalar ninguna base de datos: el backend usa H2 (archivo en `trustinmuebles-backend/data/`)
-y crea sola las tablas y los datos demo al arrancar. Para empezar de cero, borra esa carpeta `data/`.
+El backend necesita la contraseña de las cuentas de prueba **antes del primer arranque**. No tiene valor por defecto: elige
+una de al menos 8 caracteres.
 
-## Usuarios demo (contraseña: demo1234)
-- juan.perez@demo.pe — comprador (tiene trámites y patrimonio)
-- maria.fernandez@demo.pe — gestora legal
-- luis.paredes@demo.pe — inspector
-- rosa.huaman@demo.pe — vendedora
-- admin@demo.pe — administrador
+```bash
+# Terminal 1: backend en http://127.0.0.1:8080  (Swagger: /swagger-ui.html)
+cd trustinmuebles-backend
+env APP_SEED_PASSWORD='elige-una-clave-de-prueba' ./mvnw spring-boot:run
+
+# Terminal 2: interfaz en http://localhost:5173
+cd trustinmuebles
+npx pnpm@9 install
+npx pnpm@9 dev
+```
+
+Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explica. Los comandos funcionan en bash, zsh y fish.
+
+## Cuentas de prueba
+
+| Cuenta | Rol | Puede |
+|---|---|---|
+| `comprador-01` | Comprador | Consultar casos, glosario, checklist y documento |
+| `revisor-01` | Revisor | Lo anterior, más editar expedientes, cambiar el checklist y asociar el PDF |
+
+Las dos usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
+ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`.
+No hay registro abierto.
+
+## Casos cargados
+
+| Caso | Estado esperado | Para qué |
+|---|---|---|
+| B-01 | Verde | Postest asistido |
+| B-02 | Amarillo | Postest asistido |
+| B-03 | Gris | Postest asistido |
+| DEMO-01 | Gris | Familiarización, no se evalúa |
+
+Son borradores del equipo. Las reglas y el glosario están **pendientes de revisión especializada**.
 
 ## Pruebas
-`cd trustinmuebles-backend && mvn test`  (30 pruebas)
 
-Nota: SUNARP está simulado con datos de prueba (trustinmuebles-backend/src/main/resources/mock-sunarp/).
+```bash
+cd trustinmuebles-backend && ./mvnw test        # 35 pruebas
+cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
+env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)
+```
+
+Resultados y evidencias en `docs/pruebas/`. El recorrido de navegador se explica en `docs/pruebas/recorrido-manual.md`.
+
+## Qué no incluye
+
+Integraciones estatales, OCR, inteligencia artificial, autenticidad documental, dictámenes jurídicos, pagos, contratos,
+firmas, inspección, planos, tours, posventa, filtros avanzados y reportes descargables (sección 1.7 del informe).
+
+## Pendiente fuera del código
+
+Revisión especializada del contenido, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y
+presupuesto. Los materiales del estudio (formas A y B, claves y bases vacías) están en la carpeta `estudio/` que se
+mantiene **fuera de este repositorio** a propósito.
+
+## Uso local
+
+El backend escucha solo en `127.0.0.1` y la interfaz solo en localhost. La configuración de seguridad es de desarrollo
+local. No la uses en un servidor accesible desde la red (ver `docs/decisiones.md`, D9).
