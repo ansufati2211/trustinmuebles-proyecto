@@ -1,4 +1,4 @@
-== Recorrido de navegador (Chrome headless + puppeteer-core) — 2026-10-17T07:43:20-05:00 ==
+== Recorrido de navegador (Chrome headless + puppeteer-core) — 2026-10-17T07:48:27-05:00 ==
 Frontend: Vite dev en localhost:5173 · Backend: Spring Boot en 127.0.0.1:8080 · H2 en archivo
 Google Chrome 149.0.7827.200 
 
@@ -21,10 +21,11 @@ PASS  B-03: GRIS, faltantes y alerta B4 conservada
 PASS  Revisor ve el editor y los selectores
 PASS  Editar: B2 cancelada recalcula a Verde
 PASS  Editar: entrada inválida muestra el error del servidor
+PASS  Documento: el revisor asocia un PDF (201)
 PASS  Restaurar: B-02 vuelve a Amarillo
 PASS  Checklist: PATCH del revisor responde 200
 PASS  Checklist: el revisor cambia un ítem a Observado
 PASS  Checklist: se restaura el valor inicial
 PASS  Sin errores de consola ni de página
 PASS  Solo falla la validación provocada a propósito (400)
-25/25 verificaciones correctas
+26/26 verificaciones correctas

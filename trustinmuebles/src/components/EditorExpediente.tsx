@@ -2,13 +2,58 @@ import { useState } from "react";
 import { Pencil, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { put } from "@/lib/api";
+import { api, put, subirArchivo } from "@/lib/api";
 import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
 import type { Completitud, DetalleCaso, EstadoAnotacion, PeticionExpediente } from "@/lib/types";
 
 interface Fila { referencia: string; estado: EstadoAnotacion; descripcion: string }
 
 const campo = "w-full h-11 px-3 rounded-xl border border-gray-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
+
+/** Asociar el PDF sintético del caso (REQ-F03). El servidor acepta solo PDF de hasta 5 MB. */
+function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
+  const [archivo, setArchivo] = useState<File | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [mensaje, setMensaje] = useState<string | null>(null);
+  const [subiendo, setSubiendo] = useState(false);
+
+  const subir = async () => {
+    if (!archivo) return;
+    setError(null);
+    setMensaje(null);
+    setSubiendo(true);
+    try {
+      await subirArchivo(`/casos/${detalle.codigo}/documento`, "documento", archivo);
+      alGuardar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
+      setMensaje("Documento asociado.");
+      setArchivo(null);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo asociar el documento");
+    } finally {
+      setSubiendo(false);
+    }
+  };
+
+  return (
+    <div className="mt-8 pt-6 border-t border-gray-100">
+      <h3 className="text-sm font-bold mb-1.5">Documento sintético (PDF)</h3>
+      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+        {detalle.expediente.tieneDocumento ? "El caso ya tiene un documento; subir otro lo reemplaza." : "El caso no tiene documento."}
+        {" "}Solo PDF, hasta 5 MB. Debe ser un documento sintético, nunca uno real.
+      </p>
+      <div className="flex flex-wrap items-center gap-3">
+        <label htmlFor="ed-pdf" className="sr-only">Archivo PDF</label>
+        <input id="ed-pdf" type="file" accept="application/pdf" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+          className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-bold file:text-primary" />
+        <Button type="button" variant="outline" size="sm" disabled={!archivo || subiendo} onClick={subir}>
+          {subiendo ? "Subiendo…" : "Asociar PDF"}
+        </Button>
+      </div>
+      {error && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{error}</p>}
+      {mensaje && <p role="status" className="mt-3 text-sm font-semibold text-foreground">{mensaje}</p>}
+    </div>
+  );
+}
 
 /** Edición del expediente, solo para el revisor. El servidor vuelve a verificar el rol y valida todo (PA4, NF04). */
 export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
@@ -151,6 +196,8 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
             {guardando ? "Guardando…" : "Guardar y recalcular"}
           </Button>
         </form>
+
+        <AsociarDocumento detalle={detalle} alGuardar={alGuardar} />
       </CardContent>
     </Card>
   );

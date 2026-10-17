@@ -1,0 +1,31 @@
+== REQ-NF02: listado + apertura de expediente (B-01) — 2026-10-17T12:48:27.222Z ==
+API: http://127.0.0.1:8080/api/v1
+Equipo: Linux 7.2.7-1-cachyos · Intel(R) Core(TM) i5-10400 CPU @ 2.90GHz · 12 núcleos · 15.5 GiB de RAM
+Node.js v20.20.2
+Meta del equipo: al menos 19 de 20 ejecuciones en 2000 ms o menos (no es un umbral de ISO/IEC 25010).
+
+Ejecución;ms
+1;76.6
+2;20.5
+3;19.0
+4;18.3
+5;17.1
+6;17.5
+7;15.5
+8;15.5
+9;13.7
+10;14.3
+11;14.6
+12;14.1
+13;13.6
+14;11.7
+15;17.4
+16;16.9
+17;12.7
+18;10.9
+19;9.8
+20;11.1
+
+Mínimo 9.8 ms · mediana 15.5 ms · máximo 76.6 ms
+Ejecuciones en 2000 ms o menos: 20 de 20
+Resultado: CUMPLE la meta

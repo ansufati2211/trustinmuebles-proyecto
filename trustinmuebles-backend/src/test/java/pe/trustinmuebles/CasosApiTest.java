@@ -291,5 +291,9 @@ class CasosApiTest extends BaseApiTest {
         mvc.perform(multipart("/api/v1/casos/DEMO-01/documento").file(bueno).header("Authorization", revisor))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.codigo").value("DEMO-01"))
                 .andExpect(jsonPath("$.sha256", hasLength(64)));
+        JsonNode despues = leer("DEMO-01");
+        assertThat(despues.get("evaluacion").get("expedienteVersion").asLong())
+                .as("la evaluación corresponde a la versión vigente del expediente")
+                .isEqualTo(despues.get("expediente").get("version").asLong());
     }
 }

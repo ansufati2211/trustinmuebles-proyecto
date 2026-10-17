@@ -128,6 +128,19 @@ await espera("No se guardó ningún cambio");
 check("Editar: entrada inválida muestra el error del servidor", (await texto()).includes("titularidad"));
 await foto("09-error-validacion");
 
+// Asociar PDF: se vuelve a subir el mismo PDF generado del caso, para no alterar el contenido de la demostración
+const pdfPrueba = process.env.PDF_PRUEBA;
+if (pdfPrueba) {
+  await page.reload();
+  await espera("Editar expediente");
+  const input = await page.$("#ed-pdf");
+  await input.uploadFile(pdfPrueba);
+  const respPdf = page.waitForResponse((r) => r.url().includes("/documento") && r.request().method() === "POST", { timeout: 8000 });
+  await page.evaluate(() => [...document.querySelectorAll("button")].find((b) => b.innerText.includes("Asociar PDF") && !b.disabled)?.click());
+  check("Documento: el revisor asocia un PDF (201)", (await respPdf).status() === 201);
+  await espera("Documento asociado.");
+}
+
 // Restaurar B2 vigente (se recarga para descartar el formulario con error)
 await ir("/casos/B-02");
 await page.reload();

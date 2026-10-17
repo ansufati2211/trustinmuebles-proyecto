@@ -1,11 +1,11 @@
-== ./mvnw -B clean test — 2026-10-17T07:27:31-05:00 ==
-commit base: 9e91f13 (+ cambios del backend sin commitear al momento de ejecutar)
+== ./mvnw -B clean test — 2026-10-17T07:48:15-05:00 ==
+commit base: 07ec86a (+ cambios sin commitear al momento de ejecutar)
 openjdk version "21.0.12" 2026-07-21
 
-[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.480 s -- in pe.trustinmuebles.CasosApiTest
-[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.478 s -- in pe.trustinmuebles.ModularityTests
-[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.825 s -- in pe.trustinmuebles.SeguridadTest
-[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in pe.trustinmuebles.clasificacion.MotorClasificacionTest
+[INFO] Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.528 s -- in pe.trustinmuebles.CasosApiTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.413 s -- in pe.trustinmuebles.ModularityTests
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.824 s -- in pe.trustinmuebles.SeguridadTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in pe.trustinmuebles.clasificacion.MotorClasificacionTest
 [INFO] Tests run: 35, Failures: 0, Errors: 0, Skipped: 0
 [INFO] BUILD SUCCESS
 
@@ -13,16 +13,16 @@ openjdk version "21.0.12" 2026-07-21
 -------------------------------------------------------------------------------
 Test set: pe.trustinmuebles.CasosApiTest
 -------------------------------------------------------------------------------
-Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.480 s -- in pe.trustinmuebles.CasosApiTest
+Tests run: 17, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 9.528 s -- in pe.trustinmuebles.CasosApiTest
 -------------------------------------------------------------------------------
 Test set: pe.trustinmuebles.clasificacion.MotorClasificacionTest
 -------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in pe.trustinmuebles.clasificacion.MotorClasificacionTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in pe.trustinmuebles.clasificacion.MotorClasificacionTest
 -------------------------------------------------------------------------------
 Test set: pe.trustinmuebles.ModularityTests
 -------------------------------------------------------------------------------
-Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.478 s -- in pe.trustinmuebles.ModularityTests
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.413 s -- in pe.trustinmuebles.ModularityTests
 -------------------------------------------------------------------------------
 Test set: pe.trustinmuebles.SeguridadTest
 -------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.825 s -- in pe.trustinmuebles.SeguridadTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.824 s -- in pe.trustinmuebles.SeguridadTest

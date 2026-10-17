@@ -120,6 +120,10 @@ class ExpedienteService {
         var guardado = almacenamiento.guardar(codigo + ".pdf", "application/pdf", datos, false);
         e.setDocumentoArchivoId(guardado.id());
         e.setActualizadoEn(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        // Cambiar el documento sube la versión del expediente; se recalcula para que la evaluación siga
+        // correspondiendo a la versión vigente (RN-06).
+        expedientes.saveAndFlush(e);
+        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e));
         return new DocumentoDto(codigo, guardado.sha256());
     }
 

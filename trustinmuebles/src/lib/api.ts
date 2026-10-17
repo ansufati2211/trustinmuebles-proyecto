@@ -18,7 +18,10 @@ async function request(path: string, init: RequestInit = {}): Promise<Response> 
   const headers = new Headers(init.headers);
   const token = getToken();
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  if (init.body && !headers.has("Content-Type")) headers.set("Content-Type", "application/json");
+  // Con FormData el navegador fija el Content-Type (multipart) con su separador; no se debe forzar JSON.
+  if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
   let res: Response;
   try {
     res = await fetch(BASE + path, { ...init, headers });
@@ -48,6 +51,13 @@ export const post = <T>(path: string, body?: unknown) =>
   api<T>(path, { method: "POST", body: body === undefined ? undefined : JSON.stringify(body) });
 export const put = <T>(path: string, body: unknown) => api<T>(path, { method: "PUT", body: JSON.stringify(body) });
 export const patch = <T>(path: string, body: unknown) => api<T>(path, { method: "PATCH", body: JSON.stringify(body) });
+
+/** Sube un archivo como multipart en el campo indicado. */
+export function subirArchivo<T>(path: string, campo: string, archivo: File) {
+  const datos = new FormData();
+  datos.append(campo, archivo);
+  return api<T>(path, { method: "POST", body: datos });
+}
 
 /** Abre en otra pestaña un PDF protegido (necesita el token, por eso no es un enlace directo). */
 export async function abrirPdf(path: string) {
