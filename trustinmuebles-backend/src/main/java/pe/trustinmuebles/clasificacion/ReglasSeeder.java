@@ -18,7 +18,7 @@ import tools.jackson.databind.ObjectMapper;
 @Order(20)
 class ReglasSeeder implements ApplicationRunner {
     record ReglaJson(String codigo, Prioridad prioridad, TipoCondicion tipoCondicion, String prefijoReferencia,
-            String titulo, String explicacion, String estadoRevision) {}
+            List<TipoActo> tiposActo, String titulo, String explicacion, String estadoRevision) {}
 
     record DocumentoReglas(String version, String estadoRevision, List<String> condicionesContempladas,
             List<ReglaJson> reglas) {}
@@ -53,6 +53,8 @@ class ReglasSeeder implements ApplicationRunner {
             regla.setPrioridad(r.prioridad());
             regla.setTipoCondicion(r.tipoCondicion());
             regla.setPrefijoReferencia(r.prefijoReferencia());
+            regla.setTiposActo(r.tiposActo() == null || r.tiposActo().isEmpty() ? null
+                    : r.tiposActo().stream().map(Enum::name).collect(java.util.stream.Collectors.joining(",")));
             regla.setTitulo(r.titulo());
             regla.setExplicacion(r.explicacion());
             regla.setEstadoRevision(r.estadoRevision());

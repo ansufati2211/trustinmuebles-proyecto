@@ -1,0 +1,36 @@
+{
+  "codigo": "SIM-11061555",
+  "denominacion": "Mz. C Lote 3 · Hab. Urb. Mirador del Sol · Subtanjalla, Ica",
+  "contexto": "Subtanjalla, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "completitud": "INCOMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": "Extracto parcial: no incluye los asientos de títulos de dominio, por lo que la titularidad no consta en este documento. El extracto no permite descartar otras cargas.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. C, Lote 3 de la Habilitación Urbana Mirador del Sol, distrito de Subtanjalla, provincia y departamento de Ica.",
+    "areaM2": 250.00,
+    "linderos": "Frente: con la Avenida Principal, en 12.50 ml. Derecha: con el Lote 4, en 20.00 ml. Izquierda: con el Lote 2, en 20.00 ml. Fondo: con el Lote 9, en 12.50 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11044730 (lote matriz de la Habilitación Urbana Mirador del Sol), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "D00001",
+        "tipoActo": "ANOTACION_DEMANDA",
+        "estado": "VIGENTE",
+        "fechaInscripcion": "2023-09-27",
+        "tituloNumero": "SIM-2023-00021804",
+        "fechaPresentacion": "2023-09-20",
+        "texto": "Anotación de demanda sobre nulidad de acto jurídico, interpuesta ante el 1.er Juzgado Civil de Ica en el Expediente SIM-2023-00177-0-1401-JR-CI-01, por mandato contenido en la resolución judicial de fecha 12 de setiembre de 2023.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      { "nombre": "Copia literal de la partida (extracto parcial)", "estado": "REVISADO" },
+      { "nombre": "Asientos de títulos de dominio", "estado": "PENDIENTE" },
+      { "nombre": "Título archivado del asiento D00001", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Partida registral", "Copia literal", "Documento simulado", "Extracto parcial", "Rubro", "Asiento", "Título archivado", "Zona registral", "Antecedente dominial", "Descripción del inmueble", "Linderos", "Titularidad", "Independización", "Gravámenes y cargas", "Anotación de demanda", "Vigente", "Condición representada", "Checklist", "Pendiente", "Revisado", "Semáforo informativo"]
+  }
+}

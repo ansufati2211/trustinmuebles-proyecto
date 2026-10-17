@@ -49,11 +49,11 @@ class SeguridadTest extends BaseApiTest {
     @DisplayName("CP-01 sin sesión no se accede a ninguna operación de casos")
     void sinSesion() throws Exception {
         mvc.perform(get("/api/v1/casos")).andExpect(status().isUnauthorized());
-        mvc.perform(get("/api/v1/casos/B-01")).andExpect(status().isUnauthorized());
+        mvc.perform(get("/api/v1/casos/" + PARCONA)).andExpect(status().isUnauthorized());
         mvc.perform(get("/api/v1/glosario")).andExpect(status().isUnauthorized());
-        mvc.perform(put("/api/v1/casos/B-01/expediente").contentType(MediaType.APPLICATION_JSON).content("{}"))
+        mvc.perform(put("/api/v1/casos/" + PARCONA + "/expediente").contentType(MediaType.APPLICATION_JSON).content("{}"))
                 .andExpect(status().isUnauthorized());
-        mvc.perform(patch("/api/v1/casos/B-01/checklist/1").contentType(MediaType.APPLICATION_JSON)
+        mvc.perform(patch("/api/v1/casos/" + PARCONA + "/checklist/1").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"estado\":\"REVISADO\"}")).andExpect(status().isUnauthorized());
     }
 
@@ -61,18 +61,18 @@ class SeguridadTest extends BaseApiTest {
     @DisplayName("CP-01 el comprador no edita por ruta directa (403)")
     void compradorNoEscribe() throws Exception {
         String comprador = comprador();
-        JsonNode antes = leer("B-01");
-        mvc.perform(put("/api/v1/casos/B-01/expediente").header("Authorization", comprador)
+        JsonNode antes = leer(PARCONA);
+        mvc.perform(put("/api/v1/casos/" + PARCONA + "/expediente").header("Authorization", comprador)
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(peticion(antes))))
                 .andExpect(status().isForbidden());
-        mvc.perform(patch("/api/v1/casos/B-01/checklist/1").header("Authorization", comprador)
+        mvc.perform(patch("/api/v1/casos/" + PARCONA + "/checklist/1").header("Authorization", comprador)
                 .contentType(MediaType.APPLICATION_JSON).content("{\"estado\":\"REVISADO\"}"))
                 .andExpect(status().isForbidden());
         var pdf = new MockMultipartFile("documento", "x.pdf", "application/pdf", "%PDF-1.4".getBytes());
-        mvc.perform(multipart("/api/v1/casos/B-01/documento").file(pdf).header("Authorization", comprador))
+        mvc.perform(multipart("/api/v1/casos/" + PARCONA + "/documento").file(pdf).header("Authorization", comprador))
                 .andExpect(status().isForbidden());
-        mvc.perform(delete("/api/v1/casos/B-01").header("Authorization", comprador)).andExpect(status().isForbidden());
-        assertThat(leer("B-01")).isEqualTo(antes);
+        mvc.perform(delete("/api/v1/casos/" + PARCONA).header("Authorization", comprador)).andExpect(status().isForbidden());
+        assertThat(leer(PARCONA)).isEqualTo(antes);
     }
 
     @Test

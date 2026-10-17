@@ -79,6 +79,18 @@ public class AlmacenamientoService {
         return new ArchivoGuardado(a.getId(), nombre, contentType, datos.length, a.getSha256());
     }
 
+    /** Borra un archivo ya reemplazado (contenido y registro). No falla si ya no existe. */
+    public void eliminar(String id) {
+        repo.findById(id).ifPresent(a -> {
+            try {
+                Files.deleteIfExists(raiz.resolve(a.getId() + ".bin"));
+            } catch (IOException e) {
+                throw new UncheckedIOException(e);
+            }
+            repo.delete(a);
+        });
+    }
+
     @Transactional(readOnly = true)
     public ArchivoContenido leer(String id) {
         ArchivoAlmacenado a = repo.findById(id).orElseThrow(() -> new NoEncontradoException("Archivo", id));

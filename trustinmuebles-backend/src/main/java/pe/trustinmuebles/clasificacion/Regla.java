@@ -1,6 +1,8 @@
 package pe.trustinmuebles.clasificacion;
 
 import jakarta.persistence.*;
+import java.util.EnumSet;
+import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -30,6 +32,10 @@ class Regla {
     @Column(name = "prefijo_referencia")
     private String prefijoReferencia;
 
+    /** Tipos de acto a los que aplica, separados por comas. Vacío: a cualquiera. */
+    @Column(name = "tipos_acto")
+    private String tiposActo;
+
     @Column(nullable = false)
     private String titulo;
 
@@ -40,6 +46,11 @@ class Regla {
     private String estadoRevision;
 
     ReglaAplicable aplicable() {
-        return new ReglaAplicable(codigo, prioridad, tipoCondicion, prefijoReferencia, titulo, explicacion);
+        Set<TipoActo> tipos = EnumSet.noneOf(TipoActo.class);
+        if (tiposActo != null && !tiposActo.isBlank()) {
+            for (String t : tiposActo.split(",")) tipos.add(TipoActo.valueOf(t.trim()));
+        }
+        return new ReglaAplicable(codigo, prioridad, tipoCondicion, prefijoReferencia, Set.copyOf(tipos), titulo,
+                explicacion);
     }
 }

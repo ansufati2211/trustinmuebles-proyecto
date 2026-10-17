@@ -95,6 +95,7 @@ final class MotorClasificacion {
                     .filter(a -> a.estado() == EstadoAnotacion.VIGENTE)
                     .filter(a -> regla.prefijoReferencia() == null
                             || (a.referencia() != null && a.referencia().startsWith(regla.prefijoReferencia())))
+                    .filter(a -> regla.tiposActo().isEmpty() || regla.tiposActo().contains(a.tipoActo()))
                     .toList();
         };
     }

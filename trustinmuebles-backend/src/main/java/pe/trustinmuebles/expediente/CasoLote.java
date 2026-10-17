@@ -14,9 +14,15 @@ class CasoLote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /** Número de partida simulado, con el prefijo SIM- para que no se confunda con uno real. */
     @Column(nullable = false, unique = true)
     private String codigo;
 
+    /** Cómo se presenta el predio, por ejemplo «Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica». */
+    @Column(nullable = false)
+    private String denominacion;
+
+    /** Distrito o nota breve que se muestra bajo la denominación. */
     @Column(nullable = false)
     private String contexto;
 

@@ -1,6 +1,7 @@
 package pe.trustinmuebles.expediente;
 
 import jakarta.persistence.*;
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -29,7 +30,7 @@ class Expediente {
     @Column(name = "condicion_representada", nullable = false)
     private String condicionRepresentada;
 
-    /** Texto del caso o el valor explícito "desconocido". */
+    /** Se deriva del último asiento C de la partida, o es «desconocido» si no hay ninguno. No se edita a mano. */
     @Column(nullable = false)
     private String titularidad;
 
@@ -44,13 +45,34 @@ class Expediente {
     @Column(length = 500)
     private String nota;
 
+    @Column(name = "zona_registral")
+    private String zonaRegistral;
+
+    @Column(name = "oficina_registral")
+    private String oficinaRegistral;
+
+    private String ubicacion;
+
+    @Column(name = "area_m2")
+    private BigDecimal areaM2;
+
+    @Column(length = 1000)
+    private String linderos;
+
+    @Column(name = "antecedente_dominial", length = 500)
+    private String antecedenteDominial;
+
     @Column(name = "documento_archivo_id")
     private String documentoArchivoId;
+
+    /** true: el sistema regenera el PDF al guardar. false: el revisor subió un PDF propio y no se pisa. */
+    @Column(name = "documento_generado", nullable = false)
+    private boolean documentoGenerado;
 
     @Column(name = "actualizado_en", nullable = false)
     private Instant actualizadoEn = Instant.now();
 
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orden ASC, id ASC")
-    private List<Anotacion> anotaciones = new ArrayList<>();
+    private List<Asiento> asientos = new ArrayList<>();
 }

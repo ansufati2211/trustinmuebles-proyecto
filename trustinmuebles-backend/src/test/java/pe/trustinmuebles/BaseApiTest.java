@@ -17,13 +17,22 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Base de las pruebas de integración: H2 en memoria con el contenido v0.1 ya cargado y las cuentas de prueba.
+ * Base de las pruebas de integración: H2 en memoria con el contenido v0.2 ya cargado y las cuentas de prueba.
  * Las pruebas que modifican un caso lo restauran al terminar, así que el orden de ejecución no importa.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class BaseApiTest {
+    /** Partida simulada de Parcona: sin alertas, hipoteca cancelada. Debe dar VERDE. */
+    protected static final String PARCONA = "SIM-11048217";
+    /** Partida simulada de La Tinguiña: copropiedad e hipoteca vigente, embargo cancelado. Debe dar AMARILLO. */
+    protected static final String TINGUINA = "SIM-11052690";
+    /** Partida simulada de Subtanjalla: extracto parcial con una anotación de demanda vigente. Debe dar GRIS. */
+    protected static final String SUBTANJALLA = "SIM-11061555";
+    /** Caso de práctica (familiarización). Debe dar GRIS. */
+    protected static final String PRACTICA = "SIM-99000001";
+
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;
     @Autowired protected JdbcTemplate jdbc;
@@ -60,19 +69,37 @@ public abstract class BaseApiTest {
         JsonNode e = detalle.get("expediente");
         ObjectNode p = json.createObjectNode();
         p.put("condicionRepresentada", e.get("condicionRepresentada").asString());
-        p.put("titularidad", e.get("titularidad").asString());
         p.put("completitud", e.get("completitud").asString());
         p.put("fechaReferencial", e.get("fechaReferencial").asString());
-        if (e.hasNonNull("nota")) p.put("nota", e.get("nota").asString());
-        var anots = p.putArray("anotaciones");
-        for (JsonNode a : e.get("anotaciones")) {
-            ObjectNode n = anots.addObject();
+        for (String campo : new String[] {"nota", "zonaRegistral", "oficinaRegistral", "ubicacion", "linderos",
+                "antecedenteDominial"}) {
+            if (e.hasNonNull(campo)) p.put(campo, e.get(campo).asString());
+        }
+        if (e.hasNonNull("areaM2")) p.put("areaM2", e.get("areaM2").decimalValue());
+        var asientos = p.putArray("asientos");
+        for (JsonNode a : e.get("asientos")) {
+            ObjectNode n = asientos.addObject();
             n.put("referencia", a.get("referencia").asString());
-            n.put("estado", a.get("estado").asString());
-            if (a.hasNonNull("descripcion")) n.put("descripcion", a.get("descripcion").asString());
+            n.put("tipoActo", a.get("tipoActo").asString());
+            for (String campo : new String[] {"estado", "fechaInscripcion", "tituloNumero", "fechaPresentacion", "texto",
+                    "canceloNumero", "titulares"}) {
+                if (a.hasNonNull(campo)) n.put(campo, a.get(campo).asString());
+            }
         }
         p.put("versionEsperada", e.get("version").asLong());
         return p;
+    }
+
+    /** Agrega un asiento a una petición ya construida. */
+    protected ObjectNode agregarAsiento(ObjectNode peticion, String referencia, String tipoActo, String estado,
+            String texto, String canceloNumero) {
+        ObjectNode n = ((tools.jackson.databind.node.ArrayNode) peticion.get("asientos")).addObject();
+        n.put("referencia", referencia);
+        n.put("tipoActo", tipoActo);
+        if (estado != null) n.put("estado", estado);
+        if (texto != null) n.put("texto", texto);
+        if (canceloNumero != null) n.put("canceloNumero", canceloNumero);
+        return n;
     }
 
     /** Devuelve el caso a su contenido original usando la versión actual. */

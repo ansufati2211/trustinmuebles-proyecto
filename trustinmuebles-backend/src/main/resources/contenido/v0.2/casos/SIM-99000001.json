@@ -1,0 +1,22 @@
+{
+  "codigo": "SIM-99000001",
+  "denominacion": "Caso de práctica · Mz. A Lote 1 · Hab. Urb. de ejemplo · Ica",
+  "contexto": "Caso de práctica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "completitud": "DESCONOCIDA",
+    "fechaReferencial": "2026-10-17",
+    "nota": "Ejemplo de práctica: información insuficiente y checklist pendiente. No es un caso evaluado.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. A, Lote 1 de una habilitación urbana de ejemplo, provincia y departamento de Ica.",
+    "areaM2": 120.00,
+    "linderos": "No se informan los linderos en este ejemplo.",
+    "antecedenteDominial": null,
+    "asientos": [],
+    "checklist": [
+      { "nombre": "Copia literal de la partida", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Partida registral", "Documento simulado", "Rubro", "Asiento", "Titularidad", "Condición representada", "Checklist", "Pendiente", "Semáforo informativo"]
+  }
+}
