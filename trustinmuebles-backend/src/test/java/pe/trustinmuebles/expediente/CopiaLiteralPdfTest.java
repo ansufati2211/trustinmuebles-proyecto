@@ -87,6 +87,20 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
+    @DisplayName("El área se imprime siempre con dos decimales, venga como venga del JSON o de la base")
+    void areaConDosDecimales() throws Exception {
+        for (String entrada : new String[] {"220", "220.0", "220.00", "219.999"}) {
+            DatosCopia base = partida(1, false);
+            DatosCopia d = new DatosCopia(base.partida(), base.zona(), base.oficina(), base.ubicacion(),
+                    new BigDecimal(entrada), base.linderos(), base.antecedente(), false, base.fechaReferencial(),
+                    base.asientos());
+            try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(d))) {
+                assertThat(new PDFTextStripper().getText(doc)).contains("Área: 220.00 m²");
+            }
+        }
+    }
+
+    @Test
     @DisplayName("Un extracto parcial lo declara y no inventa el rubro de títulos de dominio")
     void extractoParcial() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(1, true)))) {

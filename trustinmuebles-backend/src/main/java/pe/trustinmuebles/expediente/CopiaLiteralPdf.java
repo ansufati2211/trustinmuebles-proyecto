@@ -102,7 +102,7 @@ final class CopiaLiteralPdf {
 
         seccion(l, "DESCRIPCIÓN DEL INMUEBLE", negrita, ancho);
         parrafo(l, "Ubicación: " + valor(d.ubicacion()), normal, 10f, 0f, 3f, ancho);
-        parrafo(l, "Área: " + (d.areaM2() == null ? "no informada" : d.areaM2().toPlainString() + " m²"), normal, 10f, 0f, 3f, ancho);
+        parrafo(l, "Área: " + (d.areaM2() == null ? "no informada" : d.areaM2().setScale(2, java.math.RoundingMode.HALF_UP).toPlainString() + " m²"), normal, 10f, 0f, 3f, ancho);
         parrafo(l, "Linderos y medidas perimétricas: " + valor(d.linderos()), normal, 10f, 0f, 3f, ancho);
 
         seccion(l, "ANTECEDENTE DOMINIAL", negrita, ancho);

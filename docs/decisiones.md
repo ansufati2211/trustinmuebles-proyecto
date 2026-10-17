@@ -25,7 +25,8 @@ apariencia real, lo que contradice RN-01 y PA2.
 
 ## D4. El contenido vive en JSON versionado, no en SQL
 
-**Qué:** casos, reglas y glosario están en `trustinmuebles-backend/src/main/resources/contenido/v0.1/`. Al arrancar se
+**Qué:** casos, reglas y glosario están en `trustinmuebles-backend/src/main/resources/contenido/v0.2/`. La carpeta `v0.1` se conserva
+solo como historial: tiene la forma anterior de los casos y ya no se carga. Al arrancar se
 cargan de forma idempotente y no pisan lo que el revisor ya editó. Las migraciones de Flyway solo crean el esquema.
 **Por qué:** un especialista puede revisar un JSON sin leer SQL, y la versión del contenido queda explícita.
 **Migraciones:** `V1`, `V2` y `V3` anteriores se reemplazaron por una sola `V1__esquema.sql`. No existía ninguna base
@@ -43,19 +44,21 @@ Estas decisiones llenan vacíos del informe. Un especialista debe confirmarlas.
 
 | # | Situación | Decisión | Dónde está |
 |---|---|---|---|
-| D6.1 | «El extracto no permite descartar otras anotaciones» | Se registra como completitud incompleta, y eso produce GRIS | B-03 y RN-04 |
+| D6.1 | «El extracto no permite descartar otras anotaciones» | Se registra como completitud incompleta, y eso produce GRIS | Subtanjalla (SIM-11061555) y RN-04 |
 | D6.2 | Estado de los ítems del checklist | No cambia el color del semáforo | `ChecklistService` |
 | D6.3 | Regla prioritaria y datos faltantes a la vez | Gana GRIS (RN-04) y la alerta conocida sigue visible | `MotorClasificacion` |
 | D6.4 | Regla prioritaria y condición no contemplada | ROJO, con la condición añadida como motivo | `MotorClasificacion` |
 | D6.5 | Regla de revisión y condición no contemplada | AMARILLO, con la condición añadida como motivo | `MotorClasificacion` |
-| D6.6 | Solo hay una regla de revisión (RV-01, anotación vigente) | No hay reglas prioritarias cargadas, porque esa tabla requiere revisión jurídica. No se trata la copropiedad ni la hipoteca como defecto | `reglas.json` |
+| D6.6 | Qué tipos de acto dan rojo y cuáles amarillo | **Tabla borrador v0.2**, activa y rotulada como pendiente de revisión especializada: embargo, anotación de demanda, medida cautelar y bloqueo vigentes dan rojo; hipoteca, carga técnica y servidumbre vigentes dan amarillo; otro acto vigente da amarillo. La hipoteca no se trata como defecto por sí misma y la copropiedad no alerta | `reglas.json` (v0.2) |
+| D6.7 | Un gravamen cancelado | No alerta | `MotorClasificacion` |
 
-## D7. El estado de una anotación no se repite en su descripción
+## D7. El estado de un gravamen y la titularidad se derivan de la partida
 
-**Qué:** los casos cargados dejan la descripción de cada anotación vacía. El estado sale del dato estructurado, y el PDF
-sintético lo genera desde ese mismo dato.
-**Por qué:** una descripción escrita («Anotación B2: vigente») se contradice cuando el revisor cambia el estado. Se detectó
-en el recorrido del navegador.
+**Qué:** el estado de un asiento D (gravámenes y cargas) es cancelado si y solo si un asiento E lo cancela, y la titularidad
+es la del último asiento C. No se escriben a mano, y marcar un gravamen como cancelado sin el asiento E que lo cancela se
+rechaza con un mensaje claro.
+**Por qué:** un dato escrito aparte («Anotación B2: vigente») se contradice cuando el revisor cambia el estado. Se detectó en el
+recorrido del navegador. Derivarlo hace imposible la contradicción. El PDF también se genera desde esos mismos datos.
 
 ## D8. Roles y permisos
 
@@ -81,15 +84,55 @@ en el recorrido del navegador.
 
 ## D11. Versión de reglas
 
-La versión activa sale de `app.reglas.version` (hoy `v0.1`). Al arrancar, cada expediente cuya evaluación falte, use otra
+La versión activa sale de `app.reglas.version` (hoy `v0.2`). Al arrancar, cada expediente cuya evaluación falte, use otra
 versión o esté atrasada se recalcula. Cada evaluación guarda la versión con que se calculó (RN-06).
 
-## D12. DEMO-01 es un caso de familiarización
+## D12. El caso de práctica es para la familiarización
 
-Lo diseñó el equipo a partir de la Figura 8. Sirve para el paso 6 de 3.14 (familiarización con un ejemplo distinto a los
-casos evaluados) y no se evalúa.
+La partida `SIM-99000001` la diseñó el equipo a partir de la Figura 8. Sirve para el paso 6 de 3.14 (familiarización con un
+ejemplo distinto a los casos evaluados) y no se evalúa.
 
 ## D13. Fecha referencial
 
 Los casos traen la fecha de carga (2026-10-17). Se muestra con la advertencia «No es una consulta de actualidad oficial».
 No hay vencimiento automático ni consulta de actualidad (RN-08).
+
+## D14. Documentos realistas, pero que no pueden pasar por oficiales
+
+**Qué:** cada caso es una partida con la estructura de una copia literal peruana: encabezado de zona y oficina registral,
+descripción del inmueble, antecedente dominial y asientos por rubro con título archivado y fechas. El PDF lo genera el sistema
+con Apache PDFBox.
+**Límites que se respetan** (RN-01, 1.8, PA2):
+- Sin logo, escudo, sello, firma, código de verificación ni código QR.
+- Marca de agua diagonal «DOCUMENTO SIMULADO · SIN VALOR LEGAL · USO ACADÉMICO» y un pie aclaratorio en cada página.
+- El título dice «copia literal simulada». Toda partida, título archivado y expediente judicial lleva el prefijo `SIM-`, que
+  SUNARP no usa.
+- Personas y empresas inventadas, sin personas públicas. No se nombran bancos, cajas, notarías ni notarios.
+- Distritos reales de Ica con habilitaciones urbanas inventadas. Se buscó en internet que esos nombres no aparecieran en esos
+  distritos y se descartó uno que sí existe (Los Huarangos).
+**Pendiente del especialista:** confirmar que la redacción registral es razonable y que ningún nombre coincide con uno real.
+
+## D15. Los rubros A y B no llevan letra en el documento
+
+**Qué:** el documento muestra «Descripción del inmueble» y «Antecedente dominial» como bloques sin letra, y solo numera los
+asientos de los rubros C a F.
+**Por qué:** las fuentes consultadas coinciden en C (títulos de dominio), D (gravámenes y cargas) y E (cancelaciones), pero
+discrepan en cuál de las letras A o B corresponde a la descripción y al antecedente. No se afirma lo que no se pudo confirmar.
+**Pendiente del especialista:** confirmar el orden oficial de los rubros en el Reglamento de Inscripciones del Registro de Predios.
+
+## D16. El código de un caso es su partida simulada
+
+**Qué:** el caso se identifica por su número de partida (`SIM-11048217`), que también va en la URL. Ya no se llaman B-01, B-02 o
+DEMO-01, para que el participante no vea el diseño del estudio.
+**Equivalencia con el estudio:** solo consta en la carpeta `estudio/`, que no está en el repositorio.
+
+## D17. Normas citadas en el glosario
+
+Los textos del glosario citan, como referencia a verificar por el especialista: Código Civil, arts. 1035 (servidumbre) y 1097
+(hipoteca); Código Procesal Civil, arts. 656 (embargo en forma de inscripción) y 673 (anotación de demanda); y Ley 26639
+(bloqueo registral). No se consultó el texto oficial de ninguna: pueden estar mal citadas.
+
+## D18. Datos del predio opcionales
+
+La zona, la oficina, la ubicación, el área, los linderos y el antecedente son opcionales. Un caso con información insuficiente,
+como el de práctica, los deja en blanco y el PDF imprime «no informado». El área se imprime siempre con dos decimales.

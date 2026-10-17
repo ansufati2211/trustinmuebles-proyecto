@@ -1,7 +1,8 @@
 # Trustinmuebles — MVP académico de orientación documental
 
-Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Es un MVP que muestra **casos sintéticos** de lotes
-urbanos, explica sus términos y señala qué información falta. **No certifica saneamiento, no recomienda comprar, no
+Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Es un MVP que muestra **partidas registrales
+simuladas** de lotes urbanos de Ica, con documentos que se parecen a una copia literal pero son ficticios, explica sus
+términos y señala qué información falta. **No certifica saneamiento, no recomienda comprar, no
 consulta fuentes oficiales y no reemplaza asesoría legal.** El informe lo llama InmoClaro (ver `docs/decisiones.md`, D2).
 
 Dos carpetas:
@@ -47,19 +48,24 @@ No hay registro abierto.
 
 ## Casos cargados
 
-| Caso | Estado esperado | Para qué |
-|---|---|---|
-| B-01 | Verde | Postest asistido |
-| B-02 | Amarillo | Postest asistido |
-| B-03 | Gris | Postest asistido |
-| DEMO-01 | Gris | Familiarización, no se evalúa |
+Cada caso es una partida simulada: lleva el prefijo `SIM-`, un nombre de predio en un distrito de Ica y una copia literal en
+PDF generada por el sistema. Todo es inventado.
 
-Son borradores del equipo. Las reglas y el glosario están **pendientes de revisión especializada**.
+| Partida | Predio | Estado esperado | Qué muestra |
+|---|---|---|---|
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada |
+| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; embargo cancelado |
+| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial sin títulos de dominio; demanda vigente (alerta prioritaria) |
+| `SIM-99000001` | Caso de práctica | Gris | Información insuficiente. Es para familiarizarse |
+
+Las reglas (tabla borrador v0.2), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
+Si tenías una base creada con una versión anterior, apaga el backend y borra `trustinmuebles-backend/data/`: los casos
+cambiaron de código.
 
 ## Pruebas
 
 ```bash
-cd trustinmuebles-backend && ./mvnw test        # 35 pruebas
+cd trustinmuebles-backend && ./mvnw test        # 55 pruebas
 cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
 env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)
 ```

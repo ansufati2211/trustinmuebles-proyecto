@@ -12,12 +12,12 @@ tablas. Se comunican por sus APIs públicas, y `ModularityTests` verifica que no
 | Módulo | Responsabilidad | Requisitos |
 |---|---|---|
 | `identidad` | Cuentas de prueba, roles COMPRADOR y REVISOR, login con JWT, `SecurityConfig` | F01, NF03 |
-| `expediente` | Casos, expedientes, anotaciones, edición transaccional, documento PDF, carga de contenido | F02, F03, NF04 |
+| `expediente` | Partidas simuladas con asientos por rubro, edición transaccional, copia literal en PDF (PDFBox), carga de contenido | F02, F03, NF04 |
 | `clasificacion` | Motor puro del semáforo, reglas versionadas, evaluación vigente | F05, RN-02 a RN-06 |
 | `checklist` | Ítems pendiente, revisado u observado | F06, RN-07 |
 | `orientacion` | Glosario cerrado | F04 |
 | `almacenamiento` | PDF cifrados (AES-256-GCM) en disco | F03 |
-| `shared` | Errores comunes, hash, generador de PDF | NF04 |
+| `shared` | Errores comunes y hash | NF04 |
 
 Dependencias: `expediente` usa a los demás módulos. `clasificacion`, `checklist` y `orientacion` guardan el id del
 expediente por valor y no dependen de él.
@@ -26,7 +26,7 @@ expediente por valor y no dependen de él.
 
 ```bash
 env APP_SEED_PASSWORD='elige-una-clave-de-prueba' ./mvnw spring-boot:run   # H2 en ./data/h2, API en http://127.0.0.1:8080
-./mvnw test                                                                 # 35 pruebas
+./mvnw test                                                                 # 55 pruebas
 ```
 
 Swagger: `http://localhost:8080/swagger-ui.html`. La API está descrita en [../docs/api.md](../docs/api.md).
@@ -57,4 +57,18 @@ rotulado como borrador pendiente de revisión especializada.
 - **RN-06**: el color se recalcula al guardar, con la versión de reglas registrada. No existe ruta para fijarlo.
 - **RN-07**: solo el revisor modifica el expediente y el checklist.
 
-Hoy hay una sola regla (RV-01, anotación vigente, amarilla) y ninguna prioritaria: esa tabla requiere revisión jurídica.
+Reglas v0.2 (tabla borrador, pendiente de revisión especializada), sobre los asientos vigentes del rubro D:
+embargo, anotación de demanda, medida cautelar y bloqueo dan rojo; hipoteca, carga técnica, servidumbre y otro acto dan
+amarillo. Los gravámenes cancelados y la copropiedad no alertan.
+
+## Documento PDF
+
+El sistema genera una copia literal simulada de cada partida con Apache PDFBox (`CopiaLiteralPdf`). Lleva marca de agua y
+pie aclaratorio en cada página, el prefijo `SIM-` en toda partida y título, y ningún logo, sello, firma ni código de
+verificación. Para generar un PDF desde un JSON fuera del sistema:
+
+```bash
+./mvnw -q compile org.codehaus.mojo:exec-maven-plugin:3.5.0:java \
+    -Dexec.mainClass=pe.trustinmuebles.expediente.HerramientaCopiaLiteral \
+    -Dexec.args="caso.json salida.pdf"
+```

@@ -12,17 +12,17 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 |---|---|---|---|---|
 | REQ-F01 Acceso y roles | `identidad` (`SecurityConfig`) | `Login`, `RequireAuth` | CP-01: `SeguridadTest` (8 pruebas) | Probado |
 | REQ-F02 Listado de casos | `expediente` | `Casos` | CP-02: `cadaCodigoDevuelveSusDatos` | Probado |
-| REQ-F03 Expediente | `expediente`, `almacenamiento` | `Expediente`, `EditorExpediente` | CP-03: `guardarPersiste`, `entradaInvalidaNoGuarda`, `versionVieja`, `subirDocumento`, `documentoDelCaso` | Probado |
+| REQ-F03 Expediente | `expediente`, `almacenamiento` | `Expediente`, `EditorExpediente` | CP-03: `guardarPersiste`, `entradaInvalidaNoGuarda`, `versionVieja`, `NormalizadorAsientosTest`; documento: `CopiaLiteralPdfTest`, `documentoDelCaso`, `documentoDelExtractoParcial`, `documentoGeneradoSeRegenera`, `subirDocumento` | Probado |
 | REQ-F04 Orientación | `orientacion` | `Glosario` (en `Expediente`) | CP-04: `glosario` y recorrido de navegador con teclado | Probado. Contenido pendiente de revisión |
-| REQ-F05 Semáforo informativo | `clasificacion` | Panel del semáforo | CP-05a, c, d: `b01Verde`, `b02Amarillo`, `b03GrisConservaAlerta`, `demoGris`, `cambioValidoRecalcula`, `condicionNoContemplada`, `MotorClasificacionTest` | Probado con reglas v0.1. Contenido pendiente de revisión especializada |
+| REQ-F05 Semáforo informativo | `clasificacion` | Panel del semáforo | CP-05a, c, d: `parconaVerde`, `tinguinaAmarillo`, `subtanjallaGrisConservaAlerta`, `practicaGris`, `cancelarLaHipotecaRecalcula`, `condicionNoContemplada`, `MotorClasificacionTest`. CP-05b: `embargoVigenteDaRojo` | Probado con la tabla borrador v0.2. CP-05b queda pendiente de revisión especializada |
 | REQ-F06 Checklist | `checklist` | Checklist del `Expediente` | CP-06: `checklistSoloRevisor`, `checklistValidaPertenenciaYEstado` | Probado |
 
 ## Requisitos no funcionales
 
 | Requisito | Cómo se verificó | Resultado | Estado |
 |---|---|---|---|
-| REQ-NF01 Interacción: texto y color, glosario por selección | Recorrido en Chrome: el estado aparece con texto, ícono y color; el glosario se abre con Enter y marca `aria-expanded` | 26 de 26 verificaciones | Probado en navegador. No se probó con lector de pantalla |
-| REQ-NF02 Rendimiento local (hasta 2 s en 19 de 20) | `scripts/medir-nf02.mjs` con el backend recién iniciado | 20 de 20; mediana 15,5 ms; máximo 76,6 ms | Probado, solo la API. No incluye el dibujado de la interfaz |
+| REQ-NF01 Interacción: texto y color, glosario por selección | Recorrido en Chrome: el estado aparece con texto, ícono y color; el glosario se abre con Enter y marca `aria-expanded` | 38 de 38 verificaciones | Probado en navegador. No se probó con lector de pantalla |
+| REQ-NF02 Rendimiento local (hasta 2 s en 19 de 20) | `scripts/medir-nf02.mjs` con el backend recién iniciado | 20 de 20; mediana 16,9 ms; máximo 93,0 ms | Probado, solo la API. No incluye el dibujado de la interfaz |
 | REQ-NF03 Acceso | CP-01: 401 sin sesión, 403 del comprador por ruta directa, hash BCrypt, sin registro abierto | 8 de 8 | Probado |
 | REQ-NF04 Integridad | CP-03: entrada inválida da 400 sin cambios, versión vieja da 409, recarga conserva lo guardado | Todas pasan | Probado |
 | REQ-NF05 Reproducibilidad | Clon limpio del repositorio siguiendo el LEEME: pruebas, compilación y primer arranque | Funciona, pero en el mismo equipo donde se desarrolló | **Parcial**: falta CP-07 en otro equipo |

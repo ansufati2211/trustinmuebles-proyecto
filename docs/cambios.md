@@ -12,11 +12,11 @@ Estados: *entregado en borrador* = existe y se probó técnicamente, falta la ac
 
 | Entregable | Frente (Tabla 4) | Responsable principal inicial | Apoyo | Revisor | Estado |
 |---|---|---|---|---|---|
-| Esquema de base de datos y módulos del backend | Backend y datos | Ariel Alexander Mendoza Legua | Por asignar | Por asignar | Entregado en borrador, con 35 pruebas |
-| Motor de clasificación, reglas v0.1 y persistencia | Backend y datos | Ariel Alexander Mendoza Legua | Gabriel Alexis Daniel Yllescas Quispe (contenido) | Especialista, por confirmar | Reglas pendientes de revisión especializada |
-| Pantallas, glosario por selección y edición del revisor | Interfaz y orientación | Jesús Oswaldo Torres Rojas | Por asignar | Por asignar | Entregado en borrador, con 26 verificaciones de navegador |
+| Esquema de base de datos y módulos del backend | Backend y datos | Ariel Alexander Mendoza Legua | Por asignar | Por asignar | Entregado en borrador, con 55 pruebas |
+| Motor de clasificación, reglas v0.2 (borrador) y persistencia | Backend y datos | Ariel Alexander Mendoza Legua | Gabriel Alexis Daniel Yllescas Quispe (contenido) | Especialista, por confirmar | Reglas pendientes de revisión especializada |
+| Pantallas, glosario por selección y edición del revisor | Interfaz y orientación | Jesús Oswaldo Torres Rojas | Por asignar | Por asignar | Entregado en borrador, con 38 verificaciones de navegador |
 | Manuales del comprador y del revisor | Interfaz y orientación | Jesús Oswaldo Torres Rojas | Por asignar | Por asignar | Entregado en borrador |
-| Casos, glosario y claves (contenido v0.1) | Arquitectura y negocio, con Metodología | Jhojan Ramiro Junes del Pozo | Gabriel Alexis Daniel Yllescas Quispe | Especialista, por confirmar | Pendiente de revisión especializada |
+| Partidas simuladas, glosario y claves (contenido v0.2) | Arquitectura y negocio, con Metodología | Jhojan Ramiro Junes del Pozo | Gabriel Alexis Daniel Yllescas Quispe | Especialista, por confirmar | Pendiente de revisión especializada |
 | Documentación de arquitectura, decisiones y trazabilidad | Arquitectura y negocio | Jhojan Ramiro Junes del Pozo | Por asignar | Docente | Entregado en borrador |
 | Formas A y B, claves, bases vacías y fichas del estudio | Metodología y evaluación | Gabriel Alexis Daniel Yllescas Quispe | Por asignar | Especialista, por confirmar | Borrador sin validar; carpeta `estudio/` fuera del repositorio |
 | Piloto, reclutamiento y aplicación | Metodología y evaluación | Gabriel Alexis Daniel Yllescas Quispe | Equipo | Docente | No iniciado |

@@ -13,10 +13,10 @@ Todo lo que sigue pendiente debe seguir marcado como pendiente.
 | 6.1.4 y 6.6.1 | Equipo y configuración «por confirmar» | Ver [entorno.md](entorno.md) |
 | Tabla 17 | «Características por registrar» | Equipo local: Intel i5-10400, 12 hilos, 15 GiB. Falta el equipo de aplicación |
 | Tabla 49 | «Dato por confirmar» | Versiones reales en [entorno.md](entorno.md) |
-| Tabla 51, H2 y H3 | Pendiente | Hay evidencia técnica: 35 pruebas y 26 verificaciones de navegador. Poner «probado técnicamente, pendiente de aceptación» |
+| Tabla 51, H2 y H3 | Pendiente | Hay evidencia técnica: 55 pruebas y 38 verificaciones de navegador. Poner «probado técnicamente, pendiente de aceptación» |
 | Tabla 51, H1, H4 y H5 | Pendiente | Siguen pendientes. H1 requiere la revisión especializada |
-| Tabla 44 | Todas pendientes | Ver [pruebas/registro.md](pruebas/registro.md): CP-05b ejecutado con regla ficticia, CP-07 pendiente |
-| Tabla 8, REQ-NF02 | Meta propuesta | Medido: 20 de 20 en 2 s o menos, máximo 76,6 ms, solo API |
+| Tabla 44 | Todas pendientes | Ver [pruebas/registro.md](pruebas/registro.md): CP-05b ejecutado con la tabla borrador v0.2 y pendiente de revisión especializada, CP-07 pendiente |
+| Tabla 8, REQ-NF02 | Meta propuesta | Medido: 20 de 20 en 2 s o menos, máximo 93 ms, solo API |
 | Tabla 10, estado de los casos de prueba | «Pendiente de ejecución» | Actualizar con el registro de pruebas |
 | Tabla 21 y 22 (T1) | MVP funcional local: «pasa pruebas» | T1 se cumple técnicamente. T2 sigue pendiente |
 
@@ -29,10 +29,11 @@ Todo lo que sigue pendiente debe seguir marcado como pendiente.
 
 ## Observaciones sobre el instrumento (Anexo 3), para la revisión
 
-1. Las claves de las formas A y B son idénticas y siguen el ciclo A, B, C en 10 de 12 ítems. Un participante podría acertar por
-   la posición de las alternativas o por haber recordado la forma A. Conviene variar el orden de las alternativas en la forma B.
+1. Las claves del Anexo 3.C eran idénticas en las formas A y B y seguían el ciclo A, B, C en 10 de 12 ítems. En las formas
+   rehechas (carpeta `estudio/`) las claves difieren en los 12 ítems y no siguen un ciclo, pero la correcta ocupa cada posición
+   exactamente 4 veces por forma. El Anexo 3 del informe debe actualizarse con las formas nuevas.
 2. Varios ítems piden localizar un dato literal del caso. Evaluar si miden comprensión o solo localización.
-3. En la forma B el sistema muestra la respuesta casi directa para varios ítems (titular, estado de la anotación). Considerar
+3. En la forma B el sistema muestra la respuesta casi directa para varios ítems (titular, estado de un gravamen). Considerar
    si eso mide comprensión asistida o solo lectura del panel.
 4. El informe dice que el MVP no entrega claves. Las claves están fuera del repositorio (carpeta `estudio/`).
 
