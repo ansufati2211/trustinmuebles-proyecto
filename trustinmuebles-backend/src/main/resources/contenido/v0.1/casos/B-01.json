@@ -1,0 +1,20 @@
+{
+  "codigo": "B-01",
+  "contexto": "Caso sintético de postest asistido (Forma B), contextualizado en Ica.",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "titularidad": "Titular Delta",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "anotaciones": [
+      { "referencia": "B1", "estado": "CANCELADA", "descripcion": "Anotación B1: cancelada. No se representa otra anotación." }
+    ],
+    "checklist": [
+      { "nombre": "Ficha del caso", "estado": "REVISADO" },
+      { "nombre": "Página de identificación", "estado": "REVISADO" },
+      { "nombre": "Anexo de consulta", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Caso sintético", "Condición representada", "Lote urbano inscrito", "Titular", "Titularidad", "Anotación", "Cancelada", "Checklist", "Pendiente", "Revisado", "Semáforo informativo"]
+  }
+}

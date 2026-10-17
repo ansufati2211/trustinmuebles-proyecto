@@ -1,0 +1,19 @@
+{
+  "version": "v0.1",
+  "estadoRevision": "pendiente de revisión",
+  "terminos": [
+    { "concepto": "Caso sintético", "explicacion": "Expediente ficticio creado para tareas académicas. No corresponde a un predio real." },
+    { "concepto": "Condición representada", "explicacion": "Condición del lote tal como la declara el caso. No es el resultado de una consulta oficial." },
+    { "concepto": "Lote urbano inscrito", "explicacion": "En estos casos significa que el escenario declara el lote como inscrito. No se comprueba en ninguna fuente oficial." },
+    { "concepto": "Titular", "explicacion": "Persona ficticia que el caso presenta como titular del lote." },
+    { "concepto": "Titularidad", "explicacion": "Dato del caso que indica quién figura como titular. Si dice desconocido, el extracto entregado no lo informa." },
+    { "concepto": "Anotación", "explicacion": "Registro adicional que aparece en el expediente, identificado por una referencia como B2. Cada anotación indica su estado." },
+    { "concepto": "Vigente", "explicacion": "Estado escrito en el caso para una anotación que sigue considerándose activa dentro del escenario." },
+    { "concepto": "Cancelada", "explicacion": "Estado escrito en el caso para una anotación que ya no se considera activa dentro del escenario." },
+    { "concepto": "Extracto", "explicacion": "Parte del documento del caso que se entrega al participante. Puede no incluir toda la información." },
+    { "concepto": "Checklist", "explicacion": "Lista de elementos del caso con estado pendiente, revisado u observado." },
+    { "concepto": "Pendiente", "explicacion": "Elemento de consulta que todavía no está disponible o no ha sido revisado." },
+    { "concepto": "Revisado", "explicacion": "Indica solo que el material académico fue revisado. No acredita validez jurídica ni actualidad oficial." },
+    { "concepto": "Semáforo informativo", "explicacion": "Salida de color que aplica reglas sobre los datos registrados y explica sus motivos. No es un dictamen. Verde significa que no se detectaron alertas en los campos evaluados." }
+  ]
+}

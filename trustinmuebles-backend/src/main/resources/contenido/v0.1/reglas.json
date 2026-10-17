@@ -1,0 +1,16 @@
+{
+  "version": "v0.1",
+  "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
+  "condicionesContempladas": ["Lote urbano inscrito, según el escenario."],
+  "reglas": [
+    {
+      "codigo": "RV-01",
+      "prioridad": "REVISION",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "titulo": "Anotación con estado vigente",
+      "explicacion": "El caso registra una anotación con estado vigente. Conviene leerla antes de interpretar el resto del expediente.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    }
+  ]
+}

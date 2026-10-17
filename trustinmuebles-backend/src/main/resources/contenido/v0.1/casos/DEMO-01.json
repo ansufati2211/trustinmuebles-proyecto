@@ -1,0 +1,16 @@
+{
+  "codigo": "DEMO-01",
+  "contexto": "Caso sintético de familiarización (Figura 8), distinto de los casos evaluados.",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "titularidad": "desconocido",
+    "completitud": "DESCONOCIDA",
+    "fechaReferencial": "2026-10-17",
+    "nota": "Ejemplo de familiarización: información insuficiente y checklist pendiente. No es un caso evaluado.",
+    "anotaciones": [],
+    "checklist": [
+      { "nombre": "Ficha del caso", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Caso sintético", "Condición representada", "Titularidad", "Anotación", "Checklist", "Pendiente", "Semáforo informativo"]
+  }
+}

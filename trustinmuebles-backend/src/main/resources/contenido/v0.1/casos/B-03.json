@@ -1,0 +1,20 @@
+{
+  "codigo": "B-03",
+  "contexto": "Caso sintético de postest asistido (Forma B), contextualizado en Ica.",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "titularidad": "desconocido",
+    "completitud": "INCOMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": "Titularidad: no informado en el extracto entregado. El extracto no permite descartar otras anotaciones.",
+    "anotaciones": [
+      { "referencia": "B4", "estado": "VIGENTE", "descripcion": "Anotación B4: vigente." }
+    ],
+    "checklist": [
+      { "nombre": "Ficha del caso", "estado": "REVISADO" },
+      { "nombre": "Página de titularidad", "estado": "PENDIENTE" },
+      { "nombre": "Página complementaria", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Caso sintético", "Condición representada", "Lote urbano inscrito", "Titular", "Titularidad", "Anotación", "Vigente", "Extracto", "Checklist", "Pendiente", "Revisado", "Semáforo informativo"]
+  }
+}

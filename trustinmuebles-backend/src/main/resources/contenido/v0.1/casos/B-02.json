@@ -1,0 +1,21 @@
+{
+  "codigo": "B-02",
+  "contexto": "Caso sintético de postest asistido (Forma B), contextualizado en Ica.",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según el escenario.",
+    "titularidad": "Titular Épsilon y Titular Zeta",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "anotaciones": [
+      { "referencia": "B2", "estado": "VIGENTE", "descripcion": "Anotación B2: vigente." },
+      { "referencia": "B3", "estado": "CANCELADA", "descripcion": "Anotación B3: cancelada." }
+    ],
+    "checklist": [
+      { "nombre": "Ficha del caso", "estado": "REVISADO" },
+      { "nombre": "Página de anotaciones", "estado": "REVISADO" },
+      { "nombre": "Anexo explicativo", "estado": "PENDIENTE" }
+    ],
+    "terminos": ["Caso sintético", "Condición representada", "Lote urbano inscrito", "Titular", "Titularidad", "Anotación", "Vigente", "Cancelada", "Checklist", "Pendiente", "Revisado", "Semáforo informativo"]
+  }
+}
