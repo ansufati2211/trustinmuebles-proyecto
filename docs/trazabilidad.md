@@ -25,7 +25,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | REQ-NF02 Rendimiento local (hasta 2 s en 19 de 20) | `scripts/medir-nf02.mjs` con el backend recién iniciado | 20 de 20; mediana 15,5 ms; máximo 76,6 ms | Probado, solo la API. No incluye el dibujado de la interfaz |
 | REQ-NF03 Acceso | CP-01: 401 sin sesión, 403 del comprador por ruta directa, hash BCrypt, sin registro abierto | 8 de 8 | Probado |
 | REQ-NF04 Integridad | CP-03: entrada inválida da 400 sin cambios, versión vieja da 409, recarga conserva lo guardado | Todas pasan | Probado |
-| REQ-NF05 Reproducibilidad | Se instaló y ejecutó desde cero varias veces siguiendo el LEEME | Funciona en un solo equipo | **Pendiente CP-07** en otro equipo |
+| REQ-NF05 Reproducibilidad | Clon limpio del repositorio siguiendo el LEEME: pruebas, compilación y primer arranque | Funciona, pero en el mismo equipo donde se desarrolló | **Parcial**: falta CP-07 en otro equipo |
 
 ## Reglas de negocio
 
