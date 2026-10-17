@@ -1,4 +1,4 @@
-package pe.trustinmuebles.tramite;
+package pe.trustinmuebles.shared;
 
 import java.io.ByteArrayOutputStream;
 import java.nio.charset.StandardCharsets;
@@ -6,10 +6,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 /** Generador mínimo de PDF de una página (texto Helvetica) para los documentos del prototipo. */
-final class PdfSimple {
+public final class PdfSimple {
     private PdfSimple() {}
 
-    static byte[] generar(String titulo, List<String> lineas) {
+    public static byte[] generar(String titulo, List<String> lineas) {
         StringBuilder c = new StringBuilder("BT /F1 18 Tf 50 780 Td (").append(esc(titulo)).append(") Tj ET\n");
         float y = 745;
         for (String l : lineas) {

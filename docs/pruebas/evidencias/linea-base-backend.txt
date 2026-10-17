@@ -1,0 +1,22 @@
+== Línea base backend (antes de cambios), 2026-10-17T07:17:32-05:00 ==
+openjdk version "21.0.12" 2026-07-21
+-------------------------------------------------------------------------------
+Test set: pe.trustinmuebles.FlujoCompletoTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.211 s -- in pe.trustinmuebles.FlujoCompletoTest
+-------------------------------------------------------------------------------
+Test set: pe.trustinmuebles.identidad.ValidadorSecretosTest
+-------------------------------------------------------------------------------
+Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in pe.trustinmuebles.identidad.ValidadorSecretosTest
+-------------------------------------------------------------------------------
+Test set: pe.trustinmuebles.ModularityTests
+-------------------------------------------------------------------------------
+Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.587 s -- in pe.trustinmuebles.ModularityTests
+-------------------------------------------------------------------------------
+Test set: pe.trustinmuebles.SeguridadTest
+-------------------------------------------------------------------------------
+Tests run: 9, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.953 s -- in pe.trustinmuebles.SeguridadTest
+-------------------------------------------------------------------------------
+Test set: pe.trustinmuebles.semaforo.MotorSemaforoTest
+-------------------------------------------------------------------------------
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.013 s -- in pe.trustinmuebles.semaforo.MotorSemaforoTest

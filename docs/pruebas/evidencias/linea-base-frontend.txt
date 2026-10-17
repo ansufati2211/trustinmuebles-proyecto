@@ -1,0 +1,31 @@
++ tailwind-merge 3.6.0
+
+devDependencies:
++ @tailwindcss/vite 4.2.2
++ @types/node 22.19.17
++ @types/react 19.2.14
++ @types/react-dom 19.2.3
++ @vitejs/plugin-react 6.0.1
++ gh-pages 6.3.0
++ oxfmt 0.2.0
++ tailwindcss 4.2.2
++ typescript 5.9.3
++ vite 8.0.5
+
+Done in 3.4s using pnpm v9.15.9
+npm warn cli npm v12.1.0 does not support Node.js v20.20.2. This version of npm supports the following node versions: `^22.22.2 || ^24.15.0 || >=26.0.0`. You can find the latest version at https://nodejs.org/.
+npm notice run trustinmuebles-app@1.0.0 npx
+npm notice run 'pnpm' build
+
+> trustinmuebles-app@1.0.0 build /home/awuwu/Música/Proyectos/empresarial/trustinmuebles-proyecto/trustinmuebles
+> vite build
+
+vite v8.0.5 building client environment for production...
+[2Ktransforming...✓ 1901 modules transformed.
+rendering chunks...
+computing gzip size...
+dist/index.html                   0.44 kB │ gzip:   0.28 kB
+dist/assets/index-CunAhOA4.css   58.93 kB │ gzip:   9.66 kB
+dist/assets/index-C2Jk8rYM.js   423.42 kB │ gzip: 125.50 kB
+
+✓ built in 289ms
