@@ -33,6 +33,25 @@ final class CopiaLiteralPdf {
             "Documento simulado con fines académicos. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.";
     static final String CIERRE = "- Fin del documento simulado. Sin firma ni sello. -";
 
+    static final String MARCA_TRANSCRITA = "TRANSCRIPCIÓN REFERENCIAL · NO ES PUBLICIDAD REGISTRAL · SIN VALOR LEGAL";
+    static final String CIERRE_TRANSCRITA = "- Fin de la transcripción referencial. Sin firma ni sello. -";
+
+    /** De dónde sale el documento: una partida ficticia o la transcripción de una consulta pública. */
+    record Procedencia(boolean transcrita, String fuente, LocalDate fechaConsulta) {
+        static final Procedencia SINTETICA = new Procedencia(false, null, null);
+
+        String marca() { return transcrita ? MARCA_TRANSCRITA : MARCA_DE_AGUA; }
+
+        String cierre() { return transcrita ? CIERRE_TRANSCRITA : CIERRE; }
+
+        String pie() {
+            if (!transcrita) return PIE;
+            String f = fechaConsulta == null ? "" : " del " + fechaConsulta.format(FECHA_CORTA);
+            return "Transcrito a partir de una consulta en " + (fuente == null ? "una fuente pública" : fuente) + f
+                    + ". No es una copia literal emitida por SUNARP, no tiene valor legal y omite los nombres de personas naturales.";
+        }
+    }
+
     record AsientoCopia(String referencia, String acto, String texto, LocalDate fechaInscripcion, String titulo,
             LocalDate fechaPresentacion) {}
 
@@ -51,18 +70,24 @@ final class CopiaLiteralPdf {
     private CopiaLiteralPdf() {}
 
     static byte[] generar(DatosCopia d) {
+        return generar(d, Procedencia.SINTETICA);
+    }
+
+    static byte[] generar(DatosCopia d, Procedencia p) {
         PDFont normal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         PDFont negrita = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
         float ancho = PDRectangle.A4.getWidth() - 2 * MARGEN;
 
-        List<Linea> lineas = contenido(d, normal, negrita, ancho);
+        List<Linea> lineas = contenido(d, p, normal, negrita, ancho);
         List<List<Linea>> paginas = paginar(lineas);
 
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
-            info.setTitle("Copia literal simulada " + limpiar(d.partida(), normal));
-            info.setSubject("Documento simulado con fines académicos. Sin valor legal.");
-            info.setCreator("Trustinmuebles (MVP académico)");
+            info.setTitle((p.transcrita() ? "Transcripción referencial " : "Copia literal simulada ")
+                    + limpiar(d.partida(), normal));
+            info.setSubject(p.transcrita() ? "Transcripción referencial. No es publicidad registral ni tiene valor legal."
+                    : "Documento simulado con fines académicos. Sin valor legal.");
+            info.setCreator("Trustinmuebles");
             doc.setDocumentInformation(info);
 
             int total = paginas.size();
@@ -70,14 +95,14 @@ final class CopiaLiteralPdf {
                 PDPage pagina = new PDPage(PDRectangle.A4);
                 doc.addPage(pagina);
                 try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
-                    marcaDeAgua(cs, negrita);
-                    encabezado(cs, d, normal, negrita);
+                    marcaDeAgua(cs, p, negrita);
+                    encabezado(cs, d, p, normal, negrita);
                     float y = PDRectangle.A4.getHeight() - MARGEN - ALTO_ENCABEZADO;
                     for (Linea l : paginas.get(i)) {
                         y -= l.antes() + l.tam() * 1.28f;
                         texto(cs, l.texto(), l.fuente(), l.tam(), MARGEN + l.sangria(), y);
                     }
-                    pie(cs, i + 1, total, normal);
+                    pie(cs, p, i + 1, total, normal);
                 }
             }
             doc.save(salida);
@@ -89,15 +114,15 @@ final class CopiaLiteralPdf {
 
     // ---------------------------------------------------------------- contenido
 
-    private static List<Linea> contenido(DatosCopia d, PDFont normal, PDFont negrita, float ancho) {
+    private static List<Linea> contenido(DatosCopia d, Procedencia p, PDFont normal, PDFont negrita, float ancho) {
         List<Linea> l = new ArrayList<>();
-        titulo(l, "COPIA LITERAL SIMULADA DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
+        titulo(l, p.transcrita() ? "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL" : "COPIA LITERAL SIMULADA DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
         if (d.extractoParcial()) {
             titulo(l, "EXTRACTO PARCIAL", negrita, 11f, 4f, ancho);
             parrafo(l, "Este extracto no incluye todos los rubros de la partida.", normal, 9.5f, 0f, 2f, ancho);
         }
         if (d.fechaReferencial() != null) {
-            parrafo(l, "Fecha referencial del caso: " + d.fechaReferencial().format(FECHA_LARGA), normal, 9.5f, 0f, 6f, ancho);
+            parrafo(l, (p.transcrita() ? "Fecha de la consulta: " : "Fecha referencial del caso: ") + d.fechaReferencial().format(FECHA_LARGA), normal, 9.5f, 0f, 6f, ancho);
         }
 
         seccion(l, "DESCRIPCIÓN DEL INMUEBLE", negrita, ancho);
@@ -113,7 +138,7 @@ final class CopiaLiteralPdf {
         asientos(l, "CANCELACIONES", 'E', d, normal, negrita, ancho);
         asientos(l, "OTROS", 'F', d, normal, negrita, ancho);
 
-        parrafo(l, CIERRE, negrita, 9.5f, 0f, 12f, ancho);
+        parrafo(l, p.cierre(), negrita, 9.5f, 0f, 12f, ancho);
         return l;
     }
 
@@ -228,12 +253,12 @@ final class CopiaLiteralPdf {
         cs.endText();
     }
 
-    private static void encabezado(PDPageContentStream cs, DatosCopia d, PDFont normal, PDFont negrita) throws IOException {
+    private static void encabezado(PDPageContentStream cs, DatosCopia d, Procedencia p, PDFont normal, PDFont negrita) throws IOException {
         float arriba = PDRectangle.A4.getHeight() - MARGEN;
         cs.setNonStrokingColor(0f);
         texto(cs, limpiar(d.zona(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")) + " · "
                 + limpiar(d.oficina(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")), negrita, 8.5f, MARGEN, arriba - 8f);
-        texto(cs, "REGISTRO DE PREDIOS · COPIA LITERAL (SIMULADA)", normal, 8.5f, MARGEN, arriba - 21f);
+        texto(cs, p.transcrita() ? "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL" : "REGISTRO DE PREDIOS · COPIA LITERAL (SIMULADA)", normal, 8.5f, MARGEN, arriba - 21f);
         texto(cs, "Partida N.° " + limpiar(d.partida(), negrita), negrita, 11f, MARGEN, arriba - 38f);
         cs.setStrokingColor(0.35f);
         cs.setLineWidth(0.6f);
@@ -242,7 +267,7 @@ final class CopiaLiteralPdf {
         cs.stroke();
     }
 
-    private static void pie(PDPageContentStream cs, int n, int total, PDFont normal) throws IOException {
+    private static void pie(PDPageContentStream cs, Procedencia p, int n, int total, PDFont normal) throws IOException {
         cs.setNonStrokingColor(0.15f);
         cs.setStrokingColor(0.35f);
         cs.setLineWidth(0.6f);
@@ -250,10 +275,10 @@ final class CopiaLiteralPdf {
         cs.lineTo(PDRectangle.A4.getWidth() - MARGEN, MARGEN + 26f);
         cs.stroke();
         float ancho = PDRectangle.A4.getWidth() - 2 * MARGEN;
-        List<String> partes = ajustar(PIE, normal, 7.5f, ancho);
+        List<String> partes = ajustar(limpiar(p.pie(), normal), normal, 7.5f, ancho);
         float y = MARGEN + 16f;
-        for (String p : partes) {
-            texto(cs, p, normal, 7.5f, MARGEN, y);
+        for (String parte : partes) {
+            texto(cs, parte, normal, 7.5f, MARGEN, y);
             y -= 9f;
         }
         String pagina = "Página " + n + " de " + total;
@@ -261,11 +286,15 @@ final class CopiaLiteralPdf {
     }
 
     /** Texto diagonal translúcido en cada página, debajo del contenido. */
-    private static void marcaDeAgua(PDPageContentStream cs, PDFont negrita) throws IOException {
-        String marca = limpiar(MARCA_DE_AGUA, negrita);
+    private static void marcaDeAgua(PDPageContentStream cs, Procedencia p, PDFont negrita) throws IOException {
+        String marca = limpiar(p.marca(), negrita);
         float tam = 25f;
         double ang = Math.toRadians(52);
         float w = anchoDe(marca, negrita, tam);
+        if (w > 820f) { // una marca más larga se reduce para que no se salga de la página
+            tam = tam * 820f / w;
+            w = anchoDe(marca, negrita, tam);
+        }
         float cx = PDRectangle.A4.getWidth() / 2f;
         float cy = PDRectangle.A4.getHeight() / 2f;
         float x0 = (float) (cx - (w / 2f) * Math.cos(ang));

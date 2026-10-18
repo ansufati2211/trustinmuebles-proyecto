@@ -20,6 +20,8 @@ import pe.trustinmuebles.clasificacion.EvaluacionDto;
 import pe.trustinmuebles.expediente.CasoDtos.*;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.AsientoCopia;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.DatosCopia;
+import pe.trustinmuebles.checklist.EstadoItem;
+import pe.trustinmuebles.expediente.CopiaLiteralPdf.Procedencia;
 import pe.trustinmuebles.orientacion.GlosarioService;
 import pe.trustinmuebles.shared.ConflictoException;
 import pe.trustinmuebles.shared.NoEncontradoException;
@@ -29,14 +31,16 @@ import pe.trustinmuebles.shared.ReglaNegocioException;
 @Transactional
 class ExpedienteService {
     private final ExpedienteRepository expedientes;
+    private final CasoLoteRepository casos;
     private final ClasificacionService clasificacion;
     private final ChecklistService checklist;
     private final GlosarioService glosario;
     private final AlmacenamientoService almacenamiento;
 
-    ExpedienteService(ExpedienteRepository expedientes, ClasificacionService clasificacion,
+    ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento) {
         this.expedientes = expedientes;
+        this.casos = casos;
         this.clasificacion = clasificacion;
         this.checklist = checklist;
         this.glosario = glosario;
@@ -49,7 +53,8 @@ class ExpedienteService {
             EvaluacionDto ev = clasificacion.obtener(e.getId()).orElse(null);
             return new ResumenCaso(e.getCaso().getCodigo(), e.getCaso().getDenominacion(), e.getCaso().getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
-                    checklist.contarPendientes(e.getId()));
+                    checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
+                    e.getCaso().getFechaConsulta());
         }).toList();
     }
 
@@ -64,6 +69,7 @@ class ExpedienteService {
      */
     DetalleCaso actualizar(String codigo, ActualizarExpedienteRequest req) {
         Expediente e = buscar(codigo);
+        if (!e.getCaso().isSintetico()) verificarDatosPersonales(req.datos(), e.getCaso().getDenominacion(), null);
         if (!req.versionEsperada().equals(e.getVersion())) {
             throw new ConflictoException("El expediente cambió mientras lo editaba. Recargue e intente de nuevo.");
         }
@@ -81,6 +87,71 @@ class ExpedienteService {
         e.setDocumentoGenerado(true);
         aplicar(e, datos);
         return expedientes.saveAndFlush(e);
+    }
+
+    private static final List<String> CHECKLIST_TRANSCRITA = List.of("Copia literal certificada (SPRL)",
+            "Título archivado del asiento de dominio", "Ubicación en el Visor BGR");
+    private static final List<String> TERMINOS_TRANSCRITA = List.of("Partida registral", "Copia literal", "Rubro",
+            "Asiento", "Título archivado", "Zona registral", "Titularidad", "Condición representada", "Checklist",
+            "Pendiente", "Semáforo informativo");
+
+    /**
+     * Registra una partida transcrita de una consulta pública. El número no puede llevar el prefijo SIM- y no se
+     * aceptan datos personales reconocibles. Todo ocurre en una sola transacción.
+     */
+    DetalleCaso registrar(RegistrarPartidaRequest req) {
+        if (!Boolean.TRUE.equals(req.confirmaSinDatosPersonales())) {
+            throw new IllegalArgumentException(
+                    "confirmaSinDatosPersonales: debes confirmar que la transcripción no contiene datos de personas naturales");
+        }
+        if (casos.existsByCodigo(req.numero())) {
+            throw new ConflictoException("La partida " + req.numero() + " ya está registrada");
+        }
+        verificarDatosPersonales(req.datos(), req.denominacion(), req.contexto());
+
+        CasoLote caso = new CasoLote();
+        caso.setCodigo(req.numero());
+        caso.setDenominacion(req.denominacion().trim());
+        caso.setContexto(req.contexto().trim());
+        caso.setSintetico(false);
+        caso.setOrigen(CasoLote.Origen.TRANSCRITA);
+        caso.setFuente(FUENTE_CONOCE_AQUI);
+        caso.setFechaConsulta(req.fechaConsulta());
+        caso.setSinDatosPersonales(true);
+        caso.setResponsableId(pe.trustinmuebles.identidad.UsuarioActual.actual().id());
+        casos.save(caso);
+
+        Expediente e = crear(caso, req.datos());
+        int orden = 0;
+        for (String nombre : CHECKLIST_TRANSCRITA) checklist.agregar(e.getId(), nombre, EstadoItem.PENDIENTE, orden++);
+        glosario.asociar(e.getId(), TERMINOS_TRANSCRITA);
+        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e));
+        return aDetalle(e);
+    }
+
+    static final String FUENTE_CONOCE_AQUI = "Conoce Aquí – SUNARP";
+
+    /** Elimina una partida transcrita (por ejemplo, ante el pedido de un titular). Las ficticias no se borran. */
+    void eliminar(String codigo) {
+        Expediente e = buscar(codigo);
+        CasoLote caso = e.getCaso();
+        if (caso.isSintetico()) {
+            throw new ConflictoException("Solo se pueden eliminar partidas transcritas");
+        }
+        String archivo = e.getDocumentoArchivoId();
+        expedientes.delete(e);
+        expedientes.flush();
+        casos.delete(caso);
+        casos.flush();
+        if (archivo != null) almacenamiento.eliminar(archivo);
+    }
+
+    private static void verificarDatosPersonales(DatosExpediente d, String denominacion, String contexto) {
+        java.util.stream.Stream<String> asientos = d.asientos().stream()
+                .flatMap(a -> java.util.stream.Stream.of(a.texto(), a.titulares(), a.tituloNumero()));
+        ProteccionDatos.verificar(java.util.stream.Stream.concat(asientos,
+                java.util.stream.Stream.of(d.nota(), d.ubicacion(), d.linderos(), d.antecedenteDominial(),
+                        d.condicionRepresentada(), denominacion, contexto)));
     }
 
     ItemChecklistDto cambiarItem(String codigo, Long itemId, CambiarItemRequest req) {
@@ -146,7 +217,7 @@ class ExpedienteService {
         if (!e.isDocumentoGenerado()) return null;
         String viejo = e.getDocumentoArchivoId();
         String partida = e.getCaso().getCodigo();
-        byte[] pdf = CopiaLiteralPdf.generar(copiaDe(partida, d, n.asientos()));
+        byte[] pdf = CopiaLiteralPdf.generar(copiaDe(partida, d, n.asientos()), procedencia(e.getCaso()));
         e.setDocumentoArchivoId(almacenamiento.guardar(partida + ".pdf", "application/pdf", pdf, false).id());
         return viejo;
     }
@@ -178,6 +249,10 @@ class ExpedienteService {
             a.setTitulares(d.titulares());
             a.setOrden(orden++);
         }
+    }
+
+    static Procedencia procedencia(CasoLote c) {
+        return c.isSintetico() ? Procedencia.SINTETICA : new Procedencia(true, c.getFuente(), c.getFechaConsulta());
     }
 
     static DatosCopia copiaDe(String partida, DatosExpediente d, List<AsientoDatos> asientos) {
@@ -212,7 +287,8 @@ class ExpedienteService {
                         a.getTipoActo(), a.getTipoActo().etiqueta(), a.getEstado(), a.getFechaInscripcion(),
                         a.getTituloNumero(), a.getFechaPresentacion(), a.getTexto(), a.getCanceloNumero(),
                         a.getTitulares())).toList());
-        return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(), exp,
+        return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
+                c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), checklist.listar(e.getId()),
                 glosario.terminosDe(e.getId()));
     }

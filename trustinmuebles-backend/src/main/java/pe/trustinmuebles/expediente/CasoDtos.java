@@ -25,7 +25,7 @@ final class CasoDtos {
     // ---------------------------------------------------------------- respuestas
 
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
-            long pendientes) {}
+            long pendientes, String origen, String fuente, LocalDate fechaConsulta) {}
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
@@ -36,8 +36,8 @@ final class CasoDtos {
             BigDecimal areaM2, String linderos, String antecedenteDominial, boolean tieneDocumento,
             boolean documentoGenerado, List<AsientoDto> asientos) {}
 
-    record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico,
-            ExpedienteDto expediente, EvaluacionDto evaluacion, List<ItemChecklistDto> checklist,
+    record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
+            String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion, List<ItemChecklistDto> checklist,
             List<TerminoDto> terminos) {}
 
     record DocumentoDto(String codigo, String sha256) {}
@@ -72,6 +72,33 @@ final class CasoDtos {
 
         DatosExpediente datos() {
             return new DatosExpediente(condicionRepresentada, completitud, fechaReferencial, nota, zonaRegistral,
+                    oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
+                    asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
+                            a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
+                            a.canceloNumero(), a.titulares())).toList());
+        }
+    }
+
+    /** Registro de una partida transcrita. El número no puede llevar el prefijo SIM-, reservado a las ficticias. */
+    record RegistrarPartidaRequest(
+            @NotBlank @Pattern(regexp = "[A-Z]?[0-9]{8}", message = "debe tener ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600)") String numero,
+            @NotBlank @Size(max = 255) String denominacion,
+            @NotBlank @Size(max = 255) String contexto,
+            @NotNull LocalDate fechaConsulta,
+            @NotBlank @Size(max = 255) String condicionRepresentada,
+            @NotNull Completitud completitud,
+            @Size(max = 500) String nota,
+            @Size(max = 120) String zonaRegistral,
+            @Size(max = 120) String oficinaRegistral,
+            @Size(max = 255) String ubicacion,
+            @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaM2,
+            @Size(max = 1000) String linderos,
+            @Size(max = 500) String antecedenteDominial,
+            @NotNull @Size(max = 40) List<@Valid @NotNull AsientoRequest> asientos,
+            @NotNull Boolean confirmaSinDatosPersonales) {
+
+        DatosExpediente datos() {
+            return new DatosExpediente(condicionRepresentada, completitud, fechaConsulta, nota, zonaRegistral,
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),

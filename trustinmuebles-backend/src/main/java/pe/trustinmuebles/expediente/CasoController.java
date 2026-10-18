@@ -26,6 +26,17 @@ class CasoController {
         return servicio.listar();
     }
 
+    @PostMapping
+    ResponseEntity<DetalleCaso> registrar(@Valid @RequestBody RegistrarPartidaRequest req) {
+        return ResponseEntity.status(201).body(servicio.registrar(req));
+    }
+
+    @DeleteMapping("/{codigo}")
+    ResponseEntity<Void> eliminar(@PathVariable String codigo) {
+        servicio.eliminar(codigo);
+        return ResponseEntity.noContent().build();
+    }
+
     @GetMapping("/{codigo}")
     DetalleCaso detalle(@PathVariable String codigo) {
         return servicio.detalle(codigo);

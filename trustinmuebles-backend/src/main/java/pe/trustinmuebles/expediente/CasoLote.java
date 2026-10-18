@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Caso ficticio creado para tareas académicas. Nunca corresponde a un predio real (RN-01). */
+/** Partida de lote: ficticia (prefijo SIM-) o transcrita de una consulta pública sin datos de personas naturales. */
 @Entity
 @Table(name = "caso_lote")
 @Getter
@@ -28,6 +28,22 @@ class CasoLote {
 
     @Column(nullable = false)
     private boolean sintetico = true;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Origen origen = Origen.SINTETICO;
+
+    /** Dónde se consultó una partida transcrita, por ejemplo «Conoce Aquí – SUNARP». */
+    private String fuente;
+
+    @Column(name = "fecha_consulta")
+    private java.time.LocalDate fechaConsulta;
+
+    /** El revisor confirmó que la transcripción no contiene nombres, DNI ni domicilios de personas naturales. */
+    @Column(name = "sin_datos_personales", nullable = false)
+    private boolean sinDatosPersonales;
+
+    enum Origen { SINTETICO, TRANSCRITA }
 
     /** Revisor responsable del registro del caso. No otorga edición al comprador. */
     @Column(name = "responsable_id", nullable = false)

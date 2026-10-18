@@ -120,4 +120,26 @@ class CopiaLiteralPdfTest {
             assertThat(texto).contains("No se representan asientos.", "no informado", "símbolo raro ? ?");
         }
     }
+
+    @Test
+    @DisplayName("Una transcripción lleva su propia marca, título y pie en cada página, y nunca dice «simulado»")
+    void transcripcion() throws Exception {
+        var procedencia = new CopiaLiteralPdf.Procedencia(true, "Conoce Aquí – SUNARP", LocalDate.of(2026, 10, 17));
+        byte[] pdf = CopiaLiteralPdf.generar(partida(12, false), procedencia);
+        try (PDDocument doc = Loader.loadPDF(pdf)) {
+            assertThat(doc.getNumberOfPages()).isGreaterThan(1);
+            for (int i = 0; i < doc.getNumberOfPages(); i++) {
+                List<String> textos = textosDibujados(doc, i);
+                assertThat(textos).as("marca en la página " + (i + 1))
+                        .anyMatch(t -> t.contains(CopiaLiteralPdf.MARCA_TRANSCRITA.replace("·", "")) || t.contains("TRANSCRIPCI"));
+                assertThat(textos).as("pie en la página " + (i + 1))
+                        .anyMatch(t -> t.contains("Transcrito a partir de una consulta en Conoce"));
+            }
+            String texto = new PDFTextStripper().getText(doc);
+            assertThat(texto).contains("TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL", "Fecha de la consulta",
+                    "Fin de la transcripción referencial", "17/10/2026");
+            assertThat(texto.toLowerCase()).doesNotContain("simulad");
+            assertThat(doc.getDocumentInformation().getTitle()).startsWith("Transcripción referencial");
+        }
+    }
 }
