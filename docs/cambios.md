@@ -37,3 +37,8 @@ revisión formal (PA1). Los cambios de contenido de reglas y glosario pasan por 
 | `9ccfeab` | Carga de PDF desde la interfaz del revisor y medición de REQ-NF02 |
 | `c1bb783` | Documentación del MVP |
 | `18fc803` | Prueba desde un clon limpio para CP-07 y REQ-NF05 |
+
+## v0.3
+
+Partidas transcritas de Conoce Aquí: búsqueda por número, registro por el revisor con limpieza de datos personales, eliminación
+y PDF de transcripción. Cierra además la v0.2.1 (tono de servicio real). Pendiente: aprobación del asesor (RN-01 y PA2).

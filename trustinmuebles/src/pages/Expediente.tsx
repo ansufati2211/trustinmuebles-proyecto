@@ -1,11 +1,12 @@
 import { useState } from "react";
-import { Link, useParams } from "react-router";
+import { Link, useNavigate, useParams } from "react-router";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EstadoBadge } from "@/components/EstadoBadge";
 import { EditorExpediente } from "@/components/EditorExpediente";
-import { BookOpen, ChevronRight, ExternalLink, FileText, Info, ListChecks } from "lucide-react";
-import { abrirPdf, patch } from "@/lib/api";
+import { BookOpen, ChevronRight, ExternalLink, FileText, Info, ListChecks, Trash2 } from "lucide-react";
+import { abrirPdf, api, patch } from "@/lib/api";
+import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
 import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD, ITEM, RUBROS, fecha } from "@/lib/semaforo";
@@ -188,6 +189,9 @@ export default function Expediente() {
   const esRevisor = usuario?.rol === "REVISOR";
   const { data: d, loading, error, setData } = useApi<DetalleCaso>(codigo ? `/casos/${codigo}` : null);
   const [errorPdf, setErrorPdf] = useState<string | null>(null);
+  const [confirmando, setConfirmando] = useState(false);
+  const [errorEliminar, setErrorEliminar] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   if (loading) return <div className="flex-1 flex items-center justify-center py-32 text-muted-foreground font-semibold">Cargando expediente…</div>;
   if (error || !d) {
@@ -205,6 +209,17 @@ export default function Expediente() {
   const estilo = ev ? ESTADOS[ev.estado] : null;
   const IconoEstado = estilo?.Icono;
   const x = d.expediente;
+
+  const transcrita = d.origen === "TRANSCRITA";
+  const eliminar = async () => {
+    setErrorEliminar(null);
+    try {
+      await api<void>(`/casos/${d.codigo}`, { method: "DELETE" });
+      navigate("/casos");
+    } catch (e) {
+      setErrorEliminar(e instanceof Error ? e.message : "No se pudo eliminar la partida");
+    }
+  };
 
   const verPdf = async () => {
     setErrorPdf(null);
@@ -369,6 +384,48 @@ export default function Expediente() {
               </CardContent>
             </Card>
 
+            {transcrita && (
+              <Card className="rounded-3xl border-gray-100 shadow-sm">
+                <CardContent className="p-8">
+                  <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-4">
+                    <Info className="w-5 h-5 text-primary" aria-hidden="true" /> Fuente
+                  </h2>
+                  <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
+                    Transcrita de {d.fuente ?? "una consulta pública"}{d.fechaConsulta ? `, consultada el ${fecha(d.fechaConsulta)}` : ""}.
+                    No incluye nombres, DNI ni domicilios de personas naturales. Para la copia literal certificada o los
+                    planos del título archivado, solicítalos en SUNARP (tienen costo).
+                  </p>
+                  <div className="space-y-2">
+                    <Button variant="outline" className="w-full rounded-xl" onClick={() => abrirExterno(CONOCE_AQUI)}>
+                      Ver en Conoce Aquí <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                    </Button>
+                    <Button variant="outline" className="w-full rounded-xl" onClick={() => abrirExterno(VISOR_BGR)}>
+                      Ver el plano en el Visor BGR <ExternalLink className="w-4 h-4" aria-hidden="true" />
+                    </Button>
+                  </div>
+                  {esRevisor && (
+                    <div className="mt-6 pt-5 border-t border-gray-100">
+                      {!confirmando ? (
+                        <Button variant="ghost" className="rounded-xl text-[#B91C1C] hover:bg-danger/10" onClick={() => setConfirmando(true)}>
+                          <Trash2 className="w-4 h-4" aria-hidden="true" /> Eliminar partida transcrita
+                        </Button>
+                      ) : (
+                        <div role="alertdialog" aria-labelledby="eliminar-titulo" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
+                          <p id="eliminar-titulo" className="font-bold text-[#B91C1C] mb-1">¿Eliminar la partida {d.codigo}?</p>
+                          <p className="text-sm text-foreground mb-3">Se borran su expediente, su checklist, su evaluación y su documento. No se puede deshacer.</p>
+                          <div className="flex gap-2">
+                            <Button className="rounded-xl bg-[#B91C1C] hover:bg-[#991B1B]" onClick={eliminar}>Sí, eliminar</Button>
+                            <Button variant="outline" className="rounded-xl" onClick={() => { setConfirmando(false); setErrorEliminar(null); }}>Cancelar</Button>
+                          </div>
+                          {errorEliminar && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{errorEliminar}</p>}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
             <Card className="rounded-3xl border-gray-100 shadow-sm">
               <CardContent className="p-8">
                 <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-4">
@@ -378,7 +435,9 @@ export default function Expediente() {
                   <>
                     <p className="text-sm text-muted-foreground mb-4 leading-relaxed">
                       {x.documentoGenerado
-                        ? "Copia literal generada a partir de la partida. Es referencial y no tiene valor legal."
+                        ? (transcrita
+                          ? "Transcripción referencial generada a partir de la partida. No es publicidad registral ni tiene valor legal."
+                          : "Copia literal generada a partir de la partida. Es referencial y no tiene valor legal.")
                         : "PDF subido por el revisor. No tiene valor legal."}
                     </p>
                     <Button variant="outline" className="w-full rounded-xl" onClick={verPdf}>

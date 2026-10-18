@@ -1,8 +1,10 @@
-// DTOs que devuelve el backend (trustinmuebles-backend). Todo el contenido es simulado.
+// DTOs que devuelve el backend (trustinmuebles-backend).
 
 export type Rol = "COMPRADOR" | "REVISOR";
 export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
+/** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
+export type Origen = "SINTETICO" | "TRANSCRITA";
 export type Completitud = "COMPLETA" | "INCOMPLETA" | "DESCONOCIDA";
 export type EstadoItem = "PENDIENTE" | "REVISADO" | "OBSERVADO";
 export type TipoActo =
@@ -14,7 +16,7 @@ export interface Sesion { token: string; usuario: Usuario }
 
 export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
-  pendientes: number;
+  pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null;
 }
 
 /** Asiento de la partida. La primera letra de la referencia es el rubro: C, D, E o F. */
@@ -47,7 +49,8 @@ export interface ItemChecklist { id: number; nombre: string; estado: EstadoItem;
 export interface Termino { concepto: string; explicacion: string; version: string; estadoRevision: string }
 
 export interface DetalleCaso {
-  codigo: string; denominacion: string; contexto: string; sintetico: boolean; expediente: Expediente;
+  codigo: string; denominacion: string; contexto: string; sintetico: boolean; origen: Origen;
+  fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; checklist: ItemChecklist[]; terminos: Termino[];
 }
 

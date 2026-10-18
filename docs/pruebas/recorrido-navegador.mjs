@@ -179,7 +179,7 @@ await espera("Guardado.");
 check("Restaurar: La Tinguiña vuelve a Amarillo", (await min()).includes("estado: amarillo"));
 
 // Documento regenerado: debe seguir marcado como generado por el sistema
-check("Documento: figura como generado por el sistema", (await texto()).includes("generada por el sistema"));
+check("Documento: figura como generado por el sistema", (await texto()).includes("generada a partir de la partida"));
 
 // Checklist del revisor
 const valorInicial = await page.$eval('select[id^="estado-"]', (s) => s.value);
@@ -207,6 +207,69 @@ if (pdfPrueba) {
   await espera("Documento asociado.");
   check("Documento: tras subir uno propio ya no lo regenera el sistema", (await texto()).includes("PDF subido por el revisor"));
 }
+
+// 8. Buscar por número y registrar una partida transcrita, sin dejar rastro de los nombres
+const NUEVA = "99887766";
+const NOMBRE = "Pedro Luis Salazar Ramos";
+await ir("/casos");
+await espera("expedientes disponibles");
+await page.type("#buscar-partida", "11048217");
+await espera("1 de 4 expedientes");
+check("Búsqueda: el número sin prefijo encuentra la partida SIM-", (await texto()).includes(PARCONA));
+await escribir("#buscar-partida", NUEVA);
+await espera("no está registrada en Trustinmuebles");
+t = await texto();
+check("Búsqueda: una partida ausente ofrece Conoce Aquí y el Visor BGR", t.includes("Buscar en Conoce Aquí") && t.includes("Ver ubicación en el Visor BGR"));
+await foto("08-busqueda-sin-resultado");
+
+await ir(`/casos/nueva?numero=${NUEVA}`);
+await espera("Registrar partida");
+await escribir("#rp-denominacion", "Mz. D Lote 5 · Hab. Urb. Los Sauces · Ica");
+await escribir("#rp-contexto", "Ica, Ica");
+await escribir("#rp-ubicacion", "Mz. D, Lote 5, distrito de Ica.");
+await page.evaluate((txt) => {
+  const ta = document.querySelector("#rp-pegado");
+  const set = Object.getOwnPropertyDescriptor(HTMLTextAreaElement.prototype, "value").set;
+  set.call(ta, txt);
+  ta.dispatchEvent(new Event("input", { bubbles: true }));
+}, `RUBRO: TITULOS DE DOMINIO
+C00001
+COMPRAVENTA
+Por escritura pública de fecha 14 de marzo de 2019, Inmobiliaria Los Sauces S.A.C. transfirió el predio a favor de ${NOMBRE}, identificado con DNI N° 45678912, de estado civil casado. Título N° 2019-00045678. Fecha de inscripción: 20/03/2019.
+RUBRO: GRAVAMENES Y CARGAS
+D00001
+HIPOTECA
+Hipoteca a favor de Financiera del Valle S.A. Título 2019-00045910. Fecha de inscripción: 25/03/2019.`);
+await clickBoton("Leer asientos");
+await espera("Vista previa sin datos personales");
+t = await texto();
+check("Registro: lee los dos asientos con su número", t.includes("Quitar el asiento C00001") || (await page.$("#as-ref-1")) !== null);
+check("Registro: la vista previa oculta el nombre y el DNI", t.includes("Persona natural 1") && t.includes("[DNI omitido]") && !/Pedro Luis|45678912|estado civil/.test(
+  await page.evaluate(() => [...document.querySelectorAll("[aria-live=polite]")].map((n) => n.innerText).join(" "))));
+check("Registro: conserva la empresa titular de la hipoteca", t.includes("Financiera del Valle S.A."));
+await foto("09-registro-vista-previa");
+await page.evaluate(() => document.querySelector('input[type="checkbox"]')?.click());
+const respReg = page.waitForResponse((r) => r.url().endsWith("/api/v1/casos") && r.request().method() === "POST", { timeout: 8000 });
+await clickBoton("Registrar partida");
+check("Registro: el servidor acepta la partida (201)", (await respReg).status() === 201);
+await espera("Transcrita de");
+t = await texto();
+check("Partida transcrita: muestra la fuente y el origen", t.includes("Fuente") && t.includes("Conoce Aquí – SUNARP") && t.includes("Transcrita de"));
+check("Partida transcrita: tiene estado y sin datos personales en pantalla", /estado: (amarillo|gris|verde|rojo)/i.test(t) && !/Pedro Luis|Salazar|45678912/.test(t));
+const api = await page.evaluate(async (n) => {
+  const r = await fetch(`/api/v1/casos/${n}`, { headers: { Authorization: `Bearer ${sessionStorage.getItem("tm_token")}` } });
+  return r.text();
+}, NUEVA);
+check("Partida transcrita: el servidor no guardó el nombre ni el DNI", !/Pedro|Salazar|45678912|estado civil/i.test(api));
+await foto("10-partida-transcrita");
+
+await clickBoton("Eliminar partida transcrita");
+await espera("¿Eliminar la partida");
+const respDel = page.waitForResponse((r) => r.request().method() === "DELETE", { timeout: 8000 });
+await clickBoton("Sí, eliminar");
+check("Eliminar: el servidor borra la partida (204)", (await respDel).status() === 204);
+await espera("expedientes disponibles");
+check("Eliminar: la partida ya no aparece", !(await texto()).includes(NUEVA));
 
 await logout();
 

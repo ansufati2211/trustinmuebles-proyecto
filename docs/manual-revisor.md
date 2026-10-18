@@ -54,3 +54,8 @@ sistema deja de regenerarlo y deberás mantenerlo tú. **No subas documentos con
   `contenido/v0.3` (reglas, glosario y casos van juntos), edita la copia y cambia `app.reglas.version=v0.3`. Al arrancar se
   recalculan todas las evaluaciones y cada una guarda con qué versión se calculó.
 - No compartas las claves de respuesta del estudio con quien vaya a participar.
+
+## Registrar una partida real
+
+Ver [guia-transcripcion.md](guia-transcripcion.md). Resumen: busca el número en Expedientes; si no está, consulta la partida en
+Conoce Aquí, pega el texto, revisa la vista previa sin nombres y confirma. Puedes eliminar una partida transcrita desde su página.

@@ -62,11 +62,18 @@ Las reglas (tabla borrador v0.2), el glosario y la redacción de los documentos 
 Si tenías una base creada con una versión anterior, apaga el backend y borra `trustinmuebles-backend/data/`: los casos
 cambiaron de código.
 
+## Partidas reales (transcritas)
+
+El revisor puede registrar partidas reales consultadas en Conoce Aquí (SUNARP), sin nombres ni datos de personas naturales.
+No hay API de SUNARP: se consulta a mano y se pega el texto. Ver `docs/guia-transcripcion.md` y `docs/decisiones.md` (D20).
+Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
+
 ## Pruebas
 
 ```bash
-cd trustinmuebles-backend && ./mvnw test        # 55 pruebas
+cd trustinmuebles-backend && ./mvnw test        # 62 pruebas
 cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
+cd trustinmuebles && npx pnpm@9 test            # 12 pruebas de la limpieza de datos personales
 env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)
 ```
 

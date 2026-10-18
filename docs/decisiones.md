@@ -141,3 +141,29 @@ como el de práctica, los deja en blanco y el PDF imprime «no informado». El �
 La interfaz ya no habla de «práctica», «MVP» ni «cuenta de prueba». Se conservan tres señales para cumplir RN-01 y evitar
 que un documento pase por oficial: el aviso fijo superior («Entorno de demostración…»), la marca de agua y el pie del PDF, y el
 prefijo `SIM-` en las partidas. La partida `SIM-99000001` pasó a `SIM-11070419` (Los Aquijes).
+
+## D20. Partidas transcritas de una consulta pública
+**Qué:** además de las partidas ficticias (`SIM-`), el revisor puede registrar una partida real consultada en Conoce Aquí
+(SUNARP), buscándola por su número. Queda marcada como «Transcrita de SUNARP», con su fuente y la fecha de consulta.
+
+**Fuentes y límites.** SUNARP no tiene API pública (la PIDE es solo para entidades públicas). Conoce Aquí es gratis, pero pide
+el DNI de quien consulta (ID-Perú), permite 5 partidas al día y no deja imprimir. Por eso Trustinmuebles **no consulta ni lee**
+ese sitio: enlaza a él y el revisor pega el texto. Automatizarlo exigiría usar la identidad de otra persona. Tampoco hay una API
+de terceros para predios: las que existen son de vehículos. Los planos como documento salen en la copia informativa del título
+archivado (de pago); aquí solo se enlaza al Visor BGR.
+
+**Datos personales.** El reglamento de la Ley 29733 (D.S. 016-2024-JUS) considera los Registros Públicos de SUNARP fuente
+accesible al público (art. 11.1.7), pero exige respetar los principios de la ley (art. 11.3) y califica como infracción grave
+usar datos para otra finalidad sin anonimizarlos (art. 133.7). Decisión: **no se guardan ni se muestran nombres, DNI, estado civil
+ni domicilios de personas naturales**. Se conservan las empresas y el Estado.
+- El navegador reemplaza los nombres por «Persona natural N» y omite los demás datos (`lib/disociar.ts`). El texto original no se
+  envía. El revisor revisa una vista previa y confirma.
+- El servidor rechaza con 400 los DNI, el estado civil y los domicilios (`ProteccionDatos`). No detecta nombres.
+- `DELETE /api/v1/casos/{codigo}` borra una partida transcrita (por ejemplo, ante el pedido de un titular).
+- El PDF dice «Transcripción referencial · No es publicidad registral · Sin valor legal».
+
+**Desvío del informe.** RN-01 y PA2 piden solo casos sintéticos: esto es un desvío que el asesor debe aprobar. La sección 1.7
+(sin integraciones estatales) se respeta. Las partidas transcritas no se versionan: viven en la base local.
+
+**Límite conocido.** La detección de nombres es una heurística: puede dejar pasar uno o ocultar de más. Por eso hay vista previa,
+confirmación y borrado.

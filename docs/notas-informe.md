@@ -20,6 +20,15 @@ Todo lo que sigue pendiente debe seguir marcado como pendiente.
 | Tabla 10, estado de los casos de prueba | «Pendiente de ejecución» | Actualizar con el registro de pruebas |
 | Tabla 21 y 22 (T1) | MVP funcional local: «pasa pruebas» | T1 se cumple técnicamente. T2 sigue pendiente |
 
+## Partidas transcritas (v0.3): requieren aprobación del asesor
+
+| Sección | Qué dice hoy | Qué corresponde |
+|---|---|---|
+| RN-01, PA2 | Solo casos sintéticos | La plataforma admite partidas transcritas de Conoce Aquí (SUNARP), sin datos de personas naturales. Es un desvío: decidir si se acepta o se revierte |
+| 1.8 | Sin datos reales | Ajustar: hay datos de partidas reales, sin nombres, DNI, estado civil ni domicilios |
+| 1.7 | Sin integraciones estatales | No cambia: no hay conexión automática. Se transcribe a mano. Ver D20 |
+| Referencias | — | D.S. 016-2024-JUS (arts. 11 y 133.7), Res. 064-2023-SUNARP/SN y Res. 00066-2025-SUNARP/SN (Conoce Aquí) |
+
 ## Lo que no cambia
 
 - Alcance (1.7), limitaciones (1.8), hipótesis, diseño preexperimental y plan de análisis.

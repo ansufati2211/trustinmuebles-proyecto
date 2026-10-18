@@ -166,3 +166,12 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 | 413 | El archivo supera 5 MB |
 | 422 | El archivo no es un PDF válido |
 | 429 | Demasiados intentos de login |
+
+## Partidas transcritas (solo REVISOR)
+
+- `POST /api/v1/casos` registra una partida transcrita. Cuerpo: `numero` (ocho dígitos, con letra inicial opcional; no admite `SIM-`),
+  `denominacion`, `contexto`, `fechaConsulta`, los datos del expediente, `asientos` y `confirmaSinDatosPersonales: true`.
+  Responde 201 con el detalle, 409 si ya existe, 400 si falta la confirmación, el número es inválido o el texto trae un DNI,
+  el estado civil o un domicilio.
+- `DELETE /api/v1/casos/{codigo}` borra una partida transcrita (204). Una partida ficticia da 409.
+- `ResumenCaso` y `DetalleCaso` incluyen `origen` (`SINTETICO` o `TRANSCRITA`), `fuente` y `fechaConsulta`.

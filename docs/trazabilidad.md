@@ -40,6 +40,15 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | RN-07 Checklist: solo el revisor modifica | `SecurityConfig` | `checklistSoloRevisor` | Probado |
 | RN-08 Fecha referencial sin vencimiento | Se muestra con advertencia; no hay lógica de vencimiento | Recorrido de navegador (advertencia visible) | Implementado. La ausencia de vencimiento se verificó leyendo el código |
 
+## Partidas transcritas (v0.3, desvío de RN-01 y PA2 pendiente de aprobación)
+
+| Elemento | Dónde | Prueba | Estado |
+|---|---|---|---|
+| Registro y eliminación por el revisor | `ExpedienteService.registrar` y `eliminar` | `RegistrarPartidaTest` (6) | Probado |
+| Sin DNI, estado civil ni domicilio en el servidor | `ProteccionDatos` | `entradasInvalidas`, `edicionProtegida` | Probado |
+| Limpieza de nombres en el navegador | `lib/disociar.ts`, `lib/leerPartida.ts` | 12 pruebas con vitest; recorrido de navegador | Probado. Es una heurística |
+| PDF de transcripción | `CopiaLiteralPdf.Procedencia` | `CopiaLiteralPdfTest.transcripcion` | Probado |
+
 ## Principios de arquitectura
 
 | Principio | Verificación | Estado |
