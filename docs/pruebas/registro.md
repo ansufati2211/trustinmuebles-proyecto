@@ -8,7 +8,7 @@ Resumen: **55 pruebas automatizadas del backend en verde**, **38 verificaciones 
 rendimiento con 20 de 20 ejecuciones dentro de la meta. Salidas completas en [evidencias/](evidencias/).
 
 Las partidas son: Parcona `SIM-11048217` (debe dar verde), La Tinguiña `SIM-11052690` (amarillo), Subtanjalla `SIM-11061555`
-(gris con alerta prioritaria) y el caso de práctica `SIM-99000001` (gris).
+(gris con alerta prioritaria) y Los Aquijes `SIM-11070419` (gris, sin copia literal).
 
 | Caso | Entrada / acción | Resultado esperado | Resultado obtenido | Estado |
 |---|---|---|---|---|

@@ -10,7 +10,7 @@ interfaz encendidos (ver el LEEME) y las dos cuentas de prueba.
    ni recomienda comprar.» y la lista de lo que el MVP no hace.
 2. Intentar abrir `#/casos` sin ingresar: debe llevar a la pantalla de login.
 3. Ingresar. La lista debe mostrar cuatro partidas con su denominación: Parcona (verde), La Tinguiña (amarillo), Subtanjalla
-   (gris) y el caso de práctica (gris). Cada estado debe tener texto y ninguna tarjeta debe decir «postest» ni «forma B».
+   (gris) y Los Aquijes (gris). Cada estado debe tener texto y ninguna tarjeta debe decir «postest» ni «forma B».
 4. Abrir La Tinguiña (`SIM-11052690`): estado amarillo, la alerta de hipoteca vigente, el panel «Partida registral simulada»
    con zona, ubicación, área y linderos, y los titulares en copropiedad.
 5. En «Asientos de la partida» comprobar los rubros: títulos de dominio (C00001), gravámenes y cargas (D00001 hipoteca vigente y
@@ -42,7 +42,7 @@ E2E_PASSWORD=<contraseña de las cuentas de prueba> node recorrido-navegador.mjs
 ```
 
 - Necesita Chrome en `/usr/bin/google-chrome-stable`. Si está en otra ruta, cambiar `executablePath` en el script.
-- La variable opcional `PDF_PRUEBA` apunta a un PDF para probar la carga del documento. Se sube al caso de práctica.
+- La variable opcional `PDF_PRUEBA` apunta a un PDF para probar la carga del documento. Se sube a la partida de Los Aquijes.
 - Deja las capturas en `shots/` junto al script.
 - Devuelve el estado de cada verificación y termina con código distinto de cero si alguna falla.
-- Deja los datos como estaban, salvo el documento del caso de práctica, que pasa a ser el PDF subido.
+- Deja los datos como estaban, salvo el documento de la partida de Los Aquijes, que pasa a ser el PDF subido.

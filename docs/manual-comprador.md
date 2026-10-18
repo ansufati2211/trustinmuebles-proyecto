@@ -1,6 +1,6 @@
 # Manual del comprador
 
-Trustinmuebles es un MVP académico. Muestra partidas registrales simuladas, con datos inventados, para practicar la lectura de un expediente. **No certifica
+Trustinmuebles reúne partidas registrales de lotes urbanos de Ica (en esta demostración, con datos ficticios) y ayuda a leer cada expediente. **No certifica
 saneamiento, no recomienda comprar y no consulta fuentes oficiales.**
 
 ## Cómo usarlo

@@ -87,9 +87,9 @@ recorrido del navegador. Derivarlo hace imposible la contradicción. El PDF tamb
 La versión activa sale de `app.reglas.version` (hoy `v0.2`). Al arrancar, cada expediente cuya evaluación falte, use otra
 versión o esté atrasada se recalcula. Cada evaluación guarda la versión con que se calculó (RN-06).
 
-## D12. El caso de práctica es para la familiarización
+## D12. Los Aquijes es la partida de familiarización
 
-La partida `SIM-99000001` la diseñó el equipo a partir de la Figura 8. Sirve para el paso 6 de 3.14 (familiarización con un
+La partida `SIM-11070419` la diseñó el equipo a partir de la Figura 8. Sirve para el paso 6 de 3.14 (familiarización con un
 ejemplo distinto a los casos evaluados) y no se evalúa.
 
 ## D13. Fecha referencial
@@ -136,3 +136,8 @@ Los textos del glosario citan, como referencia a verificar por el especialista: 
 
 La zona, la oficina, la ubicación, el área, los linderos y el antecedente son opcionales. Un caso con información insuficiente,
 como el de práctica, los deja en blanco y el PDF imprime «no informado». El área se imprime siempre con dos decimales.
+
+## D19. Tono de servicio real
+La interfaz ya no habla de «práctica», «MVP» ni «cuenta de prueba». Se conservan tres señales para cumplir RN-01 y evitar
+que un documento pase por oficial: el aviso fijo superior («Entorno de demostración…»), la marca de agua y el pie del PDF, y el
+prefijo `SIM-` en las partidas. La partida `SIM-99000001` pasó a `SIM-11070419` (Los Aquijes).

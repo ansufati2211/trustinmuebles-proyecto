@@ -307,7 +307,7 @@ class CasosApiTest extends BaseApiTest {
         JsonNode original = leer(PARCONA);
         try {
             ObjectNode p = peticion(original);
-            p.put("condicionRepresentada", "Posesión sin inscripción, según el escenario.");
+            p.put("condicionRepresentada", "Posesión sin inscripción.");
             actualizarExpediente(PARCONA, revisor(), p).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"))
                     .andExpect(jsonPath("$.evaluacion.motivos[*].tipo", hasItem("CONDICION")));

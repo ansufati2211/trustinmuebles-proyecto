@@ -2,7 +2,6 @@
   "version": "v0.2",
   "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
   "condicionesContempladas": [
-    "Lote urbano inscrito, según el escenario.",
     "Lote urbano inscrito en el Registro de Predios.",
     "Lote urbano inscrito, según declara el vendedor."
   ],

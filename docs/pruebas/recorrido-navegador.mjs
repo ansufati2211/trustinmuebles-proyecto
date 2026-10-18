@@ -9,7 +9,7 @@ mkdirSync(SHOTS, { recursive: true });
 const PARCONA = "SIM-11048217";
 const TINGUINA = "SIM-11052690";
 const SUBTANJALLA = "SIM-11061555";
-const PRACTICA = "SIM-99000001";
+const LOS_AQUIJES = "SIM-11070419";
 
 const resultados = [];
 const errores = [];
@@ -55,7 +55,7 @@ async function login(cuenta) {
   await page.type("#codigoCuenta", cuenta);
   await page.type("#password", PASS);
   await page.click('button[type="submit"]');
-  await espera("casos disponibles");
+  await espera("expedientes disponibles");
 }
 async function logout() {
   await page.click('button[aria-label="Cerrar sesión"]');
@@ -70,8 +70,8 @@ async function abrir(codigo) {
 await ir("/");
 await espera("Entiende un expediente");
 let t = await texto();
-check("Inicio: aviso de caso sintético visible", t.includes("Caso sintético con fines académicos") && t.includes("No certifica saneamiento ni recomienda comprar"));
-check("Inicio: lista lo que el MVP no hace", t.includes("No consulta fuentes oficiales"));
+check("Inicio: aviso de caso sintético visible", t.includes("Entorno de demostración") && t.includes("No certifica saneamiento ni recomienda comprar"));
+check("Inicio: lista lo que Trustinmuebles no hace", t.includes("No consulta fuentes oficiales"));
 check("Inicio: sin promesas comerciales antiguas", !/100% de certeza|Compra con certeza|Capster|\$420,000/.test(t));
 await foto("01-inicio");
 
@@ -83,7 +83,7 @@ check("Casos sin sesión redirige a login", page.url().includes("#/login"));
 // 3. Comprador
 await login("comprador-01");
 t = await texto();
-check("Casos: aparecen las 4 partidas con su denominación", [PARCONA, TINGUINA, SUBTANJALLA, PRACTICA].every((c) => t.includes(c))
+check("Casos: aparecen las 4 partidas con su denominación", [PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES].every((c) => t.includes(c))
   && t.includes("Hab. Urb. Santa Elvira") && t.includes("Hab. Urb. Rincón del Sauce") && t.includes("Hab. Urb. Mirador del Sol"));
 check("Casos: no delatan el diseño del estudio", !/postest|pretest|forma b|forma a|titular (alfa|delta)/i.test(t));
 check("Casos: cada estado va con texto", (t.match(/estado: (verde|amarillo|gris|rojo)/gi) ?? []).length === 4);
@@ -194,10 +194,10 @@ await espera("Observado");
 await page.select('select[id^="estado-"]', valorInicial);
 check("Checklist: se restaura el valor inicial", (await guardarItem()) === 200);
 
-// Asociar un PDF propio al caso de práctica
+// Asociar un PDF propio a la partida de Los Aquijes
 const pdfPrueba = process.env.PDF_PRUEBA;
 if (pdfPrueba) {
-  await abrir(PRACTICA);
+  await abrir(LOS_AQUIJES);
   await espera("Editar partida");
   const input = await page.$("#ed-pdf");
   await input.uploadFile(pdfPrueba);

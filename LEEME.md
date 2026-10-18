@@ -56,7 +56,7 @@ PDF generada por el sistema. Todo es inventado.
 | `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada |
 | `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; embargo cancelado |
 | `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial sin títulos de dominio; demanda vigente (alerta prioritaria) |
-| `SIM-99000001` | Caso de práctica | Gris | Información insuficiente. Es para familiarizarse |
+| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal: titularidad y cargas no constan |
 
 Las reglas (tabla borrador v0.2), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
 Si tenías una base creada con una versión anterior, apaga el backend y borra `trustinmuebles-backend/data/`: los casos

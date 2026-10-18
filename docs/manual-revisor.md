@@ -1,6 +1,6 @@
 # Manual del revisor
 
-El revisor prepara y mantiene las partidas simuladas. Ve lo mismo que el comprador, más las herramientas de edición. El
+El revisor prepara y mantiene las partidas. Ve lo mismo que el comprador, más las herramientas de edición. El
 servidor comprueba el rol en cada operación: la interfaz solo oculta lo que no corresponde.
 
 ## Editar una partida
@@ -42,7 +42,7 @@ El sistema genera una **copia literal simulada** a partir de la partida: tiene r
 marca de agua y un pie que dicen que es simulada. Se regenera cada vez que guardas.
 
 Si prefieres usar un PDF propio, en «Documento PDF» elige uno de hasta 5 MB y pulsa «Asociar PDF». Desde ese momento el
-sistema deja de regenerarlo y deberás mantenerlo tú. **Debe ser un documento simulado, nunca uno real.**
+sistema deja de regenerarlo y deberás mantenerlo tú. **No subas documentos con datos reales de personas o predios.**
 
 ## Reglas de trabajo
 

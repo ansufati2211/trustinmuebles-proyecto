@@ -13,7 +13,7 @@ Todo vive en `trustinmuebles-backend/src/main/resources/contenido/v0.2/`:
 
 | Material | Archivo | Qué contiene |
 |---|---|---|
-| Casos simulados | `casos/SIM-11048217.json`, `SIM-11052690.json`, `SIM-11061555.json`, `SIM-99000001.json` | Datos del predio y asientos por rubro de cada partida, checklist y términos |
+| Casos simulados | `casos/SIM-11048217.json`, `SIM-11052690.json`, `SIM-11061555.json`, `SIM-11070419.json` | Datos del predio y asientos por rubro de cada partida, checklist y términos |
 | Reglas | `reglas.json` | Seis reglas por tipo de acto (tres prioritarias y tres de revisión) y la condición contemplada |
 | Glosario | `glosario.json` | 32 términos con su explicación y algunas referencias normativas |
 | Documento PDF | `CopiaLiteralPdf.java` (plantilla) y `docs/pruebas/evidencias/pdf-generados/` | Redacción y estructura de la copia literal simulada |

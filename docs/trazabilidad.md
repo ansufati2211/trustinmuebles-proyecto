@@ -14,7 +14,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | REQ-F02 Listado de casos | `expediente` | `Casos` | CP-02: `cadaCodigoDevuelveSusDatos` | Probado |
 | REQ-F03 Expediente | `expediente`, `almacenamiento` | `Expediente`, `EditorExpediente` | CP-03: `guardarPersiste`, `entradaInvalidaNoGuarda`, `versionVieja`, `NormalizadorAsientosTest`; documento: `CopiaLiteralPdfTest`, `documentoDelCaso`, `documentoDelExtractoParcial`, `documentoGeneradoSeRegenera`, `subirDocumento` | Probado |
 | REQ-F04 Orientación | `orientacion` | `Glosario` (en `Expediente`) | CP-04: `glosario` y recorrido de navegador con teclado | Probado. Contenido pendiente de revisión |
-| REQ-F05 Semáforo informativo | `clasificacion` | Panel del semáforo | CP-05a, c, d: `parconaVerde`, `tinguinaAmarillo`, `subtanjallaGrisConservaAlerta`, `practicaGris`, `cancelarLaHipotecaRecalcula`, `condicionNoContemplada`, `MotorClasificacionTest`. CP-05b: `embargoVigenteDaRojo` | Probado con la tabla borrador v0.2. CP-05b queda pendiente de revisión especializada |
+| REQ-F05 Semáforo informativo | `clasificacion` | Panel del semáforo | CP-05a, c, d: `parconaVerde`, `tinguinaAmarillo`, `subtanjallaGrisConservaAlerta`, `sinCopiaLiteralGris`, `cancelarLaHipotecaRecalcula`, `condicionNoContemplada`, `MotorClasificacionTest`. CP-05b: `embargoVigenteDaRojo` | Probado con la tabla borrador v0.2. CP-05b queda pendiente de revisión especializada |
 | REQ-F06 Checklist | `checklist` | Checklist del `Expediente` | CP-06: `checklistSoloRevisor`, `checklistValidaPertenenciaYEstado` | Probado |
 
 ## Requisitos no funcionales
