@@ -53,3 +53,10 @@ y revisión especializada de las reglas nuevas.
 
 10 expedientes (6 nuevos) con copia literal más fiel, láminas de planos a escala con la geometría de cada caso e informe técnico en PDF.
 Ver D22. Pendiente: revisión especializada del contenido y de las reglas.
+
+## v0.5.1
+
+Sincronización con EXP2: el nombre es Trustinmuebles en el código, la documentación y el informe Word (D2). La página de inicio
+muestra el modelo de una sola inmobiliaria, el cuadro de fuentes gratuitas y de pago y los dos indicadores (A documental y B
+técnico, RN-10). LEEME y el README del backend se pusieron al día: 3 cuentas, 8 módulos, 104 pruebas, planos e inspección como
+funcionalidades implementadas.

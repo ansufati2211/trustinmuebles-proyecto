@@ -1,8 +1,9 @@
 # Funcionalidades de Trustinmuebles
 
-> Versión v0.5: 10 expedientes con copia literal, láminas de planos e informe técnico en PDF (sobre la v0.4, respuesta a EXP2).
+> Versión v0.5.1: nombre unificado, documentación al día e inicio con el modelo de una inmobiliaria, las fuentes documentales y
+> los dos indicadores. Sobre la v0.5: 10 expedientes con copia literal, láminas de planos e informe técnico en PDF.
 
-Qué hace el programa hoy (versión v0.5), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+Qué hace el programa hoy (versión v0.5.1), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
 Trustinmuebles es una herramienta de **orientación documental** para la precompra de lotes urbanos en Ica. Muestra la partida
@@ -14,10 +15,10 @@ reemplaza asesoría legal.**
 | Área | Qué ofrece | Quién |
 |---|---|---|
 | Acceso | Ingreso con código de cuenta y contraseña; dos roles | Todos |
-| Expedientes | Lista, búsqueda por número y detalle de cada partida | Comprador y revisor |
-| Semáforo informativo | Estado verde, amarillo, rojo o gris, con motivos, alertas y faltantes | Comprador y revisor |
-| Partida registral | Descripción del inmueble y asientos por rubro (C, D, E, F) | Comprador y revisor |
-| Glosario | Términos explicados al seleccionarlos | Comprador y revisor |
+| Expedientes | Lista, búsqueda por número y detalle de cada partida | Todos |
+| Semáforo informativo | Estado verde, amarillo, rojo o gris, con motivos, alertas y faltantes | Todos |
+| Partida registral | Descripción del inmueble y asientos por rubro (C, D, E, F) | Todos |
+| Glosario | Términos explicados al seleccionarlos | Todos |
 | Checklist | Lista de elementos pendientes, revisados u observados | Ver: todos. Cambiar: revisor |
 | Documento PDF | Copia literal simulada o transcripción referencial | Ver: todos. Subir uno propio: revisor |
 | Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
@@ -28,7 +29,8 @@ reemplaza asesoría legal.**
 ## 1. Acceso y roles
 
 - **Ingreso** (`#/login`): código de cuenta y contraseña. No hay registro abierto: las cuentas las crea el sistema al primer
-  arranque (`comprador-01` y `revisor-01`).
+  arranque (`comprador-01`, `revisor-01` y `especialista-01`). Las tres cuentas usan la contraseña de
+  `APP_SEED_PASSWORD`.
 - **Sesión:** dura mientras la pestaña esté abierta. Si caduca, el sistema vuelve al ingreso.
 - **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
 - **Roles:**
@@ -39,7 +41,13 @@ reemplaza asesoría legal.**
 
 ## 2. Inicio y avisos
 
-- **Inicio** (`#/`): qué es Trustinmuebles, qué encuentras en cada expediente, cómo funciona y qué **no** hace.
+- **Inicio** (`#/`): qué es Trustinmuebles, qué encuentras en cada expediente, cómo funciona y qué **no** hace. Además:
+  - **Modelo de una sola inmobiliaria en Ica:** cartera propia cargada a mano por el revisor, sin scraping de otros portales y
+    sin APIs públicas que no existen.
+  - **Dos servicios con indicadores separados:** A, pre-evaluación documental automática por reglas sobre la partida y los 4
+    planos; B, evaluación técnica presencial en 6 pasos por un ingeniero civil o arquitecto, que no cambia el color de A (RN-10).
+  - **Cuadro de fuentes documentales:** gratuitas (Conoce Aquí para transcribir la partida y Visor BGR para la ubicación) y las
+    que aporta el propietario o tienen costo (copia literal certificada, los 4 planos y la inspección presencial).
 - **Aviso fijo** en todas las pantallas: entorno de demostración, partidas ficticias y transcritas sin nombres de personas, y que
   la información es referencial.
 - **Pie de página:** alcance del servicio y sus límites.

@@ -7,7 +7,7 @@ Todo lo que sigue pendiente debe seguir marcado como pendiente.
 
 | Sección | Qué dice hoy | Qué corresponde |
 |---|---|---|
-| Portada, título y todo el texto | InmoClaro | El código se llama Trustinmuebles (decisión D2). Unificar el nombre antes de entregar |
+| Portada, título y todo el texto | Trustinmuebles | Corregido en la v0.5.1: el informe dice Trustinmuebles en todo el texto y en sus propiedades (decisión D2) |
 | 6.6.2 y Tabla 49 | HTML/CSS con Bootstrap, JavaScript, Node.js con Express, MySQL | React 19 con Vite y Tailwind, Java 21 con Spring Boot 4, H2 en archivo. El informe ya permite documentar el ajuste (decisión D1) |
 | Figura 11 | «Backend modular único: Acceso · Expedientes · Reglas · Glosario · Checklist» | Sigue siendo válida. Los módulos reales son `identidad`, `expediente`, `clasificacion`, `checklist`, `orientacion` y `almacenamiento` |
 | 6.1.4 y 6.6.1 | Equipo y configuración «por confirmar» | Ver [entorno.md](entorno.md) |

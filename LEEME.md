@@ -1,12 +1,16 @@
-# Trustinmuebles — MVP académico de orientación documental
+# Trustinmuebles — MVP académico de orientación documental (v0.5.1)
 
-Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Es un MVP que muestra **partidas registrales
-simuladas** de lotes urbanos de Ica, con documentos que se parecen a una copia literal pero son ficticios, explica sus
-términos y señala qué información falta. **No certifica saneamiento, no recomienda comprar, no
-consulta fuentes oficiales y no reemplaza asesoría legal.** El informe lo llama InmoClaro (ver `docs/decisiones.md`, D2).
+Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Trustinmuebles es el sistema de transparencia
+precompra de **una sola inmobiliaria de Ica**, que carga a mano su propia cartera (sin scraping de otros portales ni APIs
+públicas, que SUNARP no ofrece). Muestra **partidas registrales simuladas** de lotes y viviendas urbanas, con documentos que se
+parecen a una copia literal pero son ficticios, explica sus términos y señala qué información falta. **No certifica
+saneamiento, no recomienda comprar, no consulta fuentes oficiales y no reemplaza asesoría legal.**
+
+El producto se llama Trustinmuebles en el código, en la documentación y en el informe (ver `docs/decisiones.md`, D2).
 
 Dos carpetas:
-- `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21. Ver su README.
+- `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 8 módulos: `identidad`,
+  `expediente`, `clasificacion`, `inspeccion`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
 - `trustinmuebles/` — interfaz de React 19 con Vite.
 
 Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe. Para saber qué hace el programa, empieza por `docs/funcionalidades.md`.
@@ -39,11 +43,11 @@ Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explic
 
 | Cuenta | Rol | Puede |
 |---|---|---|
-| `comprador-01` | Comprador | Consultar casos, glosario, checklist y documento |
-| `revisor-01` | Revisor | Lo anterior, más editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
-| `especialista-01` | Especialista | Consultar, y emitir el informe técnico de una inspección solicitada. No edita partidas |
+| `comprador-01` | COMPRADOR | Consultar casos, glosario, checklist y documento |
+| `revisor-01` | REVISOR | Lo anterior, más editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
+| `especialista-01` | ESPECIALISTA | Consultar, y emitir el informe técnico de una inspección solicitada. No edita partidas |
 
-Las dos usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
+Las tres cuentas usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
 ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`.
 No hay registro abierto.
 
@@ -80,18 +84,30 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 ## Pruebas
 
 ```bash
-cd trustinmuebles-backend && ./mvnw test        # 92 pruebas
+cd trustinmuebles-backend && ./mvnw test        # 92 pruebas del backend
 cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
-cd trustinmuebles && npx pnpm@9 test            # 12 pruebas de la limpieza de datos personales
+cd trustinmuebles && npx pnpm@9 test            # 12 pruebas del frontend (lectura de partidas y limpieza de datos personales)
 env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)
 ```
 
-Resultados y evidencias en `docs/pruebas/`. El recorrido de navegador se explica en `docs/pruebas/recorrido-manual.md`.
+En total, 104 pruebas automáticas. Resultados y evidencias en `docs/pruebas/`. El recorrido de navegador se explica en `docs/pruebas/recorrido-manual.md`.
+
+## Funcionalidades implementadas
+
+- **Indicador A, pre-evaluación documental:** semáforo automático por reglas versionadas sobre la partida (rubros C, D, E y F)
+  y los 4 planos de la vivienda, con motivos, alertas y faltantes.
+- **Expediente técnico de 4 planos:** arquitectura, estructuras, instalaciones eléctricas (II.EE.) e instalaciones sanitarias
+  (II.SS.), con una lámina 2D a escala por plano generada en PDF con PDFBox. El revisor puede subir el PDF real de cada plano.
+- **Indicador B, evaluación técnica presencial:** el comprador la solicita y el rol especialista (ingeniero civil o arquitecto)
+  emite el informe siguiendo un procedimiento de 6 pasos, también en PDF. Nunca cambia el color del indicador A (RN-10).
+- Copia literal simulada en PDF, glosario cerrado, checklist, edición transaccional del revisor y partidas transcritas sin
+  datos personales. El detalle está en `docs/funcionalidades.md`.
 
 ## Qué no incluye
 
-Integraciones estatales, OCR, inteligencia artificial, autenticidad documental, dictámenes jurídicos, pagos, contratos,
-firmas, inspección, planos, tours, posventa, filtros avanzados y reportes descargables (sección 1.7 del informe).
+Integraciones estatales, scraping de portales, OCR, inteligencia artificial o visión artificial, autenticidad documental,
+dictámenes jurídicos, pagos, contratos, firmas, tours, posventa, filtros avanzados y reportes descargables (sección 1.7 del
+informe).
 
 ## Pendiente fuera del código
 

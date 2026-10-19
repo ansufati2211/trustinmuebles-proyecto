@@ -9,11 +9,11 @@ equipo y el docente la acepten.
 **Por qué:** el equipo ya tenía esa base funcional y decidió no rehacerla. La sección 6.6.2 lo contempla.
 **Afecta:** 6.6.2, Tabla 49, Figura 11. **Confirma:** equipo y docente.
 
-## D2. El producto se llama Trustinmuebles en el código
+## D2. El producto se llama Trustinmuebles
 
-**Qué:** el informe lo llama InmoClaro. El código, la interfaz y los repositorios dicen Trustinmuebles, y se dejó así por
-decisión del equipo.
-**Afecta:** portada, título y todo el texto del informe. **Confirma:** equipo. Hay que unificar el nombre antes de entregar.
+**Qué:** el único nombre del producto es Trustinmuebles, en el código, la interfaz, los repositorios, la documentación y el
+informe. En la v0.5.1 se retiraron del informe Word el nombre anterior y una grafía errónea del nombre.
+**Afecta:** portada, título y todo el texto del informe. **Confirma:** equipo.
 
 ## D3. Se retiró todo lo que el informe excluye
 
