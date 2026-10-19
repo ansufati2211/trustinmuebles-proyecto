@@ -34,9 +34,9 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
 
   const generado = detalle.expediente.documentoGenerado;
   return (
-    <div className="mt-8 pt-6 border-t border-gray-100">
+    <div className="mt-8 pt-6 border-t border-border">
       <h3 className="text-sm font-bold mb-1.5">Documento PDF</h3>
-      <p className="text-xs text-muted-foreground mb-3 leading-relaxed">
+      <p className="text-xs text-tinta-2 mb-3 leading-relaxed">
         {generado
           ? "El sistema genera la copia literal a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
           : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
@@ -143,7 +143,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
         <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-2">
           <Pencil className="w-5 h-5 text-primary" aria-hidden="true" /> Editar partida
         </h2>
-        <p className="text-sm text-muted-foreground mb-6 leading-relaxed">
+        <p className="text-sm text-tinta-2 mb-6 leading-relaxed">
           Solo el revisor puede editar. El color no se elige: se recalcula con las reglas al guardar. La titularidad sale del
           último asiento C, y un gravamen figura cancelado cuando un asiento E lo cancela. Si un dato no consta en el
           extracto, déjalo vacío.

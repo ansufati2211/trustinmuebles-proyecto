@@ -131,13 +131,13 @@ export default function RegistrarPartida() {
   const numeroValido = pareceNumeroDePartida(numero);
 
   return (
-    <div className="flex-1 bg-gray-50/50 pb-24">
-      <div className="bg-white border-b border-gray-100">
+    <div className="flex-1 bg-superficie pb-24">
+      <div className="bg-white border-b border-border">
         <div className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8">
           <h1 className="flex items-center gap-3 text-3xl font-bold text-foreground tracking-tight">
             <FilePlus2 className="w-7 h-7 text-primary" aria-hidden="true" /> Registrar partida
           </h1>
-          <p className="text-muted-foreground mt-2 leading-relaxed">
+          <p className="text-tinta-2 mt-2 leading-relaxed">
             Consulta la partida en Conoce Aquí (gratis, con tu DNI), pega su texto aquí y revisa la vista previa. Se guarda
             sin nombres, DNI, estado civil ni domicilios de personas naturales.
           </p>
@@ -153,7 +153,7 @@ export default function RegistrarPartida() {
       </div>
 
       <form onSubmit={guardar} noValidate className="container mx-auto max-w-4xl px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        <Card className="rounded-3xl border-gray-100 shadow-sm">
+        <Card className="rounded-3xl border-border shadow-tarjeta">
           <CardContent className="p-8 space-y-5">
             <h2 className="text-xl font-bold text-foreground">1. Datos de la partida</h2>
             <div className="grid sm:grid-cols-3 gap-5">
@@ -216,10 +216,10 @@ export default function RegistrarPartida() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-gray-100 shadow-sm">
+        <Card className="rounded-3xl border-border shadow-tarjeta">
           <CardContent className="p-8 space-y-4">
             <h2 className="text-xl font-bold text-foreground">2. Pega el texto de la partida</h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-tinta-2 leading-relaxed">
               Copia los asientos desde Conoce Aquí (C00001, D00001, E00001…). El texto original no se envía: solo se guarda la
               versión limpia que ves en el paso 4. Si el sitio muestra imágenes, escribe los asientos a mano en el paso 3.
             </p>
@@ -237,7 +237,7 @@ export default function RegistrarPartida() {
           </CardContent>
         </Card>
 
-        <Card className="rounded-3xl border-gray-100 shadow-sm">
+        <Card className="rounded-3xl border-border shadow-tarjeta">
           <CardContent className="p-8 space-y-5">
             <h2 className="text-xl font-bold text-foreground">3. Corrige los asientos y la descripción</h2>
             <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} />
@@ -262,26 +262,26 @@ export default function RegistrarPartida() {
             <h2 className="flex items-center gap-2 text-xl font-bold text-foreground">
               <EyeOff className="w-5 h-5 text-primary" aria-hidden="true" /> 4. Vista previa sin datos personales
             </h2>
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-tinta-2 leading-relaxed">
               Los nombres de personas naturales se reemplazan por «Persona natural N»; los DNI, el estado civil y los domicilios
               se omiten. Las empresas y el Estado se conservan. Esto es una ayuda: revisa el texto antes de confirmar.
             </p>
 
             <div>
               <p className="text-sm font-bold mb-2">Nombres detectados ({limpieza.personas.length})</p>
-              {limpieza.personas.length === 0 && <p className="text-sm text-muted-foreground">No se detectó ningún nombre de persona.</p>}
+              {limpieza.personas.length === 0 && <p className="text-sm text-tinta-2">No se detectó ningún nombre de persona.</p>}
               <ul className="space-y-2">
                 {limpieza.personas.map((p) => (
                   <li key={p.etiqueta} className="flex flex-wrap items-center gap-3 text-sm">
                     <span className="font-bold text-foreground">{p.etiqueta}</span>
-                    <span className="text-muted-foreground">= «{p.nombre}» (solo se ve aquí)</span>
+                    <span className="text-tinta-2">= «{p.nombre}» (solo se ve aquí)</span>
                     <button type="button" className="text-primary font-semibold underline"
                       onClick={() => setIgnorar([...ignorar, p.nombre])}>No es una persona</button>
                   </li>
                 ))}
               </ul>
               {ignorar.length > 0 && (
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-tinta-2 mt-2">
                   Conservados por indicación tuya: {ignorar.join(", ")}.{" "}
                   <button type="button" className="text-primary font-semibold underline" onClick={() => setIgnorar([])}>Deshacer</button>
                 </p>
@@ -297,16 +297,16 @@ export default function RegistrarPartida() {
                   onClick={() => { setExtras([...extras, nuevoExtra.trim()]); setNuevoExtra(""); }}>Ocultar</Button>
               </div>
               {extras.length > 0 && (
-                <p className="text-sm text-muted-foreground mt-2">
+                <p className="text-sm text-tinta-2 mt-2">
                   Ocultados a mano: {extras.join(", ")}.{" "}
                   <button type="button" className="text-primary font-semibold underline" onClick={() => setExtras([])}>Deshacer</button>
                 </p>
               )}
             </div>
 
-            <div className="rounded-2xl bg-gray-50 border border-gray-200 p-4 space-y-3" aria-live="polite">
+            <div className="rounded-2xl bg-superficie border border-border p-4 space-y-3" aria-live="polite">
               <p className="text-sm font-bold">Lo que se guardará</p>
-              {!hayTexto && <p className="text-sm text-muted-foreground">Aún no hay asientos.</p>}
+              {!hayTexto && <p className="text-sm text-tinta-2">Aún no hay asientos.</p>}
               {limpiaFilas.map((f) => (
                 <div key={f.referencia} className="text-sm leading-relaxed">
                   <p className="font-bold text-foreground">{f.referencia || "(sin número)"}{f.titulares ? ` · Titulares: ${f.titulares}` : ""}</p>

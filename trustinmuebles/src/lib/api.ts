@@ -59,6 +59,12 @@ export function subirArchivo<T>(path: string, campo: string, archivo: File) {
   return api<T>(path, { method: "POST", body: datos });
 }
 
+/** URL local (blob) de un PDF protegido, para mostrarlo dentro de la página. Quien la pide debe revocarla al cerrar. */
+export async function pdfComoUrl(path: string) {
+  const res = await request(path);
+  return URL.createObjectURL(await res.blob());
+}
+
 /** Abre en otra pestaña un PDF protegido (necesita el token, por eso no es un enlace directo). */
 export async function abrirPdf(path: string) {
   const res = await request(path);
