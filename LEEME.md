@@ -9,7 +9,7 @@ Dos carpetas:
 - `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21. Ver su README.
 - `trustinmuebles/` — interfaz de React 19 con Vite.
 
-Documentación en `docs/`: entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe.
+Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe. Para saber qué hace el programa, empieza por `docs/funcionalidades.md`.
 
 ## Requisitos
 
