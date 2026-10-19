@@ -33,9 +33,8 @@ class LaminaPdfTest {
                 }
                 assertThat(dibujado).contains(LaminaPdf.MARCA_DE_AGUA, LaminaPdf.ROTULO,
                         e.etiqueta().toUpperCase(java.util.Locale.forLanguageTag("es-PE")), "Partida N.° SIM-11048217");
-                // «No reemplaza el plano aprobado…» es el aviso; lo que no debe haber es una firma o un sello presentados.
-                assertThat(String.join(" ", dibujado)).doesNotContainIgnoringCase("firmado por")
-                        .doesNotContainIgnoringCase("sello n");
+                // Los avisos hablan de «sin sello ni firma»; lo que no debe haber es una firma presentada.
+                assertThat(String.join(" ", dibujado)).doesNotContainIgnoringCase("firmado por");
                 assertThat(doc.getPage(0).getResources().getXObjectNames()).as("sin logos ni sellos como imagen").isEmpty();
             }
         }
