@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { api, put, subirArchivo } from "@/lib/api";
 import { ESTADOS, ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
 import { campo, FilasAsientos, filasAPeticion, type Fila } from "@/components/FilasAsientos";
+import { BloqueTecnico, tecnicoAPeticion, tecnicoDesde } from "@/components/BloqueTecnico";
 import type { Completitud, DetalleCaso, PeticionExpediente } from "@/lib/types";
 
 /** Asociar el PDF del expediente (REQ-F03). El servidor acepta solo PDF de hasta 5 MB. */
@@ -94,6 +95,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
   const [linderos, setLinderos] = useState(inicial.linderos);
   const [antecedente, setAntecedente] = useState(inicial.antecedente);
   const [filas, setFilas] = useState<Fila[]>(inicial.filas);
+  const [tecnico, setTecnico] = useState(tecnicoDesde(x));
   const [errores, setErrores] = useState<string[]>([]);
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
@@ -115,6 +117,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
       linderos: linderos.trim() || null,
       antecedenteDominial: antecedente.trim() || null,
       asientos: filasAPeticion(filas),
+      ...tecnicoAPeticion(tecnico),
       versionEsperada: x.version,
     };
     try {
@@ -123,7 +126,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
       const d = desde(nuevo);
       setCondicion(d.condicion); setCompletitud(d.completitud); setFecha(d.fecha); setNota(d.nota);
       setZona(d.zona); setOficina(d.oficina); setUbicacion(d.ubicacion); setArea(d.area);
-      setLinderos(d.linderos); setAntecedente(d.antecedente); setFilas(d.filas);
+      setLinderos(d.linderos); setAntecedente(d.antecedente); setFilas(d.filas); setTecnico(tecnicoDesde(nuevo.expediente));
       const estado = nuevo.evaluacion ? ESTADOS[nuevo.evaluacion.estado].nombre : "sin evaluar";
       setMensaje(`Guardado. El estado se recalculó con las reglas ${nuevo.evaluacion?.versionReglas ?? ""}: ${estado}.`);
     } catch (err) {
@@ -194,6 +197,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
             <textarea id="ed-nota" rows={2} maxLength={500} className={`${campo} h-auto py-2`} value={nota} onChange={(e) => setNota(e.target.value)} />
           </div>
 
+          <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} />
           <FilasAsientos filas={filas} setFilas={setFilas} />
 
           {errores.length > 0 && (

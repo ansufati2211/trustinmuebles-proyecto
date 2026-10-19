@@ -1,6 +1,13 @@
 // DTOs que devuelve el backend (trustinmuebles-backend).
 
-export type Rol = "COMPRADOR" | "REVISOR";
+export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA";
+export type TipoPredio = "LOTE" | "VIVIENDA";
+export type Especialidad = "ARQUITECTURA" | "ESTRUCTURAS" | "ELECTRICAS" | "SANITARIAS";
+export type EstadoPlano = "PRESENTADO" | "OBSERVADO" | "NO_PRESENTADO" | "NO_APLICA";
+export type SistemaConstructivo = "ALBANILERIA_CONFINADA" | "APORTICADO" | "ADOBE" | "OTRO";
+export type EstadoTecnico = "NO_SOLICITADA" | "SOLICITADA" | "EN_INSPECCION" | "EMITIDO";
+export type ResultadoTecnico = "FAVORABLE" | "CON_OBSERVACIONES" | "CON_RIESGO";
+export type VerificacionCampo = "CONFORME" | "OBSERVADO" | "NO_VERIFICADO";
 export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
 /** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
@@ -16,7 +23,23 @@ export interface Sesion { token: string; usuario: Usuario }
 
 export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
-  pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null;
+  pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
+}
+
+/** Un plano del expediente técnico. coincideArea solo se calcula en el plano arquitectónico. */
+export interface Plano {
+  especialidad: Especialidad; especialidadEtiqueta: string; estado: EstadoPlano; areaConstruida: number | null;
+  sistemaConstructivo: SistemaConstructivo | null; sistemaConstructivoEtiqueta: string | null;
+  observacion: string | null; tieneDocumentoPropio: boolean; coincideArea: boolean | null;
+}
+
+/** Indicador B: lo que se sabe de la verificación física. Independiente del semáforo documental. */
+export interface EvaluacionTecnica {
+  estado: EstadoTecnico; estadoEtiqueta: string; resultado: ResultadoTecnico | null; resultadoEtiqueta: string | null;
+  profesional: string | null; colegiatura: string | null; fechaSolicitud: string | null; fechaInspeccion: string | null;
+  verifArquitectura: VerificacionCampo | null; verifEstructuras: VerificacionCampo | null;
+  verifElectricas: VerificacionCampo | null; verifSanitarias: VerificacionCampo | null;
+  observaciones: string | null; conclusiones: string | null; estudiosAdicionales: string | null; limite: string;
 }
 
 /** Asiento de la partida. La primera letra de la referencia es el rubro: C, D, E o F. */
@@ -31,6 +54,7 @@ export interface Expediente {
   fechaReferencial: string; nota: string | null; zonaRegistral: string | null; oficinaRegistral: string | null;
   ubicacion: string | null; areaM2: number | null; linderos: string | null; antecedenteDominial: string | null;
   tieneDocumento: boolean; documentoGenerado: boolean; asientos: Asiento[];
+  tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: Plano[];
 }
 
 export interface Motivo { tipo: "FALTANTE" | "ALERTA" | "CONDICION" | "LIMITE"; texto: string }
@@ -51,7 +75,7 @@ export interface Termino { concepto: string; explicacion: string; version: strin
 export interface DetalleCaso {
   codigo: string; denominacion: string; contexto: string; sintetico: boolean; origen: Origen;
   fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
-  evaluacion: Evaluacion | null; checklist: ItemChecklist[]; terminos: Termino[];
+  evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
 }
 
 export interface AsientoPeticion {
@@ -60,8 +84,14 @@ export interface AsientoPeticion {
   titulares: string | null;
 }
 
+export interface PlanoPeticion {
+  especialidad: Especialidad; estado: EstadoPlano; areaConstruida: number | null;
+  sistemaConstructivo: SistemaConstructivo | null; observacion: string | null;
+}
+
 export interface PeticionExpediente {
   condicionRepresentada: string; completitud: Completitud; fechaReferencial: string; nota: string | null;
   zonaRegistral: string | null; oficinaRegistral: string | null; ubicacion: string | null; areaM2: number | null;
-  linderos: string | null; antecedenteDominial: string | null; asientos: AsientoPeticion[]; versionEsperada: number;
+  linderos: string | null; antecedenteDominial: string | null; asientos: AsientoPeticion[];
+  tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[]; versionEsperada: number;
 }

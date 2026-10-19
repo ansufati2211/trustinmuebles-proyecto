@@ -28,10 +28,10 @@ final class LaminaPdf {
     static final String MARCA_DE_AGUA = "DOCUMENTO TÉCNICO REFERENCIAL · FICTICIO";
     static final String ROTULO = "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · FICTICIO · SIN SELLO NI FIRMA";
 
-    private static final float X0 = 70f;
-    private static final float Y0 = 330f;
-    private static final float ANCHO = 455f;
-    private static final float ALTO = 300f;
+    private static final float X0 = 100f;
+    private static final float Y0 = 340f;
+    private static final float ANCHO = 400f;
+    private static final float ALTO = 330f;
 
     private LaminaPdf() {}
 
@@ -95,7 +95,7 @@ final class LaminaPdf {
                 etiqueta(cs, normal, 0.45f, 0.25f, "DORM. 2");
                 etiqueta(cs, normal, 0.70f, 0.25f, "S.H.");
                 etiqueta(cs, normal, 0.90f, 0.25f, "LAV.");
-                texto(cs, "Distribución y áreas · Esquema sin escala", normal, 8.5f, X0, Y0 - 16f);
+                texto(cs, "Distribución y áreas · Esquema sin escala", normal, 8.5f, X0, Y0 - 30f);
             }
             case ESTRUCTURAS -> {
                 cs.setStrokingColor(0.55f);
@@ -111,9 +111,9 @@ final class LaminaPdf {
                 cs.setNonStrokingColor(0f);
                 for (float x : xs) for (float y : ys) columna(cs, x, y);
                 texto(cs, "Sistema constructivo: " + seguro(sistema == null ? "no indicado" : sistema), negrita, 9f, X0,
-                        Y0 - 16f);
+                        Y0 - 30f);
                 texto(cs, "Cimentación: cimiento corrido y zapatas en cruces de ejes · Columnas y vigas: esquema",
-                        normal, 8.5f, X0, Y0 - 30f);
+                        normal, 8.5f, X0, Y0 - 44f);
             }
             case ELECTRICAS -> {
                 muros(cs);
@@ -152,8 +152,8 @@ final class LaminaPdf {
                 }
                 texto(cs, "Pozo a tierra", normal, 7f, px - 14f, py - 38f);
                 texto(cs, "TG: tablero general · Circuitos de alumbrado y tomacorrientes (esquema)", normal, 8.5f, X0,
-                        Y0 - 16f);
-                texto(cs, "Diagrama unifilar: no representado en esta lámina referencial", normal, 8.5f, X0, Y0 - 30f);
+                        Y0 - 30f);
+                texto(cs, "Diagrama unifilar: no representado en esta lámina referencial", normal, 8.5f, X0, Y0 - 44f);
             }
             case SANITARIAS -> {
                 muros(cs);
@@ -182,7 +182,7 @@ final class LaminaPdf {
                 etiqueta(cs, normal, 0.80f, 0.85f, "COCINA");
                 etiqueta(cs, normal, 0.70f, 0.10f, "S.H.");
                 texto(cs, "Azul: agua fría · Rojo: agua caliente · Gris: desagüe y ventilación (esquema)", normal, 8.5f,
-                        X0, Y0 - 52f);
+                        X0, Y0 - 70f);
             }
         }
     }

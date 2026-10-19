@@ -40,8 +40,9 @@ export default function Landing() {
                 Entiende un expediente de lote urbano, <span className="text-primary">paso a paso</span>.
               </h1>
               <p className="text-lg md:text-xl text-muted-foreground mb-8 leading-relaxed">
-                Trustinmuebles reúne la partida del lote, explica sus términos con un glosario cerrado y señala qué
-                información está pendiente. Orienta tu lectura; no es un dictamen.
+                Trustinmuebles es el sistema de transparencia precompra de nuestra cartera de lotes y viviendas en Ica:
+                reúne la partida y los planos del inmueble, explica sus términos y señala qué está pendiente. Orienta tu
+                lectura; no es un dictamen.
               </p>
 
               <div className="flex flex-col sm:flex-row gap-4">
@@ -102,6 +103,71 @@ export default function Landing() {
               </li>
             ))}
           </ul>
+        </div>
+      </section>
+
+      {/* 2b. Dos servicios */}
+      <section id="servicios" className="py-20 bg-white scroll-mt-32">
+        <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center max-w-3xl mx-auto mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold mb-4 text-foreground">Dos servicios que se complementan</h2>
+            <p className="text-lg text-muted-foreground">
+              Primero se revisan los documentos; después, si hace falta, un profesional verifica el inmueble en persona.
+            </p>
+          </div>
+          <div className="grid md:grid-cols-2 gap-8">
+            <Card className="rounded-3xl border-gray-100 shadow-sm">
+              <CardContent className="p-8">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Servicio 1 · Incluido</p>
+                <h3 className="text-xl font-bold text-foreground mb-3">Pre-evaluación documental</h3>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  El sistema aplica reglas explícitas a la partida registral (rubros C, D, E y F) y al expediente de planos
+                  de la vivienda: arquitectura, estructuras, instalaciones eléctricas y sanitarias. Resultado: un semáforo con
+                  sus motivos, alertas y lo que falta.
+                </p>
+                <p className="text-sm font-semibold text-foreground">Es automático y se calcula solo con los documentos. No dice si la obra está bien hecha.</p>
+              </CardContent>
+            </Card>
+            <Card className="rounded-3xl border-gray-100 shadow-sm">
+              <CardContent className="p-8">
+                <p className="text-xs font-bold uppercase tracking-wider text-primary mb-3">Servicio 2 · A pedido</p>
+                <h3 className="text-xl font-bold text-foreground mb-3">Evaluación técnica presencial</h3>
+                <p className="text-muted-foreground leading-relaxed mb-4">
+                  Un ingeniero civil o arquitecto colegiado visita el inmueble, comprueba estructuras e instalaciones en
+                  campo y emite un informe técnico con su conclusión y los estudios adicionales que haga falta.
+                </p>
+                <p className="text-sm font-semibold text-foreground">Se solicita desde el expediente. Un plano no reemplaza esta visita.</p>
+              </CardContent>
+            </Card>
+          </div>
+
+          <details className="mt-10 rounded-3xl border border-gray-100 bg-gray-50/60 p-6">
+            <summary className="cursor-pointer text-lg font-bold text-foreground">¿De dónde provienen los documentos y por qué la carga es controlada?</summary>
+            <div className="mt-4 grid md:grid-cols-2 gap-6 text-sm leading-relaxed text-muted-foreground">
+              <div>
+                <p className="font-bold text-foreground mb-1">Fuentes gratuitas</p>
+                <p>
+                  Partida registral: se consulta en «Conoce Aquí» de SUNARP y el revisor de la inmobiliaria la transcribe y
+                  estructura. Ubicación del predio: Visor de la Base Gráfica Registral de SUNARP.
+                </p>
+              </div>
+              <div>
+                <p className="font-bold text-foreground mb-1">Documentos que entrega el propietario o que tienen costo</p>
+                <p>
+                  Copia literal certificada o certificado registral (SUNARP, de pago), planos de las cuatro especialidades y
+                  documentos municipales, que entrega el propietario al encargar la venta.
+                </p>
+              </div>
+              <div className="md:col-span-2">
+                <p className="font-bold text-foreground mb-1">Por qué no se trae todo automáticamente</p>
+                <p>
+                  SUNARP no ofrece una conexión pública para partidas de predios, y copiar datos de portales de terceros
+                  incumple sus condiciones de uso. Por eso un revisor interno carga cada expediente a partir de documentos
+                  verificados, y los datos de personas naturales no se guardan.
+                </p>
+              </div>
+            </div>
+          </details>
         </div>
       </section>
 

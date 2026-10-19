@@ -149,16 +149,17 @@ t = await texto();
 check("Revisor ve el editor y los selectores", t.includes("Editar partida") && !!(await page.$('select[id^="estado-"]')));
 await foto("07-revisor-tinguina");
 
-// Registrar la cancelación de la hipoteca (asiento E): el estado debe pasar a verde
+// Registrar la cancelación de la hipoteca (asiento E). La Tinguiña sigue en amarillo: faltan los planos de II.EE. y II.SS.
 await clickBoton("Agregar asiento");
-await escribir("#as-ref-4", "E00002");
-await page.select("#as-acto-4", "CANCELACION");
-await page.select("#as-can-4", "D00001");
-await escribir("#as-txt-4", "Se cancela la hipoteca inscrita en el asiento D00001 por pago total de la deuda.");
+await escribir("#as-ref-5", "E00002");
+await page.select("#as-acto-5", "CANCELACION");
+await page.select("#as-can-5", "D00001");
+await escribir("#as-txt-5", "Se cancela la hipoteca inscrita en el asiento D00001 por pago total de la deuda.");
 check("Editar: guardar la cancelación responde 200", (await guardarPartida()) === 200);
 await espera("Guardado.");
 t = await texto();
-check("Editar: cancelar la hipoteca recalcula a Verde", t.toLowerCase().includes("estado: verde") && t.includes("Guardado. El estado se recalculó"));
+check("Editar: cancelar la hipoteca quita su alerta y deja las de los planos", !t.includes("Hipoteca vigente") && t.toLowerCase().includes("estado: amarillo")
+  && t.includes("Falta un plano de instalaciones") && t.includes("Guardado. El estado se recalculó"));
 await foto("08-revisor-recalculado");
 
 // Entrada inválida: un asiento C sin titulares
@@ -176,7 +177,7 @@ await espera("Editar partida");
 await page.click('button[aria-label="Quitar el asiento E00002"]');
 check("Restaurar: guardar sin la cancelación responde 200", (await guardarPartida()) === 200);
 await espera("Guardado.");
-check("Restaurar: La Tinguiña vuelve a Amarillo", (await min()).includes("estado: amarillo"));
+check("Restaurar: La Tinguiña vuelve a Amarillo con su hipoteca", (await min()).includes("estado: amarillo") && (await texto()).includes("Hipoteca vigente"));
 
 // Documento regenerado: debe seguir marcado como generado por el sistema
 check("Documento: figura como generado por el sistema", (await texto()).includes("generada a partir de la partida"));
@@ -270,6 +271,75 @@ await clickBoton("Sí, eliminar");
 check("Eliminar: el servidor borra la partida (204)", (await respDel).status() === 204);
 await espera("expedientes disponibles");
 check("Eliminar: la partida ya no aparece", !(await texto()).includes(NUEVA));
+
+// 9. Expediente técnico de planos, dos indicadores y evaluación técnica (EXP2)
+await abrir(TINGUINA);
+t = await texto();
+check("Planos: el panel muestra las 4 especialidades", t.includes("Expediente técnico de planos (2D)")
+  && ["Plano arquitectónico", "Plano de estructuras", "Plano de instalaciones eléctricas (II.EE.)", "Plano de instalaciones sanitarias (II.SS.)"].every((e) => t.includes(e)));
+check("Planos: La Tinguiña no tiene II.EE. ni II.SS. y lo dice", ((await page.$$eval("li[data-especialidad]", (ls) => ls.filter((l) => l.innerText.includes("Faltante")).length))) === 2);
+check("Planos: la arquitectura coincide con el área inscrita", t.includes("Coincide con el área inscrita (96.00 m²)"));
+// Las insignias se ven en mayúsculas por CSS: se compara sin distinguirlas.
+check("Dos indicadores: documental y técnico, separados", (await min()).includes("pre-evaluación documental") && (await min()).includes("evaluación técnica: informe: con observaciones subsanables"));
+check("Alertas: faltan los planos de instalaciones (RV-04)", t.includes("Falta un plano de instalaciones") && t.includes("RV-04"));
+check("Evaluación técnica: el informe muestra lo hallado en campo", t.includes("llave diferencial") && t.includes("CIP SIM-0001"));
+check("Evaluación técnica: dice que no reemplaza la revisión de la obra", t.includes("no lo cambia") || t.includes("no lo cambia."));
+check("Evaluación técnica: el procedimiento de 6 pasos está disponible", await page.$$eval("#evaluacion-tecnica details li", (ls) => ls.length) === 6);
+const planoTarget = browser.waitForTarget((x) => x.url().startsWith("blob:"), { timeout: 8000 }).catch(() => null);
+await page.evaluate(() => document.querySelector('li[data-especialidad="ARQUITECTURA"] button')?.click());
+const lamina = await planoTarget;
+check("Planos: «Ver plano 2D» abre la lámina referencial", !!lamina);
+if (lamina) { const pp = await lamina.page(); await pp?.close(); }
+await page.bringToFront();
+await foto("11-planos-y-evaluacion-tecnica");
+
+// El revisor ve el bloque técnico en el editor pero no el formulario del informe
+check("Revisor: edita el tipo de predio y los planos", !!(await page.$("#bt-tipo")) && !!(await page.$("#bt-estado-ELECTRICAS")));
+check("Revisor: no ve el formulario del informe técnico", !(await page.$("#it-conc")));
+
+await abrir(SUBTANJALLA);
+t = await texto();
+check("Subtanjalla: sin planos ni inspección, el indicador B dice que no hay evaluación física", (await min()).includes("evaluación técnica: no solicitada") && t.includes("no acredita el estado físico"));
+await logout();
+
+// El comprador solicita la inspección; el especialista emite el informe; el color documental no cambia
+await login("comprador-01");
+await abrir(SUBTANJALLA);
+const colorAntes = (await min()).match(/estado: (verde|amarillo|rojo|gris)/)?.[1];
+const respSol = page.waitForResponse((r) => r.url().includes("/inspeccion/solicitud") && r.request().method() === "POST", { timeout: 8000 });
+await clickBoton("Solicitar inspección técnica presencial");
+check("Comprador: solicita la inspección (201)", (await respSol).status() === 201);
+await espera("Solicitada: espera la visita del especialista");
+check("Comprador: no ve el formulario del informe", !(await page.$("#it-conc")));
+await logout();
+
+await login("especialista-01");
+await abrir(SUBTANJALLA);
+await espera("Informe técnico (solo el especialista lo llena)");
+check("Especialista: ve el formulario del informe y no el editor de partida", !!(await page.$("#it-conc")) && !(await texto()).includes("Editar partida"));
+await page.select("#it-estado", "EMITIDO");
+await page.select("#it-resultado", "CON_RIESGO");
+await escribir("#it-profesional", "Arq. Mónica Beatriz Rojas Quiroz");
+await escribir("#it-colegiatura", "CAP SIM-0002");
+await page.evaluate(() => {
+  const el = document.querySelector("#it-fecha");
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value").set;
+  set.call(el, "2026-10-15");
+  el.dispatchEvent(new Event("input", { bubbles: true }));
+});
+for (const id of ["verifArquitectura", "verifEstructuras", "verifElectricas", "verifSanitarias"]) await page.select(`#it-${id}`, "OBSERVADO");
+await escribir("#it-obs", "Fisuras en muros de carga.");
+await escribir("#it-conc", "Se requiere un estudio estructural antes de cualquier compra.");
+const respInf = page.waitForResponse((r) => r.url().includes("/inspeccion") && r.request().method() === "PUT", { timeout: 8000 });
+await clickBoton("Guardar informe");
+check("Especialista: emite el informe (200)", (await respInf).status() === 200);
+await espera("Informe emitido.");
+t = await texto();
+check("Informe emitido: indicador B con riesgo y color documental sin cambio",
+  (await min()).includes("informe: con riesgo estructural o de instalaciones") && (await min()).includes(`estado: ${colorAntes}`));
+await foto("12-informe-del-especialista");
+await logout();
+await login("revisor-01");
 
 await logout();
 

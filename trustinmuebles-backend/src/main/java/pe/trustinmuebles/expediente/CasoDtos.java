@@ -33,7 +33,8 @@ final class CasoDtos {
     // ---------------------------------------------------------------- respuestas
 
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
-            long pendientes, String origen, String fuente, LocalDate fechaConsulta) {}
+            long pendientes, String origen, String fuente, LocalDate fechaConsulta,
+            EstadoTecnico estadoTecnico) {}
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,

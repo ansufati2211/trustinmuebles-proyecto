@@ -4,6 +4,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EstadoBadge } from "@/components/EstadoBadge";
 import { EditorExpediente } from "@/components/EditorExpediente";
+import { PanelPlanos } from "@/components/PanelPlanos";
+import { InsigniaTecnica, PanelEvaluacionTecnica } from "@/components/PanelEvaluacionTecnica";
 import { BookOpen, ChevronRight, ExternalLink, FileText, Info, ListChecks, Trash2 } from "lucide-react";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
@@ -245,7 +247,13 @@ export default function Expediente() {
               <h1 className="text-2xl md:text-3xl font-bold text-foreground tracking-tight">{d.denominacion}</h1>
               <p className="text-muted-foreground font-medium mt-1">Partida N.° {d.codigo} · {d.contexto}</p>
             </div>
-            <EstadoBadge estado={ev?.estado} />
+            <div className="flex flex-col items-start md:items-end gap-2">
+              <div className="flex items-center gap-2">
+                <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Pre-evaluación documental</span>
+                <EstadoBadge estado={ev?.estado} />
+              </div>
+              <InsigniaTecnica estado={d.evaluacionTecnica.estado} resultado={d.evaluacionTecnica.resultado} />
+            </div>
           </div>
         </div>
       </div>
@@ -262,7 +270,7 @@ export default function Expediente() {
                 <div className={`${estilo.fondo} px-8 py-6 flex items-center gap-4`}>
                   <IconoEstado className={`w-10 h-10 shrink-0 ${estilo.texto}`} aria-hidden="true" />
                   <div>
-                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Semáforo informativo</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Indicador A · Pre-evaluación documental (automática)</p>
                     <h2 className={`text-2xl font-black ${estilo.texto}`}>{estilo.nombre}: {ev.etiqueta}</h2>
                   </div>
                 </div>
@@ -356,6 +364,10 @@ export default function Expediente() {
                 <AsientosPorRubro asientos={x.asientos} parcial={x.completitud !== "COMPLETA"} />
               </CardContent>
             </Card>
+
+            <PanelPlanos detalle={d} esRevisor={esRevisor} alCambiar={setData} />
+
+            <PanelEvaluacionTecnica detalle={d} alCambiar={setData} />
 
             {d.terminos.length > 0 && <Glosario terminos={d.terminos} />}
 

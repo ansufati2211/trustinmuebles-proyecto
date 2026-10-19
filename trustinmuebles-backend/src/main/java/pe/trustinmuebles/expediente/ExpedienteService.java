@@ -63,7 +63,7 @@ class ExpedienteService {
             return new ResumenCaso(e.getCaso().getCodigo(), e.getCaso().getDenominacion(), e.getCaso().getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
-                    e.getCaso().getFechaConsulta());
+                    e.getCaso().getFechaConsulta(), inspeccion.obtener(e.getId()).estado());
         }).toList();
     }
 

@@ -4,6 +4,7 @@ import { ClipboardPaste, ExternalLink, EyeOff, FilePlus2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { campo, FilasAsientos, filasAPeticion, type Fila } from "@/components/FilasAsientos";
+import { BloqueTecnico, TECNICO_VACIO, tecnicoAPeticion } from "@/components/BloqueTecnico";
 import { post } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { disociar } from "@/lib/disociar";
@@ -42,6 +43,7 @@ export default function RegistrarPartida() {
   const [antecedente, setAntecedente] = useState("");
   const [nota, setNota] = useState("");
   const [filas, setFilas] = useState<Fila[]>([]);
+  const [tecnico, setTecnico] = useState(TECNICO_VACIO);
 
   const [pegado, setPegado] = useState("");
   const [avisos, setAvisos] = useState<string[]>([]);
@@ -110,6 +112,7 @@ export default function RegistrarPartida() {
       linderos: l.linderos.trim() || null,
       antecedenteDominial: l.antecedente.trim() || null,
       asientos: filasAPeticion(l.filas),
+      ...tecnicoAPeticion(tecnico),
       confirmaSinDatosPersonales: confirmo,
     };
     try {
@@ -237,6 +240,7 @@ export default function RegistrarPartida() {
         <Card className="rounded-3xl border-gray-100 shadow-sm">
           <CardContent className="p-8 space-y-5">
             <h2 className="text-xl font-bold text-foreground">3. Corrige los asientos y la descripción</h2>
+            <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} />
             <FilasAsientos filas={filas} setFilas={setFilas} />
             <div>
               <label htmlFor="rp-linderos" className="block text-sm font-bold mb-1.5">Linderos y medidas perimétricas</label>

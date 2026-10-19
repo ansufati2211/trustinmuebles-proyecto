@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { EstadoBadge } from "@/components/EstadoBadge";
 import { Clock, ExternalLink, FolderOpen, Search } from "lucide-react";
-import { ESTADOS } from "@/lib/semaforo";
+import { ESTADOS, ETIQUETA_ESTADO_TECNICO } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
 import { useAuth } from "@/lib/auth";
 import { abrirExterno, CONOCE_AQUI, copiar, normalizarNumero, pareceNumeroDePartida, VISOR_BGR } from "@/lib/fuentes";
@@ -105,7 +105,10 @@ export default function Casos() {
                     <div className={`h-3 ${c.estado ? ESTADOS[c.estado].banda : "bg-gray-300"}`} aria-hidden="true"></div>
                     <CardContent className="p-6 flex-1 flex flex-col justify-between pt-6">
                       <div>
-                        <EstadoBadge estado={c.estado} className="mb-4" />
+                        <EstadoBadge estado={c.estado} className="mb-2" />
+                        <p className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
+                          Evaluación técnica: {ETIQUETA_ESTADO_TECNICO[c.estadoTecnico]}
+                        </p>
                         <h2 className="font-bold text-xl text-foreground leading-snug mb-3">{c.denominacion}</h2>
                         <p className="text-sm text-muted-foreground font-medium mb-1">Partida N.° {c.codigo}</p>
                         <p className="text-sm text-muted-foreground font-medium mb-4">{c.contexto}</p>
