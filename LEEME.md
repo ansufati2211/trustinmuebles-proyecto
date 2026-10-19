@@ -1,4 +1,4 @@
-# Trustinmuebles — MVP académico de orientación documental (v0.5.1)
+# Trustinmuebles — MVP académico de orientación documental (v0.6.0)
 
 Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Trustinmuebles es el sistema de transparencia
 precompra de **una sola inmobiliaria de Ica**, que carga a mano su propia cartera (sin scraping de otros portales ni APIs

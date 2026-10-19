@@ -1,6 +1,6 @@
 # Trustinmuebles — Backend
 
-API de Spring Boot 4 con Java 21 de Trustinmuebles (v0.5.1), el MVP académico del informe APF1: partidas simuladas de lotes y
+API de Spring Boot 4 con Java 21 de Trustinmuebles (v0.6.0), el MVP académico del informe APF1: partidas simuladas de lotes y
 viviendas urbanas de Ica con expediente, semáforo informativo (indicador A), expediente técnico de 4 planos, evaluación técnica
 presencial (indicador B), glosario cerrado y checklist. Todo el contenido es ficticio. **El semáforo no certifica saneamiento ni
 recomienda comprar.**

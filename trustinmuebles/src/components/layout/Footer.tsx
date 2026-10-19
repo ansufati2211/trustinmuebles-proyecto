@@ -1,5 +1,6 @@
 import { Link } from "react-router";
 import { Shield } from "lucide-react";
+import { version } from "../../../package.json";
 
 export function Footer() {
   return (
@@ -39,7 +40,7 @@ export function Footer() {
 
         <div className="pt-8 border-t border-gray-800">
           <p className="text-sm text-gray-500">
-            © {new Date().getFullYear()} Trustinmuebles · Ica, Perú.
+            © {new Date().getFullYear()} Trustinmuebles · Ica, Perú · v{version}
           </p>
         </div>
       </div>
