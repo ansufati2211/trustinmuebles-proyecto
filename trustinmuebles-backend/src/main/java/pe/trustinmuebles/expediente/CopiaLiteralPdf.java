@@ -113,9 +113,11 @@ final class CopiaLiteralPdf {
                             cs.fill();
                         }
                         cs.setNonStrokingColor(l.gris());
-                        if (l.justificar() && l.texto().contains(" ")) {
-                            long huecos = l.texto().chars().filter(c -> c == ' ').count();
-                            float extra = (l.anchoMax() - anchoDe(l.texto(), l.fuente(), l.tam())) / huecos;
+                        long huecos = l.texto().chars().filter(c -> c == ' ').count();
+                        float extra = huecos == 0 ? 0f : (l.anchoMax() - anchoDe(l.texto(), l.fuente(), l.tam())) / huecos;
+                        // Si repartir el sobrante abriría huecos exagerados (una palabra larga sigue en la línea siguiente),
+                        // la línea queda alineada a la izquierda.
+                        if (l.justificar() && huecos > 0 && extra <= 7f) {
                             cs.beginText();
                             cs.setFont(l.fuente(), l.tam());
                             cs.setWordSpacing(Math.max(0f, extra));

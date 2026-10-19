@@ -59,6 +59,16 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | Solicitud e informe técnico, solo del especialista | `inspeccion`, `SecurityConfig` | `InspeccionTest` (5) | Probado |
 | El informe no cambia el color documental | `InspeccionTest.flujoCompleto` | Recorrido de navegador | Probado |
 
+## Realismo de los documentos (v0.5)
+
+| Elemento | Dónde | Prueba | Estado |
+|---|---|---|---|
+| 10 expedientes con el color esperado | `contenido/v0.4` | `CasosApiTest.losDiezCasosTienenSuColor` | Probado |
+| Copia literal: asientos justificados y cierre registral derivado | `CopiaLiteralPdf` | `CopiaLiteralPdfTest` (10 casos, cierre solo en ficticias) | Probado |
+| Láminas a escala con las medidas del caso | `LaminaPdf` | `LaminaPdfTest` (medidas, cotas, dos pisos, adobe) | Probado |
+| Informe técnico en PDF | `InformeTecnicoPdf` | `InformeTecnicoPdfTest`, `InspeccionTest.informeEnPdf` | Probado |
+| Ningún PDF con firma, sello, QR ni imágenes | los 41 PDF del sistema | Revisión con `pdftotext` y `pdfimages` | Probado, 0 problemas |
+
 ## Principios de arquitectura
 
 | Principio | Verificación | Estado |

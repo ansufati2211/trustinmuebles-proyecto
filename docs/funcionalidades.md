@@ -1,8 +1,8 @@
 # Funcionalidades de Trustinmuebles
 
-> Versión v0.4 (respuesta a EXP2: planos, doble indicador y evaluación técnica).
+> Versión v0.5: 10 expedientes con copia literal, láminas de planos e informe técnico en PDF (sobre la v0.4, respuesta a EXP2).
 
-Qué hace el programa hoy (versión v0.4), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+Qué hace el programa hoy (versión v0.5), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
 Trustinmuebles es una herramienta de **orientación documental** para la precompra de lotes urbanos en Ica. Muestra la partida
@@ -84,7 +84,7 @@ reemplaza asesoría legal.**
   de estructuras y si el **área del plano arquitectónico coincide** con el área construida inscrita (margen de 1 %).
 - **Reglas** (borrador pendiente de revisión): RV-04 falta un plano de II.EE. o II.SS.; RV-05 el área no coincide o no consta una inscrita;
   RV-06 plano observado. Sin plano arquitectónico o de estructuras, una vivienda queda en gris.
-- «Ver plano 2D» abre una **lámina referencial ficticia** (con rótulo y marca de agua, sin sello ni firma). El revisor puede subir el PDF real
+- «Ver plano 2D» abre una **lámina referencial ficticia** dibujada a escala con las medidas de los linderos del expediente: terreno con cotas, vía, norte, escala gráfica, ambientes con sus áreas y cuadro de áreas (arquitectura); ejes y columnas o muros de adobe (estructuras); circuitos y pozo a tierra (II.EE.); agua, desagüe y caja de registro (II.SS.). Lleva rótulo, código de lámina y marca de agua, sin sello ni firma. El revisor puede subir el PDF real
   de cada plano y, desde ese momento, se muestra ese.
 
 ### Evaluación técnica por especialista (indicador B)
@@ -93,6 +93,14 @@ reemplaza asesoría legal.**
 - El comprador **solicita** la inspección con un botón (no cobra ni agenda). El **especialista** llena el informe: profesional y colegiatura,
   fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones y estudios adicionales.
 - Se muestra el **procedimiento de 6 pasos** y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos queda fuera.
+
+### Documentos PDF (todos con marca de agua y aviso en cada página)
+- **Copia literal:** encabezado en cada página, descripción y antecedente, asientos por rubro con el cuerpo en tipografía de texto registral
+  justificada y el cierre registral de cada asiento (título, hora de presentación, tomo del diario, derechos y recibo). Esos datos de
+  presentación se derivan del título del asiento, son siempre los mismos y solo existen en las partidas ficticias.
+- **Láminas de planos:** una por especialidad presentada (ver arriba).
+- **Informe técnico:** cuando el especialista lo emitió, un PDF con datos del inmueble, profesional, procedimiento, planos revisados con su
+  verificación en campo, observaciones, conclusión, estudios adicionales y limitaciones. «Ver informe técnico (PDF)» en el panel.
 
 ### Glosario
 - Cerrado y con versión (32 términos). Cada término se abre al seleccionarlo, también con Enter, y lleva el estado «pendiente de
@@ -144,12 +152,18 @@ reemplaza asesoría legal.**
 
 ## 6. Contenido incluido
 
-| Partida | Predio | Estado esperado |
-|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde. Planos completos e informe favorable |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo (hipoteca y faltan los planos de II.EE. e II.SS.). Informe con observaciones |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris, con alerta prioritaria |
-| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris (sin copia literal) |
+| Partida | Predio | Estado esperado | Qué muestra |
+|---|---|---|---|
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos; informe favorable |
+| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; faltan los planos de II.EE. e II.SS.; informe con observaciones |
+| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
+| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal ni planos |
+| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Rojo | Embargo vigente ordenado por un juzgado civil; 4 planos |
+| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Verde | Lote recién independizado, sin cargas; los planos no aplican |
+| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Amarillo | Sucesión intestada con coherederos; servidumbre de paso; adobe; informe con riesgo |
+| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada |
+| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso |
+| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Amarillo | Reserva vial (carga técnica); plano de estructuras observado; informe favorable |
 
 Son partidas ficticias: personas, empresas, números y montos inventados. Las partidas transcritas se registran aparte y no se
 guardan en el repositorio.

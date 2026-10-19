@@ -198,3 +198,20 @@ reflejarse en el informe, con sus nuevos requisitos. Pendiente de aprobación de
 
 **Código anterior.** El commit `3a97ad5` tenía `Plano2D` e `Inspeccion` con pines de falla sobre una sola imagen. No se reutilizó:
 no tenía especialidades, estados ni informe.
+
+## D22. Realismo de los documentos y sus límites
+**Qué:** son 10 expedientes y todos sus PDF (copia literal, láminas de planos e informe técnico) imitan la forma de un documento real:
+asientos con el cierre registral, láminas a escala con cotas y cuadro de áreas, e informe con sus secciones.
+
+**Cómo se mantiene el límite (RN-01):**
+- Cada página lleva la marca de agua y el pie que dicen que es ficticio, y ninguno tiene logos, sellos, firmas, QR, código de
+  verificación ni imágenes. Se comprobó con `pdftotext` y `pdfimages` en los 41 PDF del sistema.
+- Todos los números llevan `SIM-`: partidas, títulos, recibos, tomos y expedientes judiciales.
+- Los datos de presentación (hora, tomo, derechos y recibo) se derivan del título del asiento, así que el PDF es siempre el mismo, y
+  solo existen en partidas ficticias. En una transcrita se imprime únicamente lo transcrito.
+- Personas y empresas son inventadas. Las 6 habilitaciones nuevas se buscaron en la web y no existen en Ica; «Las Totoritas» se
+  descartó porque es una playa de Cañete.
+- Las láminas son esquemas de una vivienda tipo, sin sello ni firma de un profesional; el profesional del informe es ficticio.
+
+**Estudio:** los casos 1 a 4 conservan nombres, montos, fechas y colores, que es lo que preguntan las formas A y B. Los casos 5 a 10 no
+forman parte del instrumento.

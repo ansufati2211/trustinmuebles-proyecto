@@ -49,17 +49,25 @@ No hay registro abierto.
 
 ## Casos cargados
 
-Cada caso es una partida simulada: lleva el prefijo `SIM-`, un nombre de predio en un distrito de Ica y una copia literal en
-PDF generada por el sistema. Todo es inventado.
+Cada caso es una partida simulada: lleva el prefijo `SIM-`, un predio en un distrito de Ica (con una habilitación inventada), su
+copia literal y sus láminas de planos en PDF, y un informe técnico cuando se emitió. Todo es inventado.
 
 | Partida | Predio | Estado esperado | Qué muestra |
 |---|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos completos; informe técnico favorable |
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos; informe favorable |
 | `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; faltan los planos de II.EE. e II.SS.; informe con observaciones |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial sin títulos de dominio; demanda vigente (alerta prioritaria); sin planos |
-| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal: titularidad y cargas no constan |
+| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
+| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal ni planos |
+| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Rojo | Embargo vigente ordenado por un juzgado civil; 4 planos |
+| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Verde | Lote recién independizado, sin cargas; los planos no aplican |
+| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Amarillo | Sucesión intestada con coherederos; servidumbre de paso; adobe; informe con riesgo |
+| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada |
+| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso |
+| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Amarillo | Reserva vial (carga técnica); plano de estructuras observado; informe favorable |
 
-Las reglas (tabla borrador v0.2), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
+Los casos 5 a 10 no forman parte del instrumento del estudio: las formas A y B usan solo los 4 primeros.
+
+Las reglas (tabla borrador v0.4), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
 Si tenías una base creada con una versión anterior, apaga el backend y borra `trustinmuebles-backend/data/`: los casos
 cambiaron de código.
 
@@ -72,7 +80,7 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 ## Pruebas
 
 ```bash
-cd trustinmuebles-backend && ./mvnw test        # 82 pruebas
+cd trustinmuebles-backend && ./mvnw test        # 92 pruebas
 cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
 cd trustinmuebles && npx pnpm@9 test            # 12 pruebas de la limpieza de datos personales
 env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)

@@ -10,6 +10,12 @@ const PARCONA = "SIM-11048217";
 const TINGUINA = "SIM-11052690";
 const SUBTANJALLA = "SIM-11061555";
 const LOS_AQUIJES = "SIM-11070419";
+const PUEBLO_NUEVO = "SIM-11075836";
+const SANTIAGO = "SIM-11081204";
+const SALAS = "SIM-11087751";
+const MOLINOS = "SIM-11093320";
+const PACHACUTEC = "SIM-11098467";
+const ICA = "SIM-11104029";
 
 const resultados = [];
 const errores = [];
@@ -83,10 +89,12 @@ check("Casos sin sesión redirige a login", page.url().includes("#/login"));
 // 3. Comprador
 await login("comprador-01");
 t = await texto();
-check("Casos: aparecen las 4 partidas con su denominación", [PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES].every((c) => t.includes(c))
-  && t.includes("Hab. Urb. Santa Elvira") && t.includes("Hab. Urb. Rincón del Sauce") && t.includes("Hab. Urb. Mirador del Sol"));
+check("Casos: aparecen las 10 partidas con su denominación", [PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO,
+  SALAS, MOLINOS, PACHACUTEC, ICA].every((c) => t.includes(c))
+  && ["Santa Elvira", "Rincón del Sauce", "Mirador del Sol", "Jardines del Pacae", "Campiña del Olivar", "Los Tamarindos",
+    "Puente Molino", "Mirador del Pallar", "Los Laureles del Sur"].every((h) => t.includes(h)));
 check("Casos: no delatan el diseño del estudio", !/postest|pretest|forma b|forma a|titular (alfa|delta)/i.test(t));
-check("Casos: cada estado va con texto", (t.match(/estado: (verde|amarillo|gris|rojo)/gi) ?? []).length === 4);
+check("Casos: cada estado va con texto", (t.match(/estado: (verde|amarillo|gris|rojo)/gi) ?? []).length === 10);
 check("Casos: muestra pendientes", t.includes("2 pendientes"));
 check("Barra: muestra cuenta y rol", t.includes("comprador-01") && /comprador/i.test(t));
 await foto("03-casos");
@@ -215,7 +223,7 @@ const NOMBRE = "Pedro Luis Salazar Ramos";
 await ir("/casos");
 await espera("expedientes disponibles");
 await page.type("#buscar-partida", "11048217");
-await espera("1 de 4 expedientes");
+await espera("1 de 10 expedientes");
 check("Búsqueda: el número sin prefijo encuentra la partida SIM-", (await texto()).includes(PARCONA));
 await escribir("#buscar-partida", NUEVA);
 await espera("no está registrada en Trustinmuebles");
@@ -340,6 +348,44 @@ check("Informe emitido: indicador B con riesgo y color documental sin cambio",
 await foto("12-informe-del-especialista");
 await logout();
 await login("revisor-01");
+
+// 10. Los casos nuevos: dos rojos, adobe con riesgo, lote, inspección en curso y los PDF (copia literal e informe)
+for (const [codigo, alerta, regla] of [[PUEBLO_NUEVO, "Embargo vigente", "RP-01"], [MOLINOS, "Bloqueo registral vigente", "RP-03"]]) {
+  await abrir(codigo);
+  const cuerpo = await texto();
+  check(`${codigo}: ROJO con su alerta prioritaria ${regla}`, (await min()).includes("estado: rojo") && cuerpo.includes(alerta) && cuerpo.includes(regla));
+}
+await foto("13-caso-rojo");
+await abrir(MOLINOS);
+check("Molinos: la inspección solicitada se muestra como tal", (await texto()).includes("Solicitada: espera la visita del especialista"));
+await abrir(PACHACUTEC);
+let cuerpo = await texto();
+check("Pachacútec: la ampliación no declarada da la alerta de área (RV-05)", cuerpo.includes("RV-05") && cuerpo.includes("No coincide con el área inscrita (72.00 m²)"));
+check("Pachacútec: la inspección está en curso", (await min()).includes("evaluación técnica: en inspección"));
+await abrir(SANTIAGO);
+cuerpo = await texto();
+check("Santiago: un lote no lleva planos y queda en verde", cuerpo.includes("Este predio es un lote") && (await min()).includes("estado: verde"));
+await abrir(ICA);
+cuerpo = await texto();
+check("Ica: la reserva vial y el plano observado dan amarillo (RV-03 y RV-06)", (await min()).includes("estado: amarillo") && cuerpo.includes("RV-03") && cuerpo.includes("RV-06"));
+
+await abrir(SALAS);
+cuerpo = await texto();
+check("Salas: sucesión intestada, adobe y informe con riesgo", cuerpo.includes("SUCESIÓN") || cuerpo.includes("Sucesión"));
+check("Salas: informe técnico con riesgo estructural", (await min()).includes("informe: con riesgo estructural o de instalaciones"));
+const informeTarget = browser.waitForTarget((x) => x.url().startsWith("blob:"), { timeout: 8000 }).catch(() => null);
+await clickBoton("Ver informe técnico (PDF)");
+const informe = await informeTarget;
+check("Salas: se abre el informe técnico en PDF", !!informe);
+if (informe) { const pp = await informe.page(); await pp?.close(); }
+await page.bringToFront();
+const copiaTarget = browser.waitForTarget((x) => x.url().startsWith("blob:"), { timeout: 8000 }).catch(() => null);
+await clickBoton("Abrir documento");
+const copia = await copiaTarget;
+check("Salas: se abre la copia literal en PDF", !!copia);
+if (copia) { const pp = await copia.page(); await pp?.close(); }
+await page.bringToFront();
+await foto("14-caso-adobe-con-riesgo");
 
 await logout();
 

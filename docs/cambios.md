@@ -48,3 +48,8 @@ y PDF de transcripción. Cierra además la v0.2.1 (tono de servicio real). Pendi
 Respuesta a EXP2: expediente técnico de planos (4 especialidades), doble indicador (documental y técnico), evaluación técnica
 presencial con informe del especialista, rol ESPECIALISTA, reglas RV-04 a RV-06 y contenido v0.3. Pendiente: aprobación del asesor
 y revisión especializada de las reglas nuevas.
+
+## v0.5
+
+10 expedientes (6 nuevos) con copia literal más fiel, láminas de planos a escala con la geometría de cada caso e informe técnico en PDF.
+Ver D22. Pendiente: revisión especializada del contenido y de las reglas.

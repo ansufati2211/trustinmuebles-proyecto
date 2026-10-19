@@ -4,10 +4,10 @@ Cada fila guarda entrada, salida esperada, salida obtenida, versión y fecha (4.
 2026-10-17, con las reglas **v0.2** (borrador) y sobre el código de la rama `mvp-informe-apf1`. Los nombres de prueba son
 métodos de `trustinmuebles-backend/src/test/java/pe/trustinmuebles/`.
 
-Resumen: **82 pruebas automatizadas del backend en verde**, **12 pruebas del frontend (vitest)**, **66 verificaciones de navegador en verde**, medición de
+Resumen: **92 pruebas automatizadas del backend en verde**, **12 pruebas del frontend (vitest)**, **77 verificaciones de navegador en verde**, medición de
 rendimiento con 20 de 20 ejecuciones dentro de la meta. Salidas completas en [evidencias/](evidencias/).
 
-Las partidas son: Parcona `SIM-11048217` (debe dar verde), La Tinguiña `SIM-11052690` (amarillo), Subtanjalla `SIM-11061555`
+Hay 10 partidas (ver el LEEME). Las cuatro primeras son: Parcona `SIM-11048217` (debe dar verde), La Tinguiña `SIM-11052690` (amarillo), Subtanjalla `SIM-11061555`
 (gris con alerta prioritaria) y Los Aquijes `SIM-11070419` (gris, sin copia literal).
 
 | Caso | Entrada / acción | Resultado esperado | Resultado obtenido | Estado |
