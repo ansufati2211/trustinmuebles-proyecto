@@ -1,9 +1,9 @@
 import { useState } from "react";
-import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock, HardHat, ShieldAlert } from "lucide-react";
+import { AlertTriangle, CheckCircle2, ClipboardCheck, Clock, ExternalLink, HardHat, ShieldAlert } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { campo } from "@/components/FilasAsientos";
-import { api, post, put } from "@/lib/api";
+import { abrirPdf, api, post, put } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import {
   ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_TECNICO, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha,
@@ -148,6 +148,11 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
   const t = detalle.evaluacionTecnica;
   const [error, setError] = useState<string | null>(null);
   const [pidiendo, setPidiendo] = useState(false);
+  const verInforme = async () => {
+    setError(null);
+    try { await abrirPdf(`/casos/${detalle.codigo}/inspeccion/documento`); }
+    catch (e) { setError(e instanceof Error ? e.message : "No se pudo abrir el informe"); }
+  };
   const esEspecialista = usuario?.rol === "ESPECIALISTA";
 
   const solicitar = async () => {
@@ -218,6 +223,11 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
             {t.observaciones && <p className="text-sm"><span className="font-bold">Observaciones: </span>{t.observaciones}</p>}
             {t.conclusiones && <p className="text-sm"><span className="font-bold">Conclusiones: </span>{t.conclusiones}</p>}
             {t.estudiosAdicionales && <p className="text-sm"><span className="font-bold">Estudios adicionales: </span>{t.estudiosAdicionales}</p>}
+            {t.estado === "EMITIDO" && (
+              <Button variant="outline" className="rounded-xl" onClick={verInforme}>
+                Ver informe técnico (PDF) <ExternalLink className="w-4 h-4" aria-hidden="true" />
+              </Button>
+            )}
           </div>
         )}
 

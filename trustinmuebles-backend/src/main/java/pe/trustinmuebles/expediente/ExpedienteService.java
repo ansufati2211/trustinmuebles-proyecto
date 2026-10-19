@@ -24,6 +24,7 @@ import pe.trustinmuebles.checklist.EstadoItem;
 import pe.trustinmuebles.clasificacion.Especialidad;
 import pe.trustinmuebles.clasificacion.EstadoPlano;
 import pe.trustinmuebles.clasificacion.TipoPredio;
+import pe.trustinmuebles.inspeccion.EstadoTecnico;
 import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
 import pe.trustinmuebles.inspeccion.InformeDatos;
 import pe.trustinmuebles.inspeccion.InspeccionService;
@@ -113,6 +114,37 @@ class ExpedienteService {
     }
 
     record DocumentoPlano(byte[] datos, String nombre) {}
+
+    /** El informe técnico en PDF. Solo existe cuando el especialista lo emitió. */
+    @Transactional(readOnly = true)
+    DocumentoPlano informeDocumento(String codigo) {
+        Expediente e = buscar(codigo);
+        EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
+        if (t.estado() != EstadoTecnico.EMITIDO) throw new NoEncontradoException("Informe técnico", codigo);
+        List<InformeTecnicoPdf.PlanoResumen> planos = new java.util.ArrayList<>();
+        for (Especialidad esp : Especialidad.values()) {
+            PlanoTecnico p = planoDe(e, esp);
+            String estado = p == null ? "no presentado" : switch (p.getEstado()) {
+                case PRESENTADO -> "presentado";
+                case OBSERVADO -> "observado";
+                case NO_PRESENTADO -> "no presentado";
+                case NO_APLICA -> "no aplica";
+            };
+            String detalle = p == null ? null : esp == Especialidad.ARQUITECTURA && p.getAreaConstruida() != null
+                    ? p.getAreaConstruida().setScale(2, java.math.RoundingMode.HALF_UP) + " m²"
+                    : p != null && p.getSistemaConstructivo() != null ? p.getSistemaConstructivo().etiqueta() : null;
+            var verificacion = switch (esp) {
+                case ARQUITECTURA -> t.verifArquitectura();
+                case ESTRUCTURAS -> t.verifEstructuras();
+                case ELECTRICAS -> t.verifElectricas();
+                case SANITARIAS -> t.verifSanitarias();
+            };
+            planos.add(new InformeTecnicoPdf.PlanoResumen(esp.etiqueta(), estado, detalle, verificacion));
+        }
+        byte[] pdf = InformeTecnicoPdf.generar(new InformeTecnicoPdf.Datos(codigo, e.getCaso().getDenominacion(),
+                e.getUbicacion(), e.getAreaM2(), e.getAreaConstruidaInscrita(), planos, t));
+        return new DocumentoPlano(pdf, codigo + "-informe-tecnico.pdf");
+    }
 
     /** El PDF que subió el revisor o, si no hay, una lámina 2D referencial generada con los datos del plano. */
     @Transactional(readOnly = true)

@@ -47,8 +47,11 @@ public class InspeccionService {
         }
         validar(d);
         if (e == null) {
+            // Solo ocurre con los informes de demostración, que se cargan sin pasar por una solicitud: se les da una
+            // fecha de solicitud coherente (cuatro días antes de la inspección) para que el informe no quede incompleto.
             e = new EvaluacionTecnica();
             e.setExpedienteId(expedienteId);
+            if (d.fechaInspeccion() != null) e.setFechaSolicitud(d.fechaInspeccion().minusDays(4));
         }
         e.setEstado(d.estado());
         e.setResultado(d.estado() == EstadoTecnico.EMITIDO ? d.resultado() : null);

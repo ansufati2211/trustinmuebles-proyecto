@@ -84,6 +84,17 @@ class CasoController {
         return servicio.registrarInforme(codigo, req.datos());
     }
 
+    @GetMapping("/{codigo}/inspeccion/documento")
+    ResponseEntity<byte[]> informeDocumento(@PathVariable String codigo) {
+        ExpedienteService.DocumentoPlano d = servicio.informeDocumento(codigo);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "default-src 'none'; sandbox")
+                .header("Content-Disposition", "inline; filename=\"" + d.nombre() + "\"")
+                .cacheControl(CacheControl.noStore())
+                .body(d.datos());
+    }
+
     @GetMapping("/{codigo}/planos/{especialidad}/documento")
     ResponseEntity<byte[]> planoDocumento(@PathVariable String codigo, @PathVariable Especialidad especialidad) {
         ExpedienteService.DocumentoPlano d = servicio.planoDocumento(codigo, especialidad);

@@ -125,4 +125,21 @@ class InspeccionTest extends BaseApiTest {
                 .andExpect(jsonPath("$.evaluacionTecnica.observaciones", containsString("llave diferencial")))
                 .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"));
     }
+
+    @Test
+    @DisplayName("El informe técnico en PDF existe solo cuando fue emitido; antes da 404")
+    void informeEnPdf() throws Exception {
+        byte[] pdf = mvc.perform(get("/api/v1/casos/" + TINGUINA + "/inspeccion/documento").header("Authorization", comprador()))
+                .andExpect(status().isOk()).andExpect(content().contentType("application/pdf"))
+                .andReturn().getResponse().getContentAsByteArray();
+        try (var doc = org.apache.pdfbox.Loader.loadPDF(pdf)) {
+            assertThat(new org.apache.pdfbox.text.PDFTextStripper().getText(doc))
+                    .contains("INFORME TÉCNICO DE INSPECCIÓN (REFERENCIAL)", "llave diferencial");
+        }
+        mvc.perform(get("/api/v1/casos/" + SUBTANJALLA + "/inspeccion/documento").header("Authorization", comprador()))
+                .andExpect(status().isNotFound());
+        mvc.perform(get("/api/v1/casos/" + PACHACUTEC + "/inspeccion/documento").header("Authorization", comprador()))
+                .andExpect(status().isNotFound()); // en inspección: aún no hay informe emitido
+        mvc.perform(get("/api/v1/casos/" + TINGUINA + "/inspeccion/documento")).andExpect(status().isUnauthorized());
+    }
 }
