@@ -40,7 +40,8 @@ Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explic
 | Cuenta | Rol | Puede |
 |---|---|---|
 | `comprador-01` | Comprador | Consultar casos, glosario, checklist y documento |
-| `revisor-01` | Revisor | Lo anterior, más editar expedientes, cambiar el checklist y asociar el PDF |
+| `revisor-01` | Revisor | Lo anterior, más editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
+| `especialista-01` | Especialista | Consultar, y emitir el informe técnico de una inspección solicitada. No edita partidas |
 
 Las dos usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
 ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`.
@@ -53,9 +54,9 @@ PDF generada por el sistema. Todo es inventado.
 
 | Partida | Predio | Estado esperado | Qué muestra |
 |---|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; embargo cancelado |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial sin títulos de dominio; demanda vigente (alerta prioritaria) |
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos completos; informe técnico favorable |
+| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; faltan los planos de II.EE. e II.SS.; informe con observaciones |
+| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial sin títulos de dominio; demanda vigente (alerta prioritaria); sin planos |
 | `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal: titularidad y cargas no constan |
 
 Las reglas (tabla borrador v0.2), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
@@ -71,7 +72,7 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 ## Pruebas
 
 ```bash
-cd trustinmuebles-backend && ./mvnw test        # 62 pruebas
+cd trustinmuebles-backend && ./mvnw test        # 82 pruebas
 cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
 cd trustinmuebles && npx pnpm@9 test            # 12 pruebas de la limpieza de datos personales
 env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)

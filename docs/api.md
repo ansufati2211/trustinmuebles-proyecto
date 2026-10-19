@@ -175,3 +175,16 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
   el estado civil o un domicilio.
 - `DELETE /api/v1/casos/{codigo}` borra una partida transcrita (204). Una partida ficticia da 409.
 - `ResumenCaso` y `DetalleCaso` incluyen `origen` (`SINTETICO` o `TRANSCRITA`), `fuente` y `fechaConsulta`.
+
+## Planos e inspección técnica
+
+- `ExpedienteDto` incluye `tipoPredio` (`LOTE` o `VIVIENDA`), `areaConstruidaInscrita` y `planos[]`. Cada plano trae su `especialidad`,
+  `estado`, `areaConstruida`, `sistemaConstructivo`, `observacion`, `tieneDocumentoPropio` y, en el arquitectónico, `coincideArea`.
+- `DetalleCaso` incluye `evaluacionTecnica` (indicador B) y `ResumenCaso` incluye `estadoTecnico`.
+- `PUT /casos/{c}/expediente` acepta `tipoPredio`, `areaConstruidaInscrita` y `planos`. Si no viene `tipoPredio`, el bloque técnico no se toca.
+  Un plano repetido, el área fuera del plano arquitectónico o el sistema constructivo fuera del de estructuras dan 400.
+- `GET /casos/{c}/planos/{especialidad}/documento`: el PDF que subió el revisor o, si no hay, una lámina 2D referencial. 404 si el plano no está presentado.
+- `POST /casos/{c}/planos/{especialidad}/documento` (REVISOR, multipart): sube el PDF real. 422 si no es un PDF o el plano no está presentado.
+- `POST /casos/{c}/inspeccion/solicitud` (cualquier usuario con sesión): 201; 409 si ya fue solicitada.
+- `PUT /casos/{c}/inspeccion` (solo ESPECIALISTA): guarda el informe. 409 si no hay solicitud; 400 si un informe emitido no trae resultado,
+  profesional, colegiatura, fecha, las 4 verificaciones y conclusiones.

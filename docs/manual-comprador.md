@@ -35,3 +35,12 @@ saneamiento, no recomienda comprar y no consulta fuentes oficiales.**
 - Tú solo consultas: no puedes cambiar datos. Si ves algo raro, avisa al equipo.
 - Un gravamen cancelado (por ejemplo una hipoteca ya pagada) no genera alerta.
 - Las reglas, el glosario y la redacción de los documentos son un borrador del equipo, pendiente de revisión especializada.
+
+## Planos y evaluación técnica
+
+- **Planos:** en una vivienda, el expediente muestra sus 4 planos (arquitectura, estructuras, II.EE. e II.SS.). «Ver plano 2D» abre una
+  lámina referencial. La etiqueta «Faltante» indica un plano que no se presentó.
+- **Dos indicadores:** la *pre-evaluación documental* se calcula sola con los documentos. La *evaluación técnica* es la verificación
+  física de un profesional y se muestra aparte. Un plano completo no demuestra que la obra esté bien.
+- **Solicitar una inspección:** el botón «Solicitar inspección técnica presencial» deja constancia de tu solicitud. No cobra ni agenda
+  la visita. Cuando el especialista emite su informe, verás lo que encontró, su conclusión y los estudios adicionales que se requieren.

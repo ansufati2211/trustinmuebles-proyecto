@@ -42,3 +42,9 @@ revisión formal (PA1). Los cambios de contenido de reglas y glosario pasan por 
 
 Partidas transcritas de Conoce Aquí: búsqueda por número, registro por el revisor con limpieza de datos personales, eliminación
 y PDF de transcripción. Cierra además la v0.2.1 (tono de servicio real). Pendiente: aprobación del asesor (RN-01 y PA2).
+
+## v0.4
+
+Respuesta a EXP2: expediente técnico de planos (4 especialidades), doble indicador (documental y técnico), evaluación técnica
+presencial con informe del especialista, rol ESPECIALISTA, reglas RV-04 a RV-06 y contenido v0.3. Pendiente: aprobación del asesor
+y revisión especializada de las reglas nuevas.

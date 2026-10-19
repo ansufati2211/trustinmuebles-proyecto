@@ -1,6 +1,8 @@
 # Funcionalidades de Trustinmuebles
 
-Qué hace el programa hoy (versión v0.3), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+> Versión v0.4 (respuesta a EXP2: planos, doble indicador y evaluación técnica).
+
+Qué hace el programa hoy (versión v0.4), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
 Trustinmuebles es una herramienta de **orientación documental** para la precompra de lotes urbanos en Ica. Muestra la partida
@@ -18,7 +20,9 @@ reemplaza asesoría legal.**
 | Glosario | Términos explicados al seleccionarlos | Comprador y revisor |
 | Checklist | Lista de elementos pendientes, revisados u observados | Ver: todos. Cambiar: revisor |
 | Documento PDF | Copia literal simulada o transcripción referencial | Ver: todos. Subir uno propio: revisor |
-| Edición | Cambiar los datos y los asientos de una partida | Revisor |
+| Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
+| Evaluación técnica | Solicitud de inspección presencial e informe del especialista | Solicitar: todos. Emitir: especialista |
+| Edición | Cambiar los datos, los asientos y los planos de una partida | Revisor |
 | Partidas transcritas | Registrar y eliminar partidas reales sin datos personales | Revisor |
 
 ## 1. Acceso y roles
@@ -28,7 +32,8 @@ reemplaza asesoría legal.**
 - **Sesión:** dura mientras la pestaña esté abierta. Si caduca, el sistema vuelve al ingreso.
 - **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
 - **Roles:**
-  - **Comprador:** consulta todo y no modifica nada.
+  - **Comprador:** consulta todo y solicita la inspección técnica; no modifica nada.
+  - **Especialista:** consulta y emite el informe técnico presencial. No edita partidas.
   - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas transcritas.
   - El servidor verifica el rol en cada operación. Ocultar un botón en pantalla no es la protección.
 
@@ -71,6 +76,23 @@ reemplaza asesoría legal.**
   - Cada asiento muestra su número, tipo de acto, estado (vigente o cancelada), fechas, título archivado y texto.
   - Una cancelación indica qué asiento cancela, y ese asiento figura como cancelado.
 - **Extracto parcial:** si falta un rubro, se dice y no se inventa.
+
+### Expediente técnico de planos (2D)
+- En una **vivienda**, 4 planos: arquitectónico, de estructuras, de instalaciones eléctricas (II.EE.) y de instalaciones sanitarias (II.SS.).
+  En un **lote** no aplican.
+- El sistema revisa solo lo documental: si cada plano está **presentado, observado o no presentado**, el sistema constructivo que declara el
+  de estructuras y si el **área del plano arquitectónico coincide** con el área construida inscrita (margen de 1 %).
+- **Reglas** (borrador pendiente de revisión): RV-04 falta un plano de II.EE. o II.SS.; RV-05 el área no coincide o no consta una inscrita;
+  RV-06 plano observado. Sin plano arquitectónico o de estructuras, una vivienda queda en gris.
+- «Ver plano 2D» abre una **lámina referencial ficticia** (con rótulo y marca de agua, sin sello ni firma). El revisor puede subir el PDF real
+  de cada plano y, desde ese momento, se muestra ese.
+
+### Evaluación técnica por especialista (indicador B)
+- **Separada del semáforo documental y nunca lo cambia.** Dice en qué estado está la verificación física del inmueble: no solicitada,
+  solicitada, en inspección o informe emitido (favorable, con observaciones subsanables o con riesgo).
+- El comprador **solicita** la inspección con un botón (no cobra ni agenda). El **especialista** llena el informe: profesional y colegiatura,
+  fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones y estudios adicionales.
+- Se muestra el **procedimiento de 6 pasos** y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos queda fuera.
 
 ### Glosario
 - Cerrado y con versión (32 términos). Cada término se abre al seleccionarlo, también con Enter, y lleva el estado «pendiente de
@@ -124,8 +146,8 @@ reemplaza asesoría legal.**
 
 | Partida | Predio | Estado esperado |
 |---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo |
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde. Planos completos e informe favorable |
+| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo (hipoteca y faltan los planos de II.EE. e II.SS.). Informe con observaciones |
 | `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris, con alerta prioritaria |
 | `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris (sin copia literal) |
 
@@ -146,9 +168,10 @@ guardan en el repositorio.
   en Conoce Aquí y se transcriben.
 - No emite documentos oficiales ni comprueba la autenticidad de un documento.
 - No certifica saneamiento, no recomienda comprar y no da dictámenes jurídicos.
-- No usa OCR ni inteligencia artificial, y no genera reportes descargables.
+- No usa OCR, visión artificial ni inteligencia artificial: no analiza fotos ni planos. El análisis es por reglas sobre datos estructurados y el informe de un especialista.
+- No afirma el estado físico de una vivienda: eso solo lo dice el informe del especialista.
 - Sin pagos, contratos, firmas, inspecciones, tours, posventa ni filtros avanzados (sección 1.7 del informe).
-- Los planos no se muestran: solo se enlaza al Visor BGR de SUNARP.
+- La lámina 2D es un esquema referencial, no el plano aprobado. La ubicación del predio solo se enlaza al Visor BGR de SUNARP.
 
 ## 9. Pendiente
 

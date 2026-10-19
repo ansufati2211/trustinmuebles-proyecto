@@ -167,3 +167,34 @@ ni domicilios de personas naturales**. Se conservan las empresas y el Estado.
 
 **Límite conocido.** La detección de nombres es una heurística: puede dejar pasar uno o ocultar de más. Por eso hay vista previa,
 confirmación y borrado.
+
+## D21. Sistema de una inmobiliaria, planos y evaluación técnica (feedback EXP2)
+**Qué:** a partir de las observaciones del profesor (EXP2), Trustinmuebles se plantea como el sistema de transparencia
+precompra de **una** inmobiliaria de Ica, que carga a mano su propia cartera. Se agregan:
+- **Expediente técnico de planos** de una vivienda, con 4 especialidades: arquitectura, estructuras, instalaciones eléctricas
+  (II.EE.) e instalaciones sanitarias (II.SS.). El sistema revisa solo lo documental: si el plano está y si el área del plano
+  arquitectónico coincide con la área construida inscrita (margen de 1 %).
+- **Dos indicadores separados.** A: pre-evaluación documental, automática, con las reglas. B: evaluación técnica presencial,
+  que fija el informe de un especialista y **nunca cambia el color de A**.
+- **Procedimiento de inspección de 6 pasos** y un informe técnico con verificación en campo por especialidad.
+- **Rol ESPECIALISTA** (`especialista-01`): el único que emite el informe. El comprador solo solicita la inspección (sin cobro
+  ni agenda). El revisor no se califica a sí mismo.
+
+**Reglas nuevas (v0.3, borrador pendiente de revisión especializada):** RV-04 falta un plano de II.EE. o II.SS. en una vivienda;
+RV-05 el área del plano no coincide con la inscrita, o no consta una inscrita; RV-06 plano observado. Una vivienda sin plano
+arquitectónico o de estructuras queda en gris. En un lote los planos no aplican.
+
+**Lo que se decidió no hacer, y por qué:**
+- No hay una regla roja por «inconsistencia entre el inmueble físico y la partida»: las reglas documentales no ven el estado
+  físico. Eso contradice lo que observó el profesor (un plano correcto no demuestra que la obra esté bien). El riesgo físico
+  aparece solo en el indicador B.
+- No se dice «partida limpia» ni «vivienda segura». Verde sigue significando «sin alertas en los campos evaluados».
+- No hay visión artificial ni OCR: el análisis es por reglas deterministas sobre datos estructurados y el informe del especialista.
+- Las láminas 2D son esquemas ficticios con marca de agua y sin sello ni firma; si el revisor sube el PDF real del plano, se
+  muestra ese. El profesional de la demostración es ficticio (`CIP SIM-0001`).
+
+**Desvío del informe.** 1.7, 4.3 y 6.5.4 excluyen planos e inspección (ver D3). Este cambio responde a EXP2 y debe
+reflejarse en el informe, con sus nuevos requisitos. Pendiente de aprobación del asesor.
+
+**Código anterior.** El commit `3a97ad5` tenía `Plano2D` e `Inspeccion` con pines de falla sobre una sola imagen. No se reutilizó:
+no tenía especialidades, estados ni informe.

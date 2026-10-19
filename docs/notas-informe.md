@@ -50,3 +50,15 @@ Todo lo que sigue pendiente debe seguir marcado como pendiente.
 
 No se añadieron fuentes nuevas. Las dependencias del software no se citan como antecedentes. Si el informe cita Spring,
 React u otras, conviene hacerlo con su documentación oficial y fecha de consulta.
+
+## Planos y evaluación técnica (v0.4, respuesta a EXP2): requieren aprobación del asesor
+
+| Sección | Qué dice hoy | Qué corresponde |
+|---|---|---|
+| 1.7, 4.3 y 6.5.4 | Sin planos ni inspección | Se incluyen: expediente técnico de 4 especialidades e informe de un especialista. Ver D21 |
+| Modelo de negocio | Metabuscador de varios portales | Sistema de una inmobiliaria con carga manual controlada. Sin scraping: viola los términos de los portales y SUNARP no tiene API pública de partidas |
+| Nuevos requisitos | — | REQ-F07 expediente de planos (4 especialidades); REQ-F08 evaluación técnica presencial con informe del especialista |
+| Nuevas reglas | — | RN-09 la pre-evaluación documental no afirma el estado físico; RN-10 el informe técnico no cambia el color documental |
+| Reglas de la Tabla 9 | RP-01 a RP-03, RV-01 a RV-03 | Agregar RV-04, RV-05 y RV-06 (borrador pendiente de revisión especializada) |
+| Fuentes de documentos | — | Gratuitas: Conoce Aquí y Visor BGR. De pago o entregadas por el propietario: copia literal, CRI, documentos municipales y planos |
+| Visión artificial | Mencionada como trabajo pendiente | Descartada: no se analizan imágenes. Una foto o un plano no detecta fallas internas sin un profesional presente |

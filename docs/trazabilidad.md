@@ -49,6 +49,16 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | Limpieza de nombres en el navegador | `lib/disociar.ts`, `lib/leerPartida.ts` | 12 pruebas con vitest; recorrido de navegador | Probado. Es una heurística |
 | PDF de transcripción | `CopiaLiteralPdf.Procedencia` | `CopiaLiteralPdfTest.transcripcion` | Probado |
 
+## Planos y evaluación técnica (v0.4)
+
+| Elemento | Dónde | Prueba | Estado |
+|---|---|---|---|
+| Reglas RV-04, RV-05 y RV-06 | `MotorClasificacion` | `MotorPlanosTest` (7) | Probado. Reglas pendientes de revisión especializada |
+| Planos por especialidad y su guardado | `ExpedienteService`, `PlanoTecnico` | `PlanosApiTest` (6) | Probado |
+| Lámina 2D referencial | `LaminaPdf` | `LaminaPdfTest` (2), `laminaReferencial` | Probado |
+| Solicitud e informe técnico, solo del especialista | `inspeccion`, `SecurityConfig` | `InspeccionTest` (5) | Probado |
+| El informe no cambia el color documental | `InspeccionTest.flujoCompleto` | Recorrido de navegador | Probado |
+
 ## Principios de arquitectura
 
 | Principio | Verificación | Estado |
