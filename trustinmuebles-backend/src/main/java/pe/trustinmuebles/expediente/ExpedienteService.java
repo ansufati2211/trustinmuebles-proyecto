@@ -124,8 +124,15 @@ class ExpedienteService {
         }
         String nombre = codigo + "-" + especialidad.name().toLowerCase() + ".pdf";
         if (p.getArchivoId() != null) return new DocumentoPlano(almacenamiento.leer(p.getArchivoId()).datos(), nombre);
-        byte[] lamina = LaminaPdf.generar(especialidad, codigo, e.getCaso().getDenominacion(), p.getAreaConstruida(),
-                p.getSistemaConstructivo() == null ? null : p.getSistemaConstructivo().etiqueta());
+        // El área que se dibuja es la del plano arquitectónico; si no la trae, la inscrita en la partida.
+        java.math.BigDecimal areaConstruida = e.getPlanos().stream()
+                .filter(x -> x.getEspecialidad() == Especialidad.ARQUITECTURA).map(PlanoTecnico::getAreaConstruida)
+                .filter(java.util.Objects::nonNull).findFirst().orElse(e.getAreaConstruidaInscrita());
+        String sistema = e.getPlanos().stream().filter(x -> x.getEspecialidad() == Especialidad.ESTRUCTURAS)
+                .map(PlanoTecnico::getSistemaConstructivo).filter(java.util.Objects::nonNull).findFirst()
+                .map(SistemaConstructivo::etiqueta).orElse(null);
+        byte[] lamina = LaminaPdf.generar(especialidad, new LaminaPdf.Datos(codigo, e.getCaso().getDenominacion(),
+                e.getAreaM2(), e.getLinderos(), areaConstruida, sistema, e.getFechaReferencial()));
         return new DocumentoPlano(lamina, nombre);
     }
 
