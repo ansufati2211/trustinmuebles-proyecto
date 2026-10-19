@@ -264,3 +264,30 @@ palabras, y el rótulo de datos ficticios o simulados que pide I7 lo pone la int
 **Qué:** la etiqueta del estado verde pasa a ser exactamente «Sin alertas en los campos evaluados» (I1), en el backend y en la
 interfaz. Antes decía «Sin alertas detectadas en los campos evaluados»; el significado no cambia. Lo fija
 `CatalogoYServiciosTest.verdeSignificaSinAlertas`.
+
+## D28. v0.6: ilustraciones SVG propias, sin fotos
+**Qué:** cada predio se muestra con un dibujo propio en SVG (`components/base/PredioImagen.tsx`): vivienda moderna de 1 piso,
+de 2 pisos (con la opción de un segundo piso en obra, para la ampliación de Pachacútec), vivienda de adobe y lote cercado con
+hitos y vereda, sobre las dunas de Ica. Cada caso tiene su variante, paleta y detalles (huarango, palmera, reja) en
+`lib/predios.ts`; una partida transcrita recibe una según su tipo y su número.
+**Por qué:** las fotos de stock tienen licencia y una foto real del inmueble no existe en la demostración. Un dibujo no puede
+confundirse con el inmueble: el texto alternativo dice «No es una foto del inmueble». No agrega dependencias.
+
+## D29. v0.6: sistema visual en tokens y barra superior
+**Qué:** los colores, la tipografía, los radios y las sombras están en `src/index.css` y los componentes los usan por nombre.
+Los 4 estados del semáforo tienen contraste AA (de 7.4:1 a 8.9:1 entre texto y fondo) y siempre llevan ícono y texto. El aviso
+académico gris se reemplazó por una franja fina en la barra superior que conserva su contenido (demostración, partidas
+ficticias, información referencial) y el pie comercial mantiene los límites legales (I1) y el aviso de uso local (I6).
+
+## D30. v0.6: pruebas del frontend con funciones puras
+**Qué:** las pruebas de Vitest cubren la lógica que deciden las pantallas, separada en funciones puras: filtros y URL
+(`lib/catalogo.ts`), visibilidad por rol (`lib/permisos.ts`), stepper (`lib/etapas.ts`) y comparador de áreas (`lib/areas.ts`).
+**Por qué:** probar componentes exigía agregar jsdom y Testing Library. La interacción real (modales, foco, Escape, filtros en
+la URL) se comprobó con el recorrido de navegador `docs/pruebas/recorrido-v06.mjs`, que usa `puppeteer-core` instalado fuera
+del repositorio.
+
+## D31. v0.6: avance de los 6 pasos de la inspección (supuesto)
+**Qué:** el backend guarda el estado de la inspección, no el avance paso a paso. La interfaz lo muestra así: antes de la visita
+los 6 pasos son el alcance del servicio; «en inspección» marca hechos los pasos 1 y 2 (revisión documental y de planos) y en
+curso el 3 (visita); con el informe emitido, los 6 quedan hechos. Si el equipo quiere registrar cada paso, hace falta un campo
+nuevo en `evaluacion_tecnica`.

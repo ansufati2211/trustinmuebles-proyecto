@@ -12,25 +12,57 @@ sus entidades y sus tablas. Se comunican por sus APIs públicas, y `ModularityTe
 
 | Módulo | Responsabilidad | Requisitos |
 |---|---|---|
-| `identidad` | Cuentas de prueba, roles COMPRADOR, REVISOR y ESPECIALISTA, login con JWT, `SecurityConfig` | F01, NF03 |
-| `expediente` | Partidas simuladas con asientos por rubro, expediente de 4 planos, edición transaccional, PDF con PDFBox (copia literal, láminas 2D e informe técnico), carga de contenido | F02, F03, F07, NF04 |
+| `identidad` | Cuentas de prueba, roles COMPRADOR, REVISOR y ESPECIALISTA, perfil profesional del especialista (`PerfilProfesional`), login con JWT, `SecurityConfig` | F01, NF03, M8 |
+| `expediente` | Partidas simuladas con asientos por rubro, datos del predio (tipo, distrito, precio referencial), catálogo con filtros, expediente de 4 planos, edición transaccional, PDF con PDFBox (copia literal, láminas 2D e informe técnico), carga de contenido | F02, F03, F07, NF04, M13 |
 | `clasificacion` | Motor puro del semáforo, reglas versionadas, evaluación vigente | F05, RN-02 a RN-06 |
-| `inspeccion` | Evaluación técnica presencial: solicitud, estados, verificación en campo e informe del especialista | F08, RN-09, RN-10 |
-| `checklist` | Ítems pendiente, revisado u observado | F06, RN-07 |
+| `inspeccion` | Evaluación técnica presencial: solicitud del comprador con su cuenta y fecha, costo referencial, estados, verificación en campo e informe firmado desde la cuenta del especialista | F08, RN-09, RN-10, M5, M8 |
+| `checklist` | Ítems pendiente, revisado u observado, incluida la declaración jurada municipal (HR y PU) | F06, RN-07, M9 |
 | `orientacion` | Glosario cerrado | F04 |
 | `almacenamiento` | PDF cifrados (AES-256-GCM) en disco | F03 |
 | `shared` | Errores comunes y hash | NF04 |
 
 Dependencias: `expediente` usa a los demás módulos. `clasificacion`, `inspeccion`, `checklist` y `orientacion` guardan el id
-del expediente por valor y no dependen de él. `inspeccion` nunca escribe en `clasificacion`: el informe técnico no cambia el
+del expediente por valor y no dependen de él. `inspeccion` usa la API pública de `identidad` (`AuthService.perfilProfesional`)
+para firmar el informe, sin leer sus tablas. `inspeccion` nunca escribe en `clasificacion`: el informe técnico no cambia el
 color del semáforo (RN-10).
+
+## Dos servicios diferenciados
+
+| | Indicador A · pre-evaluación documental | Indicador B · evaluación técnica presencial |
+|---|---|---|
+| Qué evalúa | Partida registral (rubros C, D, E y F) y los 4 planos: existencia y coincidencia del área (margen de 1 %) | Estado físico real: estructuras, instalaciones eléctricas y sanitarias |
+| Quién | El motor de reglas del módulo `clasificacion`, al guardar | Lo pide el COMPRADOR; lo emite el ESPECIALISTA en 6 pasos |
+| Resultado | Verde, amarillo, rojo o gris, con motivos | No solicitada, solicitada, en inspección o informe emitido (favorable, con observaciones o con riesgo) |
+| Costo | Incluido | Referencial, S/ 250.00 (`app.inspeccion.costo-referencial`), sin pago en línea |
+
+Nunca se mezclan: el indicador B no cambia el color del indicador A (RN-10, I2).
+
+## Fuentes de información
+
+Gratuitas: Conoce Aquí (SUNARP), de donde el revisor transcribe la partida, y el Visor Catastral BGR (SUNARP), que solo se
+enlaza. Aportadas por el propietario o de pago: copia literal certificada, planos de las 4 especialidades, declaración jurada
+municipal (HR y PU) e inspección presencial. No hay scraping ni conexión en línea con SUNARP, que no ofrece una API pública de
+partidas.
 
 ## Ejecutar
 
-```bash
-env APP_SEED_PASSWORD='elige-una-clave-de-prueba' ./mvnw spring-boot:run   # H2 en ./data/h2, API en http://127.0.0.1:8080
-./mvnw test                                                                 # 92 pruebas
+Windows PowerShell:
+
+```powershell
+$env:APP_SEED_PASSWORD = 'elige-una-clave-de-prueba'
+.\mvnw.cmd spring-boot:run      # H2 en .\data\h2, API en http://127.0.0.1:8080
+.\mvnw.cmd test                 # 107 pruebas
 ```
+
+bash, zsh o fish:
+
+```bash
+env APP_SEED_PASSWORD='elige-una-clave-de-prueba' ./mvnw spring-boot:run
+./mvnw test
+```
+
+Las 107 pruebas son de la última ejecución (19 de octubre de 2026): 92 de la v0.5, 14 de `CatalogoYServiciosTest` y 1 de
+`ConfiguracionLocalTest`.
 
 Swagger: `http://localhost:8080/swagger-ui.html`. La API está descrita en [../docs/api.md](../docs/api.md).
 
@@ -43,7 +75,8 @@ Swagger: `http://localhost:8080/swagger-ui.html`. La API está descrita en [../d
 | `especialista-01` | ESPECIALISTA | Consultar y emitir el informe técnico de una inspección solicitada. No edita partidas |
 
 Las tres cuentas usan la contraseña de `APP_SEED_PASSWORD` y se crean solo cuando la base está vacía. El rol se verifica en el
-servidor en cada ruta.
+servidor en cada ruta. Solo el comprador solicita la inspección (403 para los demás roles). La cuenta del especialista trae su
+perfil profesional ficticio: Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910.
 
 ## Variables de entorno
 
@@ -54,12 +87,13 @@ servidor en cada ruta.
 | `SPRING_DATASOURCE_URL` | Opcional. Cambia el archivo de base de datos (útil para empezar con una base nueva sin borrar nada) |
 
 Otras propiedades en `src/main/resources/application.properties`: `app.reglas.version`, `app.seed.enabled`,
-`app.storage.path`, `app.cors.allowed-origins`.
+`app.storage.path`, `app.cors.allowed-origins` y `app.inspeccion.costo-referencial` (250.00 si no se define).
 
 ## Contenido versionado
 
 Casos, reglas y glosario están en `src/main/resources/contenido/<versión>/` y se cargan al arrancar. La carga es idempotente: no
-pisa lo que el revisor ya editó. Al cambiar `app.reglas.version` se recalculan todas las evaluaciones. Todo el contenido está
+pisa lo que el revisor ya editó, y en una base ya creada completa lo que el contenido agregó después (distrito, precio
+referencial e ítems de checklist nuevos). Al cambiar `app.reglas.version` se recalculan todas las evaluaciones. Todo el contenido está
 rotulado como borrador pendiente de revisión especializada.
 
 ## Reglas de negocio
@@ -67,7 +101,7 @@ rotulado como borrador pendiente de revisión especializada.
 - **RN-02**: titularidad, condición y completitud son datos mínimos. `desconocido` no equivale a «sin carga».
 - **RN-03 y RN-04**: con datos suficientes, rojo si hay regla prioritaria; si no, amarillo si hay regla de revisión; si no,
   verde. Con datos faltantes, gris, y las alertas conocidas siguen visibles. Una condición no contemplada da gris.
-- **RN-05**: verde significa «sin alertas detectadas en los campos evaluados», nunca saneamiento.
+- **RN-05 (I1)**: verde significa exactamente «Sin alertas en los campos evaluados», nunca saneamiento.
 - **RN-06**: el color se recalcula al guardar, con la versión de reglas registrada. No existe ruta para fijarlo.
 - **RN-07**: solo el revisor modifica el expediente y el checklist.
 - **RN-09**: la pre-evaluación documental no afirma el estado físico de la vivienda.

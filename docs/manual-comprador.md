@@ -6,7 +6,10 @@ saneamiento, no recomienda comprar y no consulta fuentes oficiales.**
 ## Cómo usarlo
 
 1. **Ingresar.** Escribe el código de cuenta y la contraseña que te dio el equipo (por ejemplo `comprador-01`). No hay registro.
-2. **Elegir un caso.** En «Casos» verás cada partida con el nombre del predio, su estado y cuántos elementos tiene pendientes. Pulsa «Abrir expediente».
+2. **Elegir un inmueble.** En «Cartera de inmuebles» verás cada uno con su ilustración, tipo, distrito, área, precio referencial
+   (dato simulado), sus dos indicadores y cuántos elementos tiene pendientes. Puedes filtrar por tipo de inmueble, por el color
+   del indicador A o por el estado del indicador B (por ejemplo, «con riesgo físico detectado»); los filtros quedan en la
+   dirección de la página, así que puedes guardarla o compartirla. Pulsa «Ver expediente».
 3. **Leer la partida.** Verás la zona y la oficina registral, la ubicación, el área y los linderos, el antecedente dominial,
    la titularidad y la fecha referencial. Debajo, los asientos agrupados por rubro: títulos de dominio (C), gravámenes y
    cargas (D), cancelaciones (E) y otros (F). Abre o cierra cada rubro con Enter.
@@ -38,9 +41,15 @@ saneamiento, no recomienda comprar y no consulta fuentes oficiales.**
 
 ## Planos y evaluación técnica
 
-- **Planos:** en una vivienda, el expediente muestra sus 4 planos (arquitectura, estructuras, II.EE. e II.SS.). «Ver plano 2D» abre una
-  lámina referencial. La etiqueta «Faltante» indica un plano que no se presentó.
+- **Planos:** en una vivienda, el expediente muestra sus 4 planos (arquitectura, estructuras, II.EE. e II.SS.). «Ver lámina» abre
+  la lámina referencial en una ventana dentro de la página (se cierra con Escape) y «PDF» la abre en otra pestaña. En el plano
+  arquitectónico, dos barras comparan el área del plano con la inscrita; si no coinciden, se resalta la diferencia. «No
+  presentado» indica un plano que falta. En un lote, los planos no aplican.
 - **Dos indicadores:** la *pre-evaluación documental* se calcula sola con los documentos. La *evaluación técnica* es la verificación
   física de un profesional y se muestra aparte. Un plano completo no demuestra que la obra esté bien.
-- **Solicitar una inspección:** el botón «Solicitar inspección técnica presencial» deja constancia de tu solicitud. No cobra ni agenda
-  la visita. Cuando el especialista emite su informe, verás lo que encontró, su conclusión y los estudios adicionales que se requieren.
+- **Solicitar una inspección:** solo tú, como comprador, ves el botón «Solicitar inspección técnica». Abre una ventana con el
+  alcance de los 6 pasos y el costo referencial (S/ 250.00, dato simulado; se coordina con la inmobiliaria y no se paga en
+  línea). Al confirmar, la solicitud queda a nombre de tu cuenta y con la fecha de hoy. Una segunda solicitud no se acepta.
+  Cuando el especialista emite su informe, verás lo que encontró en estructuras e instalaciones, su conclusión y los estudios
+  adicionales que se requieren. El informe nunca cambia el color del indicador A.
+- **Checklist:** incluye la declaración jurada municipal (HR y PU).
