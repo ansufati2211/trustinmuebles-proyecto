@@ -12,7 +12,7 @@ export const ESTADOS: Record<EstadoSemaforo, {
   texto: string; fondo: string; borde: string; banda: string;
 }> = {
   VERDE: {
-    nombre: "Verde", resumen: "Sin alertas detectadas en los campos evaluados", tono: "success", Icono: CheckCircle2,
+    nombre: "Verde", resumen: "Sin alertas en los campos evaluados", tono: "success", Icono: CheckCircle2,
     texto: "text-[#15803D]", fondo: "bg-success/10", borde: "border-success/30", banda: "bg-success",
   },
   AMARILLO: {

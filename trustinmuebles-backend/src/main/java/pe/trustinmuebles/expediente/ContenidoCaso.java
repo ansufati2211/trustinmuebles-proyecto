@@ -25,20 +25,19 @@ final class ContenidoCaso {
     record AsientoJson(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
             String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {}
 
-    record ItemJson(String nombre, EstadoItem estado) {}
+    record ItemJson(String nombre, EstadoItem estado, String observacion) {}
 
     record PlanoJson(Especialidad especialidad, EstadoPlano estado, BigDecimal areaConstruida,
             SistemaConstructivo sistemaConstructivo, String observacion) {}
 
-    record InformeJson(EstadoTecnico estado, ResultadoTecnico resultado, String profesional, String colegiatura,
-            LocalDate fechaInspeccion, VerificacionCampo verifArquitectura, VerificacionCampo verifEstructuras,
-            VerificacionCampo verifElectricas, VerificacionCampo verifSanitarias, String observaciones,
-            String conclusiones, String estudiosAdicionales) {
+    /** Informe de demostración. Lo firma la cuenta especialista-01 (M8), no un nombre escrito en el JSON. */
+    record InformeJson(EstadoTecnico estado, ResultadoTecnico resultado, LocalDate fechaInspeccion,
+            VerificacionCampo verifArquitectura, VerificacionCampo verifEstructuras, VerificacionCampo verifElectricas,
+            VerificacionCampo verifSanitarias, String observaciones, String conclusiones, String estudiosAdicionales) {
 
         InformeDatos datos() {
-            return new InformeDatos(estado, resultado, profesional, colegiatura, fechaInspeccion, verifArquitectura,
-                    verifEstructuras, verifElectricas, verifSanitarias, observaciones, conclusiones,
-                    estudiosAdicionales);
+            return new InformeDatos(estado, resultado, fechaInspeccion, verifArquitectura, verifEstructuras,
+                    verifElectricas, verifSanitarias, observaciones, conclusiones, estudiosAdicionales);
         }
     }
 
@@ -48,7 +47,8 @@ final class ContenidoCaso {
             List<String> terminos, TipoPredio tipoPredio, BigDecimal areaConstruidaInscrita, List<PlanoJson> planos,
             InformeJson informeTecnico) {}
 
-    record CasoJson(String codigo, String denominacion, String contexto, ExpedienteJson expediente) {
+    record CasoJson(String codigo, String denominacion, String contexto, String distrito, BigDecimal precioReferencial,
+            ExpedienteJson expediente) {
 
         DatosExpediente datos() {
             ExpedienteJson x = expediente;

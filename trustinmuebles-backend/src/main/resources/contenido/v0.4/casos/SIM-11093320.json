@@ -2,6 +2,8 @@
   "codigo": "SIM-11093320",
   "denominacion": "Mz. A Lote 3 · Hab. Urb. Puente Molino · San José de los Molinos, Ica",
   "contexto": "San José de los Molinos, Ica",
+  "distrito": "San José de los Molinos",
+  "precioReferencial": 110000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -60,6 +62,10 @@
       {
         "nombre": "Estado de la compraventa en trámite",
         "estado": "OBSERVADO"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "PENDIENTE"
       }
     ],
     "terminos": [

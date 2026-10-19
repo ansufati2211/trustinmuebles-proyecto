@@ -215,3 +215,52 @@ asientos con el cierre registral, láminas a escala con cotas y cuadro de áreas
 
 **Estudio:** los casos 1 a 4 conservan nombres, montos, fechas y colores, que es lo que preguntan las formas A y B. Los casos 5 a 10 no
 forman parte del instrumento.
+
+## D23. v0.6: tipo de inmueble derivado del tipo de predio (supuesto)
+**Qué:** el catálogo muestra `tipoInmueble` (`VIVIENDA_URBANA` o `LOTE_URBANO`), que se deriva del `tipoPredio` del expediente.
+No se guarda aparte, para que el catálogo y las reglas de planos nunca se contradigan.
+
+**Supuesto:** el pedido de la v0.6 asignaba lotes a Subtanjalla, Los Aquijes, Pueblo Nuevo y San José de los Molinos. En el
+contenido, esas cuatro son viviendas: tienen declaratoria de fábrica o planos, y las pruebas existentes lo fijan
+(`losDiezCasosTienenSuColor` exige RV-04 en Subtanjalla y Los Aquijes y la declaratoria en Pueblo Nuevo). Cambiarlas a lote
+rompería esas pruebas, las reglas de planos y, en los casos 3 y 4, el instrumento del estudio. Se mantienen 9 viviendas y 1 lote
+(Santiago). Si el equipo quiere más lotes, hay que rehacer esos casos y sus pruebas a propósito.
+
+**Otros datos del predio:** `distrito` y `precioReferencial` (soles) son columnas nuevas de `caso_lote` (migración V5). El área
+es la del terreno que ya tenía el expediente (`areaM2`). El precio es referencial e informativo y no interviene en el semáforo.
+
+## D24. v0.6: solicitud solo del comprador y firma desde la cuenta del especialista (M5 y M8)
+**M5:** solo el rol COMPRADOR solicita la inspección: lo exige `SecurityConfig` y lo vuelve a comprobar el servicio. El
+solicitante (`solicitanteCodigo`) y la fecha los pone el servidor a partir de la sesión. Sigue habiendo una sola solicitud por
+expediente (409 a la segunda). El costo referencial (S/ 250.00) sale de `app.inspeccion.costo-referencial` y viaja en
+`evaluacionTecnica.servicio`; la interfaz no lo repite.
+
+**M8:** el nombre, la especialidad y la colegiatura del informe salen de la cuenta autenticada (`identidad`, API pública
+`AuthService.perfilProfesional`). El cuerpo de la petición ya no tiene esos campos y, si el cliente los manda, se ignoran. Por eso
+`InspeccionTest.validaElInforme` dejó de exigir 400 cuando faltan el nombre o la colegiatura: ese contrato lo reemplazó M8.
+Los informes de demostración también los firma `especialista-01`.
+
+**Datos del especialista:** Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910, tal como se pidió. Son ficticios
+y se rotulan así en la interfaz y en el PDF. Es una excepción a D22 (números con `SIM-`): **conviene verificar que ese número de
+colegiatura no pertenezca a un ingeniero real** o cambiarlo por uno con `SIM-`.
+
+**Base existente:** la migración V5 y la carga de contenido completan distrito, precio, ítem HR y PU y el perfil del especialista
+sin borrar nada. Los informes que ya estaban guardados conservan el profesional anterior; para verlos firmados por la cuenta del
+especialista hay que empezar con una base nueva.
+
+## D25. v0.6: filtros del catálogo en el servidor (M13)
+**Qué:** `GET /api/v1/casos` acepta `tipoInmueble`, `estado`, `estadoTecnico` (también `INFORME_EMITIDO`) y
+`riesgoFisicoDetectado`, combinables. El listado no está paginado (10 casos), pero se filtra en el servidor porque el color
+documental y el riesgo físico se derivan de dos módulos distintos: así la regla vive en un solo lugar y tiene prueba
+(`CatalogoYServiciosTest.filtrosCombinados`). Un valor desconocido da 400 con los valores válidos.
+`riesgoFisicoDetectado` es verdadero solo si el informe está emitido y su conclusión es «con riesgo».
+
+## D26. v0.6: el rótulo de «datos simulados» va en la interfaz
+**Qué:** la prueba `sinRastrosDelEstudio` prohíbe «simulad», «MVP» y «ejemplo» en el listado y el detalle de la API, para no
+delatar el diseño del estudio. Por eso los textos nuevos del backend (nota del precio, condiciones del servicio) no usan esas
+palabras, y el rótulo de datos ficticios o simulados que pide I7 lo pone la interfaz junto a precios, personas y colegiatura.
+
+## D27. v0.6: texto exacto del verde
+**Qué:** la etiqueta del estado verde pasa a ser exactamente «Sin alertas en los campos evaluados» (I1), en el backend y en la
+interfaz. Antes decía «Sin alertas detectadas en los campos evaluados»; el significado no cambia. Lo fija
+`CatalogoYServiciosTest.verdeSignificaSinAlertas`.

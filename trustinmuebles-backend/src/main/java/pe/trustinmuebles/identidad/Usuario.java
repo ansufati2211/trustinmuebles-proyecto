@@ -27,4 +27,12 @@ public class Usuario {
 
     @Column(name = "creado_en", nullable = false)
     private Instant creadoEn = Instant.now();
+
+    /** Datos profesionales. Solo los tiene la cuenta del especialista y son ficticios en la demostración. */
+    @Column(name = "nombre_completo")
+    private String nombreCompleto;
+
+    private String especialidad;
+
+    private String colegiatura;
 }

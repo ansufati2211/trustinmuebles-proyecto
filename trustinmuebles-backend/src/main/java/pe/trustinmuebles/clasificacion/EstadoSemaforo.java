@@ -2,7 +2,7 @@ package pe.trustinmuebles.clasificacion;
 
 /** Salida informativa. Verde no significa saneamiento ni seguridad de compra (RN-05). */
 public enum EstadoSemaforo {
-    VERDE("Sin alertas detectadas en los campos evaluados"),
+    VERDE("Sin alertas en los campos evaluados"),
     AMARILLO("Requiere revisión"),
     ROJO("Alerta prioritaria"),
     GRIS("Información insuficiente o condición no evaluable");

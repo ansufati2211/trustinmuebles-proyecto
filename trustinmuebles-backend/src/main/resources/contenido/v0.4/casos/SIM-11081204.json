@@ -2,6 +2,8 @@
   "codigo": "SIM-11081204",
   "denominacion": "Mz. B Lote 5 · Hab. Urb. Campiña del Olivar · Santiago, Ica",
   "contexto": "Santiago, Ica",
+  "distrito": "Santiago",
+  "precioReferencial": 75000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -37,6 +39,10 @@
       },
       {
         "nombre": "Plano de ubicación del lote",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
         "estado": "REVISADO"
       }
     ],

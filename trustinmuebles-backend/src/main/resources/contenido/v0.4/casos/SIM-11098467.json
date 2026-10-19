@@ -2,6 +2,8 @@
   "codigo": "SIM-11098467",
   "denominacion": "Mz. N Lote 8 · Hab. Urb. Mirador del Pallar · Pachacútec, Ica",
   "contexto": "Pachacútec, Ica",
+  "distrito": "Pachacútec",
+  "precioReferencial": 140000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -49,6 +51,11 @@
       {
         "nombre": "Licencia de edificación de la ampliación",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "OBSERVADO",
+        "observacion": "El PU declara 72 m² construidos y no incluye la ampliación que muestra el plano (98 m²)."
       }
     ],
     "terminos": [
@@ -121,8 +128,6 @@
     ],
     "informeTecnico": {
       "estado": "EN_INSPECCION",
-      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
-      "colegiatura": "CIP SIM-0001",
       "fechaInspeccion": "2026-10-14",
       "verifArquitectura": "OBSERVADO",
       "observaciones": "Segundo piso en construcción no declarado, con un área aproximada de 26 m². Pendiente verificar la cimentación y las columnas de arranque."

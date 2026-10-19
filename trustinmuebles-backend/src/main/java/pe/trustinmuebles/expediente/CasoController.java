@@ -23,9 +23,16 @@ class CasoController {
         this.servicio = servicio;
     }
 
+    /**
+     * Catálogo. Filtros opcionales y combinables (M13): tipoInmueble (VIVIENDA_URBANA, LOTE_URBANO), estado
+     * (indicador A: VERDE, AMARILLO, ROJO, GRIS), estadoTecnico (indicador B: NO_SOLICITADA, SOLICITADA,
+     * EN_INSPECCION, EMITIDO o su alias INFORME_EMITIDO) y riesgoFisicoDetectado (true o false).
+     */
     @GetMapping
-    List<ResumenCaso> listar() {
-        return servicio.listar();
+    List<ResumenCaso> listar(@RequestParam(required = false) String tipoInmueble,
+            @RequestParam(required = false) String estado, @RequestParam(required = false) String estadoTecnico,
+            @RequestParam(required = false) Boolean riesgoFisicoDetectado) {
+        return servicio.listar(FiltroCatalogo.de(tipoInmueble, estado, estadoTecnico, riesgoFisicoDetectado));
     }
 
     @PostMapping

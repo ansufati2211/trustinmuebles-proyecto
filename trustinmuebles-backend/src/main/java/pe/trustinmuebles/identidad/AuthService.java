@@ -69,6 +69,32 @@ public class AuthService {
         return repo.findFirstByRolOrderByIdAsc(Rol.REVISOR).map(UsuarioDto::de);
     }
 
+    /** Datos profesionales de una cuenta, si los tiene. Los usa el módulo de inspección para firmar el informe. */
+    @Transactional(readOnly = true)
+    public Optional<PerfilProfesional> perfilProfesional(Long usuarioId) {
+        return repo.findById(usuarioId).flatMap(AuthService::perfil);
+    }
+
+    @Transactional(readOnly = true)
+    public Optional<PerfilProfesional> perfilProfesional(String codigoCuenta) {
+        return repo.findByCodigoCuenta(codigoCuenta).flatMap(AuthService::perfil);
+    }
+
+    /** Completa los datos profesionales de una cuenta de prueba que aún no los tiene. No pisa datos existentes. */
+    public void completarPerfilProfesional(String codigoCuenta, String nombre, String especialidad, String colegiatura) {
+        repo.findByCodigoCuenta(codigoCuenta).filter(u -> u.getNombreCompleto() == null).ifPresent(u -> {
+            u.setNombreCompleto(nombre);
+            u.setEspecialidad(especialidad);
+            u.setColegiatura(colegiatura);
+        });
+    }
+
+    private static Optional<PerfilProfesional> perfil(Usuario u) {
+        if (u.getNombreCompleto() == null || u.getColegiatura() == null) return Optional.empty();
+        return Optional.of(new PerfilProfesional(u.getCodigoCuenta(), u.getNombreCompleto(), u.getEspecialidad(),
+                u.getColegiatura()));
+    }
+
     @Transactional(readOnly = true)
     public boolean hayUsuarios() {
         return repo.count() > 0;

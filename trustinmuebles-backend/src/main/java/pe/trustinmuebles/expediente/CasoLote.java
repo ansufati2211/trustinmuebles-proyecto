@@ -45,6 +45,13 @@ class CasoLote {
 
     enum Origen { SINTETICO, TRANSCRITA }
 
+    /** Distrito del predio, para el catálogo y sus filtros. */
+    private String distrito;
+
+    /** Precio referencial en soles. Es informativo, no una oferta; las partidas transcritas no lo tienen. */
+    @Column(name = "precio_referencial")
+    private java.math.BigDecimal precioReferencial;
+
     /** Revisor responsable del registro del caso. No otorga edición al comprador. */
     @Column(name = "responsable_id", nullable = false)
     private Long responsableId;

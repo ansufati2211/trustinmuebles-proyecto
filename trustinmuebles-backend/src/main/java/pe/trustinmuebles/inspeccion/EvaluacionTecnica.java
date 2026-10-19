@@ -62,4 +62,12 @@ class EvaluacionTecnica {
 
     @Column(name = "actualizado_en", nullable = false)
     private Instant actualizadoEn = Instant.now();
+
+    /** Código de la cuenta que pidió la inspección. Lo fija el servidor a partir de la sesión, nunca el cliente. */
+    @Column(name = "solicitante_codigo")
+    private String solicitanteCodigo;
+
+    /** Especialidad del profesional (por ejemplo, Ingeniero Civil). Sale de su cuenta, como el nombre y la colegiatura. */
+    @Column(name = "profesional_especialidad")
+    private String profesionalEspecialidad;
 }
