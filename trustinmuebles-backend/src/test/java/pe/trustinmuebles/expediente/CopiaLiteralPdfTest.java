@@ -142,4 +142,49 @@ class CopiaLiteralPdfTest {
             assertThat(doc.getDocumentInformation().getTitle()).startsWith("Transcripción referencial");
         }
     }
+
+    @Test
+    @DisplayName("Una partida ficticia imprime el cierre registral de cada asiento; una transcrita, solo lo transcrito")
+    void cierreRegistralSoloEnLasFicticias() throws Exception {
+        try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
+            String texto = new PDFTextStripper().getText(doc);
+            assertThat(texto).contains("Tomo Diario SIM-", "Derechos cobrados: S/", "Recibo N.° SIM-", "horas");
+            // El mismo asiento da siempre los mismos datos: el PDF no cambia entre dos generaciones.
+            try (PDDocument otra = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
+                assertThat(new PDFTextStripper().getText(otra)).isEqualTo(texto);
+            }
+        }
+        var transcrita = new CopiaLiteralPdf.Procedencia(true, "Conoce Aquí – SUNARP", LocalDate.of(2026, 10, 17));
+        try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false), transcrita))) {
+            String texto = new PDFTextStripper().getText(doc);
+            assertThat(texto).doesNotContain("Tomo Diario", "Derechos cobrados", "Recibo N.°");
+            assertThat(texto).contains("presentado el 26/03/2018", "inscrito el 02/04/2018");
+        }
+    }
+
+    @Test
+    @DisplayName("Los asientos en Courier quedan justificados y los 10 casos del contenido generan su copia literal")
+    void losDiezCasosGeneranSuCopia() throws Exception {
+        var mapa = new tools.jackson.databind.ObjectMapper();
+        var dir = java.nio.file.Path.of("src/main/resources/contenido/v0.4/casos");
+        int n = 0;
+        try (var archivos = java.nio.file.Files.list(dir)) {
+            for (var f : archivos.sorted().toList()) {
+                var caso = mapa.readValue(f.toFile(), ContenidoCaso.CasoJson.class);
+                var datos = caso.datos();
+                byte[] pdf = CopiaLiteralPdf.generar(ExpedienteService.copiaDe(caso.codigo(), datos,
+                        NormalizadorAsientos.normalizar(datos.asientos()).asientos()));
+                try (PDDocument doc = Loader.loadPDF(pdf)) {
+                    String texto = new PDFTextStripper().getText(doc);
+                    assertThat(texto).as(caso.codigo()).contains("Partida N.° " + caso.codigo(), "DESCRIPCIÓN DEL INMUEBLE");
+                    for (int i = 0; i < doc.getNumberOfPages(); i++) {
+                        assertThat(textosDibujados(doc, i)).as(caso.codigo() + " p." + (i + 1))
+                                .contains(CopiaLiteralPdf.MARCA_DE_AGUA);
+                    }
+                }
+                n++;
+            }
+        }
+        assertThat(n).isEqualTo(10);
+    }
 }

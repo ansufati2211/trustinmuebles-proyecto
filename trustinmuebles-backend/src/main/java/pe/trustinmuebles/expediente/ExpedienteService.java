@@ -372,8 +372,15 @@ class ExpedienteService {
         return c.isSintetico() ? Procedencia.SINTETICA : new Procedencia(true, c.getFuente(), c.getFechaConsulta());
     }
 
+    /** En el rubro F, un «otro acto» que declara la fábrica se titula así, como en una partida real. */
+    private static String nombreDelActo(AsientoDatos a) {
+        boolean fabrica = a.tipoActo() == pe.trustinmuebles.clasificacion.TipoActo.OTRO && a.texto() != null
+                && a.texto().toLowerCase().startsWith("declaratoria de fábrica");
+        return fabrica ? "Declaratoria de fábrica" : a.tipoActo().etiqueta();
+    }
+
     static DatosCopia copiaDe(String partida, DatosExpediente d, List<AsientoDatos> asientos) {
-        List<AsientoCopia> lista = asientos.stream().map(a -> new AsientoCopia(a.referencia(), a.tipoActo().etiqueta(),
+        List<AsientoCopia> lista = asientos.stream().map(a -> new AsientoCopia(a.referencia(), nombreDelActo(a),
                 a.texto(), a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion())).toList();
         return new DatosCopia(partida,
                 d.zonaRegistral() == null ? "Zona registral no informada" : d.zonaRegistral(),

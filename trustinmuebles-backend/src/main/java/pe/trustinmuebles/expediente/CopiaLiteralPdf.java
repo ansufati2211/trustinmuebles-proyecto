@@ -58,7 +58,13 @@ final class CopiaLiteralPdf {
     record DatosCopia(String partida, String zona, String oficina, String ubicacion, BigDecimal areaM2, String linderos,
             String antecedente, boolean extractoParcial, LocalDate fechaReferencial, List<AsientoCopia> asientos) {}
 
-    private record Linea(String texto, PDFont fuente, float tam, float sangria, float antes) {}
+    /** Una línea ya dividida. {@code justificar} reparte el espacio sobrante entre las palabras; {@code barra} la resalta. */
+    private record Linea(String texto, PDFont fuente, float tam, float sangria, float antes, boolean justificar,
+            float anchoMax, boolean barra, float gris) {
+        Linea(String texto, PDFont fuente, float tam, float sangria, float antes) {
+            this(texto, fuente, tam, sangria, antes, false, 0f, false, 0.1f);
+        }
+    }
 
     private static final float MARGEN = 56f;
     private static final float ALTO_ENCABEZADO = 58f;
@@ -76,9 +82,10 @@ final class CopiaLiteralPdf {
     static byte[] generar(DatosCopia d, Procedencia p) {
         PDFont normal = new PDType1Font(Standard14Fonts.FontName.HELVETICA);
         PDFont negrita = new PDType1Font(Standard14Fonts.FontName.HELVETICA_BOLD);
+        PDFont mono = new PDType1Font(Standard14Fonts.FontName.COURIER);
         float ancho = PDRectangle.A4.getWidth() - 2 * MARGEN;
 
-        List<Linea> lineas = contenido(d, p, normal, negrita, ancho);
+        List<Linea> lineas = contenido(d, p, normal, negrita, mono, ancho);
         List<List<Linea>> paginas = paginar(lineas);
 
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
@@ -100,7 +107,25 @@ final class CopiaLiteralPdf {
                     float y = PDRectangle.A4.getHeight() - MARGEN - ALTO_ENCABEZADO;
                     for (Linea l : paginas.get(i)) {
                         y -= l.antes() + l.tam() * 1.28f;
-                        texto(cs, l.texto(), l.fuente(), l.tam(), MARGEN + l.sangria(), y);
+                        if (l.barra()) {
+                            cs.setNonStrokingColor(0.90f);
+                            cs.addRect(MARGEN - 3f, y - 3.5f, ancho + 6f, l.tam() + 5.5f);
+                            cs.fill();
+                        }
+                        cs.setNonStrokingColor(l.gris());
+                        if (l.justificar() && l.texto().contains(" ")) {
+                            long huecos = l.texto().chars().filter(c -> c == ' ').count();
+                            float extra = (l.anchoMax() - anchoDe(l.texto(), l.fuente(), l.tam())) / huecos;
+                            cs.beginText();
+                            cs.setFont(l.fuente(), l.tam());
+                            cs.setWordSpacing(Math.max(0f, extra));
+                            cs.newLineAtOffset(MARGEN + l.sangria(), y);
+                            cs.showText(l.texto());
+                            cs.setWordSpacing(0f);
+                            cs.endText();
+                        } else {
+                            texto(cs, l.texto(), l.fuente(), l.tam(), MARGEN + l.sangria(), y);
+                        }
                     }
                     pie(cs, p, i + 1, total, normal);
                 }
@@ -114,7 +139,8 @@ final class CopiaLiteralPdf {
 
     // ---------------------------------------------------------------- contenido
 
-    private static List<Linea> contenido(DatosCopia d, Procedencia p, PDFont normal, PDFont negrita, float ancho) {
+    private static List<Linea> contenido(DatosCopia d, Procedencia p, PDFont normal, PDFont negrita, PDFont mono,
+            float ancho) {
         List<Linea> l = new ArrayList<>();
         titulo(l, p.transcrita() ? "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL" : "COPIA LITERAL SIMULADA DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
         if (d.extractoParcial()) {
@@ -131,19 +157,19 @@ final class CopiaLiteralPdf {
         parrafo(l, "Linderos y medidas perimétricas: " + valor(d.linderos()), normal, 10f, 0f, 3f, ancho);
 
         seccion(l, "ANTECEDENTE DOMINIAL", negrita, ancho);
-        parrafo(l, valor(d.antecedente()), normal, 10f, 0f, 3f, ancho);
+        parrafoJustificado(l, valor(d.antecedente()), mono, 9f, 0f, 3f, ancho);
 
-        asientos(l, "TÍTULOS DE DOMINIO", 'C', d, normal, negrita, ancho);
-        asientos(l, "GRAVÁMENES Y CARGAS", 'D', d, normal, negrita, ancho);
-        asientos(l, "CANCELACIONES", 'E', d, normal, negrita, ancho);
-        asientos(l, "OTROS", 'F', d, normal, negrita, ancho);
+        asientos(l, "TÍTULOS DE DOMINIO", 'C', d, p, normal, negrita, mono, ancho);
+        asientos(l, "GRAVÁMENES Y CARGAS", 'D', d, p, normal, negrita, mono, ancho);
+        asientos(l, "CANCELACIONES", 'E', d, p, normal, negrita, mono, ancho);
+        asientos(l, "OTROS", 'F', d, p, normal, negrita, mono, ancho);
 
         parrafo(l, p.cierre(), negrita, 9.5f, 0f, 12f, ancho);
         return l;
     }
 
-    private static void asientos(List<Linea> l, String nombre, char rubro, DatosCopia d, PDFont normal, PDFont negrita,
-            float ancho) {
+    private static void asientos(List<Linea> l, String nombre, char rubro, DatosCopia d, Procedencia p, PDFont normal,
+            PDFont negrita, PDFont mono, float ancho) {
         seccion(l, nombre, negrita, ancho);
         List<AsientoCopia> delRubro = d.asientos().stream()
                 .filter(a -> a.referencia() != null && !a.referencia().isEmpty() && a.referencia().charAt(0) == rubro)
@@ -155,13 +181,53 @@ final class CopiaLiteralPdf {
             return;
         }
         for (AsientoCopia a : delRubro) {
-            parrafo(l, a.referencia() + " · " + a.acto().toUpperCase(Locale.forLanguageTag("es-PE")), negrita, 10f, 0f, 7f, ancho);
-            if (a.texto() != null && !a.texto().isBlank()) parrafo(l, a.texto(), normal, 10f, 12f, 2f, ancho);
+            parrafo(l, a.referencia() + " · " + a.acto().toUpperCase(Locale.forLanguageTag("es-PE")), negrita, 10f, 0f, 8f, ancho);
+            if (a.texto() != null && !a.texto().isBlank()) parrafoJustificado(l, a.texto(), mono, 9f, 12f, 2f, ancho);
+            // Cierre del asiento: título, presentación e inscripción, como en una copia literal.
+            Presentacion pres = p.transcrita() ? null : Presentacion.derivar(a);
             List<String> datos = new ArrayList<>();
             if (a.titulo() != null && !a.titulo().isBlank()) datos.add("Título archivado N.° " + a.titulo());
-            if (a.fechaPresentacion() != null) datos.add("presentado el " + a.fechaPresentacion().format(FECHA_CORTA));
+            if (a.fechaPresentacion() != null) {
+                datos.add("presentado el " + a.fechaPresentacion().format(FECHA_CORTA)
+                        + (pres == null ? "" : " a las " + pres.hora() + " horas"));
+            }
             if (a.fechaInscripcion() != null) datos.add("inscrito el " + a.fechaInscripcion().format(FECHA_CORTA));
-            if (!datos.isEmpty()) parrafo(l, String.join(" · ", datos), normal, 9f, 12f, 2f, ancho);
+            if (!datos.isEmpty()) parrafoGris(l, String.join(" · ", datos), normal, 8.5f, 12f, 3f, ancho);
+            if (pres != null) {
+                String ica = a.fechaInscripcion() == null ? "" : " · Ica, " + a.fechaInscripcion().format(FECHA_LARGA);
+                parrafoGris(l, "Tomo Diario " + pres.tomo() + " · Derechos cobrados: S/ " + pres.derechos()
+                        + " · Recibo N.° " + pres.recibo() + ica, normal, 8.5f, 12f, 0f, ancho);
+            }
+        }
+    }
+
+    /**
+     * Datos de presentación que una copia literal real trae y el caso no guarda: hora, tomo del diario, derechos y
+     * recibo. Se derivan del título y del acto, así que son siempre los mismos para el mismo asiento. Solo existen en
+     * partidas ficticias; en una transcrita se imprime únicamente lo transcrito.
+     */
+    record Presentacion(String hora, String tomo, String derechos, String recibo) {
+        static Presentacion derivar(AsientoCopia a) {
+            String semilla = String.valueOf(a.titulo()) + "|" + a.acto();
+            int h = Math.abs(semilla.hashCode() % 1_000_000_000);
+            String hora = String.format("%02d:%02d:%02d", 8 + h % 9, (h / 9) % 60, (h / 540) % 60);
+            String tomo = String.format("SIM-%04d", 100 + (h / 32_400) % 900);
+            int base = switch (a.acto() == null ? "" : a.acto().toLowerCase(Locale.ROOT)) {
+                case "compraventa" -> 154;
+                case "hipoteca" -> 188;
+                case "embargo", "anotación de demanda", "medida cautelar" -> 98;
+                case "bloqueo registral" -> 62;
+                case "carga técnica" -> 76;
+                case "servidumbre" -> 142;
+                case "sucesión" -> 126;
+                case "independización" -> 210;
+                case "cancelación" -> 54;
+                case "declaratoria de fábrica" -> 120;
+                default -> 60;
+            };
+            String anio = a.fechaPresentacion() == null ? "0000" : String.valueOf(a.fechaPresentacion().getYear());
+            return new Presentacion(hora, tomo, String.format("%d.00", base + h % 37),
+                    String.format("SIM-%s-%07d", anio, h % 9_999_999));
         }
     }
 
@@ -170,13 +236,34 @@ final class CopiaLiteralPdf {
     }
 
     private static void seccion(List<Linea> l, String texto, PDFont negrita, float ancho) {
-        parrafo(l, texto, negrita, 10.5f, 0f, 12f, ancho);
+        List<String> partes = ajustar(limpiar(texto, negrita), negrita, 10.5f, ancho);
+        for (int i = 0; i < partes.size(); i++) {
+            l.add(new Linea(partes.get(i), negrita, 10.5f, 0f, i == 0 ? 14f : 0f, false, 0f, true, 0.05f));
+        }
     }
 
     private static void parrafo(List<Linea> l, String texto, PDFont f, float tam, float sangria, float antes, float ancho) {
         List<String> partes = ajustar(limpiar(texto, f), f, tam, ancho - sangria);
         for (int i = 0; i < partes.size(); i++) {
             l.add(new Linea(partes.get(i), f, tam, sangria, i == 0 ? antes : 0f));
+        }
+    }
+
+    /** Párrafo con las dos márgenes alineadas: la última línea queda a la izquierda. */
+    private static void parrafoJustificado(List<Linea> l, String texto, PDFont f, float tam, float sangria, float antes,
+            float ancho) {
+        List<String> partes = ajustar(limpiar(texto, f), f, tam, ancho - sangria);
+        for (int i = 0; i < partes.size(); i++) {
+            l.add(new Linea(partes.get(i), f, tam, sangria, i == 0 ? antes : 0f, i < partes.size() - 1, ancho - sangria,
+                    false, 0.1f));
+        }
+    }
+
+    private static void parrafoGris(List<Linea> l, String texto, PDFont f, float tam, float sangria, float antes,
+            float ancho) {
+        List<String> partes = ajustar(limpiar(texto, f), f, tam, ancho - sangria);
+        for (int i = 0; i < partes.size(); i++) {
+            l.add(new Linea(partes.get(i), f, tam, sangria, i == 0 ? antes : 0f, false, 0f, false, 0.32f));
         }
     }
 
