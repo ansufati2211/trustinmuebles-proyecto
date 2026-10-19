@@ -14,13 +14,47 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 |---|---|---|---|
 | Iniciar sesión | `POST /auth/login` | Público | 200, 400, 401, 429 |
 | Usuario actual | `GET /auth/me` | Sesión | 200, 401 |
-| Listar casos | `GET /casos` | Sesión | 200, 401 |
+| Catálogo, con filtros opcionales | `GET /casos?tipoInmueble=&estado=&estadoTecnico=&riesgoFisicoDetectado=` | Sesión | 200, 400, 401 |
 | Abrir un caso (por su partida simulada) | `GET /casos/{codigo}` | Sesión | 200, 401, 404 |
 | Actualizar la partida y recalcular | `PUT /casos/{codigo}/expediente` | REVISOR | 200, 400, 401, 403, 404, 409 |
 | Cambiar un ítem del checklist | `PATCH /casos/{codigo}/checklist/{itemId}` | REVISOR | 200, 400, 401, 403, 404 |
 | Asociar un PDF propio al caso | `POST /casos/{codigo}/documento` (multipart, campo `documento`) | REVISOR | 201, 401, 403, 404, 413, 422 |
 | Ver el PDF del caso | `GET /casos/{codigo}/documento` | Sesión | 200, 401, 404 |
+| Solicitar la inspección técnica | `POST /casos/{codigo}/inspeccion/solicitud` | **COMPRADOR** | 201, 401, 403, 404, 409 |
+| Registrar el avance o el informe técnico | `PUT /casos/{codigo}/inspeccion` | ESPECIALISTA | 200, 400, 401, 403, 404, 409, 422 |
+| Ver el informe técnico en PDF | `GET /casos/{codigo}/inspeccion/documento` | Sesión | 200, 401, 404 |
+| Ver la lámina o el PDF de un plano | `GET /casos/{codigo}/planos/{especialidad}/documento` | Sesión | 200, 401, 404 |
+| Subir el PDF real de un plano | `POST /casos/{codigo}/planos/{especialidad}/documento` | REVISOR | 201, 401, 403, 404, 413, 422 |
+| Registrar una partida transcrita | `POST /casos` | REVISOR | 201, 400, 401, 403, 409 |
+| Eliminar una partida transcrita | `DELETE /casos/{codigo}` | REVISOR | 204, 401, 403, 404, 409 |
 | Glosario cerrado | `GET /glosario` | Sesión | 200, 401 |
+
+## Catálogo y filtros (M13)
+
+`GET /casos` devuelve los casos ordenados por número de partida. Los filtros son opcionales y se combinan con «y»:
+
+| Parámetro | Valores | Filtra por |
+|---|---|---|
+| `tipoInmueble` | `VIVIENDA_URBANA`, `LOTE_URBANO` | Tipo de inmueble (se deriva de `tipoPredio`) |
+| `estado` | `VERDE`, `AMARILLO`, `ROJO`, `GRIS` | Color del indicador A |
+| `estadoTecnico` | `NO_SOLICITADA`, `SOLICITADA`, `EN_INSPECCION`, `EMITIDO` (o su alias `INFORME_EMITIDO`) | Estado del indicador B |
+| `riesgoFisicoDetectado` | `true`, `false` | Informe emitido con conclusión «con riesgo» |
+
+Un valor desconocido da 400 con la lista de valores válidos. Se filtra en el servidor porque el color y el riesgo vienen de dos
+módulos distintos (decisión D25). Ejemplo: `GET /casos?estado=AMARILLO&estadoTecnico=EMITIDO`.
+
+Cada elemento trae, además de lo anterior, `resultadoTecnico`, `riesgoFisicoDetectado` y el bloque `predio`:
+
+```json
+"predio": {
+  "tipoInmueble": "VIVIENDA_URBANA", "tipoInmuebleEtiqueta": "Vivienda urbana", "distrito": "Parcona",
+  "areaM2": 160.00, "areaConstruidaInscrita": 84.50, "precioReferencial": 185000.00, "moneda": "PEN",
+  "precioNota": "Precio referencial e informativo; no es una oferta. Se coordina con la inmobiliaria."
+}
+```
+
+El precio es informativo y no interviene en el semáforo. Las partidas transcritas no tienen precio (`null`). El detalle
+(`GET /casos/{codigo}`) también trae el bloque `predio`.
 
 No existe ninguna ruta para fijar el color del semáforo (RN-06), para registrar cuentas ni para leer claves de respuesta.
 
@@ -128,26 +162,31 @@ Además:
 **Tipos de acto:** `PRIMERA_INSCRIPCION`, `INDEPENDIZACION`, `COMPRAVENTA`, `SUCESION`, `HIPOTECA`, `EMBARGO`,
 `ANOTACION_DEMANDA`, `MEDIDA_CAUTELAR`, `BLOQUEO`, `CARGA_TECNICA`, `SERVIDUMBRE`, `CANCELACION` y `OTRO`.
 
-## Reglas del semáforo v0.2 (borrador, pendiente de revisión especializada)
+## Reglas del semáforo v0.4 (borrador, pendiente de revisión especializada)
 
-Solo se evalúan los asientos del rubro D que siguen vigentes.
+Las reglas RP y RV-01 a RV-03 evalúan los asientos del rubro D que siguen vigentes. RV-04 a RV-06 evalúan los planos de una
+vivienda; en un lote no aplican.
 
-| Regla | Tipo de acto vigente | Prioridad | Estado |
+| Regla | Condición | Prioridad | Estado |
 |---|---|---|---|
-| RP-01 | Embargo | Prioritaria | Rojo |
-| RP-02 | Anotación de demanda, medida cautelar | Prioritaria | Rojo |
-| RP-03 | Bloqueo registral | Prioritaria | Rojo |
-| RV-02 | Hipoteca | Revisión | Amarillo |
-| RV-03 | Carga técnica, servidumbre | Revisión | Amarillo |
-| RV-01 | Otro acto | Revisión | Amarillo |
+| RP-01 | Embargo vigente | Prioritaria | Rojo |
+| RP-02 | Anotación de demanda o medida cautelar vigente | Prioritaria | Rojo |
+| RP-03 | Bloqueo registral vigente | Prioritaria | Rojo |
+| RV-02 | Hipoteca vigente | Revisión | Amarillo |
+| RV-03 | Carga técnica o servidumbre vigente | Revisión | Amarillo |
+| RV-01 | Otro acto vigente | Revisión | Amarillo |
+| RV-04 | Falta el plano de II.EE. o el de II.SS. | Revisión | Amarillo |
+| RV-05 | El área del plano arquitectónico difiere más de 1 % de la inscrita, o no consta una inscrita | Revisión | Amarillo |
+| RV-06 | Un plano está observado | Revisión | Amarillo |
 
-La copropiedad y los gravámenes cancelados no generan alerta. Las alertas salen en el orden de la tabla.
+Una vivienda sin plano arquitectónico o de estructuras queda en gris. La copropiedad y los gravámenes cancelados no generan
+alerta. Las alertas salen en el orden de la tabla. Ni el checklist (I3) ni el informe técnico (I2) cambian el color.
 
 ## Estados del semáforo
 
 | Estado | Cuándo | Significado |
 |---|---|---|
-| `VERDE` | Datos mínimos completos, sin alertas y condición contemplada | Sin alertas detectadas en los campos evaluados. No es saneamiento |
+| `VERDE` | Datos mínimos completos, sin alertas y condición contemplada | Exactamente «Sin alertas en los campos evaluados» (I1). No es saneamiento |
 | `AMARILLO` | Hay una alerta de revisión | Requiere revisión |
 | `ROJO` | Hay una alerta prioritaria con datos completos | Alerta prioritaria |
 | `GRIS` | Faltan datos mínimos o la condición no está contemplada | Información insuficiente. Las alertas conocidas se conservan, aunque sean prioritarias |
@@ -160,11 +199,11 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 |---|---|
 | 400 | Cuerpo inválido, valor fuera de las enumeraciones, asiento que incumple las reglas de la partida |
 | 401 | Sin token, token vencido o de otro emisor, credenciales incorrectas |
-| 403 | El rol no permite la operación |
+| 403 | El rol no permite la operación (por ejemplo, un revisor o un especialista que solicita la inspección) |
 | 404 | Caso, ítem o documento inexistente. Un ítem de otro caso también da 404 |
-| 409 | La versión del expediente cambió |
+| 409 | La versión del expediente cambió, la inspección ya fue solicitada o no hay solicitud para registrar el informe |
 | 413 | El archivo supera 5 MB |
-| 422 | El archivo no es un PDF válido |
+| 422 | El archivo no es un PDF válido, o la cuenta del especialista no tiene datos profesionales para firmar |
 | 429 | Demasiados intentos de login |
 
 ## Partidas transcritas (solo REVISOR)
@@ -180,11 +219,25 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 
 - `ExpedienteDto` incluye `tipoPredio` (`LOTE` o `VIVIENDA`), `areaConstruidaInscrita` y `planos[]`. Cada plano trae su `especialidad`,
   `estado`, `areaConstruida`, `sistemaConstructivo`, `observacion`, `tieneDocumentoPropio` y, en el arquitectónico, `coincideArea`.
-- `DetalleCaso` incluye `evaluacionTecnica` (indicador B) y `ResumenCaso` incluye `estadoTecnico`.
+- `DetalleCaso` incluye `evaluacionTecnica` (indicador B) y `ResumenCaso` incluye `estadoTecnico`, `resultadoTecnico` y
+  `riesgoFisicoDetectado`.
 - `PUT /casos/{c}/expediente` acepta `tipoPredio`, `areaConstruidaInscrita` y `planos`. Si no viene `tipoPredio`, el bloque técnico no se toca.
   Un plano repetido, el área fuera del plano arquitectónico o el sistema constructivo fuera del de estructuras dan 400.
 - `GET /casos/{c}/planos/{especialidad}/documento`: el PDF que subió el revisor o, si no hay, una lámina 2D referencial. 404 si el plano no está presentado.
 - `POST /casos/{c}/planos/{especialidad}/documento` (REVISOR, multipart): sube el PDF real. 422 si no es un PDF o el plano no está presentado.
-- `POST /casos/{c}/inspeccion/solicitud` (cualquier usuario con sesión): 201; 409 si ya fue solicitada.
-- `PUT /casos/{c}/inspeccion` (solo ESPECIALISTA): guarda el informe. 409 si no hay solicitud; 400 si un informe emitido no trae resultado,
-  profesional, colegiatura, fecha, las 4 verificaciones y conclusiones.
+- `POST /casos/{c}/inspeccion/solicitud` (**solo COMPRADOR**, M5; sin cuerpo): 201; 403 para los demás roles; 409 si ya fue
+  solicitada. El servidor guarda `solicitanteCodigo` (de la sesión, nunca del cuerpo) y `fechaSolicitud` (hoy).
+- `PUT /casos/{c}/inspeccion` (solo ESPECIALISTA): guarda el avance (`EN_INSPECCION`) o el informe (`EMITIDO`). Cuerpo: `estado`,
+  `resultado`, `fechaInspeccion`, `verifArquitectura`, `verifEstructuras`, `verifElectricas`, `verifSanitarias`,
+  `observaciones`, `conclusiones` y `estudiosAdicionales`. **No lleva** nombre, especialidad ni colegiatura (M8): el servidor
+  los toma de la cuenta autenticada y, si el cliente los envía, se ignoran. 409 si no hay solicitud; 400 si un informe emitido
+  no trae resultado, fecha (no futura), las 4 verificaciones y conclusiones.
+- `evaluacionTecnica` trae, además: `profesional`, `profesionalEspecialidad` y `colegiatura` (de la cuenta), `solicitanteCodigo`,
+  `riesgoFisicoDetectado` y `servicio`, con las condiciones del servicio aunque no esté solicitado:
+
+```json
+"servicio": { "costoReferencial": 250.00, "moneda": "PEN",
+  "condiciones": "Coordinado con la inmobiliaria; sin pasarela de pago en línea." }
+```
+
+El costo sale de `app.inspeccion.costo-referencial`; la interfaz no lo repite a mano.

@@ -2,6 +2,8 @@
   "codigo": "SIM-11070419",
   "denominacion": "Mz. B Lote 9 · Hab. Urb. Villa del Algarrobo · Los Aquijes, Ica",
   "contexto": "Los Aquijes, Ica",
+  "distrito": "Los Aquijes",
+  "precioReferencial": 98000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito, según declara el vendedor.",
     "completitud": "DESCONOCIDA",
@@ -17,6 +19,10 @@
     "checklist": [
       {
         "nombre": "Copia literal de la partida",
+        "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
         "estado": "PENDIENTE"
       }
     ],

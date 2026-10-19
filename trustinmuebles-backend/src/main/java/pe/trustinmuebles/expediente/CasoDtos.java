@@ -34,7 +34,15 @@ final class CasoDtos {
 
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             long pendientes, String origen, String fuente, LocalDate fechaConsulta,
-            EstadoTecnico estadoTecnico) {}
+            EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
+            PredioDto predio) {}
+
+    /**
+     * Datos del predio para el catálogo. El área es la del terreno inscrita en la partida y el precio es referencial
+     * e informativo (en soles); ninguno de los dos interviene en el semáforo.
+     */
+    record PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
+            BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota) {}
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
@@ -53,7 +61,8 @@ final class CasoDtos {
 
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
             String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
-            EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos) {}
+            EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
+            PredioDto predio) {}
 
     record DocumentoDto(String codigo, String sha256) {}
 
@@ -143,12 +152,14 @@ final class CasoDtos {
         }
     }
 
-    /** Informe técnico del especialista. Si el estado es EMITIDO, exige conclusión y verificación de las 4 especialidades. */
+    /**
+     * Informe técnico del especialista. Si el estado es EMITIDO, exige conclusión y verificación de las 4 especialidades.
+     * No lleva nombre, especialidad ni colegiatura: el servidor los toma de la cuenta autenticada y, si el cliente los
+     * envía, se ignoran (M8).
+     */
     record InformeRequest(
             @NotNull EstadoTecnico estado,
             ResultadoTecnico resultado,
-            @Size(max = 120) String profesional,
-            @Size(max = 40) String colegiatura,
             LocalDate fechaInspeccion,
             VerificacionCampo verifArquitectura,
             VerificacionCampo verifEstructuras,
@@ -159,9 +170,8 @@ final class CasoDtos {
             @Size(max = 1000) String estudiosAdicionales) {
 
         InformeDatos datos() {
-            return new InformeDatos(estado, resultado, profesional, colegiatura, fechaInspeccion, verifArquitectura,
-                    verifEstructuras, verifElectricas, verifSanitarias, observaciones, conclusiones,
-                    estudiosAdicionales);
+            return new InformeDatos(estado, resultado, fechaInspeccion, verifArquitectura, verifEstructuras,
+                    verifElectricas, verifSanitarias, observaciones, conclusiones, estudiosAdicionales);
         }
     }
 

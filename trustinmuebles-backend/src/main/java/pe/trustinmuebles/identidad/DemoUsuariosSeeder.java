@@ -24,9 +24,20 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         this.password = password;
     }
 
+    /** Datos profesionales del especialista de la demostración. Son ficticios y la interfaz los rotula así. */
+    static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
+    static final String ESPECIALISTA_ESPECIALIDAD = "Ingeniero Civil";
+    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
+
     @Override
     public void run(ApplicationArguments args) {
         if (!habilitado) return;
+        crearCuentasQueFalten();
+        auth.completarPerfilProfesional("especialista-01", ESPECIALISTA_NOMBRE, ESPECIALISTA_ESPECIALIDAD,
+                ESPECIALISTA_COLEGIATURA);
+    }
+
+    private void crearCuentasQueFalten() {
         boolean hayCuentas = auth.hayUsuarios();
         // Una base creada antes del rol de especialista solo necesita su cuenta; no se recrean las demás.
         if (hayCuentas && auth.existeCuenta("especialista-01")) return;

@@ -10,10 +10,12 @@ No edita partidas, planos ni el checklist, y su informe **no cambia el semáforo
 4. **Llenar el informe** («Informe técnico»):
    - estado: «En inspección» mientras trabajas, «Informe emitido» al terminar;
    - conclusión: favorable, con observaciones subsanables o con riesgo estructural o de instalaciones;
-   - profesional y número de colegiatura (CIP o CAP), y fecha de la inspección (no puede ser futura);
+   - fecha de la inspección (no puede ser futura). Tu nombre, especialidad y colegiatura **no se escriben**: el sistema los toma
+     de tu cuenta;
    - verificación en campo de las 4 especialidades: conforme, observado o no verificado;
    - observaciones y deficiencias físicas, conclusiones sustentadas y estudios adicionales requeridos.
 5. **Qué dice el sistema del alcance.** El informe se basa en la inspección visual e instrumental. Lo que exige ensayos o estudios
    especializados queda fuera y debe indicarse en «Estudios adicionales».
 
-En la demostración, el profesional y su colegiatura son ficticios (`CIP SIM-0001`). El sistema no firma ni sella el informe.
+En la demostración, la cuenta `especialista-01` firma como Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910.
+Son datos ficticios y la interfaz y el PDF los rotulan así. El sistema no firma ni sella el informe.

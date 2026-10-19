@@ -1,26 +1,37 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
+import { ExternalLink, FolderOpen, Search, SlidersHorizontal, FunnelX } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { EstadoBadge } from "@/components/EstadoBadge";
-import { Clock, ExternalLink, FolderOpen, Search } from "lucide-react";
-import { ESTADOS, ETIQUETA_ESTADO_TECNICO } from "@/lib/semaforo";
+import { TarjetaPredio } from "@/components/TarjetaPredio";
+import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { useApi } from "@/lib/useApi";
 import { useAuth } from "@/lib/auth";
 import { abrirExterno, CONOCE_AQUI, copiar, normalizarNumero, pareceNumeroDePartida, VISOR_BGR } from "@/lib/fuentes";
+import {
+  FILTROS_VACIOS, OPCIONES_A, OPCIONES_B, OPCIONES_TIPO, filtrosAURL, filtrosDesdeURL, hayFiltros, rutaCatalogo,
+  textoResultados, type Filtros,
+} from "@/lib/catalogo";
 import type { ResumenCaso } from "@/lib/types";
 
+const campo = "h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
+
 export default function Casos() {
-  const { data: casos, loading, error } = useApi<ResumenCaso[]>("/casos");
+  const [params, setParams] = useSearchParams();
+  const filtros = filtrosDesdeURL(params);
+  // Los filtros los resuelve el servidor (M13); la búsqueda por número o texto, el navegador.
+  const { data: casos, loading, error, reload } = useApi<ResumenCaso[]>(rutaCatalogo(filtros));
   const { usuario } = useAuth();
   const navigate = useNavigate();
-  const [busqueda, setBusqueda] = useState("");
   const [copiado, setCopiado] = useState(false);
 
-  const q = busqueda.trim();
+  const cambiar = (parcial: Partial<Filtros>) => setParams(filtrosAURL({ ...filtros, ...parcial }), { replace: true });
+  const limpiar = () => setParams(filtrosAURL(FILTROS_VACIOS), { replace: true });
+
+  const q = filtros.q.trim();
   const qNumero = normalizarNumero(q);
   const visibles = (casos ?? []).filter((c) =>
-    !q || normalizarNumero(c.codigo).includes(qNumero) || c.denominacion.toLowerCase().includes(q.toLowerCase()));
+    !q || normalizarNumero(c.codigo).includes(qNumero) || c.denominacion.toLowerCase().includes(q.toLowerCase())
+    || (c.predio.distrito ?? "").toLowerCase().includes(q.toLowerCase()));
   const esNumero = pareceNumeroDePartida(q);
 
   // Una partida que no está registrada se consulta en Conoce Aquí (gratis, con DNI). El número se copia para pegarlo allá.
@@ -31,112 +42,107 @@ export default function Casos() {
   };
 
   return (
-    <div className="w-full min-h-screen bg-gray-50 flex flex-col">
-
-      <div className="bg-white border-b border-gray-100 pt-8 pb-6 px-4 sm:px-6 lg:px-8">
-        <div className="max-w-7xl mx-auto">
-          <h1 className="text-3xl md:text-4xl font-bold text-foreground tracking-tight mb-2">Expedientes</h1>
-          <p className="text-muted-foreground font-medium text-lg">
-            Lotes urbanos en evaluación de precompra. Abre uno para ver su partida, su estado y lo que falta.
+    <div className="flex w-full flex-col">
+      <section className="border-b border-border bg-card">
+        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">Cartera propia · Ica</p>
+          <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Cartera de inmuebles</h1>
+          <p className="mt-2 max-w-2xl text-tinta-2">
+            Lotes y viviendas que la inmobiliaria tiene a la venta. Cada uno trae su evaluación documental (indicador A) y,
+            si se pidió, su evaluación técnica presencial (indicador B). Precios referenciales y datos simulados.
           </p>
         </div>
-      </div>
+      </section>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full">
-        {loading ? (
-          <div className="text-center py-24 text-muted-foreground font-semibold">Cargando expedientes…</div>
-        ) : error ? (
-          <div role="alert" className="text-center py-24 text-[#B91C1C] font-semibold">{error.message}</div>
-        ) : !casos || casos.length === 0 ? (
-          <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
-            <FolderOpen className="w-10 h-10 text-muted-foreground mx-auto mb-4" aria-hidden="true" />
-            <h2 className="text-2xl font-bold text-foreground mb-2">Todavía no hay expedientes registrados</h2>
-            <p className="text-muted-foreground">Cuando se registre uno, aparecerá en esta lista.</p>
-          </div>
-        ) : (
-          <>
-            <form role="search" onSubmit={(e) => e.preventDefault()} className="mb-6 max-w-xl">
-              <label htmlFor="buscar-partida" className="block text-sm font-bold text-foreground mb-1.5">Buscar por número de partida</label>
+      <div className="mx-auto w-full max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
+        <form role="search" onSubmit={(e) => e.preventDefault()} aria-label="Filtrar la cartera"
+          className="mb-6 rounded-3xl border border-border bg-card p-5 shadow-tarjeta">
+          <p className="mb-4 flex items-center gap-2 text-sm font-bold text-foreground">
+            <SlidersHorizontal className="size-4 text-primary" aria-hidden="true" /> Filtrar inmuebles
+          </p>
+          <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div>
+              <label htmlFor="f-q" className="mb-1.5 block text-xs font-bold text-tinta-2">Buscar por partida, distrito o nombre</label>
               <div className="relative">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" aria-hidden="true" />
-                <input id="buscar-partida" type="search" value={busqueda} onChange={(e) => setBusqueda(e.target.value)}
-                  placeholder="Por ejemplo 11048217 o P07044600" autoComplete="off" maxLength={40}
-                  className="w-full h-12 pl-10 pr-3 rounded-xl border border-gray-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary" />
+                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-2" aria-hidden="true" />
+                <input id="f-q" type="search" value={filtros.q} maxLength={40} autoComplete="off"
+                  placeholder="Por ejemplo 11048217 o Parcona" onChange={(e) => cambiar({ q: e.target.value })}
+                  className={`${campo} pl-9`} />
               </div>
-            </form>
-            <p className="mb-6 text-muted-foreground font-semibold" role="status">
-              {q ? `${visibles.length} de ${casos.length} expedientes` : `${casos.length} expedientes disponibles`}
+            </div>
+            <div>
+              <label htmlFor="f-tipo" className="mb-1.5 block text-xs font-bold text-tinta-2">Tipo de inmueble</label>
+              <select id="f-tipo" className={campo} value={filtros.tipo} onChange={(e) => cambiar({ tipo: e.target.value as Filtros["tipo"] })}>
+                <option value="">Todos</option>
+                {OPCIONES_TIPO.map((o) => <option key={o.valor} value={o.valor}>{o.etiqueta}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-a" className="mb-1.5 block text-xs font-bold text-tinta-2">Indicador A · documental</label>
+              <select id="f-a" className={campo} value={filtros.indicadorA} onChange={(e) => cambiar({ indicadorA: e.target.value as Filtros["indicadorA"] })}>
+                <option value="">Todos los colores</option>
+                {OPCIONES_A.map((o) => <option key={o.valor} value={o.valor}>{o.etiqueta}</option>)}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="f-b" className="mb-1.5 block text-xs font-bold text-tinta-2">Indicador B · técnico presencial</label>
+              <select id="f-b" className={campo} value={filtros.indicadorB} onChange={(e) => cambiar({ indicadorB: e.target.value as Filtros["indicadorB"] })}>
+                <option value="">Todos los estados</option>
+                {OPCIONES_B.map((o) => <option key={o.valor} value={o.valor}>{o.etiqueta}</option>)}
+              </select>
+            </div>
+          </div>
+          <div className="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+            <p role="status" aria-live="polite" className="cifras text-sm font-bold text-foreground">
+              {loading ? "Buscando inmuebles…" : error ? "" : textoResultados(visibles.length)}
             </p>
-            {q && visibles.length === 0 && (
-              <Card className="rounded-3xl border-gray-100 shadow-sm mb-8 bg-white">
-                <CardContent className="p-8">
-                  {esNumero ? (
-                    <>
-                      <h2 className="text-xl font-bold text-foreground mb-2">La partida {qNumero} no está registrada en Trustinmuebles</h2>
-                      <p className="text-muted-foreground mb-5 leading-relaxed">
-                        Puedes consultarla gratis en Conoce Aquí, de SUNARP (con tu DNI). Trustinmuebles no la trae sola: el
-                        sitio oficial pide la identidad de quien consulta.
-                        {usuario?.rol === "REVISOR"
-                          ? " Después pega el texto aquí para registrarla sin los datos de personas naturales."
-                          : " Si la necesitas aquí, pide al revisor que la registre."}
-                      </p>
-                      <div className="flex flex-wrap gap-3">
-                        <Button className="rounded-xl" onClick={buscarEnSunarp}>
-                          Buscar en Conoce Aquí <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                        <Button variant="outline" className="rounded-xl" onClick={() => abrirExterno(VISOR_BGR)}>
-                          Ver ubicación en el Visor BGR <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                        </Button>
-                      </div>
-                      {copiado && <p role="status" className="mt-3 text-sm font-semibold text-foreground">Número copiado: pégalo en Conoce Aquí.</p>}
-                    </>
-                  ) : (
-                    <p className="text-muted-foreground font-semibold">
-                      No hay expedientes con ese texto. Escribe el número completo de la partida (ocho dígitos) para buscarla en SUNARP.
-                    </p>
-                  )}
-                </CardContent>
-              </Card>
+            {hayFiltros(filtros) && (
+              <Button type="button" variant="outline" size="sm" className="rounded-xl" onClick={limpiar}>
+                <FunnelX aria-hidden="true" /> Limpiar filtros
+              </Button>
             )}
-            <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 pb-12">
-              {visibles.map((c) => (
-                <li key={c.codigo}>
-                  <Card className="overflow-hidden border-border/40 hover:shadow-2xl hover:shadow-primary/5 transition-all duration-300 flex flex-col h-full bg-white rounded-3xl">
-                    <div className={`h-3 ${c.estado ? ESTADOS[c.estado].banda : "bg-gray-300"}`} aria-hidden="true"></div>
-                    <CardContent className="p-6 flex-1 flex flex-col justify-between pt-6">
-                      <div>
-                        <EstadoBadge estado={c.estado} className="mb-2" />
-                        <p className="mb-4 text-xs font-bold uppercase tracking-wider text-muted-foreground">
-                          Evaluación técnica: {ETIQUETA_ESTADO_TECNICO[c.estadoTecnico]}
-                        </p>
-                        <h2 className="font-bold text-xl text-foreground leading-snug mb-3">{c.denominacion}</h2>
-                        <p className="text-sm text-muted-foreground font-medium mb-1">Partida N.° {c.codigo}</p>
-                        <p className="text-sm text-muted-foreground font-medium mb-4">{c.contexto}</p>
-                        {c.origen === "TRANSCRITA" && (
-                          <p className="inline-block mb-4 rounded-full border border-primary/20 bg-primary/5 px-3 py-1 text-xs font-bold text-primary">
-                            Transcrita de SUNARP{c.fechaConsulta ? ` · ${new Date(`${c.fechaConsulta}T00:00:00`).toLocaleDateString("es-PE")}` : ""}
-                          </p>
-                        )}
-                        {c.etiqueta && <p className="text-sm font-semibold text-foreground mb-6">{c.etiqueta}</p>}
-                      </div>
+          </div>
+        </form>
 
-                      <div className="pt-5 border-t border-gray-100 flex items-center justify-between gap-3">
-                        <div className="flex items-center gap-2 text-sm font-bold text-muted-foreground">
-                          <Clock className="w-4 h-4" aria-hidden="true" />
-                          {c.pendientes === 0 ? "Sin pendientes" : `${c.pendientes} pendiente${c.pendientes === 1 ? "" : "s"}`}
-                        </div>
-                        <Button variant="outline" className="rounded-xl border-2 hover:bg-primary hover:border-primary hover:text-white transition-all font-bold" asChild>
-                          <Link to={`/casos/${c.codigo}`} aria-label={`Abrir expediente de la partida ${c.codigo}`}>Abrir expediente</Link>
-                        </Button>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </li>
-              ))}
-            </ul>
-          </>
+        {loading ? (
+          <Cargando texto="Cargando la cartera de inmuebles…" tarjetas={6} />
+        ) : error ? (
+          <ErrorCarga mensaje={error.message} alReintentar={reload} />
+        ) : visibles.length === 0 ? (
+          q && esNumero ? (
+            <div className="rounded-3xl border border-border bg-card p-8 shadow-tarjeta">
+              <h2 className="mb-2 text-xl font-bold text-foreground">La partida {qNumero} no está registrada en Trustinmuebles</h2>
+              <p className="mb-5 leading-relaxed text-tinta-2">
+                Puedes consultarla gratis en Conoce Aquí, de SUNARP (con tu DNI). Trustinmuebles no la trae sola: el sitio
+                oficial pide la identidad de quien consulta.
+                {usuario?.rol === "REVISOR"
+                  ? " Después pega el texto aquí para registrarla sin los datos de personas naturales."
+                  : " Si la necesitas aquí, pide al revisor que la registre."}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Button className="rounded-xl" onClick={buscarEnSunarp}>Buscar en Conoce Aquí <ExternalLink aria-hidden="true" /></Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => abrirExterno(VISOR_BGR)}>
+                  Ver ubicación en el Visor BGR <ExternalLink aria-hidden="true" />
+                </Button>
+              </div>
+              {copiado && <p role="status" className="mt-3 text-sm font-semibold text-foreground">Número copiado: pégalo en Conoce Aquí.</p>}
+            </div>
+          ) : hayFiltros(filtros) ? (
+            <Vacio icono={FolderOpen} titulo="Ningún inmueble cumple estos filtros"
+              accion={<Button className="rounded-xl" onClick={limpiar}><FunnelX aria-hidden="true" /> Limpiar filtros</Button>}>
+              Prueba con otro color o estado, o quita algún filtro. Los filtros se combinan: el inmueble debe cumplir todos.
+            </Vacio>
+          ) : (
+            <Vacio icono={FolderOpen} titulo="Todavía no hay inmuebles en la cartera">
+              Cuando el revisor registre uno, aparecerá en esta lista.
+            </Vacio>
+          )
+        ) : (
+          <ul className="grid grid-cols-1 gap-6 pb-12 sm:grid-cols-2 xl:grid-cols-3">
+            {visibles.map((c) => <li key={c.codigo}><TarjetaPredio c={c} /></li>)}
+          </ul>
         )}
-      </main>
+      </div>
     </div>
   );
 }

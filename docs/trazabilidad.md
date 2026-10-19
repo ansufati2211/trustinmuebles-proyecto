@@ -31,7 +31,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 
 | Regla | Dónde se cumple | Prueba | Estado |
 |---|---|---|---|
-| RN-01 Solo casos sintéticos | Restricción `sintetico = true` en la base; contenido sin identidades | `contenidoCargado` | Probado |
+| RN-01 Solo casos sintéticos | Las partidas ficticias llevan `SIM-` y `sintetico = true`; contenido sin identidades. Las transcritas (v0.3) son la excepción pendiente de aprobación | `contenidoCargado` | Probado para las ficticias |
 | RN-02 Datos mínimos; desconocido no es ausencia | `MotorClasificacion` | `desconocidoNoEsAusencia` | Probado |
 | RN-03 Clasificación y precedencia | `MotorClasificacion` | `b01Verde`, `b02Amarillo`, `amarilloYRojoPorPrecedencia` | Probado. El rojo se probó con una regla ficticia |
 | RN-04 Información insuficiente da gris y conserva alertas | `MotorClasificacion` | `b03GrisConservaAlerta`, `grisConservaAlertas`, `faltantesGanaAPrioritaria` | Probado |
@@ -85,3 +85,30 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
   dentro del test. No se marca aprobada hasta que haya una tabla jurídica revisada con entradas y salidas esperadas.
 - **CP-07** (instalación reproducible): falta que otra persona la haga en otro equipo y registre las incidencias.
 - **Revisión de contenido** (casos, reglas, glosario, claves): pendiente. Ver [revision/](revision/).
+
+## Interfaz comercial y servicios (v0.6)
+
+| Elemento | Dónde | Prueba | Estado |
+|---|---|---|---|
+| Datos del predio: tipo, distrito, área y precio referencial | `CasoLote`, `TipoInmueble`, `ExpedienteService.predio`, migración V5 | `CatalogoYServiciosTest.datosDelPredio` | Probado |
+| M5 Solicitud solo del comprador, con solicitante y fecha de la sesión, sin duplicar | `SecurityConfig`, `ExpedienteService.solicitarInspeccion`, `InspeccionService.solicitar` | `soloElCompradorSolicita`, `solicitudRegistraSolicitanteYFecha`, `InspeccionTest.flujoCompleto` | Probado |
+| M5 Costo referencial S/ 250.00 desde la configuración | `app.inspeccion.costo-referencial`, `ServicioInspeccion` | `solicitudRegistraSolicitanteYFecha`, `costoAntesDeSolicitar` | Probado |
+| M8 Identidad del especialista desde su cuenta, sin aceptar la del cliente | `AuthService.perfilProfesional` (API pública de `identidad`), `InspeccionService.registrar` | `identidadDelEspecialistaBloqueada`, `otroRolNoEmite`, `informesDeDemostracionFirmados` | Probado |
+| M9 Ítem «Declaración Jurada Municipal (HR y PU)» en los 10 casos | Contenido v0.4, `CasosSeeder.completar` | `itemHrPuEnLosDiezCasos` | Probado |
+| M13 Filtros combinables del catálogo | `FiltroCatalogo`, `GET /casos` | `filtrosCombinados`, `filtroInvalido`, `filtroDeRiesgoSeActualiza`; Vitest `catalogo.test.ts` (URL) | Probado |
+| Visibilidad por rol en la interfaz | `lib/permisos.ts` | Vitest `permisos.test.ts` | Probado (la protección real es el servidor, I4) |
+| Stepper del indicador B y avance de los 6 pasos | `lib/etapas.ts` | Vitest `etapas.test.ts` | Probado |
+| Comparador de áreas del plano arquitectónico | `lib/areas.ts` | Vitest `areas.test.ts` (98 contra 72 m²) | Probado |
+| Sistema visual, ilustraciones SVG propias y accesibilidad básica | `src/index.css`, `components/base/` | Recorrido `docs/pruebas/recorrido-v06.mjs` (39 de 39) | Probado en Chrome. No se probó con lector de pantalla |
+
+## Invariantes de la v0.6
+
+| Invariante | Prueba automática |
+|---|---|
+| I1 Verde significa exactamente «Sin alertas en los campos evaluados» | `CatalogoYServiciosTest.verdeSignificaSinAlertas` |
+| I2 El indicador B nunca cambia el color del indicador A (RN-10) | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto` |
+| I3 El checklist no cambia el color del indicador A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `CasosApiTest.checklistSoloRevisor` |
+| I4 Autorización en el servidor (403 por rol) | `soloElCompradorSolicita`, `otroRolNoEmite`, `InspeccionTest.permisos`, `SeguridadTest` |
+| I5 Límites de módulos de Spring Modulith | `ModularityTests` |
+| I6 El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` |
+| I7 Personas, precios y colegiatura rotulados como simulados | Recorrido `recorrido-v06.mjs` («Precio referencial · dato simulado», «Datos ficticios de demostración») |

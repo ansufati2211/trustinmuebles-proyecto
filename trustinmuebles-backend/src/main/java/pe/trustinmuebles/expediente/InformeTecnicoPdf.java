@@ -110,7 +110,11 @@ final class InformeTecnicoPdf {
 
         seccion(l, "2. PROFESIONAL Y FECHAS", negrita, ancho);
         parrafo(l, "Profesional: " + valor(t.profesional()), normal, 10f, 0f, 3f, ancho, false);
+        if (t.profesionalEspecialidad() != null) {
+            parrafo(l, "Especialidad: " + t.profesionalEspecialidad(), normal, 10f, 0f, 2f, ancho, false);
+        }
         parrafo(l, "Colegiatura: " + valor(t.colegiatura()), normal, 10f, 0f, 2f, ancho, false);
+        parrafo(l, "Datos del profesional ficticios, solo para la demostración.", normal, 9f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección solicitada el: " + fecha(t.fechaSolicitud()), normal, 10f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección presencial realizada el: " + fecha(t.fechaInspeccion()), normal, 10f, 0f, 2f, ancho, false);
 

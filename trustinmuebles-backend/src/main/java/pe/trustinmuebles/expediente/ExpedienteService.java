@@ -29,6 +29,9 @@ import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
 import pe.trustinmuebles.inspeccion.InformeDatos;
 import pe.trustinmuebles.inspeccion.InspeccionService;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.Procedencia;
+import pe.trustinmuebles.identidad.Rol;
+import pe.trustinmuebles.identidad.UsuarioActual;
+import org.springframework.security.access.AccessDeniedException;
 import pe.trustinmuebles.orientacion.GlosarioService;
 import pe.trustinmuebles.shared.ConflictoException;
 import pe.trustinmuebles.shared.NoEncontradoException;
@@ -57,15 +60,20 @@ class ExpedienteService {
         this.inspeccion = inspeccion;
     }
 
+    /**
+     * M13: catálogo con filtros combinables (todos opcionales). Se filtra en el servidor porque el color documental y
+     * el riesgo físico se derivan de otros módulos; así la regla vive en un solo lugar y tiene prueba.
+     */
     @Transactional(readOnly = true)
-    List<ResumenCaso> listar() {
+    List<ResumenCaso> listar(FiltroCatalogo filtro) {
         return expedientes.findAllByOrderByCasoCodigoAsc().stream().map(e -> {
             EvaluacionDto ev = clasificacion.obtener(e.getId()).orElse(null);
+            EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
             return new ResumenCaso(e.getCaso().getCodigo(), e.getCaso().getDenominacion(), e.getCaso().getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
-                    e.getCaso().getFechaConsulta(), inspeccion.obtener(e.getId()).estado());
-        }).toList();
+                    e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e));
+        }).filter(filtro::acepta).toList();
     }
 
     @Transactional(readOnly = true)
@@ -101,15 +109,25 @@ class ExpedienteService {
 
     // ------------------------------------------------------------ inspección y planos
 
-    /** Cualquier usuario con sesión puede pedir la inspección técnica presencial. No cobra ni agenda. */
+    /**
+     * M5: solo el comprador pide la inspección técnica presencial (también lo exige SecurityConfig). El solicitante
+     * sale de la sesión autenticada, nunca del cuerpo. No cobra ni agenda.
+     */
     EvaluacionTecnicaDto solicitarInspeccion(String codigo) {
-        return inspeccion.solicitar(buscar(codigo).getId());
+        UsuarioActual u = UsuarioActual.actual();
+        if (u.rol() != Rol.COMPRADOR) throw new AccessDeniedException("Solo un comprador puede solicitar la inspección");
+        return inspeccion.solicitar(buscar(codigo).getId(), u.codigoCuenta());
     }
 
-    /** Solo el especialista emite el informe, y solo si el expediente tiene una solicitud. No cambia el semáforo. */
+    /**
+     * Solo el especialista emite el informe, y solo si el expediente tiene una solicitud. Su nombre, especialidad y
+     * colegiatura salen de su cuenta (M8). No cambia el semáforo documental (RN-10).
+     */
     DetalleCaso registrarInforme(String codigo, InformeDatos informe) {
+        UsuarioActual u = UsuarioActual.actual();
+        if (u.rol() != Rol.ESPECIALISTA) throw new AccessDeniedException("Solo el especialista emite el informe técnico");
         Expediente e = buscar(codigo);
-        inspeccion.registrar(e.getId(), informe, true);
+        inspeccion.registrar(e.getId(), informe, u.id());
         return aDetalle(e);
     }
 
@@ -223,8 +241,9 @@ class ExpedienteService {
         caso.setOrigen(CasoLote.Origen.TRANSCRITA);
         caso.setFuente(FUENTE_CONOCE_AQUI);
         caso.setFechaConsulta(req.fechaConsulta());
+        caso.setDistrito(distritoDe(req.contexto()));
         caso.setSinDatosPersonales(true);
-        caso.setResponsableId(pe.trustinmuebles.identidad.UsuarioActual.actual().id());
+        caso.setResponsableId(UsuarioActual.actual().id());
         casos.save(caso);
 
         Expediente e = crear(caso, req.datos());
@@ -236,6 +255,24 @@ class ExpedienteService {
     }
 
     static final String FUENTE_CONOCE_AQUI = "Conoce Aquí – SUNARP";
+
+    /** El distrito de una partida transcrita es la primera parte del contexto («Parcona, Ica» → «Parcona»). */
+    static String distritoDe(String contexto) {
+        String d = contexto.split(",")[0].trim();
+        return d.isEmpty() ? null : d;
+    }
+
+    static final String PRECIO_NOTA =
+            "Precio referencial e informativo; no es una oferta. Se coordina con la inmobiliaria.";
+
+    /** Datos del predio para el catálogo. El tipo se deriva del tipo de predio que usan las reglas de planos. */
+    static PredioDto predio(Expediente e) {
+        CasoLote c = e.getCaso();
+        TipoInmueble tipo = TipoInmueble.de(e.getTipoPredio());
+        return new PredioDto(tipo, tipo.etiqueta(), c.getDistrito(), e.getAreaM2(), e.getAreaConstruidaInscrita(),
+                c.getPrecioReferencial(), c.getPrecioReferencial() == null ? null : "PEN",
+                c.getPrecioReferencial() == null ? null : PRECIO_NOTA);
+    }
 
     /** Elimina una partida transcrita (por ejemplo, ante el pedido de un titular). Las ficticias no se borran. */
     void eliminar(String codigo) {
@@ -463,7 +500,7 @@ class ExpedienteService {
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
                 c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
-                glosario.terminosDe(e.getId()));
+                glosario.terminosDe(e.getId()), predio(e));
     }
 
     /** ¿El área del plano coincide con la inscrita (diferencia de hasta 1 %)? Null si falta alguno de los dos datos. */

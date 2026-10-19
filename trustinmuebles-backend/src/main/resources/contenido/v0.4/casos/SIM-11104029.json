@@ -2,6 +2,8 @@
   "codigo": "SIM-11104029",
   "denominacion": "Mz. M Lote 6 · Hab. Urb. Los Laureles del Sur · Ica",
   "contexto": "Ica, Ica",
+  "distrito": "Ica",
+  "precioReferencial": 260000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -60,6 +62,10 @@
       {
         "nombre": "Plano de estructuras con cimentación",
         "estado": "OBSERVADO"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "REVISADO"
       }
     ],
     "terminos": [
@@ -134,8 +140,6 @@
     "informeTecnico": {
       "estado": "EMITIDO",
       "resultado": "FAVORABLE",
-      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
-      "colegiatura": "CIP SIM-0001",
       "fechaInspeccion": "2026-10-11",
       "verifArquitectura": "CONFORME",
       "verifEstructuras": "CONFORME",

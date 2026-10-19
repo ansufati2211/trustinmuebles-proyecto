@@ -2,6 +2,8 @@
   "codigo": "SIM-11061555",
   "denominacion": "Mz. C Lote 3 · Hab. Urb. Mirador del Sol · Subtanjalla, Ica",
   "contexto": "Subtanjalla, Ica",
+  "distrito": "Subtanjalla",
+  "precioReferencial": 120000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "INCOMPLETA",
@@ -38,6 +40,11 @@
       {
         "nombre": "Título archivado del asiento D00001",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "OBSERVADO",
+        "observacion": "La HR y el PU no se pueden contrastar con un extracto parcial de la partida."
       }
     ],
     "terminos": [

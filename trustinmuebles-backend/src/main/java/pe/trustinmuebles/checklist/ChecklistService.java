@@ -29,10 +29,15 @@ public class ChecklistService {
     }
 
     public ItemChecklistDto agregar(Long expedienteId, String nombre, EstadoItem estado, int orden) {
+        return agregar(expedienteId, nombre, estado, null, orden);
+    }
+
+    public ItemChecklistDto agregar(Long expedienteId, String nombre, EstadoItem estado, String observacion, int orden) {
         ItemChecklist i = new ItemChecklist();
         i.setExpedienteId(expedienteId);
         i.setNombre(nombre);
         i.setEstado(estado);
+        i.setObservacion(observacion);
         i.setOrden(orden);
         return repo.save(i).dto();
     }

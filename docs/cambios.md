@@ -60,3 +60,15 @@ Sincronización con EXP2: el nombre es Trustinmuebles en el código, la document
 muestra el modelo de una sola inmobiliaria, el cuadro de fuentes gratuitas y de pago y los dos indicadores (A documental y B
 técnico, RN-10). LEEME y el README del backend se pusieron al día: 3 cuentas, 8 módulos, 104 pruebas, planos e inspección como
 funcionalidades implementadas.
+
+## v0.6.0
+
+Interfaz comercial para el comprador y mejoras M5, M8, M9, M10 y M13 (rama `feature/v0.6-ui-comercial`):
+- Backend (`01a7361`): migración V5 con distrito, precio referencial, perfil del especialista y solicitante; solicitud solo del
+  comprador con costo referencial; informe firmado desde la cuenta del especialista; ítem HR y PU; filtros del catálogo.
+- Sistema visual (`39a08db`): tokens, componentes base (TopBar, Footer, Badge, IndicadorA, IndicadorB, Modal, PredioImagen) e
+  ilustraciones SVG propias.
+- Pantallas (`bafb740`): inicio con el modelo en 4 pasos y la transparencia de fuentes, catálogo con filtros en la URL y detalle
+  con planos, comparador de áreas, visor modal e indicador B completo.
+- Documentación (M10): LEEME, README del backend, funcionalidades, API, trazabilidad y decisiones D23 a D31.
+Ver `docs/RESUMEN-v0.6.md`.

@@ -1,28 +1,31 @@
 # Funcionalidades de Trustinmuebles
 
-> Versión v0.5.1: nombre unificado, documentación al día e inicio con el modelo de una inmobiliaria, las fuentes documentales y
-> los dos indicadores. Sobre la v0.5: 10 expedientes con copia literal, láminas de planos e informe técnico en PDF.
+> Versión v0.6.0: interfaz comercial (catálogo con ilustraciones, precios referenciales y filtros), solicitud de inspección solo
+> del comprador con costo referencial (M5), informe firmado desde la cuenta del especialista (M8), ítem HR y PU en el checklist
+> (M9) y filtros del catálogo en el servidor (M13). Sobre la v0.5.1.
 
-Qué hace el programa hoy (versión v0.5.1), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+Qué hace el programa hoy (versión v0.6.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
-Trustinmuebles es una herramienta de **orientación documental** para la precompra de lotes urbanos en Ica. Muestra la partida
-registral de un lote, explica sus términos y señala qué falta revisar. **No certifica saneamiento, no recomienda comprar y no
+Trustinmuebles es el sistema de transparencia precompra de **una inmobiliaria de Ica** para su cartera de lotes y viviendas.
+Muestra la partida registral y los planos de cada inmueble, explica sus términos, señala qué falta revisar y, a pedido del
+comprador, registra una inspección técnica presencial. **No certifica saneamiento, no recomienda comprar y no
 reemplaza asesoría legal.**
 
 ## Resumen
 
 | Área | Qué ofrece | Quién |
 |---|---|---|
-| Acceso | Ingreso con código de cuenta y contraseña; dos roles | Todos |
-| Expedientes | Lista, búsqueda por número y detalle de cada partida | Todos |
+| Acceso | Ingreso con código de cuenta y contraseña; tres roles | Todos |
+| Catálogo | Tarjetas con ilustración, tipo, distrito, área, precio referencial y los dos indicadores; filtros combinables en la URL | Todos |
+| Expedientes | Búsqueda por número y detalle de cada partida | Todos |
 | Semáforo informativo | Estado verde, amarillo, rojo o gris, con motivos, alertas y faltantes | Todos |
 | Partida registral | Descripción del inmueble y asientos por rubro (C, D, E, F) | Todos |
 | Glosario | Términos explicados al seleccionarlos | Todos |
-| Checklist | Lista de elementos pendientes, revisados u observados | Ver: todos. Cambiar: revisor |
+| Checklist | Elementos pendientes, revisados u observados, incluida la declaración jurada municipal (HR y PU) | Ver: todos. Cambiar: revisor |
 | Documento PDF | Copia literal simulada o transcripción referencial | Ver: todos. Subir uno propio: revisor |
 | Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
-| Evaluación técnica | Solicitud de inspección presencial e informe del especialista | Solicitar: todos. Emitir: especialista |
+| Evaluación técnica | Solicitud con costo referencial e informe del especialista | Solicitar: comprador. Emitir: especialista |
 | Edición | Cambiar los datos, los asientos y los planos de una partida | Revisor |
 | Partidas transcritas | Registrar y eliminar partidas reales sin datos personales | Revisor |
 
@@ -34,28 +37,37 @@ reemplaza asesoría legal.**
 - **Sesión:** dura mientras la pestaña esté abierta. Si caduca, el sistema vuelve al ingreso.
 - **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
 - **Roles:**
-  - **Comprador:** consulta todo y solicita la inspección técnica; no modifica nada.
-  - **Especialista:** consulta y emite el informe técnico presencial. No edita partidas.
+  - **Comprador:** consulta todo y es el único que solicita la inspección técnica; no modifica nada.
+  - **Especialista:** consulta y emite el informe técnico presencial, firmado con los datos de su cuenta (ficticios: Ing.
+    Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910). No edita partidas.
   - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas transcritas.
   - El servidor verifica el rol en cada operación. Ocultar un botón en pantalla no es la protección.
 
 ## 2. Inicio y avisos
 
-- **Inicio** (`#/`): qué es Trustinmuebles, qué encuentras en cada expediente, cómo funciona y qué **no** hace. Además:
-  - **Modelo de una sola inmobiliaria en Ica:** cartera propia cargada a mano por el revisor, sin scraping de otros portales y
-    sin APIs públicas que no existen.
-  - **Dos servicios con indicadores separados:** A, pre-evaluación documental automática por reglas sobre la partida y los 4
-    planos; B, evaluación técnica presencial en 6 pasos por un ingeniero civil o arquitecto, que no cambia el color de A (RN-10).
-  - **Cuadro de fuentes documentales:** gratuitas (Conoce Aquí para transcribir la partida y Visor BGR para la ubicación) y las
-    que aporta el propietario o tienen costo (copia literal certificada, los 4 planos y la inspección presencial).
-- **Aviso fijo** en todas las pantallas: entorno de demostración, partidas ficticias y transcritas sin nombres de personas, y que
-  la información es referencial.
-- **Pie de página:** alcance del servicio y sus límites.
+- **Inicio** (`#/`):
+  - **Héroe** con ilustración, propuesta de valor y el botón «Explorar Cartera de Inmuebles».
+  - **«¿Cómo te protegemos antes de comprar?», el modelo en 4 pasos:** (1) captación y verificación de la cartera propia en Ica,
+    sin scraping ni APIs inexistentes; (2) indicador A, semáforo de 4 estados sobre la partida, los 4 planos y el glosario;
+    (3) indicador B, inspección presencial en 6 pasos por un profesional colegiado, independiente de A (RN-10); (4) decisión
+    informada con el checklist (incluye HR y PU) y los PDF.
+  - **Transparencia de fuentes de información:** gratuitas (Conoce Aquí y Visor Catastral BGR) frente a aportadas o de pago
+    (copia literal certificada, planos de 4 especialidades, HR y PU, inspección presencial), y el bloque «Sin scraping ni APIs
+    inexistentes».
+  - Lo que Trustinmuebles **no** hace.
+- **Barra superior** en todas las pantallas, con una franja fina: entorno de demostración, partidas ficticias y transcritas sin
+  nombres de personas, precios y profesionales simulados, información referencial.
+- **Pie comercial** con los límites legales siempre visibles: «Verde = Sin alertas en los campos evaluados; no certifica
+  saneamiento ni reemplaza asesoría legal; los datos de esta demostración son simulados», y el aviso de uso local.
 
-## 3. Expedientes (`#/casos`)
+## 3. Cartera de inmuebles (`#/casos`)
 
-- **Lista:** una tarjeta por partida con su denominación, número, distrito, estado, elementos pendientes y, si corresponde, la
-  insignia «Transcrita de SUNARP».
+- **Tarjetas:** ilustración propia del predio, tipo de inmueble, precio referencial (rotulado «dato simulado»), denominación,
+  distrito, área del terreno, número de partida, los dos indicadores (A documental y B técnico, siempre separados y con ícono y
+  texto), pendientes del checklist y, si corresponde, la insignia «Transcrita de SUNARP».
+- **Filtros combinables:** tipo de inmueble, indicador A (verde, amarillo, rojo o gris) e indicador B (no solicitada,
+  solicitada, en inspección, informe emitido o «con riesgo físico detectado»). Los resuelve el servidor (M13), se reflejan en la
+  URL (se pueden compartir y recargar) y tienen contador de resultados, botón «Limpiar filtros» y estado vacío.
 - **Búsqueda por número de partida:** acepta el número con o sin el prefijo `SIM-` y con espacios o guiones. También busca por
   texto de la denominación (por ejemplo, «Parcona»).
 - **Partida no registrada:** la pantalla ofrece «Buscar en Conoce Aquí» (copia el número y abre el sitio de SUNARP) y «Ver
@@ -96,11 +108,20 @@ reemplaza asesoría legal.**
   de cada plano y, desde ese momento, se muestra ese.
 
 ### Evaluación técnica por especialista (indicador B)
-- **Separada del semáforo documental y nunca lo cambia.** Dice en qué estado está la verificación física del inmueble: no solicitada,
-  solicitada, en inspección o informe emitido (favorable, con observaciones subsanables o con riesgo).
-- El comprador **solicita** la inspección con un botón (no cobra ni agenda). El **especialista** llena el informe: profesional y colegiatura,
-  fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones y estudios adicionales.
-- Se muestra el **procedimiento de 6 pasos** y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos queda fuera.
+- **Separada del semáforo documental y nunca lo cambia.** Un texto fijo lo dice: «El indicador B es independiente y no cambia
+  el color del indicador A».
+- **Stepper de 4 etapas:** no solicitada → solicitada → en inspección → informe emitido (favorable, con observaciones
+  subsanables o con riesgo físico detectado).
+- **Solicitud (M5):** solo el comprador ve el botón «Solicitar inspección técnica». Abre un modal con el alcance de los 6 pasos y
+  el costo referencial (S/ 250.00, que envía el backend; sin pasarela de pago) y pide confirmación. Después el expediente muestra
+  la cuenta solicitante y la fecha. El servidor rechaza con 403 la solicitud de otro rol y con 409 una segunda solicitud.
+- **Especialista (M8):** credencial con avatar ilustrativo, nombre, especialidad y CIP, rotulada «Datos ficticios de
+  demostración». El servidor toma esos datos de la cuenta; el formulario ya no los pide y, si alguien los envía, se ignoran.
+- **Estado físico:** tarjetas de Estructuras, Instalaciones eléctricas e Instalaciones sanitarias con lo verificado en campo.
+- **Los 6 pasos** con su ícono de avance y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos
+  queda fuera.
+- El **especialista** llena el informe: fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones y
+  estudios adicionales.
 
 ### Documentos PDF (todos con marca de agua y aviso en cada página)
 - **Copia literal:** encabezado en cada página, descripción y antecedente, asientos por rubro con el cuerpo en tipografía de texto registral
@@ -111,13 +132,15 @@ reemplaza asesoría legal.**
   verificación en campo, observaciones, conclusión, estudios adicionales y limitaciones. «Ver informe técnico (PDF)» en el panel.
 
 ### Glosario
-- Cerrado y con versión (32 términos). Cada término se abre al seleccionarlo, también con Enter, y lleva el estado «pendiente de
+- Cerrado y con versión (48 términos en la versión activa v0.4). Cada término se abre al seleccionarlo, también con Enter, y lleva el estado «pendiente de
   revisión». Si un dato no consta, el expediente lo dice.
 
 ### Checklist
 - Cada elemento está **pendiente, revisado u observado**, con una observación opcional. «Revisado» solo significa que se revisó
   en la plataforma, no que tenga validez jurídica.
-- Solo el revisor cambia el estado. El checklist no cambia el color del semáforo.
+- Los 10 casos traen el ítem **«Declaración Jurada Municipal (HR y PU)»** (M9), con estados distintos según el caso y una
+  observación cuando está observado (por ejemplo, en Pachacútec el PU declara 72 m² y no incluye la ampliación).
+- Solo el revisor cambia el estado. El checklist no cambia el color del semáforo (I3).
 
 ### Documento del expediente
 - «Abrir documento» muestra un PDF en otra pestaña, con la sesión del usuario (no hay enlace público).
@@ -160,6 +183,9 @@ reemplaza asesoría legal.**
 
 ## 6. Contenido incluido
 
+Cada caso trae también su tipo de inmueble, distrito, precio referencial simulado, ilustración propia y el ítem HR y PU (ver la
+tabla completa en el [LEEME](../LEEME.md)). Solo Santiago es un lote (D23).
+
 | Partida | Predio | Estado esperado | Qué muestra |
 |---|---|---|---|
 | `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos; informe favorable |
@@ -182,7 +208,10 @@ guardan en el repositorio.
 - **Archivos** cifrados en disco (AES-256-GCM).
 - **Entradas validadas** en el servidor, con mensajes claros y sin cambios parciales.
 - **Tiempo de respuesta** medido: 20 de 20 consultas en menos de 2 segundos (máximo 93 ms, solo la API).
-- **Solo uso local:** el backend escucha en `127.0.0.1` y la base es H2 en archivo. No está preparado para un servidor expuesto a la red.
+- **Solo uso local (I6):** el backend escucha en `127.0.0.1` y la base es H2 en archivo. No está preparado para un servidor
+  expuesto a la red; la estética comercial de la v0.6 no cambia el modelo de seguridad.
+- **Accesibilidad básica:** teclado y foco visible, enlace «Saltar al contenido», modales con foco atrapado y Escape, estados con
+  ícono y texto (contraste AA), y texto alternativo en cada ilustración.
 
 ## 8. Lo que no hace
 
@@ -192,7 +221,9 @@ guardan en el repositorio.
 - No certifica saneamiento, no recomienda comprar y no da dictámenes jurídicos.
 - No usa OCR, visión artificial ni inteligencia artificial: no analiza fotos ni planos. El análisis es por reglas sobre datos estructurados y el informe de un especialista.
 - No afirma el estado físico de una vivienda: eso solo lo dice el informe del especialista.
-- Sin pagos, contratos, firmas, inspecciones, tours, posventa ni filtros avanzados (sección 1.7 del informe).
+- Sin pagos en línea, agenda de visitas, contratos, firmas, tours ni posventa (sección 1.7 del informe). El costo de la
+  inspección es referencial y se coordina con la inmobiliaria.
+- Las ilustraciones son dibujos propios, no fotos de los inmuebles.
 - La lámina 2D es un esquema referencial, no el plano aprobado. La ubicación del predio solo se enlaza al Visor BGR de SUNARP.
 
 ## 9. Pendiente

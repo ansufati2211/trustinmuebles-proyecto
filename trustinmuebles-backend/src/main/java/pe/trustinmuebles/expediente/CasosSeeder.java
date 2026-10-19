@@ -70,8 +70,8 @@ class CasosSeeder implements ApplicationRunner {
                 () -> new IllegalStateException("No hay una cuenta con rol REVISOR para registrar los casos")).id();
 
         for (CasoJson c : leerCasos()) {
-            if (casos.existsByCodigo(c.codigo())) continue;
-            crear(c, responsable);
+            if (casos.existsByCodigo(c.codigo())) completar(c);
+            else crear(c, responsable);
         }
         for (Expediente e : expedientes.findAll()) {
             if (clasificacion.necesitaRecalculo(e.getId(), e.getVersion())) {
@@ -86,18 +86,44 @@ class CasosSeeder implements ApplicationRunner {
         caso.setDenominacion(c.denominacion());
         caso.setContexto(c.contexto());
         caso.setSintetico(true);
+        caso.setDistrito(c.distrito());
+        caso.setPrecioReferencial(c.precioReferencial());
         caso.setResponsableId(responsableId);
         casos.save(caso);
 
         Expediente e = servicio.crear(caso, c.datos());
         int i = 0;
-        for (ContenidoCaso.ItemJson it : c.items()) checklist.agregar(e.getId(), it.nombre(), it.estado(), i++);
+        for (ContenidoCaso.ItemJson it : c.items()) {
+            checklist.agregar(e.getId(), it.nombre(), it.estado(), it.observacion(), i++);
+        }
         glosario.asociar(e.getId(), c.terminos());
         var informe = c.expediente().informeTecnico();
         if (informe != null) {
-            // «Solicitada» es solo la constancia del pedido; el resto trae un informe en curso o emitido.
-            if (informe.estado() == EstadoTecnico.SOLICITADA) inspeccion.solicitar(e.getId());
-            else inspeccion.registrar(e.getId(), informe.datos(), false);
+            // «Solicitada» es solo la constancia del pedido; el resto trae un informe en curso o emitido, firmado por
+            // la cuenta del especialista de la demostración (M8). El solicitante es el comprador de la demostración.
+            if (informe.estado() == EstadoTecnico.SOLICITADA) inspeccion.solicitar(e.getId(), COMPRADOR_DEMO);
+            else inspeccion.cargarDemostracion(e.getId(), informe.datos(), ESPECIALISTA_DEMO, COMPRADOR_DEMO);
+        }
+    }
+
+    static final String COMPRADOR_DEMO = "comprador-01";
+    static final String ESPECIALISTA_DEMO = "especialista-01";
+
+    /**
+     * Completa un caso ya cargado con lo que el contenido agregó después (v0.6): distrito, precio referencial e ítems
+     * de checklist nuevos, como la declaración jurada municipal. Solo rellena lo que falta; no pisa lo editado.
+     */
+    private void completar(CasoJson c) {
+        CasoLote caso = casos.findByCodigo(c.codigo()).orElseThrow();
+        if (caso.getDistrito() == null) caso.setDistrito(c.distrito());
+        if (caso.getPrecioReferencial() == null) caso.setPrecioReferencial(c.precioReferencial());
+        Expediente e = expedientes.findByCasoCodigo(c.codigo()).orElseThrow();
+        var actuales = checklist.listar(e.getId());
+        java.util.Set<String> nombres = new java.util.HashSet<>();
+        actuales.forEach(it -> nombres.add(it.nombre()));
+        int orden = actuales.size();
+        for (ContenidoCaso.ItemJson it : c.items()) {
+            if (nombres.add(it.nombre())) checklist.agregar(e.getId(), it.nombre(), it.estado(), it.observacion(), orden++);
         }
     }
 

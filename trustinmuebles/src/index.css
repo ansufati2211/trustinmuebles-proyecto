@@ -2,14 +2,24 @@
 @import '@fontsource/inter/500.css';
 @import '@fontsource/inter/600.css';
 @import '@fontsource/inter/700.css';
+@import '@fontsource/inter/800.css';
 @import 'tailwindcss';
 
+/*
+ * Tokens de diseño de Trustinmuebles (v0.6). Es el único lugar donde se definen colores, tipografía, espaciado, radios y
+ * sombras; los componentes los usan por nombre (bg-primary, text-ink-2, shadow-tarjeta…).
+ *
+ * Paleta «confiable y cálida»: verde huarango como color de marca, arena de Ica como acento cálido y neutros con un leve
+ * tinte verde. Los cuatro estados del semáforo tienen fondo y texto con contraste AA (≥ 4.5:1) y siempre se muestran con
+ * ícono y texto, nunca solo con color.
+ */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -19,51 +29,113 @@
   --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
   --color-ring: var(--ring);
-  
+  --color-arena: var(--arena);
+  --color-arena-suave: var(--arena-suave);
+  --color-arena-tinta: var(--arena-tinta);
+  --color-superficie: var(--superficie);
+  --color-tinta-2: var(--tinta-2);
+
+  /* Semáforo: banda o relleno sólido, fondo suave y texto legible sobre el fondo suave. */
   --color-success: var(--success);
   --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
   --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);
   --color-danger-foreground: var(--danger-foreground);
+  --color-sem-verde: var(--sem-verde);
+  --color-sem-verde-suave: var(--sem-verde-suave);
+  --color-sem-verde-tinta: var(--sem-verde-tinta);
+  --color-sem-amarillo: var(--sem-amarillo);
+  --color-sem-amarillo-suave: var(--sem-amarillo-suave);
+  --color-sem-amarillo-tinta: var(--sem-amarillo-tinta);
+  --color-sem-rojo: var(--sem-rojo);
+  --color-sem-rojo-suave: var(--sem-rojo-suave);
+  --color-sem-rojo-tinta: var(--sem-rojo-tinta);
+  --color-sem-gris: var(--sem-gris);
+  --color-sem-gris-suave: var(--sem-gris-suave);
+  --color-sem-gris-tinta: var(--sem-gris-tinta);
+  --color-info-suave: var(--info-suave);
+  --color-info-tinta: var(--info-tinta);
 
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: var(--radius);
   --radius-lg: calc(var(--radius) + 4px);
   --radius-xl: calc(var(--radius) + 8px);
+  --radius-2xl: calc(var(--radius) + 12px);
+  --radius-3xl: calc(var(--radius) + 18px);
+
+  --shadow-tarjeta: 0 1px 2px rgb(23 48 42 / 0.05), 0 4px 16px -6px rgb(23 48 42 / 0.10);
+  --shadow-elevada: 0 2px 4px rgb(23 48 42 / 0.06), 0 18px 40px -16px rgb(23 48 42 / 0.28);
 
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
 }
 
 :root {
-  /* Emerald Green and related trust colors */
   --background: #FFFFFF;
-  --foreground: #1A2E24;
+  --superficie: #F5F8F6;     /* fondo de página: blanco con tinte verde */
+  --foreground: #17302A;     /* tinta principal */
+  --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */
   --card: #FFFFFF;
-  --card-foreground: #1A2E24;
-  --primary: #2E7D5B; /* Emerald Green */
+  --card-foreground: #17302A;
+  --primary: #2B6E57;        /* verde huarango */
+  --primary-strong: #1E5242;
   --primary-foreground: #FFFFFF;
-  --secondary: #E8F5EE; /* Light green */
-  --secondary-foreground: #2E7D5B;
-  --muted: #F3F4F6;
-  --muted-foreground: #6B7280;
-  --accent: #E8F5EE;
-  --accent-foreground: #2E7D5B;
-  --border: #E5E7EB;
-  --ring: #2E7D5B;
-  --radius: 0.5rem; /* 8px */
+  --secondary: #E6F2EC;
+  --secondary-foreground: #1E5242;
+  --muted: #EEF2F0;
+  --muted-foreground: #56685F;
+  --accent: #E6F2EC;
+  --accent-foreground: #1E5242;
+  --border: #DCE5E0;
+  --ring: #2B6E57;
+  --arena: #D99A3D;          /* acento cálido: arena de Ica (solo realces, nunca texto sobre blanco) */
+  --arena-suave: #FBF0DD;
+  --arena-tinta: #7A4A0B;
+  --radius: 0.625rem;        /* 10px */
 
-  /* Semaphore colors */
-  --success: #22C55E;
+  --success: #22A05A;
   --success-foreground: #FFFFFF;
-  --warning: #F59E0B;
-  --warning-foreground: #FFFFFF;
-  --danger: #EF4444;
+  --warning: #E0A21B;
+  --warning-foreground: #3D2A00;
+  --danger: #D33A2C;
   --danger-foreground: #FFFFFF;
+
+  --sem-verde: #22A05A;   --sem-verde-suave: #DFF5E7;   --sem-verde-tinta: #14532D;
+  --sem-amarillo: #E0A21B; --sem-amarillo-suave: #FDF1D2; --sem-amarillo-tinta: #713F12;
+  --sem-rojo: #D33A2C;    --sem-rojo-suave: #FCE4E1;    --sem-rojo-tinta: #8F1D14;
+  --sem-gris: #8A9690;    --sem-gris-suave: #E9EDEB;    --sem-gris-tinta: #36423C;
+  --info-suave: #E3EEF8;  --info-tinta: #1C4A73;
 }
 
 html,
 body,
 #root {
   height: 100%;
+}
+
+body {
+  background: var(--superficie);
+  color: var(--foreground);
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+.cifras {
+  font-variant-numeric: tabular-nums;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
