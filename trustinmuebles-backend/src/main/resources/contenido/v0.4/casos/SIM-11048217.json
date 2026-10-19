@@ -1,0 +1,161 @@
+{
+  "codigo": "SIM-11048217",
+  "denominacion": "Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica",
+  "contexto": "Parcona, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. F, Lote 7 de la Habilitación Urbana Santa Elvira, distrito de Parcona, provincia y departamento de Ica.",
+    "areaM2": 160.0,
+    "linderos": "Frente: con la Calle 3, en 8.00 ml. Derecha: con el Lote 8, en 20.00 ml. Izquierda: con el Lote 6, en 20.00 ml. Fondo: con el Lote 21, en 8.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11031904 (lote matriz de la Habilitación Urbana Santa Elvira), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2018-03-22",
+        "tituloNumero": "SIM-2018-00012345",
+        "fechaPresentacion": "2018-03-15",
+        "texto": "Por escritura pública de fecha 14 de marzo de 2018, otorgada ante notario público de Ica, Inmobiliaria Santa Elvira S.A.C. transfirió en compraventa el predio a favor de Rosa Elena Cárdenas Vilca, de estado civil soltera. Precio: S/ 64,000.00.",
+        "canceloNumero": null,
+        "titulares": "Rosa Elena Cárdenas Vilca (100 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "HIPOTECA",
+        "estado": "CANCELADA",
+        "fechaInscripcion": "2018-04-02",
+        "tituloNumero": "SIM-2018-00013102",
+        "fechaPresentacion": "2018-03-26",
+        "texto": "Hipoteca a favor de Financiera del Valle S.A., en garantía de un préstamo hasta por la suma de US$ 18,500.00, constituida por escritura pública de fecha 20 de marzo de 2018.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "E00001",
+        "tipoActo": "CANCELACION",
+        "estado": null,
+        "fechaInscripcion": "2022-02-11",
+        "tituloNumero": "SIM-2022-00003871",
+        "fechaPresentacion": "2022-02-04",
+        "texto": "Se cancela la hipoteca inscrita en el asiento D00001, por pago total de la deuda, según escritura pública de cancelación de fecha 02 de febrero de 2022.",
+        "canceloNumero": "D00001",
+        "titulares": null
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2018-09-14",
+        "tituloNumero": "SIM-2018-00019874",
+        "fechaPresentacion": "2018-09-05",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 84.50 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Descripción y linderos del predio",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Título archivado del asiento C00001",
+        "estado": "PENDIENTE"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Independización",
+      "Gravámenes y cargas",
+      "Hipoteca",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Albañilería confinada",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 84.5,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 84.5,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": {
+      "estado": "EMITIDO",
+      "resultado": "FAVORABLE",
+      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
+      "colegiatura": "CIP SIM-0001",
+      "fechaInspeccion": "2026-10-10",
+      "verifArquitectura": "CONFORME",
+      "verifEstructuras": "CONFORME",
+      "verifElectricas": "CONFORME",
+      "verifSanitarias": "CONFORME",
+      "observaciones": "Sin deficiencias físicas detectadas en la inspección visual. Muros, tablero eléctrico y red sanitaria en buen estado aparente.",
+      "conclusiones": "Las conclusiones se sustentan en la inspección visual e instrumental: verificación del tablero y la llave diferencial, continuidad del pozo a tierra y prueba de presión de la red de agua.",
+      "estudiosAdicionales": "Ninguno requerido por el momento."
+    }
+  }
+}

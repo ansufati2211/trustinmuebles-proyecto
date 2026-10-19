@@ -1,0 +1,137 @@
+{
+  "codigo": "SIM-11093320",
+  "denominacion": "Mz. A Lote 3 · Hab. Urb. Puente Molino · San José de los Molinos, Ica",
+  "contexto": "San José de los Molinos, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. A, Lote 3 de la Habilitación Urbana Puente Molino, distrito de San José de los Molinos, provincia y departamento de Ica.",
+    "areaM2": 200.0,
+    "linderos": "Frente: con la Calle Los Molinos, en 10.00 ml. Derecha: con el Lote 4, en 20.00 ml. Izquierda: con el Lote 2, en 20.00 ml. Fondo: con el Lote 9, en 10.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11071554 (lote matriz de la Habilitación Urbana Puente Molino), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2020-02-07",
+        "tituloNumero": "SIM-2020-00005362",
+        "fechaPresentacion": "2020-01-30",
+        "texto": "Por escritura pública de fecha 27 de enero de 2020, otorgada ante notario público de Ica, Inversiones Puente Molino S.R.L. transfirió en compraventa el predio a favor de Wilder Andrés Matías Quispe. Precio: S/ 36,000.00.",
+        "canceloNumero": null,
+        "titulares": "Wilder Andrés Matías Quispe (100 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "BLOQUEO",
+        "estado": "VIGENTE",
+        "fechaInscripcion": "2026-09-24",
+        "tituloNumero": "SIM-2026-00039026",
+        "fechaPresentacion": "2026-09-22",
+        "texto": "Bloqueo registral solicitado por el notario público de Ica, por la compraventa en trámite del predio, otorgada por Wilder Andrés Matías Quispe a favor de un tercero. El bloqueo impide la inscripción de actos incompatibles durante su vigencia.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2020-10-21",
+        "tituloNumero": "SIM-2020-00041203",
+        "fechaPresentacion": "2020-10-13",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 85.00 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Título del bloqueo registral",
+        "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Estado de la compraventa en trámite",
+        "estado": "OBSERVADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales",
+      "Bloqueo registral"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 85.0,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 85.0,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": {
+      "estado": "SOLICITADA"
+    }
+  }
+}

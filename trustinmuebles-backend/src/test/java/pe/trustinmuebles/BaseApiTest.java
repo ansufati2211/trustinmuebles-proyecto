@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Base de las pruebas de integración: H2 en memoria con el contenido v0.2 ya cargado y las cuentas de prueba.
+ * Base de las pruebas de integración: H2 en memoria con el contenido v0.4 ya cargado y las cuentas de prueba.
  * Las pruebas que modifican un caso lo restauran al terminar, así que el orden de ejecución no importa.
  */
 @SpringBootTest
@@ -32,6 +32,13 @@ public abstract class BaseApiTest {
     protected static final String SUBTANJALLA = "SIM-11061555";
     /** Los Aquijes: sin copia literal ni asientos. Debe dar GRIS. */
     protected static final String LOS_AQUIJES = "SIM-11070419";
+    /** Casos 5 a 10 (v0.4). */
+    protected static final String PUEBLO_NUEVO = "SIM-11075836";
+    protected static final String SANTIAGO = "SIM-11081204";
+    protected static final String SALAS = "SIM-11087751";
+    protected static final String MOLINOS = "SIM-11093320";
+    protected static final String PACHACUTEC = "SIM-11098467";
+    protected static final String ICA = "SIM-11104029";
 
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;

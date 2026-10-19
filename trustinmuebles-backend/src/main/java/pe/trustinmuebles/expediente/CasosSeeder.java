@@ -19,6 +19,7 @@ import pe.trustinmuebles.checklist.ChecklistService;
 import pe.trustinmuebles.clasificacion.ClasificacionService;
 import pe.trustinmuebles.expediente.ContenidoCaso.CasoJson;
 import pe.trustinmuebles.identidad.AuthService;
+import pe.trustinmuebles.inspeccion.EstadoTecnico;
 import pe.trustinmuebles.inspeccion.InspeccionService;
 import pe.trustinmuebles.orientacion.GlosarioService;
 import tools.jackson.databind.ObjectMapper;
@@ -92,7 +93,12 @@ class CasosSeeder implements ApplicationRunner {
         int i = 0;
         for (ContenidoCaso.ItemJson it : c.items()) checklist.agregar(e.getId(), it.nombre(), it.estado(), i++);
         glosario.asociar(e.getId(), c.terminos());
-        if (c.expediente().informeTecnico() != null) inspeccion.registrar(e.getId(), c.expediente().informeTecnico().datos(), false);
+        var informe = c.expediente().informeTecnico();
+        if (informe != null) {
+            // «Solicitada» es solo la constancia del pedido; el resto trae un informe en curso o emitido.
+            if (informe.estado() == EstadoTecnico.SOLICITADA) inspeccion.solicitar(e.getId());
+            else inspeccion.registrar(e.getId(), informe.datos(), false);
+        }
     }
 
     private List<CasoJson> leerCasos() {

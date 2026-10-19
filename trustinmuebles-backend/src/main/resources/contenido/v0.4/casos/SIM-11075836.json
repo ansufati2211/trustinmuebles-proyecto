@@ -1,0 +1,135 @@
+{
+  "codigo": "SIM-11075836",
+  "denominacion": "Mz. G Lote 14 · Hab. Urb. Jardines del Pacae · Pueblo Nuevo, Ica",
+  "contexto": "Pueblo Nuevo, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. G, Lote 14 de la Habilitación Urbana Jardines del Pacae, distrito de Pueblo Nuevo, provincia y departamento de Ica.",
+    "areaM2": 180.0,
+    "linderos": "Frente: con la Calle Los Pacaes, en 10.00 ml. Derecha: con el Lote 15, en 18.00 ml. Izquierda: con el Lote 13, en 18.00 ml. Fondo: con el Lote 2, en 10.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11060912 (lote matriz de la Habilitación Urbana Jardines del Pacae), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2017-06-14",
+        "tituloNumero": "SIM-2017-00031542",
+        "fechaPresentacion": "2017-06-06",
+        "texto": "Por escritura pública de fecha 02 de junio de 2017, otorgada ante notario público de Ica, Inmobiliaria Jardines del Pacae S.A.C. transfirió en compraventa el predio a favor de Edgar Wilmer Huamán Cárdenas. Precio: S/ 54,000.00.",
+        "canceloNumero": null,
+        "titulares": "Edgar Wilmer Huamán Cárdenas (100 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "EMBARGO",
+        "estado": "VIGENTE",
+        "fechaInscripcion": "2024-03-19",
+        "tituloNumero": "SIM-2024-00007318",
+        "fechaPresentacion": "2024-03-12",
+        "texto": "Embargo en forma de inscripción hasta por la suma de S/ 28,500.00 sobre el predio, ordenado por el 3.er Juzgado Civil de Ica en el Expediente SIM-2023-00418-0-1401-JR-CI-03, seguido por Comercial Ferretera Sudamérica S.A.C. sobre obligación de dar suma de dinero.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2017-11-09",
+        "tituloNumero": "SIM-2017-00058760",
+        "fechaPresentacion": "2017-10-30",
+        "texto": "Declaratoria de fábrica de una vivienda de dos pisos, con un área construida de 110.00 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Gravámenes y cargas inscritos",
+        "estado": "OBSERVADO"
+      },
+      {
+        "nombre": "Título archivado del asiento D00001",
+        "estado": "PENDIENTE"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales",
+      "Embargo"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 110.0,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 110.0,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "APORTICADO",
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": null
+  }
+}

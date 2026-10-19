@@ -1,0 +1,73 @@
+{
+  "codigo": "SIM-11081204",
+  "denominacion": "Mz. B Lote 5 · Hab. Urb. Campiña del Olivar · Santiago, Ica",
+  "contexto": "Santiago, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. B, Lote 5 de la Habilitación Urbana Campiña del Olivar, distrito de Santiago, provincia y departamento de Ica.",
+    "areaM2": 162.0,
+    "linderos": "Frente: con la Calle Los Olivos, en 9.00 ml. Derecha: con el Lote 6, en 18.00 ml. Izquierda: con el Lote 4, en 18.00 ml. Fondo: con el Lote 12, en 9.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11063310 (lote matriz de la Habilitación Urbana Campiña del Olivar), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "INDEPENDIZACION",
+        "estado": null,
+        "fechaInscripcion": "2025-08-26",
+        "tituloNumero": "SIM-2025-00041877",
+        "fechaPresentacion": "2025-08-19",
+        "texto": "En mérito de la Resolución de Gerencia de Desarrollo Urbano N.° SIM-0142-2025 y sus planos de subdivisión, se independiza el Lote 5 de la Manzana B, con el área, linderos y medidas perimétricas que figuran en la descripción del inmueble. Titular: Inmobiliaria Campiña del Olivar S.A.C.",
+        "canceloNumero": null,
+        "titulares": "Inmobiliaria Campiña del Olivar S.A.C. (100 %)"
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Resolución de habilitación urbana",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Plano de ubicación del lote",
+        "estado": "REVISADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Independización"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null
+  }
+}

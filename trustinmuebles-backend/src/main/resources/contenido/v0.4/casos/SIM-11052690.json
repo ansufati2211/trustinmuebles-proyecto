@@ -1,0 +1,174 @@
+{
+  "codigo": "SIM-11052690",
+  "denominacion": "Mz. K Lote 12 · Hab. Urb. Rincón del Sauce · La Tinguiña, Ica",
+  "contexto": "La Tinguiña, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. K, Lote 12 de la Habilitación Urbana Rincón del Sauce, distrito de La Tinguiña, provincia y departamento de Ica.",
+    "areaM2": 200.0,
+    "linderos": "Frente: con la Calle Los Sauces, en 10.00 ml. Derecha: con el Lote 13, en 20.00 ml. Izquierda: con el Lote 11, en 20.00 ml. Fondo: con el Lote 3, en 10.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11040288 (lote matriz de la Habilitación Urbana Rincón del Sauce), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2019-08-20",
+        "tituloNumero": "SIM-2019-00041577",
+        "fechaPresentacion": "2019-08-12",
+        "texto": "Por escritura pública de fecha 08 de agosto de 2019, otorgada ante notario público de Ica, Inversiones Rincón del Sauce S.R.L. transfirió en compraventa el predio a favor de Marco Antonio Quispe Huamaní y Lucía Fernanda Torres Gutiérrez, en copropiedad por partes iguales. Precio: S/ 78,000.00.",
+        "canceloNumero": null,
+        "titulares": "Marco Antonio Quispe Huamaní (50 %) y Lucía Fernanda Torres Gutiérrez (50 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "HIPOTECA",
+        "estado": "VIGENTE",
+        "fechaInscripcion": "2019-08-21",
+        "tituloNumero": "SIM-2019-00041602",
+        "fechaPresentacion": "2019-08-12",
+        "texto": "Hipoteca a favor de Financiera Horizonte Andino S.A., en garantía de un préstamo hasta por la suma de US$ 22,000.00, constituida por escritura pública de fecha 08 de agosto de 2019.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "D00002",
+        "tipoActo": "EMBARGO",
+        "estado": "CANCELADA",
+        "fechaInscripcion": "2020-11-10",
+        "tituloNumero": "SIM-2020-00019644",
+        "fechaPresentacion": "2020-11-03",
+        "texto": "Embargo en forma de inscripción hasta por la suma de S/ 12,000.00 sobre la cuota ideal del 50 % de Marco Antonio Quispe Huamaní, ordenado por el 2.° Juzgado Civil de Ica en el Expediente SIM-2020-00231-0-1401-JR-CI-02, seguido por Comercial Andina del Sur S.A.C., sobre obligación de dar suma de dinero.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "E00001",
+        "tipoActo": "CANCELACION",
+        "estado": null,
+        "fechaInscripcion": "2023-05-29",
+        "tituloNumero": "SIM-2023-00009125",
+        "fechaPresentacion": "2023-05-22",
+        "texto": "Se cancela el embargo inscrito en el asiento D00002, en mérito a la resolución judicial de fecha 18 de mayo de 2023 que ordena levantar la medida, emitida en el Expediente SIM-2020-00231-0-1401-JR-CI-02.",
+        "canceloNumero": "D00002",
+        "titulares": null
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2019-11-08",
+        "tituloNumero": "SIM-2019-00052310",
+        "fechaPresentacion": "2019-10-30",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 96.00 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Gravámenes y cargas inscritos",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Título archivado del asiento D00001",
+        "estado": "PENDIENTE"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Copropiedad",
+      "Compraventa",
+      "Independización",
+      "Gravámenes y cargas",
+      "Hipoteca",
+      "Embargo",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Albañilería confinada",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 96.0,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 96.0,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": {
+      "estado": "EMITIDO",
+      "resultado": "CON_OBSERVACIONES",
+      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
+      "colegiatura": "CIP SIM-0001",
+      "fechaInspeccion": "2026-10-12",
+      "verifArquitectura": "CONFORME",
+      "verifEstructuras": "CONFORME",
+      "verifElectricas": "OBSERVADO",
+      "verifSanitarias": "OBSERVADO",
+      "observaciones": "Aunque el plano arquitectónico coincide con lo construido, en la inspección se detectó cableado antiguo sin llave diferencial en el tablero y una filtración en la red sanitaria de la cocina.",
+      "conclusiones": "Las observaciones son subsanables con mantenimiento preventivo. La estructura no presenta fisuras que comprometan su estabilidad a simple vista.",
+      "estudiosAdicionales": "Medición de aislamiento de la instalación eléctrica y prueba de estanqueidad de la red de agua antes de cualquier compra."
+    }
+  }
+}

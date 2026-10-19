@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
+import java.util.List;
 import org.apache.pdfbox.Loader;
 import org.apache.pdfbox.text.PDFTextStripper;
 import org.junit.jupiter.api.DisplayName;
@@ -26,15 +27,15 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Contenido v0.3 cargado: 4 casos simulados, 44 términos, 9 reglas (3 prioritarias), 3 cuentas")
+    @DisplayName("Contenido v0.4 cargado: 10 casos simulados, 48 términos, 9 reglas (3 prioritarias), 3 cuentas")
     void contenidoCargado() {
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(4);
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
-                .isEqualTo(4);
+                .isEqualTo(10);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo not like 'SIM-%'", Integer.class))
                 .as("toda partida lleva el prefijo SIM- para no confundirse con una real").isZero();
-        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(44);
-        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.3'", Integer.class)).isEqualTo(9);
+        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(48);
+        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.4'", Integer.class)).isEqualTo(9);
         assertThat(jdbc.queryForObject("select count(*) from regla where prioridad = 'PRIORITARIA'", Integer.class))
                 .isEqualTo(3);
         assertThat(jdbc.queryForObject(
@@ -47,13 +48,15 @@ class CasosApiTest extends BaseApiTest {
     @DisplayName("CP-02 el listado y cada código devuelven sus propios datos")
     void cadaCodigoDevuelveSusDatos() throws Exception {
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador())).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(4)))
-                .andExpect(jsonPath("$[*].codigo", contains(PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES)))
+                .andExpect(jsonPath("$", hasSize(10)))
+                .andExpect(jsonPath("$[*].codigo", contains(PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO,
+                        SANTIAGO, SALAS, MOLINOS, PACHACUTEC, ICA)))
                 .andExpect(jsonPath("$[0].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
                 .andExpect(jsonPath("$[0].estado").value("VERDE"))
                 .andExpect(jsonPath("$[0].pendientes").value(1))
                 .andExpect(jsonPath("$[2].pendientes").value(2));
-        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES}) {
+        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS,
+                MOLINOS, PACHACUTEC, ICA}) {
             mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.codigo").value(codigo))
                     .andExpect(jsonPath("$.sintetico").value(true));
@@ -68,13 +71,44 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
+    @DisplayName("Los 10 casos dan el color, las reglas y el estado técnico que describe su ficha")
+    void losDiezCasosTienenSuColor() throws Exception {
+        // código, color documental, reglas aplicadas (en el orden de la tabla), estado técnico
+        Object[][] esperado = {
+            {PARCONA, "VERDE", List.of(), "EMITIDO"},
+            {TINGUINA, "AMARILLO", List.of("RV-02", "RV-04"), "EMITIDO"},
+            {SUBTANJALLA, "GRIS", List.of("RP-02", "RV-04"), "NO_SOLICITADA"},
+            {LOS_AQUIJES, "GRIS", List.of("RV-04"), "NO_SOLICITADA"},
+            {PUEBLO_NUEVO, "ROJO", List.of("RP-01"), "NO_SOLICITADA"},
+            {SANTIAGO, "VERDE", List.of(), "NO_SOLICITADA"},
+            {SALAS, "AMARILLO", List.of("RV-03"), "EMITIDO"},
+            {MOLINOS, "ROJO", List.of("RP-03"), "SOLICITADA"},
+            {PACHACUTEC, "AMARILLO", List.of("RV-05"), "EN_INSPECCION"},
+            {ICA, "AMARILLO", List.of("RV-03", "RV-06"), "EMITIDO"},
+        };
+        for (Object[] e : esperado) {
+            JsonNode d = leer((String) e[0]);
+            assertThat(d.get("evaluacion").get("estado").asString()).as("color de " + e[0]).isEqualTo(e[1]);
+            var reglas = new java.util.ArrayList<String>();
+            d.get("evaluacion").get("reglasAplicadas").forEach(r -> reglas.add(r.asString()));
+            assertThat(reglas).as("reglas de " + e[0]).containsExactlyElementsOf((List<String>) e[2]);
+            assertThat(d.get("evaluacionTecnica").get("estado").asString()).as("estado técnico de " + e[0]).isEqualTo(e[3]);
+        }
+        // Un lote no lleva planos; las demás son viviendas con la declaratoria de fábrica en el rubro F.
+        assertThat(leer(SANTIAGO).get("expediente").get("tipoPredio").asString()).isEqualTo("LOTE");
+        assertThat(leer(SANTIAGO).get("expediente").get("planos")).isEmpty();
+        assertThat(leer(PUEBLO_NUEVO).get("expediente").get("asientos").toString()).contains("Declaratoria de fábrica");
+    }
+
+    @Test
     @DisplayName("Los textos visibles no delatan el diseño del estudio")
     void sinRastrosDelEstudio() throws Exception {
         String lista = mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
                 .andReturn().getResponse().getContentAsString().toLowerCase();
         assertThat(lista).doesNotContain("postest", "pretest", "forma b", "forma a", "sintético de",
                 "práctica", "simulad", "mvp", "ejemplo", "escenario", "académic");
-        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES}) {
+        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS,
+                MOLINOS, PACHACUTEC, ICA}) {
             // El término «Documento simulado» del glosario se queda; se revisan el expediente, la evaluación y el checklist.
             ObjectNode detalle = (ObjectNode) leer(codigo).deepCopy();
             detalle.remove("terminos");
@@ -97,7 +131,7 @@ class CasosApiTest extends BaseApiTest {
                 .andExpect(jsonPath("$.evaluacion.motivos[*].texto",
                         hasItem(containsString("Esto no significa saneamiento"))))
                 .andExpect(jsonPath("$.evaluacion.limite", containsString("No certifica saneamiento ni recomienda comprar")))
-                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.3"));
+                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.4"));
     }
 
     @Test
@@ -141,11 +175,11 @@ class CasosApiTest extends BaseApiTest {
     void glosario() throws Exception {
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.terminos", not(empty())))
-                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.3"))))
+                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.4"))))
                 .andExpect(jsonPath("$.terminos[*].estadoRevision", everyItem(is("pendiente de revisión"))))
                 .andExpect(jsonPath("$.terminos[*].concepto", hasItems("Hipoteca", "Embargo", "Copropiedad", "Cancelación")));
         mvc.perform(get("/api/v1/glosario").header("Authorization", comprador())).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(44)));
+                .andExpect(jsonPath("$", hasSize(48)));
         mvc.perform(post("/api/v1/glosario").header("Authorization", revisor())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"concepto\":\"x\",\"explicacion\":\"y\"}"))
                 .andExpect(status().is4xxClientError());
@@ -259,7 +293,7 @@ class CasosApiTest extends BaseApiTest {
             // Sin la hipoteca sigue AMARILLO: faltan los planos de II.EE. y II.SS. (RV-04).
             actualizarExpediente(TINGUINA, revisor(), p).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
-                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.3"))
+                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.4"))
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")))
                     .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")));
 

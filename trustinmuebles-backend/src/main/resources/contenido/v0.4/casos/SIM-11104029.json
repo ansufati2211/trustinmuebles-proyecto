@@ -1,0 +1,149 @@
+{
+  "codigo": "SIM-11104029",
+  "denominacion": "Mz. M Lote 6 · Hab. Urb. Los Laureles del Sur · Ica",
+  "contexto": "Ica, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. M, Lote 6 de la Habilitación Urbana Los Laureles del Sur, distrito, provincia y departamento de Ica.",
+    "areaM2": 120.0,
+    "linderos": "Frente: con la Avenida Los Laureles, en 7.50 ml. Derecha: con el Lote 7, en 16.00 ml. Izquierda: con el Lote 5, en 16.00 ml. Fondo: con el Lote 18, en 7.50 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11085117 (lote matriz de la Habilitación Urbana Los Laureles del Sur), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2015-09-24",
+        "tituloNumero": "SIM-2015-00049210",
+        "fechaPresentacion": "2015-09-15",
+        "texto": "Por escritura pública de fecha 10 de setiembre de 2015, otorgada ante notario público de Ica, Teodoro Hilario Gutiérrez Pecho adquirió en compraventa el predio de Inmobiliaria Los Laureles del Sur S.A.C. Precio: S/ 42,000.00.",
+        "canceloNumero": null,
+        "titulares": "Teodoro Hilario Gutiérrez Pecho (100 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "CARGA_TECNICA",
+        "estado": "VIGENTE",
+        "fechaInscripcion": "2021-06-30",
+        "tituloNumero": "SIM-2021-00024561",
+        "fechaPresentacion": "2021-06-22",
+        "texto": "Reserva vial: se anota una afectación en uso sobre una franja de 12.40 m² del frente del predio, por el proyecto de ensanche de la Avenida Los Laureles, según Ordenanza Municipal N.° SIM-018-2021 de la Municipalidad Provincial de Ica.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2016-05-18",
+        "tituloNumero": "SIM-2016-00020347",
+        "fechaPresentacion": "2016-05-09",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 78.00 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Ordenanza de la reserva vial",
+        "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Plano de estructuras con cimentación",
+        "estado": "OBSERVADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales",
+      "Carga técnica",
+      "Reserva vial"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 78.0,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 78.0,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "OBSERVADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "observacion": "El plano no indica la cimentación ni la resistencia del concreto."
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": {
+      "estado": "EMITIDO",
+      "resultado": "FAVORABLE",
+      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
+      "colegiatura": "CIP SIM-0001",
+      "fechaInspeccion": "2026-10-11",
+      "verifArquitectura": "CONFORME",
+      "verifEstructuras": "CONFORME",
+      "verifElectricas": "CONFORME",
+      "verifSanitarias": "CONFORME",
+      "observaciones": "No se detectaron deficiencias físicas. La franja de reserva vial coincide con la anotada en la partida y no ocupa lo construido.",
+      "conclusiones": "La vivienda se encuentra en buen estado aparente. La observación del plano de estructuras es documental: la cimentación se verificó por calicata visual.",
+      "estudiosAdicionales": "Ninguno requerido por el momento."
+    }
+  }
+}

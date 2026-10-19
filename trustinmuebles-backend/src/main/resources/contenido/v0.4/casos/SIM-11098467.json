@@ -1,0 +1,131 @@
+{
+  "codigo": "SIM-11098467",
+  "denominacion": "Mz. N Lote 8 · Hab. Urb. Mirador del Pallar · Pachacútec, Ica",
+  "contexto": "Pachacútec, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-10-17",
+    "nota": null,
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. N, Lote 8 de la Habilitación Urbana Mirador del Pallar, distrito de Pachacútec, provincia y departamento de Ica.",
+    "areaM2": 120.0,
+    "linderos": "Frente: con la Calle El Pallar, en 8.00 ml. Derecha: con el Lote 9, en 15.00 ml. Izquierda: con el Lote 7, en 15.00 ml. Fondo: con el Lote 16, en 8.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida SIM-11079203 (lote matriz de la Habilitación Urbana Mirador del Pallar), de la que se independizó.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2016-04-12",
+        "tituloNumero": "SIM-2016-00017488",
+        "fechaPresentacion": "2016-04-04",
+        "texto": "Por escritura pública de fecha 31 de marzo de 2016, otorgada ante notario público de Ica, Constructora Mirador del Pallar S.A.C. transfirió en compraventa el predio a favor de Luz Marina Sotelo Aybar. Precio: S/ 31,500.00.",
+        "canceloNumero": null,
+        "titulares": "Luz Marina Sotelo Aybar (100 %)"
+      },
+      {
+        "referencia": "F00001",
+        "tipoActo": "OTRO",
+        "estado": null,
+        "fechaInscripcion": "2016-12-02",
+        "tituloNumero": "SIM-2016-00061934",
+        "fechaPresentacion": "2016-11-22",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 72.00 m², según planos y memoria descriptiva presentados.",
+        "canceloNumero": null,
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Declaratoria de fábrica de la ampliación",
+        "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Licencia de edificación de la ampliación",
+        "estado": "PENDIENTE"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales",
+      "Ampliación de fábrica"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": 72.0,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "PRESENTADO",
+        "areaConstruida": 98.0,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": {
+      "estado": "EN_INSPECCION",
+      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
+      "colegiatura": "CIP SIM-0001",
+      "fechaInspeccion": "2026-10-14",
+      "verifArquitectura": "OBSERVADO",
+      "observaciones": "Segundo piso en construcción no declarado, con un área aproximada de 26 m². Pendiente verificar la cimentación y las columnas de arranque."
+    }
+  }
+}
