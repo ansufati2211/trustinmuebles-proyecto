@@ -50,7 +50,7 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
           {subiendo ? "Subiendo…" : "Asociar PDF"}
         </Button>
       </div>
-      {error && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{error}</p>}
+      {error && <p role="alert" className="mt-3 text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
       {mensaje && <p role="status" className="mt-3 text-sm font-semibold text-foreground">{mensaje}</p>}
     </div>
   );
@@ -202,8 +202,8 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
 
           {errores.length > 0 && (
             <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
-              <p className="font-bold text-[#B91C1C] mb-1">No se guardó ningún cambio</p>
-              <ul className="list-disc pl-5 text-sm text-[#B91C1C] space-y-1">
+              <p className="font-bold text-sem-rojo-tinta mb-1">No se guardó ningún cambio</p>
+              <ul className="list-disc pl-5 text-sm text-sem-rojo-tinta space-y-1">
                 {errores.map((m, i) => <li key={i}>{m}</li>)}
               </ul>
             </div>

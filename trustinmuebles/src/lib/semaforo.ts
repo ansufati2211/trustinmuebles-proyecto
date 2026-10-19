@@ -13,19 +13,19 @@ export const ESTADOS: Record<EstadoSemaforo, {
 }> = {
   VERDE: {
     nombre: "Verde", resumen: "Sin alertas en los campos evaluados", tono: "success", Icono: CheckCircle2,
-    texto: "text-[#15803D]", fondo: "bg-success/10", borde: "border-success/30", banda: "bg-success",
+    texto: "text-sem-verde-tinta", fondo: "bg-sem-verde-suave", borde: "border-sem-verde/40", banda: "bg-sem-verde",
   },
   AMARILLO: {
     nombre: "Amarillo", resumen: "Requiere revisión", tono: "warning", Icono: AlertTriangle,
-    texto: "text-[#B45309]", fondo: "bg-warning/10", borde: "border-warning/40", banda: "bg-warning",
+    texto: "text-sem-amarillo-tinta", fondo: "bg-sem-amarillo-suave", borde: "border-sem-amarillo/50", banda: "bg-sem-amarillo",
   },
   ROJO: {
     nombre: "Rojo", resumen: "Alerta prioritaria", tono: "danger", Icono: ShieldAlert,
-    texto: "text-[#B91C1C]", fondo: "bg-danger/10", borde: "border-danger/30", banda: "bg-danger",
+    texto: "text-sem-rojo-tinta", fondo: "bg-sem-rojo-suave", borde: "border-sem-rojo/40", banda: "bg-sem-rojo",
   },
   GRIS: {
     nombre: "Gris", resumen: "Información insuficiente o condición no evaluable", tono: "pending", Icono: CircleHelp,
-    texto: "text-muted-foreground", fondo: "bg-gray-100", borde: "border-gray-300", banda: "bg-gray-400",
+    texto: "text-sem-gris-tinta", fondo: "bg-sem-gris-suave", borde: "border-sem-gris/50", banda: "bg-sem-gris",
   },
 };
 
@@ -62,9 +62,9 @@ export const ETIQUETA_COMPLETITUD: Record<Completitud, string> = {
 };
 
 export const ITEM: Record<EstadoItem, { etiqueta: string; Icono: LucideIcon; texto: string }> = {
-  PENDIENTE: { etiqueta: "Pendiente", Icono: Clock, texto: "text-muted-foreground" },
-  REVISADO: { etiqueta: "Revisado", Icono: CheckCircle2, texto: "text-[#15803D]" },
-  OBSERVADO: { etiqueta: "Observado", Icono: Eye, texto: "text-[#B45309]" },
+  PENDIENTE: { etiqueta: "Pendiente", Icono: Clock, texto: "text-sem-gris-tinta" },
+  REVISADO: { etiqueta: "Revisado", Icono: CheckCircle2, texto: "text-sem-verde-tinta" },
+  OBSERVADO: { etiqueta: "Observado", Icono: Eye, texto: "text-sem-amarillo-tinta" },
 };
 
 export const fecha = (iso: string | null | undefined) =>

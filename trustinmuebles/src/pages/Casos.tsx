@@ -46,7 +46,7 @@ export default function Casos() {
         {loading ? (
           <div className="text-center py-24 text-muted-foreground font-semibold">Cargando expedientes…</div>
         ) : error ? (
-          <div role="alert" className="text-center py-24 text-[#B91C1C] font-semibold">{error.message}</div>
+          <div role="alert" className="text-center py-24 text-sem-rojo-tinta font-semibold">{error.message}</div>
         ) : !casos || casos.length === 0 ? (
           <div className="text-center py-24 bg-white rounded-3xl border border-gray-100 shadow-sm">
             <FolderOpen className="w-10 h-10 text-muted-foreground mx-auto mb-4" aria-hidden="true" />

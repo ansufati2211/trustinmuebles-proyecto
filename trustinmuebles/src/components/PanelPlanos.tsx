@@ -7,8 +7,8 @@ import { ESPECIALIDADES, ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_PLANO, QUE_VALID
 import type { DetalleCaso, Especialidad, EstadoPlano, Plano } from "@/lib/types";
 
 const ESTILO: Record<EstadoPlano, { Icono: typeof CheckCircle2; texto: string }> = {
-  PRESENTADO: { Icono: CheckCircle2, texto: "text-[#15803D]" },
-  OBSERVADO: { Icono: AlertTriangle, texto: "text-[#B45309]" },
+  PRESENTADO: { Icono: CheckCircle2, texto: "text-sem-verde-tinta" },
+  OBSERVADO: { Icono: AlertTriangle, texto: "text-sem-amarillo-tinta" },
   NO_PRESENTADO: { Icono: CircleHelp, texto: "text-muted-foreground" },
   NO_APLICA: { Icono: CircleHelp, texto: "text-muted-foreground" },
 };
@@ -80,7 +80,7 @@ function TarjetaPlano({ codigo, plano, especialidad, area, esRevisor, alCambiar 
           </Button>
         </div>
       )}
-      {error && <p role="alert" className="text-sm font-semibold text-[#B91C1C]">{error}</p>}
+      {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
     </li>
   );
 }

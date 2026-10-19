@@ -2,6 +2,8 @@
 
 export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA";
 export type TipoPredio = "LOTE" | "VIVIENDA";
+/** Tipo que ve el comprador en el catálogo. El backend lo deriva del tipo de predio. */
+export type TipoInmueble = "VIVIENDA_URBANA" | "LOTE_URBANO";
 export type Especialidad = "ARQUITECTURA" | "ESTRUCTURAS" | "ELECTRICAS" | "SANITARIAS";
 export type EstadoPlano = "PRESENTADO" | "OBSERVADO" | "NO_PRESENTADO" | "NO_APLICA";
 export type SistemaConstructivo = "ALBANILERIA_CONFINADA" | "APORTICADO" | "ADOBE" | "OTRO";
@@ -21,10 +23,20 @@ export type TipoActo =
 export interface Usuario { id: number; codigoCuenta: string; rol: Rol }
 export interface Sesion { token: string; usuario: Usuario }
 
+/** Datos del predio para el catálogo. El precio es referencial e informativo (en soles) y no interviene en el semáforo. */
+export interface Predio {
+  tipoInmueble: TipoInmueble; tipoInmuebleEtiqueta: string; distrito: string | null; areaM2: number | null;
+  areaConstruidaInscrita: number | null; precioReferencial: number | null; moneda: string | null; precioNota: string | null;
+}
+
 export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
   pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
+  resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean; predio: Predio;
 }
+
+/** Condiciones del servicio de inspección. El costo lo fija el backend (configuración), no la interfaz. */
+export interface ServicioInspeccion { costoReferencial: number; moneda: string; condiciones: string }
 
 /** Un plano del expediente técnico. coincideArea solo se calcula en el plano arquitectónico. */
 export interface Plano {
@@ -40,6 +52,12 @@ export interface EvaluacionTecnica {
   verifArquitectura: VerificacionCampo | null; verifEstructuras: VerificacionCampo | null;
   verifElectricas: VerificacionCampo | null; verifSanitarias: VerificacionCampo | null;
   observaciones: string | null; conclusiones: string | null; estudiosAdicionales: string | null; limite: string;
+  /** Especialidad del profesional; como el nombre y la colegiatura, la pone el servidor desde su cuenta (M8). */
+  profesionalEspecialidad: string | null;
+  /** Cuenta que pidió la inspección, tomada de la sesión (M5). */
+  solicitanteCodigo: string | null;
+  riesgoFisicoDetectado: boolean;
+  servicio: ServicioInspeccion | null;
 }
 
 /** Asiento de la partida. La primera letra de la referencia es el rubro: C, D, E o F. */
@@ -76,6 +94,7 @@ export interface DetalleCaso {
   codigo: string; denominacion: string; contexto: string; sintetico: boolean; origen: Origen;
   fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
+  predio: Predio;
 }
 
 export interface AsientoPeticion {

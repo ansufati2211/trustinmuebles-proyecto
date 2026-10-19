@@ -86,7 +86,7 @@ function TarjetaAsiento({ a }: { a: Asiento }) {
         <p className="font-black text-foreground">{a.referencia}<span className="font-bold"> · {a.tipoActoEtiqueta}</span></p>
         {a.rubro === "D" && a.estado && (
           <span className={`shrink-0 rounded-full border px-3 py-1 text-xs font-bold uppercase tracking-wider ${
-            vigente ? "border-warning/40 bg-warning/10 text-[#B45309]" : "border-gray-200 bg-gray-50 text-muted-foreground"}`}>
+            vigente ? "border-warning/40 bg-warning/10 text-sem-amarillo-tinta" : "border-gray-200 bg-gray-50 text-muted-foreground"}`}>
             {ETIQUETA_ANOTACION[a.estado]}
           </span>
         )}
@@ -175,7 +175,7 @@ function FilaChecklist({ codigo, item, esRevisor, alCambiar }: {
                 className="w-full h-10 px-3 rounded-lg border border-gray-200 bg-white text-sm" />
             </div>
           </div>
-          {error && <p role="alert" className="text-sm font-semibold text-[#B91C1C]">{error}</p>}
+          {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
           <Button size="sm" variant="outline" disabled={guardando || sinCambios} onClick={guardar}>
             {guardando ? "Guardando…" : "Guardar ítem"}
           </Button>
@@ -199,7 +199,7 @@ export default function Expediente() {
   if (error || !d) {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-32 gap-4 text-center px-4">
-        <p role="alert" className="text-[#B91C1C] font-semibold">
+        <p role="alert" className="text-sem-rojo-tinta font-semibold">
           {error?.status === 404 ? "No encontramos este expediente." : (error?.message ?? "No se pudo cargar el expediente.")}
         </p>
         <Button asChild><Link to="/casos">Volver a los expedientes</Link></Button>
@@ -418,18 +418,18 @@ export default function Expediente() {
                   {esRevisor && (
                     <div className="mt-6 pt-5 border-t border-gray-100">
                       {!confirmando ? (
-                        <Button variant="ghost" className="rounded-xl text-[#B91C1C] hover:bg-danger/10" onClick={() => setConfirmando(true)}>
+                        <Button variant="ghost" className="rounded-xl text-sem-rojo-tinta hover:bg-danger/10" onClick={() => setConfirmando(true)}>
                           <Trash2 className="w-4 h-4" aria-hidden="true" /> Eliminar partida transcrita
                         </Button>
                       ) : (
                         <div role="alertdialog" aria-labelledby="eliminar-titulo" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
-                          <p id="eliminar-titulo" className="font-bold text-[#B91C1C] mb-1">¿Eliminar la partida {d.codigo}?</p>
+                          <p id="eliminar-titulo" className="font-bold text-sem-rojo-tinta mb-1">¿Eliminar la partida {d.codigo}?</p>
                           <p className="text-sm text-foreground mb-3">Se borran su expediente, su checklist, su evaluación y su documento. No se puede deshacer.</p>
                           <div className="flex gap-2">
-                            <Button className="rounded-xl bg-[#B91C1C] hover:bg-[#991B1B]" onClick={eliminar}>Sí, eliminar</Button>
+                            <Button className="rounded-xl bg-sem-rojo hover:bg-sem-rojo-tinta" onClick={eliminar}>Sí, eliminar</Button>
                             <Button variant="outline" className="rounded-xl" onClick={() => { setConfirmando(false); setErrorEliminar(null); }}>Cancelar</Button>
                           </div>
-                          {errorEliminar && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{errorEliminar}</p>}
+                          {errorEliminar && <p role="alert" className="mt-3 text-sm font-semibold text-sem-rojo-tinta">{errorEliminar}</p>}
                         </div>
                       )}
                     </div>
@@ -455,7 +455,7 @@ export default function Expediente() {
                     <Button variant="outline" className="w-full rounded-xl" onClick={verPdf}>
                       Abrir documento <ExternalLink className="w-4 h-4" aria-hidden="true" />
                     </Button>
-                    {errorPdf && <p role="alert" className="mt-3 text-sm font-semibold text-[#B91C1C]">{errorPdf}</p>}
+                    {errorPdf && <p role="alert" className="mt-3 text-sm font-semibold text-sem-rojo-tinta">{errorPdf}</p>}
                   </>
                 ) : (
                   <p className="text-sm text-muted-foreground">Este expediente no tiene un documento asociado.</p>

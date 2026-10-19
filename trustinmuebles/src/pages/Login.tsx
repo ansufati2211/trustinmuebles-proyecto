@@ -60,7 +60,7 @@ export default function Login() {
               <input id="password" required type="password" autoComplete="current-password" maxLength={72} className={campo}
                 value={password} onChange={(e) => setPassword(e.target.value)} />
             </div>
-            {error && <p role="alert" className="text-sm font-semibold text-[#B91C1C] bg-danger/10 rounded-xl px-4 py-3">{error}</p>}
+            {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta bg-danger/10 rounded-xl px-4 py-3">{error}</p>}
             <Button type="submit" disabled={enviando} className="w-full h-12 rounded-xl font-bold">
               {enviando ? "Un momento…" : "Ingresar"}
             </Button>

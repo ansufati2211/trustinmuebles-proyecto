@@ -5,26 +5,21 @@ import { Card, CardContent } from "@/components/ui/card";
 import { campo } from "@/components/FilasAsientos";
 import { abrirPdf, api, post, put } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
+import { IndicadorB } from "@/components/base/Indicadores";
 import {
   ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_TECNICO, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha,
 } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
 
 const RESULTADO_ESTILO: Record<ResultadoTecnico, { Icono: typeof CheckCircle2; clases: string }> = {
-  FAVORABLE: { Icono: CheckCircle2, clases: "border-success/30 bg-success/10 text-[#15803D]" },
-  CON_OBSERVACIONES: { Icono: AlertTriangle, clases: "border-warning/40 bg-warning/10 text-[#B45309]" },
-  CON_RIESGO: { Icono: ShieldAlert, clases: "border-danger/30 bg-danger/10 text-[#B91C1C]" },
+  FAVORABLE: { Icono: CheckCircle2, clases: "border-success/30 bg-success/10 text-sem-verde-tinta" },
+  CON_OBSERVACIONES: { Icono: AlertTriangle, clases: "border-warning/40 bg-warning/10 text-sem-amarillo-tinta" },
+  CON_RIESGO: { Icono: ShieldAlert, clases: "border-danger/30 bg-danger/10 text-sem-rojo-tinta" },
 };
 
-/** Insignia del indicador B. Se usa en la cabecera del expediente y en el listado. */
+/** Insignia del indicador B. Delega en IndicadorB; se conserva el nombre para quien ya la usa. */
 export function InsigniaTecnica({ estado, resultado, className = "" }: { estado: EstadoTecnico; resultado?: ResultadoTecnico | null; className?: string }) {
-  const texto = estado === "EMITIDO" && resultado ? `Informe: ${ETIQUETA_RESULTADO[resultado]}` : ETIQUETA_ESTADO_TECNICO[estado];
-  const clases = estado === "EMITIDO" && resultado ? RESULTADO_ESTILO[resultado].clases : "border-gray-200 bg-gray-50 text-muted-foreground";
-  return (
-    <span className={`inline-flex items-center rounded-full border px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider ${clases} ${className}`}>
-      <HardHat className="w-4 h-4 mr-1.5" aria-hidden="true" /> Evaluación técnica: {texto}
-    </span>
-  );
+  return <IndicadorB estado={estado} resultado={resultado} className={className} />;
 }
 
 const VERIFICACIONES: { clave: "verifArquitectura" | "verifEstructuras" | "verifElectricas" | "verifSanitarias"; especialidad: keyof typeof ETIQUETA_ESPECIALIDAD }[] = [
@@ -132,8 +127,8 @@ function FormularioInforme({ detalle, alCambiar }: { detalle: DetalleCaso; alCam
       </div>
       {errores.length > 0 && (
         <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
-          <p className="font-bold text-[#B91C1C] mb-1">No se guardó el informe</p>
-          <ul className="list-disc pl-5 text-sm text-[#B91C1C] space-y-1">{errores.map((m, i) => <li key={i}>{m}</li>)}</ul>
+          <p className="font-bold text-sem-rojo-tinta mb-1">No se guardó el informe</p>
+          <ul className="list-disc pl-5 text-sm text-sem-rojo-tinta space-y-1">{errores.map((m, i) => <li key={i}>{m}</li>)}</ul>
         </div>
       )}
       {mensaje && <p role="status" className="rounded-2xl border border-success/30 bg-success/10 p-4 text-sm font-semibold text-foreground">{mensaje}</p>}
@@ -196,7 +191,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
             <Clock className="w-4 h-4 text-muted-foreground" aria-hidden="true" /> Solicitada: espera la visita del especialista.
           </p>
         )}
-        {error && <p role="alert" className="mb-4 text-sm font-semibold text-[#B91C1C]">{error}</p>}
+        {error && <p role="alert" className="mb-4 text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
 
         {(t.estado === "EN_INSPECCION" || t.estado === "EMITIDO") && (
           <div className="space-y-4 mb-5" aria-label="Resumen del informe técnico">

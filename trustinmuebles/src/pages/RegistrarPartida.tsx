@@ -64,7 +64,7 @@ export default function RegistrarPartida() {
   if (usuario?.rol !== "REVISOR") {
     return (
       <div className="flex-1 flex flex-col items-center justify-center py-32 gap-4 text-center px-4">
-        <p role="alert" className="text-[#B91C1C] font-semibold">Solo el revisor puede registrar partidas.</p>
+        <p role="alert" className="text-sem-rojo-tinta font-semibold">Solo el revisor puede registrar partidas.</p>
         <Button asChild><Link to="/casos">Volver a los expedientes</Link></Button>
       </div>
     );
@@ -162,7 +162,7 @@ export default function RegistrarPartida() {
                 <input id="rp-numero" className={campo} maxLength={9} value={numero} aria-invalid={numero !== "" && !numeroValido}
                   onChange={(e) => setNumero(normalizarNumero(e.target.value))} />
                 {numero !== "" && !numeroValido && (
-                  <p className="text-xs text-[#B91C1C] mt-1">Ocho dígitos, con una letra inicial opcional (P07044600).</p>
+                  <p className="text-xs text-sem-rojo-tinta mt-1">Ocho dígitos, con una letra inicial opcional (P07044600).</p>
                 )}
               </div>
               <div className="sm:col-span-2">
@@ -230,7 +230,7 @@ export default function RegistrarPartida() {
               <ClipboardPaste className="w-4 h-4" aria-hidden="true" /> Leer asientos
             </Button>
             {avisos.length > 0 && (
-              <ul role="status" className="list-disc pl-5 text-sm text-[#B45309] space-y-1">
+              <ul role="status" className="list-disc pl-5 text-sm text-sem-amarillo-tinta space-y-1">
                 {avisos.map((a, i) => <li key={i}>{a}</li>)}
               </ul>
             )}
@@ -324,8 +324,8 @@ export default function RegistrarPartida() {
 
             {errores.length > 0 && (
               <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
-                <p className="font-bold text-[#B91C1C] mb-1">No se registró la partida</p>
-                <ul className="list-disc pl-5 text-sm text-[#B91C1C] space-y-1">
+                <p className="font-bold text-sem-rojo-tinta mb-1">No se registró la partida</p>
+                <ul className="list-disc pl-5 text-sm text-sem-rojo-tinta space-y-1">
                   {errores.map((m, i) => <li key={i}>{m}</li>)}
                 </ul>
               </div>

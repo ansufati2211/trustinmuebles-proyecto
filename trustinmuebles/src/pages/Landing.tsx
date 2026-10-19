@@ -111,7 +111,7 @@ export default function Landing() {
                       <h3 className="font-bold text-xl mb-1 text-foreground">Mz. K Lote 12 · La Tinguiña</h3>
                       <p className="text-sm text-muted-foreground">Lote urbano inscrito en el Registro de Predios.</p>
                     </div>
-                    <span className="inline-flex shrink-0 items-center rounded-full border border-warning/40 bg-warning/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-[#B45309]">
+                    <span className="inline-flex shrink-0 items-center rounded-full border border-warning/40 bg-warning/10 px-3.5 py-1.5 text-[11px] font-bold uppercase tracking-wider text-sem-amarillo-tinta">
                       <AlertTriangle className="w-4 h-4 mr-1.5" aria-hidden="true" /> Estado: Amarillo
                     </span>
                   </div>
@@ -246,7 +246,7 @@ export default function Landing() {
                     <td className="px-5 py-4">{f.aporta}</td>
                     <td className="px-5 py-4">
                       <span className={f.gratuita
-                        ? "inline-flex rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-[#15803D]"
+                        ? "inline-flex rounded-full bg-success/10 px-3 py-1 text-xs font-bold text-sem-verde-tinta"
                         : "inline-flex rounded-full bg-gray-100 px-3 py-1 text-xs font-bold text-foreground"}>
                         {f.acceso}
                       </span>

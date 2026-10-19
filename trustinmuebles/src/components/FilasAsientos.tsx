@@ -81,7 +81,7 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                     <div className="col-span-12 sm:col-span-1 flex justify-end">
                       <button type="button" onClick={() => setFilas(filas.filter((_, j) => j !== i))}
                         aria-label={`Quitar el asiento ${f.referencia || i + 1}`}
-                        className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:bg-danger/10 hover:text-[#B91C1C] transition-colors">
+                        className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:bg-danger/10 hover:text-sem-rojo-tinta transition-colors">
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
