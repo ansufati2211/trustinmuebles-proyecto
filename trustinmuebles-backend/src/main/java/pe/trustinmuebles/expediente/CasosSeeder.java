@@ -19,6 +19,7 @@ import pe.trustinmuebles.checklist.ChecklistService;
 import pe.trustinmuebles.clasificacion.ClasificacionService;
 import pe.trustinmuebles.expediente.ContenidoCaso.CasoJson;
 import pe.trustinmuebles.identidad.AuthService;
+import pe.trustinmuebles.inspeccion.InspeccionService;
 import pe.trustinmuebles.orientacion.GlosarioService;
 import tools.jackson.databind.ObjectMapper;
 
@@ -37,13 +38,15 @@ class CasosSeeder implements ApplicationRunner {
     private final ChecklistService checklist;
     private final GlosarioService glosario;
     private final AuthService auth;
+    private final InspeccionService inspeccion;
     private final ObjectMapper json;
     private final boolean habilitado;
     private final String version;
 
     CasosSeeder(CasoLoteRepository casos, ExpedienteRepository expedientes, ExpedienteService servicio,
             ClasificacionService clasificacion, ChecklistService checklist, GlosarioService glosario,
-            AuthService auth, ObjectMapper json, @Value("${app.seed.enabled}") boolean habilitado,
+            AuthService auth, InspeccionService inspeccion, ObjectMapper json,
+            @Value("${app.seed.enabled}") boolean habilitado,
             @Value("${app.reglas.version}") String version) {
         this.casos = casos;
         this.expedientes = expedientes;
@@ -52,6 +55,7 @@ class CasosSeeder implements ApplicationRunner {
         this.checklist = checklist;
         this.glosario = glosario;
         this.auth = auth;
+        this.inspeccion = inspeccion;
         this.json = json;
         this.habilitado = habilitado;
         this.version = version;
@@ -88,6 +92,7 @@ class CasosSeeder implements ApplicationRunner {
         int i = 0;
         for (ContenidoCaso.ItemJson it : c.items()) checklist.agregar(e.getId(), it.nombre(), it.estado(), i++);
         glosario.asociar(e.getId(), c.terminos());
+        if (c.expediente().informeTecnico() != null) inspeccion.registrar(e.getId(), c.expediente().informeTecnico().datos(), false);
     }
 
     private List<CasoJson> leerCasos() {

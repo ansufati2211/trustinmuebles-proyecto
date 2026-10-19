@@ -1,0 +1,114 @@
+{
+  "version": "v0.3",
+  "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
+  "condicionesContempladas": [
+    "Lote urbano inscrito en el Registro de Predios.",
+    "Lote urbano inscrito, según declara el vendedor."
+  ],
+  "reglas": [
+    {
+      "codigo": "RP-01",
+      "prioridad": "PRIORITARIA",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "EMBARGO"
+      ],
+      "titulo": "Embargo vigente",
+      "explicacion": "La partida registra un embargo que sigue vigente. Limita lo que puede hacerse con el predio y debe leerse antes de cualquier otra cosa.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RP-02",
+      "prioridad": "PRIORITARIA",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "ANOTACION_DEMANDA",
+        "MEDIDA_CAUTELAR"
+      ],
+      "titulo": "Proceso judicial o medida cautelar vigente",
+      "explicacion": "La partida registra una anotación de demanda o una medida cautelar vigente. Indica que hay un proceso judicial que podría afectar el predio.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RP-03",
+      "prioridad": "PRIORITARIA",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "BLOQUEO"
+      ],
+      "titulo": "Bloqueo registral vigente",
+      "explicacion": "La partida registra un bloqueo vigente: hay un acto en trámite sobre el predio y no pueden inscribirse otros incompatibles mientras dure.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-02",
+      "prioridad": "REVISION",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "HIPOTECA"
+      ],
+      "titulo": "Hipoteca vigente",
+      "explicacion": "La partida registra una hipoteca vigente. Una hipoteca no es un defecto por sí misma, pero conviene saber a favor de quién está y por qué monto.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-03",
+      "prioridad": "REVISION",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "CARGA_TECNICA",
+        "SERVIDUMBRE"
+      ],
+      "titulo": "Carga técnica o servidumbre vigente",
+      "explicacion": "La partida registra una carga técnica o una servidumbre vigente. Puede limitar el uso o la construcción en el predio.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-01",
+      "prioridad": "REVISION",
+      "tipoCondicion": "ANOTACION_VIGENTE",
+      "prefijoReferencia": null,
+      "tiposActo": [
+        "OTRO"
+      ],
+      "titulo": "Otro acto vigente en gravámenes y cargas",
+      "explicacion": "La partida registra un acto vigente en gravámenes y cargas que no corresponde a un tipo conocido. Conviene leerlo antes de interpretar el resto.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-04",
+      "prioridad": "REVISION",
+      "tipoCondicion": "PLANO_NO_PRESENTADO",
+      "prefijoReferencia": null,
+      "tiposActo": [],
+      "titulo": "Falta un plano de instalaciones",
+      "explicacion": "El expediente técnico de la vivienda no incluye este plano. Sin él no se puede contrastar lo construido con lo proyectado; una inspección presencial ayuda a suplirlo.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-05",
+      "prioridad": "REVISION",
+      "tipoCondicion": "DISCREPANCIA_AREA",
+      "prefijoReferencia": null,
+      "tiposActo": [],
+      "titulo": "El plano y la partida no coinciden en el área construida",
+      "explicacion": "El área del plano arquitectónico difiere de la área construida inscrita (o no consta una inscrita). Puede faltar una declaratoria de fábrica actualizada.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-06",
+      "prioridad": "REVISION",
+      "tipoCondicion": "PLANO_OBSERVADO",
+      "prefijoReferencia": null,
+      "tiposActo": [],
+      "titulo": "Plano observado por el revisor",
+      "explicacion": "El revisor marcó este plano con una observación documental. Revisa la observación antes de continuar.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    }
+  ]
+}

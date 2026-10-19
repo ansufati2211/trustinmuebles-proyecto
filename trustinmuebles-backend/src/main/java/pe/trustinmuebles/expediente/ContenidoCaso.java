@@ -8,7 +8,15 @@ import pe.trustinmuebles.clasificacion.Completitud;
 import pe.trustinmuebles.clasificacion.EstadoAnotacion;
 import pe.trustinmuebles.clasificacion.TipoActo;
 import pe.trustinmuebles.expediente.CasoDtos.AsientoDatos;
+import pe.trustinmuebles.clasificacion.Especialidad;
+import pe.trustinmuebles.clasificacion.EstadoPlano;
+import pe.trustinmuebles.clasificacion.TipoPredio;
 import pe.trustinmuebles.expediente.CasoDtos.DatosExpediente;
+import pe.trustinmuebles.expediente.CasoDtos.PlanoDatos;
+import pe.trustinmuebles.inspeccion.EstadoTecnico;
+import pe.trustinmuebles.inspeccion.InformeDatos;
+import pe.trustinmuebles.inspeccion.ResultadoTecnico;
+import pe.trustinmuebles.inspeccion.VerificacionCampo;
 
 /** Forma del JSON de un caso (contenido/<versión>/casos/*.json). La usan la carga de contenido y la herramienta de PDF. */
 final class ContenidoCaso {
@@ -19,10 +27,26 @@ final class ContenidoCaso {
 
     record ItemJson(String nombre, EstadoItem estado) {}
 
+    record PlanoJson(Especialidad especialidad, EstadoPlano estado, BigDecimal areaConstruida,
+            SistemaConstructivo sistemaConstructivo, String observacion) {}
+
+    record InformeJson(EstadoTecnico estado, ResultadoTecnico resultado, String profesional, String colegiatura,
+            LocalDate fechaInspeccion, VerificacionCampo verifArquitectura, VerificacionCampo verifEstructuras,
+            VerificacionCampo verifElectricas, VerificacionCampo verifSanitarias, String observaciones,
+            String conclusiones, String estudiosAdicionales) {
+
+        InformeDatos datos() {
+            return new InformeDatos(estado, resultado, profesional, colegiatura, fechaInspeccion, verifArquitectura,
+                    verifEstructuras, verifElectricas, verifSanitarias, observaciones, conclusiones,
+                    estudiosAdicionales);
+        }
+    }
+
     record ExpedienteJson(String condicionRepresentada, Completitud completitud, LocalDate fechaReferencial,
             String nota, String zonaRegistral, String oficinaRegistral, String ubicacion, BigDecimal areaM2,
             String linderos, String antecedenteDominial, List<AsientoJson> asientos, List<ItemJson> checklist,
-            List<String> terminos) {}
+            List<String> terminos, TipoPredio tipoPredio, BigDecimal areaConstruidaInscrita, List<PlanoJson> planos,
+            InformeJson informeTecnico) {}
 
     record CasoJson(String codigo, String denominacion, String contexto, ExpedienteJson expediente) {
 
@@ -34,7 +58,10 @@ final class ContenidoCaso {
                     .toList();
             return new DatosExpediente(x.condicionRepresentada(), x.completitud(), x.fechaReferencial(), x.nota(),
                     x.zonaRegistral(), x.oficinaRegistral(), x.ubicacion(), x.areaM2(), x.linderos(),
-                    x.antecedenteDominial(), asientos);
+                    x.antecedenteDominial(), asientos, x.tipoPredio() == null ? TipoPredio.LOTE : x.tipoPredio(),
+                    x.areaConstruidaInscrita(), x.planos() == null ? List.of() : x.planos().stream()
+                            .map(p -> new PlanoDatos(p.especialidad(), p.estado(), p.areaConstruida(),
+                                    p.sistemaConstructivo(), p.observacion())).toList());
         }
 
         List<ItemJson> items() {

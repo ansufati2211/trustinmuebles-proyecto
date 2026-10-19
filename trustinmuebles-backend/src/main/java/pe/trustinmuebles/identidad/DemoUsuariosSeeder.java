@@ -7,7 +7,7 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * Crea las dos cuentas de prueba (comprador-01 y revisor-01) si la base está vacía.
+ * Crea las cuentas de prueba (comprador-01, revisor-01 y especialista-01) que falten.
  * La contraseña viene de APP_SEED_PASSWORD y nunca se guarda en texto plano.
  */
 @Component
@@ -26,13 +26,19 @@ class DemoUsuariosSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        if (!habilitado || auth.hayUsuarios()) return;
+        if (!habilitado) return;
+        boolean hayCuentas = auth.hayUsuarios();
+        // Una base creada antes del rol de especialista solo necesita su cuenta; no se recrean las demás.
+        if (hayCuentas && auth.existeCuenta("especialista-01")) return;
         if (password == null || password.length() < 8) {
             throw new IllegalStateException(
                     "Define APP_SEED_PASSWORD (mínimo 8 caracteres) para crear las cuentas de prueba, "
                             + "o desactiva la carga con app.seed.enabled=false.");
         }
-        auth.crearCuentaDePrueba("comprador-01", password, Rol.COMPRADOR);
-        auth.crearCuentaDePrueba("revisor-01", password, Rol.REVISOR);
+        if (!hayCuentas) {
+            auth.crearCuentaDePrueba("comprador-01", password, Rol.COMPRADOR);
+            auth.crearCuentaDePrueba("revisor-01", password, Rol.REVISOR);
+        }
+        auth.crearCuentaDePrueba("especialista-01", password, Rol.ESPECIALISTA);
     }
 }

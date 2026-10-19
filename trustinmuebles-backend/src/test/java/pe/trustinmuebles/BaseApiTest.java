@@ -86,6 +86,19 @@ public abstract class BaseApiTest {
                 if (a.hasNonNull(campo)) n.put(campo, a.get(campo).asString());
             }
         }
+        // Bloque técnico: se reenvía tal cual para que restaurar un caso no borre sus planos.
+        p.put("tipoPredio", e.get("tipoPredio").asString());
+        if (e.hasNonNull("areaConstruidaInscrita")) p.put("areaConstruidaInscrita", e.get("areaConstruidaInscrita").decimalValue());
+        var planos = p.putArray("planos");
+        for (JsonNode pl : e.get("planos")) {
+            ObjectNode n = planos.addObject();
+            n.put("especialidad", pl.get("especialidad").asString());
+            n.put("estado", pl.get("estado").asString());
+            for (String campo : new String[] {"sistemaConstructivo", "observacion"}) {
+                if (pl.hasNonNull(campo)) n.put(campo, pl.get(campo).asString());
+            }
+            if (pl.hasNonNull("areaConstruida")) n.put("areaConstruida", pl.get("areaConstruida").decimalValue());
+        }
         p.put("versionEsperada", e.get("version").asLong());
         return p;
     }

@@ -62,6 +62,14 @@ class Expediente {
     @Column(name = "antecedente_dominial", length = 500)
     private String antecedenteDominial;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "tipo_predio", nullable = false)
+    private pe.trustinmuebles.clasificacion.TipoPredio tipoPredio = pe.trustinmuebles.clasificacion.TipoPredio.LOTE;
+
+    /** Área construida inscrita (declaratoria de fábrica). Solo tiene sentido en una vivienda. */
+    @Column(name = "area_construida_inscrita")
+    private BigDecimal areaConstruidaInscrita;
+
     @Column(name = "documento_archivo_id")
     private String documentoArchivoId;
 
@@ -75,4 +83,8 @@ class Expediente {
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("orden ASC, id ASC")
     private List<Asiento> asientos = new ArrayList<>();
+
+    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private List<PlanoTecnico> planos = new ArrayList<>();
 }

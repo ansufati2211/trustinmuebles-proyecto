@@ -74,6 +74,11 @@ public class AuthService {
         return repo.count() > 0;
     }
 
+    @Transactional(readOnly = true)
+    public boolean existeCuenta(String codigoCuenta) {
+        return repo.findByCodigoCuenta(codigoCuenta).isPresent();
+    }
+
     private Sesion sesion(Usuario u) {
         Instant ahora = Instant.now();
         JwtClaimsSet claims = JwtClaimsSet.builder()

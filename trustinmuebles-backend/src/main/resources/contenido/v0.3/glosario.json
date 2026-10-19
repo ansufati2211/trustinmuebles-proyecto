@@ -1,0 +1,182 @@
+{
+  "version": "v0.3",
+  "estadoRevision": "pendiente de revisión",
+  "terminos": [
+    {
+      "concepto": "Partida registral",
+      "explicacion": "Hoja en la que el Registro de Predios anota la historia jurídica de un inmueble, ordenada por rubros. Cada partida tiene un número propio."
+    },
+    {
+      "concepto": "Copia literal",
+      "explicacion": "Reproducción de lo que consta en una partida, asiento por asiento. La que ofrece Trustinmuebles es referencial y no tiene valor legal."
+    },
+    {
+      "concepto": "Documento simulado",
+      "explicacion": "Documento con la forma de una copia literal, pero que no lo emite SUNARP, no está firmado y no tiene valor legal. Por eso lleva una marca de agua en cada página."
+    },
+    {
+      "concepto": "Rubro",
+      "explicacion": "Sección de la partida que agrupa un tipo de información, como los títulos de dominio o los gravámenes y cargas. El número de cada asiento empieza con la letra de su rubro."
+    },
+    {
+      "concepto": "Asiento",
+      "explicacion": "Cada inscripción de la partida. Se numera con la letra del rubro y un correlativo, por ejemplo C00001 o D00002."
+    },
+    {
+      "concepto": "Título archivado",
+      "explicacion": "Documento que sustentó una inscripción, como una escritura pública. Aquí solo se indica su número."
+    },
+    {
+      "concepto": "Zona registral",
+      "explicacion": "División territorial del Registro. La zona y la oficina indican dónde estaría inscrita la partida. "
+    },
+    {
+      "concepto": "Antecedente dominial",
+      "explicacion": "Indica de qué partida proviene el predio, por ejemplo un lote mayor del que se independizó."
+    },
+    {
+      "concepto": "Descripción del inmueble",
+      "explicacion": "Datos físicos del predio: ubicación, área, linderos y medidas perimétricas."
+    },
+    {
+      "concepto": "Linderos",
+      "explicacion": "Límites del predio con su entorno: con qué colinda por el frente, la derecha, la izquierda y el fondo."
+    },
+    {
+      "concepto": "Titular",
+      "explicacion": "Persona que consta como titular del predio en el último asiento de títulos de dominio."
+    },
+    {
+      "concepto": "Titularidad",
+      "explicacion": "Quién figura como titular según el último asiento de títulos de dominio. Si dice desconocido, el extracto no lo informa."
+    },
+    {
+      "concepto": "Copropiedad",
+      "explicacion": "Cuando un predio pertenece a varias personas, cada una con una cuota. No genera una alerta por sí misma."
+    },
+    {
+      "concepto": "Compraventa",
+      "explicacion": "Acto por el que una persona transfiere un predio a otra a cambio de un precio. Aparece como un asiento de títulos de dominio."
+    },
+    {
+      "concepto": "Independización",
+      "explicacion": "Acto por el que una parte de un predio mayor pasa a tener su propia partida."
+    },
+    {
+      "concepto": "Gravámenes y cargas",
+      "explicacion": "Afectaciones inscritas sobre el predio, como hipotecas, embargos o anotaciones de demanda. Se leen en los asientos D."
+    },
+    {
+      "concepto": "Hipoteca",
+      "explicacion": "Garantía que se inscribe sobre un inmueble para asegurar el pago de una deuda. No es un defecto por sí misma, pero conviene saber si sigue vigente. Referencia a verificar por el especialista: Código Civil, art. 1097."
+    },
+    {
+      "concepto": "Embargo",
+      "explicacion": "Medida judicial que afecta un bien para asegurar el pago de una deuda. Si está vigente, limita lo que puede hacerse con el bien. Referencia a verificar por el especialista: Código Procesal Civil, art. 656."
+    },
+    {
+      "concepto": "Anotación de demanda",
+      "explicacion": "Aviso en la partida de que existe un proceso judicial que podría afectar el predio. Referencia a verificar por el especialista: Código Procesal Civil, art. 673."
+    },
+    {
+      "concepto": "Medida cautelar",
+      "explicacion": "Orden de un juez que asegura el resultado de un proceso, por ejemplo prohibiendo transferir un bien."
+    },
+    {
+      "concepto": "Bloqueo registral",
+      "explicacion": "Aviso que reserva por un tiempo la partida mientras se formaliza un acto, para que no se inscriban otros incompatibles. Referencia a verificar por el especialista: Ley 26639."
+    },
+    {
+      "concepto": "Carga técnica",
+      "explicacion": "Condición de tipo técnico anotada en la partida, por ejemplo una restricción de uso o de construcción."
+    },
+    {
+      "concepto": "Servidumbre",
+      "explicacion": "Derecho de usar un predio ajeno para un fin determinado, como pasar por él. Referencia a verificar por el especialista: Código Civil, art. 1035."
+    },
+    {
+      "concepto": "Cancelación",
+      "explicacion": "Asiento que deja sin efecto otro asiento, por ejemplo al pagarse una hipoteca. Se registra en los asientos E y señala a qué asiento D se refiere."
+    },
+    {
+      "concepto": "Vigente",
+      "explicacion": "Estado de un gravamen o carga que, según la partida, sigue activo."
+    },
+    {
+      "concepto": "Cancelada",
+      "explicacion": "Estado de un gravamen o carga que fue dejado sin efecto por un asiento de cancelación."
+    },
+    {
+      "concepto": "Extracto parcial",
+      "explicacion": "Documento que no incluye todos los rubros de la partida. Con un extracto parcial no se pueden descartar otras anotaciones."
+    },
+    {
+      "concepto": "Condición representada",
+      "explicacion": "Condición del lote tal como consta en el expediente. No es el resultado de una consulta oficial."
+    },
+    {
+      "concepto": "Checklist",
+      "explicacion": "Lista de elementos del expediente con estado pendiente, revisado u observado."
+    },
+    {
+      "concepto": "Pendiente",
+      "explicacion": "Elemento de consulta que todavía no está disponible o no ha sido revisado."
+    },
+    {
+      "concepto": "Revisado",
+      "explicacion": "Indica que el documento se revisó en la plataforma. No acredita validez jurídica ni actualidad oficial."
+    },
+    {
+      "concepto": "Semáforo informativo",
+      "explicacion": "Salida de color que aplica reglas sobre los datos registrados y explica sus motivos. No es un dictamen. Verde significa que no se detectaron alertas en los campos evaluados."
+    },
+    {
+      "concepto": "Declaratoria de fábrica",
+      "explicacion": "Inscripción en la partida de lo construido sobre el predio: su área construida y sus características. Permite contrastar el plano con la partida."
+    },
+    {
+      "concepto": "Plano arquitectónico",
+      "explicacion": "Plano que muestra la distribución de ambientes, sus áreas y su relación con el terreno. Se contrasta con el área construida inscrita."
+    },
+    {
+      "concepto": "Plano de estructuras",
+      "explicacion": "Plano de la cimentación, columnas, vigas y sistema constructivo (por ejemplo, albañilería confinada o adobe)."
+    },
+    {
+      "concepto": "II.EE.",
+      "explicacion": "Instalaciones eléctricas: circuitos, tablero general, tomacorrientes y pozo a tierra. Su plano muestra lo proyectado, no el estado real del cableado."
+    },
+    {
+      "concepto": "II.SS.",
+      "explicacion": "Instalaciones sanitarias: redes de agua fría y caliente, desagüe y ventilación. Su plano muestra lo proyectado, no el estado real de las tuberías."
+    },
+    {
+      "concepto": "Pozo a tierra",
+      "explicacion": "Conexión que descarga a tierra la corriente de falla. Su plano la indica; solo una medición en el inmueble comprueba que funciona."
+    },
+    {
+      "concepto": "Llave diferencial",
+      "explicacion": "Dispositivo del tablero eléctrico que corta la corriente ante una fuga. Un plano puede indicarla aunque la vivienda no la tenga instalada."
+    },
+    {
+      "concepto": "Albañilería confinada",
+      "explicacion": "Sistema constructivo de muros de ladrillo rodeados por columnas y vigas de concreto armado."
+    },
+    {
+      "concepto": "Inspección técnica",
+      "explicacion": "Visita presencial de un ingeniero o arquitecto colegiado que verifica en el inmueble lo que los documentos no pueden demostrar."
+    },
+    {
+      "concepto": "Informe técnico",
+      "explicacion": "Documento del especialista con lo que verificó, las observaciones, sus conclusiones y los estudios adicionales que se requieren."
+    },
+    {
+      "concepto": "CIP y CAP",
+      "explicacion": "Colegio de Ingenieros del Perú y Colegio de Arquitectos del Perú. El número de colegiatura identifica al profesional."
+    },
+    {
+      "concepto": "Estudios adicionales",
+      "explicacion": "Ensayos o estudios que una inspección visual no reemplaza, por ejemplo un estudio de suelos, una diamantina o una medición de aislamiento eléctrico."
+    }
+  ]
+}

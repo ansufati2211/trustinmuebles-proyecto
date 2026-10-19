@@ -83,6 +83,9 @@ class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
+                        // Inspección técnica: cualquier usuario con sesión la solicita; solo el especialista emite el informe.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/inspeccion/solicitud").authenticated()
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion").hasRole("ESPECIALISTA")
                         // PA4: solo el revisor modifica. El rol se verifica aquí, en el servidor, no solo en la interfaz.
                         .requestMatchers(HttpMethod.PUT, "/api/v1/casos/**").hasRole("REVISOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/**").hasRole("REVISOR")

@@ -16,6 +16,14 @@ import pe.trustinmuebles.clasificacion.Completitud;
 import pe.trustinmuebles.clasificacion.EstadoAnotacion;
 import pe.trustinmuebles.clasificacion.EstadoSemaforo;
 import pe.trustinmuebles.clasificacion.EvaluacionDto;
+import pe.trustinmuebles.clasificacion.Especialidad;
+import pe.trustinmuebles.clasificacion.EstadoPlano;
+import pe.trustinmuebles.clasificacion.TipoPredio;
+import pe.trustinmuebles.inspeccion.EstadoTecnico;
+import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
+import pe.trustinmuebles.inspeccion.InformeDatos;
+import pe.trustinmuebles.inspeccion.ResultadoTecnico;
+import pe.trustinmuebles.inspeccion.VerificacionCampo;
 import pe.trustinmuebles.clasificacion.TipoActo;
 import pe.trustinmuebles.orientacion.TerminoDto;
 
@@ -31,14 +39,20 @@ final class CasoDtos {
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
             String texto, String canceloNumero, String titulares) {}
 
+    /** Un plano del expediente técnico. {@code coincideArea} solo se calcula en el plano arquitectónico. */
+    record PlanoDto(Especialidad especialidad, String especialidadEtiqueta, EstadoPlano estado, BigDecimal areaConstruida,
+            SistemaConstructivo sistemaConstructivo, String sistemaConstructivoEtiqueta, String observacion,
+            boolean tieneDocumentoPropio, Boolean coincideArea) {}
+
     record ExpedienteDto(Long version, String condicionRepresentada, String titularidad, Completitud completitud,
             LocalDate fechaReferencial, String nota, String zonaRegistral, String oficinaRegistral, String ubicacion,
             BigDecimal areaM2, String linderos, String antecedenteDominial, boolean tieneDocumento,
-            boolean documentoGenerado, List<AsientoDto> asientos) {}
+            boolean documentoGenerado, List<AsientoDto> asientos, TipoPredio tipoPredio,
+            BigDecimal areaConstruidaInscrita, List<PlanoDto> planos) {}
 
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
-            String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion, List<ItemChecklistDto> checklist,
-            List<TerminoDto> terminos) {}
+            String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
+            EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos) {}
 
     record DocumentoDto(String codigo, String sha256) {}
 
@@ -56,6 +70,14 @@ final class CasoDtos {
             @Pattern(regexp = "D[0-9]{5}", message = "debe ser el número de un asiento D, por ejemplo D00001") String canceloNumero,
             @Size(max = 500) String titulares) {}
 
+    /** Un plano del expediente técnico, tal como lo registra el revisor. */
+    record PlanoRequest(
+            @NotNull Especialidad especialidad,
+            @NotNull EstadoPlano estado,
+            @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruida,
+            SistemaConstructivo sistemaConstructivo,
+            @Size(max = 500) String observacion) {}
+
     record ActualizarExpedienteRequest(
             @NotBlank @Size(max = 255) String condicionRepresentada,
             @NotNull Completitud completitud,
@@ -68,6 +90,10 @@ final class CasoDtos {
             @Size(max = 1000) String linderos,
             @Size(max = 500) String antecedenteDominial,
             @NotNull @Size(max = 40) List<@Valid @NotNull AsientoRequest> asientos,
+            /* Bloque técnico. Si tipoPredio no viene, el tipo, el área inscrita y los planos quedan como estaban. */
+            TipoPredio tipoPredio,
+            @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruidaInscrita,
+            @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
             @NotNull Long versionEsperada) {
 
         DatosExpediente datos() {
@@ -75,8 +101,14 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList());
+                            a.canceloNumero(), a.titulares())).toList(),
+                    tipoPredio, areaConstruidaInscrita, planosDatos(planos));
         }
+    }
+
+    static List<PlanoDatos> planosDatos(List<PlanoRequest> planos) {
+        return planos == null ? null : planos.stream().map(p -> new PlanoDatos(p.especialidad(), p.estado(),
+                p.areaConstruida(), p.sistemaConstructivo(), p.observacion())).toList();
     }
 
     /** Registro de una partida transcrita. El número no puede llevar el prefijo SIM-, reservado a las ficticias. */
@@ -95,6 +127,9 @@ final class CasoDtos {
             @Size(max = 1000) String linderos,
             @Size(max = 500) String antecedenteDominial,
             @NotNull @Size(max = 40) List<@Valid @NotNull AsientoRequest> asientos,
+            TipoPredio tipoPredio,
+            @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruidaInscrita,
+            @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
             @NotNull Boolean confirmaSinDatosPersonales) {
 
         DatosExpediente datos() {
@@ -102,7 +137,30 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList());
+                            a.canceloNumero(), a.titulares())).toList(),
+                    tipoPredio, areaConstruidaInscrita, planosDatos(planos));
+        }
+    }
+
+    /** Informe técnico del especialista. Si el estado es EMITIDO, exige conclusión y verificación de las 4 especialidades. */
+    record InformeRequest(
+            @NotNull EstadoTecnico estado,
+            ResultadoTecnico resultado,
+            @Size(max = 120) String profesional,
+            @Size(max = 40) String colegiatura,
+            LocalDate fechaInspeccion,
+            VerificacionCampo verifArquitectura,
+            VerificacionCampo verifEstructuras,
+            VerificacionCampo verifElectricas,
+            VerificacionCampo verifSanitarias,
+            @Size(max = 1500) String observaciones,
+            @Size(max = 1500) String conclusiones,
+            @Size(max = 1000) String estudiosAdicionales) {
+
+        InformeDatos datos() {
+            return new InformeDatos(estado, resultado, profesional, colegiatura, fechaInspeccion, verifArquitectura,
+                    verifEstructuras, verifElectricas, verifSanitarias, observaciones, conclusiones,
+                    estudiosAdicionales);
         }
     }
 
@@ -113,7 +171,12 @@ final class CasoDtos {
     /** Datos del expediente ya sin formato HTTP. Los usan la edición y la carga de contenido. */
     record DatosExpediente(String condicionRepresentada, Completitud completitud, LocalDate fechaReferencial,
             String nota, String zonaRegistral, String oficinaRegistral, String ubicacion, BigDecimal areaM2,
-            String linderos, String antecedenteDominial, List<AsientoDatos> asientos) {}
+            String linderos, String antecedenteDominial, List<AsientoDatos> asientos,
+            /* Bloque técnico: null en tipoPredio significa «no tocar lo que ya hay». */
+            TipoPredio tipoPredio, BigDecimal areaConstruidaInscrita, List<PlanoDatos> planos) {}
+
+    record PlanoDatos(Especialidad especialidad, EstadoPlano estado, BigDecimal areaConstruida,
+            SistemaConstructivo sistemaConstructivo, String observacion) {}
 
     record AsientoDatos(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
             String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {}

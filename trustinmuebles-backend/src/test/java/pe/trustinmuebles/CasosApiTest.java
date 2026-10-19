@@ -26,21 +26,21 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Contenido v0.2 cargado: 4 casos simulados, 32 términos, 6 reglas (3 prioritarias), 2 cuentas")
+    @DisplayName("Contenido v0.3 cargado: 4 casos simulados, 44 términos, 9 reglas (3 prioritarias), 3 cuentas")
     void contenidoCargado() {
         assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(4);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
                 .isEqualTo(4);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo not like 'SIM-%'", Integer.class))
                 .as("toda partida lleva el prefijo SIM- para no confundirse con una real").isZero();
-        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(32);
-        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.2'", Integer.class)).isEqualTo(6);
+        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(44);
+        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.3'", Integer.class)).isEqualTo(9);
         assertThat(jdbc.queryForObject("select count(*) from regla where prioridad = 'PRIORITARIA'", Integer.class))
                 .isEqualTo(3);
         assertThat(jdbc.queryForObject(
                 "select count(*) from regla where estado_revision not like '%pendiente de revisión especializada%'",
                 Integer.class)).as("toda regla está rotulada como borrador").isZero();
-        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(2);
+        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(3);
     }
 
     @Test
@@ -92,12 +92,12 @@ class CasosApiTest extends BaseApiTest {
                 .andExpect(jsonPath("$.evaluacion.alertas", hasSize(0)))
                 .andExpect(jsonPath("$.evaluacion.faltantes", hasSize(0)))
                 .andExpect(jsonPath("$.expediente.titularidad").value("Rosa Elena Cárdenas Vilca (100 %)"))
-                .andExpect(jsonPath("$.expediente.asientos", hasSize(3)))
+                .andExpect(jsonPath("$.expediente.asientos", hasSize(4)))
                 .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")))
                 .andExpect(jsonPath("$.evaluacion.motivos[*].texto",
                         hasItem(containsString("Esto no significa saneamiento"))))
                 .andExpect(jsonPath("$.evaluacion.limite", containsString("No certifica saneamiento ni recomienda comprar")))
-                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.2"));
+                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.3"));
     }
 
     @Test
@@ -105,10 +105,11 @@ class CasosApiTest extends BaseApiTest {
     void tinguinaAmarillo() throws Exception {
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
-                .andExpect(jsonPath("$.evaluacion.alertas", hasSize(1)))
+                // Hipoteca vigente (RV-02) y los dos planos de instalaciones que faltan (RV-04).
+                .andExpect(jsonPath("$.evaluacion.alertas", hasSize(3)))
                 .andExpect(jsonPath("$.evaluacion.alertas[0].referencia").value("D00001"))
                 .andExpect(jsonPath("$.evaluacion.alertas[0].regla").value("RV-02"))
-                .andExpect(jsonPath("$.evaluacion.reglasAplicadas[0]").value("RV-02"))
+                .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-02", "RV-04")))
                 .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00002')].estado", contains("CANCELADA")));
     }
 
@@ -140,11 +141,11 @@ class CasosApiTest extends BaseApiTest {
     void glosario() throws Exception {
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.terminos", not(empty())))
-                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.2"))))
+                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.3"))))
                 .andExpect(jsonPath("$.terminos[*].estadoRevision", everyItem(is("pendiente de revisión"))))
                 .andExpect(jsonPath("$.terminos[*].concepto", hasItems("Hipoteca", "Embargo", "Copropiedad", "Cancelación")));
         mvc.perform(get("/api/v1/glosario").header("Authorization", comprador())).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(32)));
+                .andExpect(jsonPath("$", hasSize(44)));
         mvc.perform(post("/api/v1/glosario").header("Authorization", revisor())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"concepto\":\"x\",\"explicacion\":\"y\"}"))
                 .andExpect(status().is4xxClientError());
@@ -248,18 +249,27 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP-05d registrar la cancelación de la hipoteca recalcula La Tinguiña de AMARILLO a VERDE")
+    @DisplayName("CP-05d cancelar la hipoteca quita su alerta; con los planos de instalaciones presentados, La Tinguiña pasa a VERDE")
     void cancelarLaHipotecaRecalcula() throws Exception {
         JsonNode original = leer(TINGUINA);
         try {
             ObjectNode p = peticion(original);
             agregarAsiento(p, "E00002", "CANCELACION", null,
                     "Se cancela la hipoteca inscrita en el asiento D00001 por pago total de la deuda.", "D00001");
+            // Sin la hipoteca sigue AMARILLO: faltan los planos de II.EE. y II.SS. (RV-04).
             actualizarExpediente(TINGUINA, revisor(), p).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
-                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.2"))
-                    .andExpect(jsonPath("$.evaluacion.alertas", hasSize(0)))
+                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
+                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.3"))
+                    .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")))
                     .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")));
+
+            ObjectNode completo = peticion(leer(TINGUINA));
+            for (var plano : (tools.jackson.databind.node.ArrayNode) completo.get("planos")) {
+                if (plano.get("estado").asString().equals("NO_PRESENTADO")) ((ObjectNode) plano).put("estado", "PRESENTADO");
+            }
+            actualizarExpediente(TINGUINA, revisor(), completo).andExpect(status().isOk())
+                    .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
+                    .andExpect(jsonPath("$.evaluacion.alertas", hasSize(0)));
         } finally {
             restaurar(TINGUINA, original);
         }

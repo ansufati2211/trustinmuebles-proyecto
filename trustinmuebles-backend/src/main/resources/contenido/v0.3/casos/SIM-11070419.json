@@ -1,0 +1,80 @@
+{
+  "codigo": "SIM-11070419",
+  "denominacion": "Mz. B Lote 9 · Hab. Urb. Villa del Algarrobo · Los Aquijes, Ica",
+  "contexto": "Los Aquijes, Ica",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito, según declara el vendedor.",
+    "completitud": "DESCONOCIDA",
+    "fechaReferencial": "2026-10-17",
+    "nota": "Aún no se cuenta con la copia literal de la partida. La titularidad, las cargas y los gravámenes no constan hasta obtenerla.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Mz. B, Lote 9 de la Hab. Urb. Villa del Algarrobo, distrito de Los Aquijes, provincia y departamento de Ica.",
+    "areaM2": 120.0,
+    "linderos": "No constan: falta la copia literal.",
+    "antecedenteDominial": null,
+    "asientos": [],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida",
+        "estado": "PENDIENTE"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Documento simulado",
+      "Rubro",
+      "Asiento",
+      "Titularidad",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Semáforo informativo",
+      "Declaratoria de fábrica",
+      "Plano arquitectónico",
+      "Plano de estructuras",
+      "II.EE.",
+      "II.SS.",
+      "Pozo a tierra",
+      "Llave diferencial",
+      "Albañilería confinada",
+      "Inspección técnica",
+      "Informe técnico",
+      "CIP y CAP",
+      "Estudios adicionales"
+    ],
+    "tipoPredio": "VIVIENDA",
+    "areaConstruidaInscrita": null,
+    "planos": [
+      {
+        "especialidad": "ARQUITECTURA",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ESTRUCTURAS",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "ELECTRICAS",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      },
+      {
+        "especialidad": "SANITARIAS",
+        "estado": "NO_PRESENTADO",
+        "areaConstruida": null,
+        "sistemaConstructivo": null,
+        "observacion": null
+      }
+    ],
+    "informeTecnico": null
+  }
+}

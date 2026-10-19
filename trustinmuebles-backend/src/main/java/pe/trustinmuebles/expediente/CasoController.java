@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pe.trustinmuebles.almacenamiento.ArchivoContenido;
 import pe.trustinmuebles.checklist.ItemChecklistDto;
+import pe.trustinmuebles.clasificacion.Especialidad;
+import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
 import pe.trustinmuebles.expediente.CasoDtos.*;
 
 /** API interna HTTP/JSON de casos. Las operaciones de escritura exigen el rol REVISOR (ver SecurityConfig). */
@@ -68,5 +70,34 @@ class CasoController {
                 .header("Content-Disposition", "inline; filename=\"" + codigo + ".pdf\"")
                 .cacheControl(CacheControl.noStore())
                 .body(c.datos());
+    }
+
+    // ---------------------------------------------------- inspección técnica y planos
+
+    @PostMapping("/{codigo}/inspeccion/solicitud")
+    ResponseEntity<EvaluacionTecnicaDto> solicitarInspeccion(@PathVariable String codigo) {
+        return ResponseEntity.status(201).body(servicio.solicitarInspeccion(codigo));
+    }
+
+    @PutMapping("/{codigo}/inspeccion")
+    DetalleCaso registrarInforme(@PathVariable String codigo, @Valid @RequestBody InformeRequest req) {
+        return servicio.registrarInforme(codigo, req.datos());
+    }
+
+    @GetMapping("/{codigo}/planos/{especialidad}/documento")
+    ResponseEntity<byte[]> planoDocumento(@PathVariable String codigo, @PathVariable Especialidad especialidad) {
+        ExpedienteService.DocumentoPlano d = servicio.planoDocumento(codigo, especialidad);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "default-src 'none'; sandbox")
+                .header("Content-Disposition", "inline; filename=\"" + d.nombre() + "\"")
+                .cacheControl(CacheControl.noStore())
+                .body(d.datos());
+    }
+
+    @PostMapping(value = "/{codigo}/planos/{especialidad}/documento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<DocumentoDto> subirPlano(@PathVariable String codigo, @PathVariable Especialidad especialidad,
+            @RequestParam("documento") MultipartFile documento) {
+        return ResponseEntity.status(201).body(servicio.asociarDocumentoPlano(codigo, especialidad, documento));
     }
 }
