@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useState, type React
 import { Navigate, useLocation } from "react-router";
 import { api, getToken, post, setToken } from "./api";
 import type { Sesion, Usuario } from "./types";
+import { PantallaCarga } from "@/components/layout/PantallaCarga";
 
 interface AuthCtx {
   usuario: Usuario | null;
@@ -50,7 +51,10 @@ export function useAuth() {
 export function RequireAuth({ children }: { children: ReactNode }) {
   const { usuario, cargando } = useAuth();
   const location = useLocation();
-  if (cargando) return <div className="flex-1 flex items-center justify-center text-muted-foreground font-semibold">Cargando…</div>;
+
+  // Mientras se verifica el token se muestra el loader corporativo dentro del AppShell (debajo del Navbar).
+  if (cargando) return <PantallaCarga pantallaCompleta={false} mensaje="Verificando tu sesión" />;
+
   if (!usuario) return <Navigate to="/login" replace state={{ from: location.pathname }} />;
   return <>{children}</>;
 }
