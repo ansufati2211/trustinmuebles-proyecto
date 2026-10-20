@@ -1,4 +1,4 @@
-# Trustinmuebles — MVP académico de orientación documental (v0.5.1)
+# Trustinmuebles — MVP académico de orientación documental (v0.6.0)
 
 Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Trustinmuebles es el sistema de transparencia
 precompra de **una sola inmobiliaria de Ica**, que carga a mano su propia cartera (sin scraping de otros portales ni APIs
@@ -11,7 +11,8 @@ El producto se llama Trustinmuebles en el código, en la documentación y en el 
 Dos carpetas:
 - `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 8 módulos: `identidad`,
   `expediente`, `clasificacion`, `inspeccion`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
-- `trustinmuebles/` — interfaz de React 19 con Vite.
+- `trustinmuebles/` — interfaz de React 19 con Vite: catálogo comercial con filtros, detalle con planos e inspección, y un
+  sistema visual propio (tokens en `src/index.css`, ilustraciones SVG propias, sin imágenes externas).
 
 Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe. Para saber qué hace el programa, empieza por `docs/funcionalidades.md`.
 
@@ -26,6 +27,22 @@ Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilid
 El backend necesita la contraseña de las cuentas de prueba **antes del primer arranque**. No tiene valor por defecto: elige
 una de al menos 8 caracteres.
 
+**Windows PowerShell:**
+
+```powershell
+# Terminal 1: backend en http://127.0.0.1:8080  (Swagger: /swagger-ui.html)
+cd trustinmuebles-backend
+$env:APP_SEED_PASSWORD = 'elige-una-clave-de-prueba'
+.\mvnw.cmd spring-boot:run
+
+# Terminal 2: interfaz en http://localhost:5173
+cd trustinmuebles
+npx pnpm@9 install
+npx pnpm@9 dev
+```
+
+**bash, zsh o fish:**
+
 ```bash
 # Terminal 1: backend en http://127.0.0.1:8080  (Swagger: /swagger-ui.html)
 cd trustinmuebles-backend
@@ -37,18 +54,23 @@ npx pnpm@9 install
 npx pnpm@9 dev
 ```
 
-Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explica. Los comandos funcionan en bash, zsh y fish.
+Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explica.
 
 ## Cuentas de prueba
 
 | Cuenta | Rol | Puede |
 |---|---|---|
-| `comprador-01` | COMPRADOR | Consultar casos, glosario, checklist y documento |
-| `revisor-01` | REVISOR | Lo anterior, más editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
-| `especialista-01` | ESPECIALISTA | Consultar, y emitir el informe técnico de una inspección solicitada. No edita partidas |
+| `comprador-01` | COMPRADOR | Consultar la cartera y los expedientes, y **solicitar la inspección técnica** (solo este rol) |
+| `revisor-01` | REVISOR | Consultar, editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
+| `especialista-01` | ESPECIALISTA | Consultar y emitir el informe técnico de una inspección solicitada. No edita partidas |
+
+El especialista de la demostración firma como **Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910**. Son datos
+ficticios y la interfaz los rotula así; el servidor los toma de la cuenta y no del formulario (M8).
 
 Las tres cuentas usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
-ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`.
+ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base de la v0.5 se actualiza
+sola al arrancar (migración V5): recibe distrito, precio, el ítem HR y PU y el perfil del especialista, pero sus informes ya
+guardados conservan el profesional anterior.
 No hay registro abierto.
 
 ## Casos cargados
@@ -56,18 +78,21 @@ No hay registro abierto.
 Cada caso es una partida simulada: lleva el prefijo `SIM-`, un predio en un distrito de Ica (con una habilitación inventada), su
 copia literal y sus láminas de planos en PDF, y un informe técnico cuando se emitió. Todo es inventado.
 
-| Partida | Predio | Estado esperado | Qué muestra |
-|---|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos; informe favorable |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; faltan los planos de II.EE. e II.SS.; informe con observaciones |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
-| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal ni planos |
-| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Rojo | Embargo vigente ordenado por un juzgado civil; 4 planos |
-| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Verde | Lote recién independizado, sin cargas; los planos no aplican |
-| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Amarillo | Sucesión intestada con coherederos; servidumbre de paso; adobe; informe con riesgo |
-| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada |
-| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso |
-| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Amarillo | Reserva vial (carga técnica); plano de estructuras observado; informe favorable |
+| Partida | Predio | Tipo | Precio ref. | A | B | HR y PU | Qué muestra |
+|---|---|---|---|---|---|---|---|
+| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Vivienda | S/ 185,000 | Verde | Favorable | Revisado | Una titular; hipoteca cancelada; 4 planos |
+| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Vivienda | S/ 210,000 | Amarillo | Con observaciones | Revisado | Copropiedad; hipoteca vigente; faltan II.EE. e II.SS. |
+| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Vivienda | S/ 120,000 | Gris | No solicitada | Observado | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
+| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Vivienda | S/ 98,000 | Gris | No solicitada | Pendiente | Sin copia literal ni planos |
+| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Vivienda | S/ 165,000 | Rojo | No solicitada | Observado | Embargo vigente; 4 planos |
+| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Lote | S/ 75,000 | Verde | No solicitada | Revisado | Lote recién independizado; los planos no aplican |
+| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Vivienda (adobe) | S/ 88,000 | Amarillo | Con riesgo | Observado | Sucesión intestada; servidumbre de paso |
+| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Vivienda | S/ 110,000 | Rojo | Solicitada | Pendiente | Bloqueo registral vigente |
+| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Vivienda | S/ 140,000 | Amarillo | En inspección | Observado | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos |
+| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Vivienda | S/ 260,000 | Amarillo | Favorable | Revisado | Reserva vial; plano de estructuras observado |
+
+Los precios son referenciales y simulados. Solo Santiago es un lote: las otras nueve tienen declaratoria de fábrica o planos y
+sus reglas lo exigen (ver `docs/decisiones.md`, D23).
 
 Los casos 5 a 10 no forman parte del instrumento del estudio: las formas A y B usan solo los 4 primeros.
 
@@ -83,31 +108,62 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 
 ## Pruebas
 
-```bash
-cd trustinmuebles-backend && ./mvnw test        # 92 pruebas del backend
-cd trustinmuebles && npx pnpm@9 build           # verifica tipos y compila
-cd trustinmuebles && npx pnpm@9 test            # 12 pruebas del frontend (lectura de partidas y limpieza de datos personales)
-env APP_SEED_PASSWORD='…' node scripts/medir-nf02.mjs   # rendimiento (con el backend encendido)
+```powershell
+cd trustinmuebles-backend; .\mvnw.cmd test     # 107 pruebas del backend
+cd trustinmuebles; npx pnpm@9 test              # 33 pruebas del frontend
+cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 ```
 
-En total, 104 pruebas automáticas. Resultados y evidencias en `docs/pruebas/`. El recorrido de navegador se explica en `docs/pruebas/recorrido-manual.md`.
+En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. En total, **140 pruebas automáticas** (107 + 33), según la última
+ejecución del 19 de octubre de 2026 (ver `docs/RESUMEN-v0.6.md`). El rendimiento se mide con
+`node scripts/medir-nf02.mjs` y el recorrido de navegador de la v0.6 con `docs/pruebas/recorrido-v06.mjs` (39 verificaciones con
+los 3 roles). Resultados y evidencias en `docs/pruebas/`.
+
+## Invariantes (cada una con prueba automática)
+
+| | Invariante | Prueba |
+|---|---|---|
+| I1 | Verde significa exactamente «Sin alertas en los campos evaluados»; no certifica saneamiento ni reemplaza asesoría legal | `CatalogoYServiciosTest.verdeSignificaSinAlertas` |
+| I2 | El indicador B nunca cambia el color del indicador A (RN-10) | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto` |
+| I3 | El checklist no cambia el color del indicador A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `CasosApiTest.checklistSoloRevisor` |
+| I4 | La autorización está en el servidor (403 por rol) | `CatalogoYServiciosTest.soloElCompradorSolicita`, `otroRolNoEmite`, `SeguridadTest` |
+| I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests` |
+| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` |
+| I7 | Personas, precios y colegiatura se rotulan como simulados | Recorrido `docs/pruebas/recorrido-v06.mjs` (verificaciones de precio y credencial) |
 
 ## Funcionalidades implementadas
 
+- **Catálogo comercial (`#/casos`):** tarjetas con ilustración, tipo de inmueble, distrito, área, precio referencial y los dos
+  indicadores. Filtros combinables por tipo, indicador A e indicador B (incluido «con riesgo físico detectado»), resueltos en el
+  servidor y reflejados en la URL.
 - **Indicador A, pre-evaluación documental:** semáforo automático por reglas versionadas sobre la partida (rubros C, D, E y F)
   y los 4 planos de la vivienda, con motivos, alertas y faltantes.
 - **Expediente técnico de 4 planos:** arquitectura, estructuras, instalaciones eléctricas (II.EE.) e instalaciones sanitarias
   (II.SS.), con una lámina 2D a escala por plano generada en PDF con PDFBox. El revisor puede subir el PDF real de cada plano.
-- **Indicador B, evaluación técnica presencial:** el comprador la solicita y el rol especialista (ingeniero civil o arquitecto)
-  emite el informe siguiendo un procedimiento de 6 pasos, también en PDF. Nunca cambia el color del indicador A (RN-10).
+- **Indicador B, evaluación técnica presencial:** solo el comprador la solicita (costo referencial S/ 250.00, sin pago en
+  línea), con su cuenta y la fecha registradas. El especialista emite el informe en 6 pasos, firmado con los datos de su
+  cuenta, también en PDF. Nunca cambia el color del indicador A (RN-10).
+- **Checklist con la declaración jurada municipal (HR y PU)** en los 10 casos.
 - Copia literal simulada en PDF, glosario cerrado, checklist, edición transaccional del revisor y partidas transcritas sin
   datos personales. El detalle está en `docs/funcionalidades.md`.
+
+## Fuentes de información
+
+| Fuentes gratuitas | Aportadas por el propietario o de pago |
+|---|---|
+| Conoce Aquí (SUNARP): texto de la partida, que el revisor transcribe | Copia literal certificada (SUNARP, con costo) |
+| Visor Catastral BGR (SUNARP): ubicación gráfica, solo enlazada | Planos de las 4 especialidades |
+| | Declaración jurada municipal (HR y PU) |
+| | Inspección presencial del especialista (costo referencial) |
+
+Sin scraping de portales ni APIs inexistentes: SUNARP no ofrece una API pública de partidas y copiar otros portales incumple
+sus condiciones de uso.
 
 ## Qué no incluye
 
 Integraciones estatales, scraping de portales, OCR, inteligencia artificial o visión artificial, autenticidad documental,
-dictámenes jurídicos, pagos, contratos, firmas, tours, posventa, filtros avanzados y reportes descargables (sección 1.7 del
-informe).
+dictámenes jurídicos, pagos en línea, contratos, firmas, agenda de visitas, tours, posventa y reportes descargables
+(sección 1.7 del informe). Los filtros del catálogo son simples (tipo e indicadores), no búsquedas avanzadas.
 
 ## Pendiente fuera del código
 

@@ -2,6 +2,8 @@
   "codigo": "SIM-11048217",
   "denominacion": "Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica",
   "contexto": "Parcona, Ica",
+  "distrito": "Parcona",
+  "precioReferencial": 185000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -71,6 +73,10 @@
       {
         "nombre": "Título archivado del asiento C00001",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "REVISADO"
       }
     ],
     "terminos": [
@@ -146,8 +152,6 @@
     "informeTecnico": {
       "estado": "EMITIDO",
       "resultado": "FAVORABLE",
-      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
-      "colegiatura": "CIP SIM-0001",
       "fechaInspeccion": "2026-10-10",
       "verifArquitectura": "CONFORME",
       "verifEstructuras": "CONFORME",

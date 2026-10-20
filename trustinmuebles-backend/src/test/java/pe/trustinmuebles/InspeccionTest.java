@@ -11,7 +11,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.ResultActions;
 import tools.jackson.databind.node.ObjectNode;
 
-/** Indicador B: la evaluación técnica presencial la solicita cualquiera y la emite solo el especialista. */
+/** Indicador B: la evaluación técnica presencial la solicita el comprador y la emite solo el especialista. */
 class InspeccionTest extends BaseApiTest {
 
     String especialista() throws Exception {
@@ -90,12 +90,12 @@ class InspeccionTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Un informe emitido exige resultado, profesional, colegiatura, fecha, las 4 verificaciones y conclusiones")
+    @DisplayName("Un informe emitido exige resultado, fecha, las 4 verificaciones y conclusiones (el profesional sale de la cuenta)")
     void validaElInforme() throws Exception {
         try {
             solicitar(LOS_AQUIJES, comprador()).andExpect(status().isCreated());
-            for (String campo : new String[] {"resultado", "profesional", "colegiatura", "fechaInspeccion",
-                    "verifSanitarias", "conclusiones"}) {
+            // v0.6 (M8): el nombre y la colegiatura ya no se validan en el cuerpo; los pone el servidor desde la cuenta.
+            for (String campo : new String[] {"resultado", "fechaInspeccion", "verifSanitarias", "conclusiones"}) {
                 ObjectNode i = informe("EMITIDO");
                 i.remove(campo);
                 emitir(LOS_AQUIJES, especialista(), i).andExpect(status().isBadRequest());

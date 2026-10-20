@@ -2,6 +2,8 @@
   "codigo": "SIM-11087751",
   "denominacion": "Mz. D Lote 22 · Hab. Urb. Los Tamarindos · Salas, Ica",
   "contexto": "Salas, Ica",
+  "distrito": "Salas",
+  "precioReferencial": 88000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -75,6 +77,11 @@
       {
         "nombre": "Conformidad de los coherederos para la venta",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "OBSERVADO",
+        "observacion": "La HR figura a nombre del causante; los coherederos deben actualizarla."
       }
     ],
     "terminos": [
@@ -151,8 +158,6 @@
     "informeTecnico": {
       "estado": "EMITIDO",
       "resultado": "CON_RIESGO",
-      "profesional": "Ing. Civil Hernán Gustavo Paredes Lazo",
-      "colegiatura": "CIP SIM-0001",
       "fechaInspeccion": "2026-10-09",
       "verifArquitectura": "CONFORME",
       "verifEstructuras": "OBSERVADO",

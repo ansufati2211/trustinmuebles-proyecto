@@ -9,7 +9,7 @@ export interface Fila {
   tituloNumero: string; fechaPresentacion: string; texto: string; canceloNumero: string; titulares: string;
 }
 
-export const campo = "w-full h-11 px-3 rounded-xl border border-gray-200 bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
+export const campo = "w-full h-11 px-3 rounded-xl border border-border bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
 export const MAX_ASIENTOS = 40;
 
 export const FILA_VACIA: Fila = {
@@ -56,24 +56,24 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
   return (
     <fieldset className="space-y-3">
             <legend className="text-sm font-bold mb-1">Asientos de la partida</legend>
-            <p className="text-xs text-muted-foreground leading-relaxed">
+            <p className="text-xs text-tinta-2 leading-relaxed">
               Rubros: {Object.entries(RUBROS).map(([l, n]) => `${l} ${n.toLowerCase()}`).join(", ")}. El número empieza con la
               letra del rubro, por ejemplo C00001, D00001 o E00001.
             </p>
-            {filas.length === 0 && <p className="text-sm text-muted-foreground">Sin asientos.</p>}
+            {filas.length === 0 && <p className="text-sm text-tinta-2">Sin asientos.</p>}
             {filas.map((f, i) => {
               const rubro = rubroDe(f);
               const cancelador = canceladoPor.get(f.referencia);
               return (
-                <div key={i} className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+                <div key={i} className="space-y-3 rounded-2xl border border-border bg-superficie p-4">
                   <div className="grid grid-cols-12 gap-3 items-end">
                     <div className="col-span-6 sm:col-span-3">
-                      <label htmlFor={`as-ref-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Número</label>
+                      <label htmlFor={`as-ref-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Número</label>
                       <input id={`as-ref-${i}`} className={campo} maxLength={6} value={f.referencia}
                         onChange={(e) => cambiarFila(i, { referencia: e.target.value.toUpperCase() })} />
                     </div>
                     <div className="col-span-6 sm:col-span-8">
-                      <label htmlFor={`as-acto-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Tipo de acto</label>
+                      <label htmlFor={`as-acto-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Tipo de acto</label>
                       <select id={`as-acto-${i}`} className={campo} value={f.tipoActo} onChange={(e) => cambiarFila(i, { tipoActo: e.target.value as TipoActo })}>
                         {(Object.keys(ETIQUETA_ACTO) as TipoActo[]).map((t) => <option key={t} value={t}>{ETIQUETA_ACTO[t]}</option>)}
                       </select>
@@ -81,7 +81,7 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                     <div className="col-span-12 sm:col-span-1 flex justify-end">
                       <button type="button" onClick={() => setFilas(filas.filter((_, j) => j !== i))}
                         aria-label={`Quitar el asiento ${f.referencia || i + 1}`}
-                        className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-muted-foreground hover:bg-danger/10 hover:text-[#B91C1C] transition-colors">
+                        className="h-11 w-11 inline-flex items-center justify-center rounded-xl text-tinta-2 hover:bg-danger/10 hover:text-sem-rojo-tinta transition-colors">
                         <Trash2 className="w-4 h-4" aria-hidden="true" />
                       </button>
                     </div>
@@ -89,7 +89,7 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
 
                   {rubro === "C" && (
                     <div>
-                      <label htmlFor={`as-tit-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Titulares que resultan de este asiento</label>
+                      <label htmlFor={`as-tit-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Titulares que resultan de este asiento</label>
                       <input id={`as-tit-${i}`} className={campo} maxLength={500} value={f.titulares} onChange={(e) => cambiarFila(i, { titulares: e.target.value })} />
                     </div>
                   )}
@@ -100,7 +100,7 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                       </p>
                     ) : (
                       <div>
-                        <label htmlFor={`as-est-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Estado</label>
+                        <label htmlFor={`as-est-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Estado</label>
                         <select id={`as-est-${i}`} className={campo} value={f.estado} onChange={(e) => cambiarFila(i, { estado: e.target.value as "VIGENTE" | "DESCONOCIDO" })}>
                           <option value="VIGENTE">Vigente</option>
                           <option value="DESCONOCIDO">Desconocido</option>
@@ -110,7 +110,7 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                   )}
                   {rubro === "E" && (
                     <div>
-                      <label htmlFor={`as-can-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Asiento que cancela</label>
+                      <label htmlFor={`as-can-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Asiento que cancela</label>
                       <select id={`as-can-${i}`} className={campo} value={f.canceloNumero} onChange={(e) => cambiarFila(i, { canceloNumero: e.target.value })}>
                         <option value="">Elegir un asiento D</option>
                         {referenciasD.map((r) => <option key={r} value={r}>{r}</option>)}
@@ -119,20 +119,20 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                   )}
 
                   <div>
-                    <label htmlFor={`as-txt-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Texto del asiento</label>
+                    <label htmlFor={`as-txt-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Texto del asiento</label>
                     <textarea id={`as-txt-${i}`} rows={3} maxLength={1500} className={`${campo} h-auto py-2`} value={f.texto} onChange={(e) => cambiarFila(i, { texto: e.target.value })} />
                   </div>
                   <div className="grid sm:grid-cols-3 gap-3">
                     <div>
-                      <label htmlFor={`as-tt-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Título archivado N.°</label>
+                      <label htmlFor={`as-tt-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Título archivado N.°</label>
                       <input id={`as-tt-${i}`} className={campo} maxLength={40} value={f.tituloNumero} onChange={(e) => cambiarFila(i, { tituloNumero: e.target.value })} />
                     </div>
                     <div>
-                      <label htmlFor={`as-pre-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Fecha de presentación</label>
+                      <label htmlFor={`as-pre-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Fecha de presentación</label>
                       <input id={`as-pre-${i}`} type="date" className={campo} value={f.fechaPresentacion} onChange={(e) => cambiarFila(i, { fechaPresentacion: e.target.value })} />
                     </div>
                     <div>
-                      <label htmlFor={`as-ins-${i}`} className="block text-xs font-bold text-muted-foreground mb-1">Fecha de inscripción</label>
+                      <label htmlFor={`as-ins-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Fecha de inscripción</label>
                       <input id={`as-ins-${i}`} type="date" className={campo} value={f.fechaInscripcion} onChange={(e) => cambiarFila(i, { fechaInscripcion: e.target.value })} />
                     </div>
                   </div>

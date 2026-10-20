@@ -2,6 +2,8 @@
   "codigo": "SIM-11075836",
   "denominacion": "Mz. G Lote 14 · Hab. Urb. Jardines del Pacae · Pueblo Nuevo, Ica",
   "contexto": "Pueblo Nuevo, Ica",
+  "distrito": "Pueblo Nuevo",
+  "precioReferencial": 165000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -60,6 +62,11 @@
       {
         "nombre": "Título archivado del asiento D00001",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "OBSERVADO",
+        "observacion": "La HR figura a nombre de un propietario anterior; falta actualizar al contribuyente."
       }
     ],
     "terminos": [
