@@ -11,15 +11,49 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
+  --color-primary-strong: var(--primary-strong);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
+  --color-ring: var(--ring);
   --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);
+  --color-danger-foreground: var(--danger-foreground);
+
+  /* Tokens de la v0.6 (componentes de catálogo, detalle e indicadores) */
+  --color-arena: var(--arena);
+  --color-arena-suave: var(--arena-suave);
+  --color-arena-tinta: var(--arena-tinta);
+  --color-superficie: var(--superficie);
+  --color-tinta-2: var(--tinta-2);
+
+  /* Semáforo: relleno sólido, fondo suave y texto legible sobre el fondo suave. */
+  --color-sem-verde: var(--sem-verde);
+  --color-sem-verde-suave: var(--sem-verde-suave);
+  --color-sem-verde-tinta: var(--sem-verde-tinta);
+  --color-sem-amarillo: var(--sem-amarillo);
+  --color-sem-amarillo-suave: var(--sem-amarillo-suave);
+  --color-sem-amarillo-tinta: var(--sem-amarillo-tinta);
+  --color-sem-rojo: var(--sem-rojo);
+  --color-sem-rojo-suave: var(--sem-rojo-suave);
+  --color-sem-rojo-tinta: var(--sem-rojo-tinta);
+  --color-sem-gris: var(--sem-gris);
+  --color-sem-gris-suave: var(--sem-gris-suave);
+  --color-sem-gris-tinta: var(--sem-gris-tinta);
+  --color-info-suave: var(--info-suave);
+  --color-info-tinta: var(--info-tinta);
+
+  --shadow-tarjeta: 0 1px 2px rgb(23 48 42 / 0.05), 0 4px 16px -6px rgb(23 48 42 / 0.10);
+  --shadow-elevada: 0 2px 4px rgb(23 48 42 / 0.06), 0 18px 40px -16px rgb(23 48 42 / 0.28);
+
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
   /* Habilita la utilidad `ease-expo` en Tailwind */
   --ease-expo: var(--motion-ease);
@@ -31,16 +65,36 @@
   --card: #FFFFFF;
   --card-foreground: #022C22;
   --primary: #059669;
+  --primary-strong: #047857;
   --primary-foreground: #FFFFFF;
   --secondary: #ECFDF5;
   --secondary-foreground: #047857;
   --muted: #F1F5F9;
   --muted-foreground: #64748B;
+  --accent: #ECFDF5;
+  --accent-foreground: #047857;
   --border: #E2E8F0;
+  --ring: #059669;
   --success: #10B981;
+  --success-foreground: #FFFFFF;
   --warning: #F59E0B;
+  --warning-foreground: #3D2A00;
   --danger: #EF4444;
+  --danger-foreground: #FFFFFF;
   --radius: 1rem;
+
+  /* Tokens de la v0.6 */
+  --superficie: #F5F8F6;
+  --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */
+  --arena: #D99A3D;          /* acento cálido: solo realces, nunca texto sobre blanco */
+  --arena-suave: #FBF0DD;
+  --arena-tinta: #7A4A0B;
+
+  --sem-verde: #22A05A;    --sem-verde-suave: #DFF5E7;    --sem-verde-tinta: #14532D;
+  --sem-amarillo: #E0A21B; --sem-amarillo-suave: #FDF1D2; --sem-amarillo-tinta: #713F12;
+  --sem-rojo: #D33A2C;     --sem-rojo-suave: #FCE4E1;     --sem-rojo-tinta: #8F1D14;
+  --sem-gris: #8A9690;     --sem-gris-suave: #E9EDEB;     --sem-gris-tinta: #36423C;
+  --info-suave: #E3EEF8;   --info-tinta: #1C4A73;
 
   /* Curva única para todo el sistema de movimiento */
   --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
@@ -54,6 +108,14 @@ html, body, #root {
 body {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+h1, h2, h3 {
+  text-wrap: balance;
+}
+
+.cifras {
+  font-variant-numeric: tabular-nums;
 }
 
 :focus-visible {
