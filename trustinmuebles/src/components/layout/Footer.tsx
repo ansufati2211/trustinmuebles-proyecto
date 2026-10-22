@@ -45,6 +45,20 @@ export function Footer() {
           </div>
         </div>
 
+        <aside
+          aria-label="Límites de uso"
+          className="mb-10 rounded-xl border border-white/10 bg-white/5 px-5 py-4 text-sm leading-relaxed text-gray-300"
+        >
+          <p>
+            <strong className="text-white">Verde = Sin alertas en los campos evaluados</strong>; no certifica saneamiento ni
+            reemplaza asesoría legal.
+          </p>
+          <p className="mt-2">
+            Los datos de esta demostración (partidas, personas, precios, especialista y colegiatura) son simulados. El Indicador B
+            (evaluación técnica presencial) es independiente y no cambia el color del Indicador A.
+          </p>
+        </aside>
+
         <div className="pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm font-medium text-gray-500">
             &copy; {new Date().getFullYear()} Trustinmuebles. Todos los derechos reservados.
