@@ -6,13 +6,41 @@ públicas, que SUNARP no ofrece). Muestra **partidas registrales simuladas** de 
 parecen a una copia literal pero son ficticios, explica sus términos y señala qué información falta. **No certifica
 saneamiento, no recomienda comprar, no consulta fuentes oficiales y no reemplaza asesoría legal.**
 
+## Modelo de negocio
+
+**Quién lo ofrece:** una sola inmobiliaria de Ica, que carga a mano su propia cartera. **Quién lo usa:** el comprador.
+
+**Problema que reduce:** el comprador suele decidir sin entender la partida registral ni saber qué documentos faltan; el
+sistema ordena esa información, la explica y señala los vacíos. **Qué NO hace:** certificar saneamiento, recomendar la
+compra, consultar fuentes oficiales en línea ni reemplazar a un abogado o notario.
+
+| | Indicador A | Indicador B |
+|---|---|---|
+| Servicio | Pre-evaluación documental automática por reglas | Evaluación técnica presencial de 6 pasos |
+| Quién lo activa | Se calcula para todo inmueble de la cartera | El comprador, a pedido |
+| Costo | Incluido | Referencial S/ 250.00, sin pasarela de pago |
+| Resultado | Verde («Sin alertas en los campos evaluados»), amarillo, rojo o gris | Informe del especialista en PDF |
+
+B nunca cambia el color de A (RN-10): así el comprador distingue lo que dicen los documentos de lo que se vio en la visita.
+
+- **Comprador:** consulta la cartera y decide si solicita el indicador B.
+- **Revisor:** carga y mantiene partidas, planos y checklist, que alimentan el indicador A.
+- **Especialista:** visita el inmueble y emite el informe del indicador B.
+
+**Fuentes:** gratuitas (Conoce Aquí y Visor Catastral de SUNARP, consultados a mano) frente a aportadas o pagadas (copia
+literal certificada, planos, HR y PU, inspección). Sin scraping ni APIs inexistentes (ver «Fuentes de información»).
+
+**Limitaciones:** MVP académico con datos simulados; las reglas están pendientes de revisión especializada.
+
 El producto se llama Trustinmuebles en el código, en la documentación y en el informe (ver `docs/decisiones.md`, D2).
 
 Dos carpetas:
 - `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 8 módulos: `identidad`,
   `expediente`, `clasificacion`, `inspeccion`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
 - `trustinmuebles/` — interfaz de React 19 con Vite: catálogo comercial con filtros, detalle con planos e inspección, y un
-  sistema visual propio (tokens en `src/index.css`, ilustraciones SVG propias, sin imágenes externas).
+  sistema visual propio (tokens en `src/index.css`). Los casos y planos usan ilustraciones SVG propias, pero la landing y el
+  login (rediseño del equipo) cargan fotografías externas decorativas (Unsplash): **la demo necesita internet**. Incluye barra
+  de navegación, pie con los límites legales y pantalla de carga.
 
 Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para el informe. Para saber qué hace el programa, empieza por `docs/funcionalidades.md`.
 
@@ -117,7 +145,8 @@ cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. En total, **140 pruebas automáticas** (107 + 33), según la última
 ejecución del 19 de octubre de 2026 (ver `docs/RESUMEN-v0.6.md`). El rendimiento se mide con
 `node scripts/medir-nf02.mjs` y el recorrido de navegador de la v0.6 con `docs/pruebas/recorrido-v06.mjs` (39 verificaciones con
-los 3 roles). Resultados y evidencias en `docs/pruebas/`.
+los 3 roles, obtenidas con el diseño anterior al rediseño de landing y login; deben repetirse: **por verificar**). Resultados y
+evidencias en `docs/pruebas/`.
 
 ## Invariantes (cada una con prueba automática)
 
@@ -170,6 +199,7 @@ dictámenes jurídicos, pagos en línea, contratos, firmas, agenda de visitas, t
 Revisión especializada del contenido, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y
 presupuesto. Los materiales del estudio (formas A y B, claves y bases vacías) están en la carpeta `estudio/` que se
 mantiene **fuera de este repositorio** a propósito.
+El CIP N.° 248910 del especialista no lleva el prefijo `SIM-`: **por verificar** que no pertenezca a un profesional real.
 
 ## Uso local
 
