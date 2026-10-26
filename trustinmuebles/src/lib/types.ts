@@ -1,6 +1,8 @@
 // DTOs que devuelve el backend (trustinmuebles-backend).
 
-export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA";
+export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA" | "GESTOR" | "PROPIETARIO";
+/** Estado comercial del caso (v0.7). Es independiente del color del indicador A. */
+export type EstadoPublicacion = "BORRADOR" | "PUBLICADO" | "RETIRADO";
 export type TipoPredio = "LOTE" | "VIVIENDA";
 /** Tipo que ve el comprador en el catálogo. El backend lo deriva del tipo de predio. */
 export type TipoInmueble = "VIVIENDA_URBANA" | "LOTE_URBANO";
@@ -20,7 +22,8 @@ export type TipoActo =
   | "PRIMERA_INSCRIPCION" | "INDEPENDIZACION" | "COMPRAVENTA" | "SUCESION" | "HIPOTECA" | "EMBARGO"
   | "ANOTACION_DEMANDA" | "MEDIDA_CAUTELAR" | "BLOQUEO" | "CARGA_TECNICA" | "SERVIDUMBRE" | "CANCELACION" | "OTRO";
 
-export interface Usuario { id: number; codigoCuenta: string; rol: Rol }
+/** funcion: por ejemplo «Asesor comercial» en la cuenta del gestor (v0.7); null en las demás. */
+export interface Usuario { id: number; codigoCuenta: string; rol: Rol; funcion?: string | null }
 export interface Sesion { token: string; usuario: Usuario }
 
 /** Datos del predio para el catálogo. El precio es referencial e informativo (en soles) y no interviene en el semáforo. */
@@ -33,6 +36,12 @@ export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
   pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
   resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean; predio: Predio;
+  estadoPublicacion: EstadoPublicacion;
+}
+
+/** Captación y publicación (v0.7). El comprador recibe propietarioCodigo en null (I11). */
+export interface Publicacion {
+  estado: EstadoPublicacion; propietarioCodigo: string | null; autorizada: boolean; autorizacionFecha: string | null;
 }
 
 /** Condiciones del servicio de inspección. El costo lo fija el backend (configuración), no la interfaz. */
@@ -58,6 +67,8 @@ export interface EvaluacionTecnica {
   solicitanteCodigo: string | null;
   riesgoFisicoDetectado: boolean;
   servicio: ServicioInspeccion | null;
+  /** v0.7: especialista asignado por el gestor. Si existe, solo él emite el informe. */
+  especialistaAsignadoCodigo?: string | null;
 }
 
 /** Asiento de la partida. La primera letra de la referencia es el rubro: C, D, E o F. */
@@ -94,7 +105,38 @@ export interface DetalleCaso {
   codigo: string; denominacion: string; contexto: string; sintetico: boolean; origen: Origen;
   fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
-  predio: Predio;
+  predio: Predio; publicacion: Publicacion;
+}
+
+/** Qué provocó un recálculo del indicador A (lista cerrada del backend). */
+export type OrigenEvaluacion = "EDICION" | "PLANO_ADJUNTO" | "PARTIDA_TRANSCRITA" | "CARGA_INICIAL";
+
+/** Una fila del historial de evaluaciones (GET /casos/{codigo}/historial). Solo lectura. */
+export interface EntradaHistorial {
+  registradaEn: string; estadoAnterior: EstadoSemaforo | null; estadoNuevo: EstadoSemaforo; motivos: Motivo[];
+  faltantes: string[]; versionReglas: string; origen: OrigenEvaluacion; cuentaCodigo: string;
+}
+
+export type MotivoContacto = "INFORMACION_GENERAL" | "CONSULTA_DOCUMENTOS" | "CONSULTA_INSPECCION";
+export type EstadoContacto = "PENDIENTE" | "ATENDIDA";
+
+/** Solicitud de contacto: solo códigos de cuenta, fechas y un motivo cerrado (I11). */
+export interface Contacto {
+  id: number; casoCodigo: string; compradorCodigo: string; motivo: MotivoContacto; estado: EstadoContacto;
+  creadaEn: string; atendidaEn: string | null; atendidaPor: string | null;
+}
+
+export interface CasoConFaltantes { codigo: string; estado: EstadoSemaforo; faltantes: string[] }
+export interface InspeccionEnCurso {
+  codigo: string; estado: EstadoTecnico; especialistaAsignadoCodigo: string | null; asignada: boolean;
+}
+
+/** Panel de cartera del gestor (GET /cartera/panel). Solo lectura. */
+export interface PanelCartera {
+  totalCasos: number; porColor: Partial<Record<EstadoSemaforo, number>>;
+  porEstadoPublicacion: Partial<Record<EstadoPublicacion, number>>; casosConFaltantes: CasoConFaltantes[];
+  inspecciones: InspeccionEnCurso[]; inspeccionesAsignadas: number; inspeccionesSinAsignar: number;
+  contactosPendientes: Contacto[];
 }
 
 export interface AsientoPeticion {

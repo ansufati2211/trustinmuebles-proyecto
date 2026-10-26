@@ -24,6 +24,9 @@ const hoy = () => new Date().toISOString().slice(0, 10);
  * Registro de una partida transcrita de Conoce Aquí (solo revisor). El texto original se queda en esta pantalla:
  * lo que se envía es la versión limpia de la vista previa, sin nombres, DNI, estado civil ni domicilios.
  */
+/** Cuentas de propietario de la demostración, como sugerencia. El servidor valida que sea una cuenta PROPIETARIO. */
+const PROPIETARIOS_DEMO = ["propietario-01", "propietario-02"];
+
 export default function RegistrarPartida() {
   const { usuario } = useAuth();
   const navigate = useNavigate();
@@ -32,6 +35,8 @@ export default function RegistrarPartida() {
   const [numero, setNumero] = useState(normalizarNumero(params.get("numero") ?? ""));
   const [denominacion, setDenominacion] = useState("");
   const [contexto, setContexto] = useState("");
+  // v0.7: el revisor indica la cuenta del propietario. El caso nace en borrador y sin autorización (lo decide el servidor).
+  const [propietario, setPropietario] = useState("");
   const [fechaConsulta, setFechaConsulta] = useState(hoy());
   const [condicion, setCondicion] = useState(CONDICIONES[0]);
   const [completitud, setCompletitud] = useState<Completitud>("COMPLETA");
@@ -114,6 +119,7 @@ export default function RegistrarPartida() {
       asientos: filasAPeticion(l.filas),
       ...tecnicoAPeticion(tecnico),
       confirmaSinDatosPersonales: confirmo,
+      propietarioCodigo: propietario.trim(),
     };
     try {
       const nuevo = await post<DetalleCaso>("/casos", cuerpo);
@@ -170,6 +176,18 @@ export default function RegistrarPartida() {
                 <input id="rp-denominacion" className={campo} maxLength={255} placeholder="Mz. D Lote 5 · Hab. Urb. Los Sauces · Ica"
                   value={denominacion} onChange={(e) => setDenominacion(e.target.value)} />
               </div>
+            </div>
+            <div>
+              <label htmlFor="rp-propietario" className="block text-sm font-bold mb-1.5">Código de cuenta del propietario</label>
+              <input id="rp-propietario" className={campo} maxLength={40} list="rp-propietarios" placeholder="propietario-01"
+                autoComplete="off" value={propietario} onChange={(e) => setPropietario(e.target.value)} />
+              <datalist id="rp-propietarios">
+                {PROPIETARIOS_DEMO.map((c) => <option key={c} value={c} />)}
+              </datalist>
+              <p className="text-xs text-tinta-2 mt-1">
+                Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador hasta que el
+                propietario lo autorice desde su cuenta.
+              </p>
             </div>
             <div className="grid sm:grid-cols-3 gap-5">
               <div>
@@ -332,7 +350,7 @@ export default function RegistrarPartida() {
             )}
 
             <div className="flex flex-wrap gap-3">
-              <Button type="submit" className="rounded-xl" disabled={guardando || !confirmo || !hayTexto || !numeroValido}>
+              <Button type="submit" className="rounded-xl" disabled={guardando || !confirmo || !hayTexto || !numeroValido || !propietario.trim()}>
                 {guardando ? "Registrando…" : "Registrar partida"}
               </Button>
               <Button type="button" variant="outline" className="rounded-xl" asChild><Link to="/casos">Cancelar</Link></Button>

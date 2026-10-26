@@ -4,7 +4,9 @@ import { useAuth } from "@/lib/auth";
 import { Button } from "@/components/ui/button";
 import type { Rol } from "@/lib/types";
 
-const ROL: Record<Rol, string> = { COMPRADOR: "Comprador", REVISOR: "Revisor", ESPECIALISTA: "Especialista" };
+const ROL: Record<Rol, string> = {
+  COMPRADOR: "Comprador", REVISOR: "Revisor", ESPECIALISTA: "Especialista", GESTOR: "Gestor", PROPIETARIO: "Propietario",
+};
 
 const enlace = (activo: boolean) =>
   `shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors ${activo ? "bg-secondary text-secondary-foreground" : "text-tinta-2 hover:bg-muted hover:text-foreground"}`;

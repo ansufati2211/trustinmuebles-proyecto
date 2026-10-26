@@ -396,3 +396,38 @@ autoriza, el gestor la publica, el comprador la ve y pide contacto, el gestor lo
 gestor asigna a `especialista-02`, este emite un informe con riesgo (A no cambia), el revisor incorpora los planos (VERDE por las
 reglas) y adjunta un PDF, y el historial registra los tres recálculos. Incluye los 403 y 404 de cada rol y, al final, el retiro
 de la autorización (I14).
+
+## D43. v0.7 (interfaz): navegación y guarda de rutas por rol
+**Qué:** `permisos.ts` define los enlaces del menú (`navegacion`) y qué rol abre cada vista (`puedeAbrirVista`): comprador y
+especialista ven «Expedientes»; el revisor agrega «Registrar partida»; el gestor, «Cartera»; el propietario ve solo «Mis
+inmuebles». `RequireVista` (en `auth.tsx`) muestra «Tu cuenta no tiene acceso a esta sección» si se escribe a mano la URL de
+otra vista. El detalle `/casos/:codigo` lo abre cualquier rol con sesión: el servidor decide qué caso puede ver (404 si no le
+corresponde, D35). Es solo presentación: el servidor sigue siendo la autoridad (I4).
+
+## D44. v0.7 (interfaz): operaciones que vuelven a consultar al servidor
+Publicar, retirar, autorizar, retirar la autorización y asignar especialista llaman a la API y, si responden bien, vuelven a
+pedir el caso (`GET /casos/{codigo}`) antes de mostrar el resultado. La interfaz nunca cambia por su cuenta el color de A, el
+estado de publicación ni el informe. El historial se monta de nuevo cuando cambia la fecha de la evaluación vigente y vuelve a
+consultar `GET /casos/{codigo}/historial`; se muestra de la más reciente a la más antigua, sin botones de edición.
+
+## D45. v0.7 (interfaz): lista fija de especialistas para asignar (supuesto)
+El backend no tiene una ruta que liste cuentas, así que el selector de asignación ofrece las dos cuentas de especialista de la
+demostración (`especialista-01`, `especialista-02`). El servidor valida la cuenta elegida (400 si no es un especialista con datos
+profesionales). Si se agregan especialistas, hace falta una ruta de listado o actualizar la lista.
+
+## D46. v0.7 (interfaz): estado de la solicitud de contacto del comprador
+El backend no ofrece al comprador una ruta para consultar sus solicitudes. Por eso la interfaz muestra el estado solo con lo que
+devuelve `POST /casos/{codigo}/contactos` (fecha, motivo, «pendiente») mientras dura la página, y un 409 se muestra como «ya
+tienes una solicitud pendiente» sin agregar nada. Que el comprador vea si su solicitud fue atendida queda pendiente
+(`docs/PENDIENTES.md`).
+
+## D47. v0.7 (interfaz): rótulos de datos simulados en un solo lugar
+Se quitaron los rótulos repetidos por elemento: «Precio referencial · dato simulado» de la tarjeta y del detalle, «Datos
+ficticios de demostración» de la credencial del especialista, «Costo referencial · dato simulado» y «(dato simulado)» del
+servicio de inspección, y «Precios referenciales y datos simulados» del encabezado del catálogo. El aviso queda en el pie de
+página («Los datos de esta demostración … son simulados») y en la línea «Entorno académico demostrativo · Datos sintéticos»
+del login; la nota del precio que envía el backend se conserva en el detalle. Esto redefine I7 (ver `LEEME.md`).
+
+## D48. v0.7 (interfaz): texto fijo de la etapa 9
+El detalle muestra para todos los roles «Siguiente paso: verificación jurídica con abogado o notario, fuera del sistema». Es un
+texto informativo: la verificación jurídica no es una función del sistema.

@@ -3,10 +3,11 @@ import { ArrowRight, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-r
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, soles } from "@/lib/formato";
+import { InsigniaPublicacion } from "@/components/PanelPublicacion";
 import type { ResumenCaso } from "@/lib/types";
 
 /** Tarjeta del catálogo: ilustración, precio referencial, datos del predio y los dos indicadores, siempre separados. */
-export function TarjetaPredio({ c }: { c: ResumenCaso }) {
+export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; conPublicacion?: boolean }) {
   const p = c.predio;
   const enlace = `/casos/${c.codigo}`;
   return (
@@ -29,7 +30,6 @@ export function TarjetaPredio({ c }: { c: ResumenCaso }) {
           {p.precioReferencial != null ? (
             <p className="flex flex-wrap items-baseline gap-x-2">
               <span className="cifras text-2xl font-extrabold tracking-tight text-foreground">{soles(p.precioReferencial, true)}</span>
-              <span className="text-xs font-semibold text-tinta-2">Precio referencial · dato simulado</span>
             </p>
           ) : (
             <p className="text-lg font-bold text-tinta-2">Precio a consultar</p>
@@ -49,6 +49,8 @@ export function TarjetaPredio({ c }: { c: ResumenCaso }) {
         <div className="flex flex-col items-start gap-2" aria-label="Indicadores del inmueble">
           <IndicadorA estado={c.estado} tamano="sm" />
           <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
+          {/* El comprador solo ve casos publicados: el estado se muestra al equipo y al propietario (v0.7). */}
+          {conPublicacion && c.estadoPublicacion && <InsigniaPublicacion estado={c.estadoPublicacion} tamano="sm" />}
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">

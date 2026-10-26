@@ -12,7 +12,7 @@ import { abrirPdf, api, post, put } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { etapasStepper, pasosInspeccion } from "@/lib/etapas";
 import { soles } from "@/lib/formato";
-import { puedeEmitirInforme, puedeSolicitarInspeccion, veBotonSolicitar } from "@/lib/permisos";
+import { puedeAsignarEspecialista, puedeEmitirInforme, puedeSolicitarInspeccion, veBotonSolicitar } from "@/lib/permisos";
 import { ETIQUETA_ESPECIALIDAD, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
 
@@ -97,7 +97,6 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
         <p className="text-lg font-bold text-foreground">{t.profesional}</p>
         <p className="text-sm text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"} · {t.colegiatura}</p>
       </div>
-      <Badge tono="arena" icono={Info} tamano="sm">Datos ficticios de demostración</Badge>
     </div>
   );
 }
@@ -248,7 +247,54 @@ function FormularioInforme({ detalle, alCambiar }: { detalle: DetalleCaso; alCam
   );
 }
 
-/** Modal de solicitud: alcance de los 6 pasos, costo referencial que envía el backend y confirmación. */
+/**
+ * Cuentas de especialista de la demostración. No hay una ruta que liste cuentas, así que la lista es fija; el servidor
+ * valida que la cuenta elegida sea un especialista con datos profesionales (400 si no).
+ */
+export const ESPECIALISTAS_DEMO = ["especialista-01", "especialista-02"];
+
+/** El gestor asigna la inspección solicitada o en curso (v0.7). Tras asignar se vuelve a consultar el caso. */
+function AsignacionEspecialista({ detalle, alCambiar }: { detalle: DetalleCaso; alCambiar: (d: DetalleCaso) => void }) {
+  const actual = detalle.evaluacionTecnica.especialistaAsignadoCodigo ?? "";
+  const [codigo, setCodigo] = useState(actual || ESPECIALISTAS_DEMO[0]);
+  const [enviando, setEnviando] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [aviso, setAviso] = useState<string | null>(null);
+
+  const asignar = async () => {
+    setError(null); setAviso(null); setEnviando(true);
+    try {
+      await put(`/casos/${detalle.codigo}/inspeccion/asignacion`, { especialistaCodigo: codigo });
+      alCambiar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
+      setAviso(`Inspección asignada a ${codigo}. El indicador A no cambió.`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo asignar la inspección");
+    } finally {
+      setEnviando(false);
+    }
+  };
+
+  return (
+    <div className="space-y-3 rounded-2xl border border-border bg-superficie p-5">
+      <h3 className="font-bold text-foreground">Asignar especialista</h3>
+      <div className="flex flex-wrap items-end gap-3">
+        <div>
+          <label htmlFor="asig-esp" className="mb-1 block text-xs font-bold text-tinta-2">Cuenta del especialista</label>
+          <select id="asig-esp" className={`${campo} min-w-56`} value={codigo} onChange={(e) => setCodigo(e.target.value)}>
+            {ESPECIALISTAS_DEMO.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        <Button className="rounded-xl" onClick={asignar} disabled={enviando || codigo === actual}>
+          {enviando ? "Asignando…" : actual ? "Reasignar" : "Asignar"}
+        </Button>
+      </div>
+      {aviso && <p role="status" className="text-sm font-semibold text-sem-verde-tinta">{aviso}</p>}
+      {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
+    </div>
+  );
+}
+
+/** Modal de solicitud: alcance de los 6 pasos, costo del servicio que envía el backend y confirmación. */
 function ModalSolicitud({ detalle, abierto, alCerrar, alSolicitar }: {
   detalle: DetalleCaso; abierto: boolean; alCerrar: () => void; alSolicitar: (d: DetalleCaso) => void;
 }) {
@@ -279,7 +325,7 @@ function ModalSolicitud({ detalle, abierto, alCerrar, alSolicitar }: {
       </>}>
       <div className="space-y-5">
         <div className="rounded-2xl border border-arena/40 bg-arena-suave p-4">
-          <p className="text-xs font-bold uppercase tracking-wider text-arena-tinta">Costo referencial · dato simulado</p>
+          <p className="text-xs font-bold uppercase tracking-wider text-arena-tinta">Costo del servicio</p>
           <p className="cifras mt-1 text-3xl font-extrabold text-foreground">{servicio ? soles(servicio.costoReferencial) : "Por coordinar"}</p>
           {servicio && <p className="mt-1 text-sm text-arena-tinta">{servicio.condiciones}</p>}
         </div>
@@ -349,7 +395,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
             <div className="min-w-0 flex-1">
               <p className="font-bold text-foreground">¿Quieres saber cómo está la obra por dentro?</p>
               <p className="text-sm text-arena-tinta">
-                Costo referencial {t.servicio ? soles(t.servicio.costoReferencial) : "por coordinar"} (dato simulado). Antes de confirmar verás el alcance.
+                Costo del servicio: {t.servicio ? soles(t.servicio.costoReferencial) : "por coordinar"}. Antes de confirmar verás el alcance.
               </p>
             </div>
             <Button className="rounded-xl" onClick={() => setModal(true)} disabled={!puedeSolicitarInspeccion(usuario?.rol, t.estado)}>
@@ -364,6 +410,17 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
       )}
 
       {t.estado !== "NO_SOLICITADA" && <Credencial t={t} />}
+
+      {usuario?.rol !== "COMPRADOR" && t.estado !== "NO_SOLICITADA" && (
+        <p className="text-sm text-foreground">
+          {t.especialistaAsignadoCodigo
+            ? <>Especialista asignado: <span className="font-bold">{t.especialistaAsignadoCodigo}</span>. Solo esa cuenta emite el informe.</>
+            : <span className="text-tinta-2">Sin especialista asignado: cualquier especialista habilitado puede emitir el informe.</span>}
+        </p>
+      )}
+      {puedeAsignarEspecialista(usuario?.rol, t.estado) && (
+        <AsignacionEspecialista detalle={detalle} alCambiar={alCambiar} />
+      )}
 
       <div>
         <h3 className="mb-3 font-bold text-foreground">Estado físico verificado en campo</h3>
@@ -398,7 +455,12 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
         <p className="mt-4 text-xs font-semibold text-tinta-2">{t.limite}</p>
       </div>
 
-      {puedeEmitirInforme(usuario?.rol, t.estado) && <FormularioInforme key={detalle.codigo} detalle={detalle} alCambiar={alCambiar} />}
+      {puedeEmitirInforme(usuario?.rol, t.estado, t.especialistaAsignadoCodigo, usuario?.codigoCuenta)
+        && <FormularioInforme key={detalle.codigo} detalle={detalle} alCambiar={alCambiar} />}
+      {usuario?.rol === "ESPECIALISTA" && t.estado !== "NO_SOLICITADA"
+        && !puedeEmitirInforme(usuario.rol, t.estado, t.especialistaAsignadoCodigo, usuario.codigoCuenta) && (
+        <p className="text-sm text-tinta-2">Esta inspección está asignada a otro especialista: solo esa cuenta puede emitir el informe.</p>
+      )}
       {usuario?.rol === "ESPECIALISTA" && t.estado === "NO_SOLICITADA" && (
         <p className="text-sm text-tinta-2">Aún no hay una solicitud: el informe se puede llenar cuando el comprador la pida.</p>
       )}

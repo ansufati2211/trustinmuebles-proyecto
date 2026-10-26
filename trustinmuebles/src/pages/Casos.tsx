@@ -49,7 +49,7 @@ export default function Casos() {
           <h1 className="mt-1 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Cartera de inmuebles</h1>
           <p className="mt-2 max-w-2xl text-tinta-2">
             Lotes y viviendas que la inmobiliaria tiene a la venta. Cada uno trae su evaluación documental (indicador A) y,
-            si se pidió, su evaluación técnica presencial (indicador B). Precios referenciales y datos simulados.
+            si se pidió, su evaluación técnica presencial (indicador B).
           </p>
         </div>
       </section>
@@ -139,7 +139,7 @@ export default function Casos() {
           )
         ) : (
           <ul className="grid grid-cols-1 gap-6 pb-12 sm:grid-cols-2 xl:grid-cols-3">
-            {visibles.map((c) => <li key={c.codigo}><TarjetaPredio c={c} /></li>)}
+            {visibles.map((c) => <li key={c.codigo}><TarjetaPredio c={c} conPublicacion={usuario?.rol !== "COMPRADOR"} /></li>)}
           </ul>
         )}
       </div>

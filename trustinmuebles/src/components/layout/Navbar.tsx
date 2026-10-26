@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation } from "react-router";
 import { User, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { LogoMark } from "@/components/layout/Logo";
+import { claveDeRuta, navegacion } from "@/lib/permisos";
 
 const enlaceBase =
   "relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-300";
@@ -54,9 +55,10 @@ export function Navbar() {
     return () => window.removeEventListener("scroll", alScroll);
   }, []);
 
-  // Indicador activo deslizante
-  const claveActiva =
-    location.pathname === "/" ? "inicio" : location.pathname.startsWith("/casos") ? "casos" : null;
+  // Enlaces según el rol (permisos.ts). Ocultarlos no protege nada: el servidor vuelve a comprobar el rol.
+  const enlaces = navegacion(usuario?.rol);
+  const principal = enlaces.find((e) => e.clave !== "inicio") ?? null;
+  const claveActiva = claveDeRuta(location.pathname);
 
   const enlacesRef = useRef<Record<string, HTMLAnchorElement | null>>({});
   const [pildora, setPildora] = useState<{ left: number; width: number } | null>(null);
@@ -106,22 +108,17 @@ export function Navbar() {
                 style={{ left: pildora?.left ?? 0, width: pildora?.width ?? 0 }}
               />
 
-              <Link
-                ref={(el) => { enlacesRef.current.inicio = el; }}
-                to="/"
-                aria-current={claveActiva === "inicio" ? "page" : undefined}
-                className={`${enlaceBase} ${claveActiva === "inicio" ? enlaceActivo : enlaceInactivo}`}
-              >
-                Inicio
-              </Link>
-              <Link
-                ref={(el) => { enlacesRef.current.casos = el; }}
-                to="/casos"
-                aria-current={claveActiva === "casos" ? "page" : undefined}
-                className={`${enlaceBase} ${claveActiva === "casos" ? enlaceActivo : enlaceInactivo}`}
-              >
-                Expedientes
-              </Link>
+              {enlaces.map((e) => (
+                <Link
+                  key={e.clave}
+                  ref={(el) => { enlacesRef.current[e.clave] = el; }}
+                  to={e.ruta}
+                  aria-current={claveActiva === e.clave ? "page" : undefined}
+                  className={`${enlaceBase} ${claveActiva === e.clave ? enlaceActivo : enlaceInactivo}`}
+                >
+                  {e.etiqueta}
+                </Link>
+              ))}
               <Link
                 to="/"
                 state={{ desplazarA: "como-funciona", t: location.key }}
@@ -133,17 +130,19 @@ export function Navbar() {
           </div>
 
           <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-            {/* En móvil el menú central se oculta: dejamos el acceso directo a Expedientes */}
-            <NavLink
-              to="/casos"
-              className={({ isActive }) =>
-                `md:hidden px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-300 ${
-                  isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
-                }`
-              }
-            >
-              Expedientes
-            </NavLink>
+            {/* En móvil el menú central se oculta: dejamos el acceso directo a la vista principal del rol */}
+            {principal && (
+              <NavLink
+                to={principal.ruta}
+                className={({ isActive }) =>
+                  `md:hidden px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-300 ${
+                    isActive ? "text-primary bg-primary/10" : "text-muted-foreground hover:text-foreground"
+                  }`
+                }
+              >
+                {principal.etiqueta}
+              </NavLink>
+            )}
 
             {!usuario ? (
               <BotonAcceder />

@@ -9,7 +9,11 @@ import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { m2, soles } from "@/lib/formato";
-import { BookOpen, ChevronRight, ExternalLink, FileText, Info, LandPlot, ListChecks, MapPin, Trash2 } from "lucide-react";
+import { BookOpen, ChevronRight, ExternalLink, FileText, Info, LandPlot, ListChecks, MapPin, Scale, Trash2 } from "lucide-react";
+import { HistorialEvaluaciones } from "@/components/HistorialEvaluaciones";
+import { PanelPublicacion } from "@/components/PanelPublicacion";
+import { SolicitudContacto } from "@/components/SolicitudContacto";
+import { puedeVerHistorial } from "@/lib/permisos";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
 import { useAuth } from "@/lib/auth";
@@ -261,7 +265,7 @@ export default function Expediente() {
               <div className="rounded-2xl border border-border bg-superficie p-4">
                 {p.precioReferencial != null ? (
                   <>
-                    <p className="text-xs font-bold uppercase tracking-wider text-tinta-2">Precio referencial · dato simulado</p>
+                    <p className="text-xs font-bold uppercase tracking-wider text-tinta-2">Precio</p>
                     <p className="cifras text-3xl font-extrabold tracking-tight text-foreground">{soles(p.precioReferencial, true)}</p>
                     {p.precioNota && <p className="mt-1 text-xs text-tinta-2">{p.precioNota}</p>}
                   </>
@@ -400,6 +404,14 @@ export default function Expediente() {
 
             <PanelEvaluacionTecnica detalle={d} alCambiar={setData} />
 
+            {d.publicacion && (
+              <SolicitudContacto codigo={d.codigo} denominacion={d.denominacion} estadoPublicacion={d.publicacion.estado} />
+            )}
+
+            {puedeVerHistorial(usuario?.rol) && (
+              <HistorialEvaluaciones key={ev?.calculadaEn ?? "sin-evaluacion"} codigo={d.codigo} />
+            )}
+
             {d.terminos.length > 0 && <Glosario terminos={d.terminos} />}
 
             {esRevisor && <EditorExpediente detalle={d} alGuardar={setData} />}
@@ -407,6 +419,14 @@ export default function Expediente() {
 
           {/* Columna lateral */}
           <aside className="space-y-8">
+            {d.publicacion && <PanelPublicacion codigo={d.codigo} publicacion={d.publicacion} alCambiar={setData} />}
+
+            {/* Texto fijo para todos los roles: la verificación jurídica ocurre fuera del sistema (etapa 9). */}
+            <div className="flex gap-3 rounded-3xl border border-info-tinta/20 bg-info-suave p-6 text-sm font-semibold text-info-tinta">
+              <Scale className="size-5 shrink-0" aria-hidden="true" />
+              <p>Siguiente paso: verificación jurídica con abogado o notario, fuera del sistema.</p>
+            </div>
+
             <Card className="rounded-3xl border-border shadow-tarjeta">
               <CardContent className="p-8">
                 <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-5">

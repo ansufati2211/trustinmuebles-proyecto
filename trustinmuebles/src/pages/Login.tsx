@@ -13,6 +13,10 @@ const CUENTAS_DEMO = [
   { codigo: "comprador-01", rol: "Comprador", desc: "Consulta e inspección" },
   { codigo: "revisor-01", rol: "Revisor", desc: "Edición y registro" },
   { codigo: "especialista-01", rol: "Especialista", desc: "Informe técnico" },
+  { codigo: "gestor-01", rol: "Gestor", desc: "Cartera y publicación" },
+  { codigo: "propietario-01", rol: "Propietario", desc: "Mis inmuebles" },
+  { codigo: "propietario-02", rol: "Propietario", desc: "Mis inmuebles" },
+  { codigo: "especialista-02", rol: "Especialista", desc: "Informe técnico" },
 ];
 
 /** Retraso escalonado para .anim-enter / .anim-fade (lee la variable --d del CSS). */
