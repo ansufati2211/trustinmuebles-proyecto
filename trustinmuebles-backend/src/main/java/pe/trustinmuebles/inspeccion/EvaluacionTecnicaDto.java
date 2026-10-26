@@ -11,7 +11,8 @@ public record EvaluacionTecnicaDto(EstadoTecnico estado, String estadoEtiqueta, 
         LocalDate fechaInspeccion, VerificacionCampo verifArquitectura, VerificacionCampo verifEstructuras,
         VerificacionCampo verifElectricas, VerificacionCampo verifSanitarias, String observaciones,
         String conclusiones, String estudiosAdicionales, String limite, String profesionalEspecialidad,
-        String solicitanteCodigo, boolean riesgoFisicoDetectado, ServicioInspeccion servicio) {
+        String solicitanteCodigo, boolean riesgoFisicoDetectado, ServicioInspeccion servicio,
+        String especialistaAsignadoCodigo) {
 
     static final String LIMITE_SIN_INSPECCION =
             "Solo revisión documental: no acredita el estado físico de las estructuras ni de las instalaciones.";
@@ -27,7 +28,7 @@ public record EvaluacionTecnicaDto(EstadoTecnico estado, String estadoEtiqueta, 
             String conclusiones, String estudiosAdicionales, String limite) {
         this(estado, estadoEtiqueta, resultado, resultadoEtiqueta, profesional, colegiatura, fechaSolicitud,
                 fechaInspeccion, verifArquitectura, verifEstructuras, verifElectricas, verifSanitarias, observaciones,
-                conclusiones, estudiosAdicionales, limite, null, null, riesgo(estado, resultado), null);
+                conclusiones, estudiosAdicionales, limite, null, null, riesgo(estado, resultado), null, null);
     }
 
     /** Hay riesgo físico detectado solo cuando el informe está emitido y su conclusión es «con riesgo». */
@@ -38,7 +39,7 @@ public record EvaluacionTecnicaDto(EstadoTecnico estado, String estadoEtiqueta, 
     static EvaluacionTecnicaDto sinSolicitud(ServicioInspeccion servicio) {
         return new EvaluacionTecnicaDto(EstadoTecnico.NO_SOLICITADA, EstadoTecnico.NO_SOLICITADA.etiqueta(), null, null,
                 null, null, null, null, null, null, null, null, null, null, null, LIMITE_SIN_INSPECCION, null, null,
-                false, servicio);
+                false, servicio, null);
     }
 
     static EvaluacionTecnicaDto de(EvaluacionTecnica e, ServicioInspeccion servicio) {
@@ -47,6 +48,7 @@ public record EvaluacionTecnicaDto(EstadoTecnico estado, String estadoEtiqueta, 
                 e.getFechaSolicitud(), e.getFechaInspeccion(), e.getVerifArquitectura(), e.getVerifEstructuras(),
                 e.getVerifElectricas(), e.getVerifSanitarias(), e.getObservaciones(), e.getConclusiones(),
                 e.getEstudiosAdicionales(), LIMITE_CON_INSPECCION, e.getProfesionalEspecialidad(),
-                e.getSolicitanteCodigo(), riesgo(e.getEstado(), e.getResultado()), servicio);
+                e.getSolicitanteCodigo(), riesgo(e.getEstado(), e.getResultado()), servicio,
+                e.getEspecialistaAsignadoCodigo());
     }
 }

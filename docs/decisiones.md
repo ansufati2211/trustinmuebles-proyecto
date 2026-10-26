@@ -359,3 +359,29 @@ partida cambian (por ejemplo, un asiento E que cancela el embargo) y el motor re
 ## D38. v0.7: acceso al historial
 REVISOR, GESTOR, ESPECIALISTA y el PROPIETARIO del caso. El COMPRADOR recibe 403 (en `SecurityConfig` y en el servicio) y el
 propietario de otro caso, 404 (D35).
+
+## D39. v0.7: módulo `cartera` (contacto y panel)
+**Qué:** un noveno módulo de Spring Modulith, `cartera`, con las solicitudes de contacto y el panel del gestor. Depende de
+`expediente` (solo de su nueva API pública `CarteraCasos`, de solo lectura, y de `EstadoPublicacion`), `clasificacion`,
+`inspeccion`, `identidad` y `shared`. Ningún módulo depende de él, así que no hay ciclos. La publicación sigue en `expediente`
+porque es un dato del caso. Nunca escribe en `clasificacion`: contactar no cambia el color (I8, I10).
+**Contacto (migración V8):** solo COMPRADOR, sobre un caso `PUBLICADO` (otro caso da 404, como en D35). Guarda el código del
+comprador (de la sesión), la fecha y un motivo de lista cerrada (`INFORMACION_GENERAL`, `CONSULTA_DOCUMENTOS`,
+`CONSULTA_INSPECCION`). **No hay texto libre:** un campo desconocido en el cuerpo da 400 en lugar de ignorarse
+(`@JsonIgnoreProperties(ignoreUnknown = false)`), para que nadie crea haber enviado un mensaje. Una sola pendiente por comprador
+y caso: la columna única `pendiente_clave` lo garantiza también en la base; la segunda da 409. El GESTOR la marca `ATENDIDA`
+(una ya atendida da 409) y después el comprador puede volver a pedir contacto (supuesto).
+**Listado de contactos (supuesto):** se agregó `GET /contactos?estado=` para que el gestor encuentre el `id` que atiende.
+
+## D40. v0.7: asignación del especialista y `especialista-02`
+**Qué:** `PUT /casos/{c}/inspeccion/asignacion` (solo GESTOR) con `especialistaCodigo`. Exige una inspección `SOLICITADA` o
+`EN_INSPECCION` (otro estado o sin solicitud: 409) y una cuenta ESPECIALISTA con datos profesionales (otra: 400). Se puede
+reasignar mientras no esté emitida (supuesto). Con asignación, solo el asignado emite (otro especialista: 403); sin asignación
+se conserva el comportamiento anterior. La firma sigue saliendo de la cuenta autenticada (M8).
+**`especialista-02`:** «Arq. Perfil Ficticio 02», Arquitecto, colegiatura `SIM-CAP-0002`. El nombre dice que es ficticio para
+no parecer una persona real (I11) y la colegiatura lleva `SIM-`.
+
+## D41. v0.7: panel de cartera
+`GET /cartera/panel` (solo GESTOR, solo lectura): total de casos, totales por color de A y por estado de publicación (con ceros),
+casos con faltantes, inspecciones solicitadas o en curso con su especialista asignado y cuántas están asignadas o no, y los
+contactos pendientes. No ordena ni califica casos (sin rankings).

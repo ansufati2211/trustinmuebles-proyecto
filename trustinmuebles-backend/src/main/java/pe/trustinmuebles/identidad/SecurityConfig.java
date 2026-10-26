@@ -89,6 +89,11 @@ class SecurityConfig {
                         // v0.7: el propietario solo otorga o retira su autorización (I13); el gestor publica o retira.
                         .requestMatchers("/api/v1/casos/*/autorizacion").hasRole("PROPIETARIO")
                         .requestMatchers("/api/v1/casos/*/publicacion").hasRole("GESTOR")
+                        // F3: asignación de inspecciones, contactos y panel de cartera.
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion/asignacion").hasRole("GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/contactos").hasRole("COMPRADOR")
+                        .requestMatchers("/api/v1/contactos", "/api/v1/contactos/**").hasRole("GESTOR")
+                        .requestMatchers("/api/v1/cartera/**").hasRole("GESTOR")
                         // Historial de evaluaciones: solo lectura y nunca para el comprador.
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/historial")
                                 .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO")

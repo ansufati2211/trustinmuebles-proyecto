@@ -60,8 +60,8 @@ public abstract class BaseApiTest {
         return token("revisor-01");
     }
 
-    /** v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01 y propietario-02. */
-    protected static final int CUENTAS_DEMO = 6;
+    /** v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01, propietario-02 y especialista-02. */
+    protected static final int CUENTAS_DEMO = 7;
 
     protected String gestor() throws Exception {
         return token("gestor-01");

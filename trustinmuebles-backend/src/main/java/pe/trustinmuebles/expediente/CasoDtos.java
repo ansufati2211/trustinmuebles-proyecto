@@ -184,6 +184,9 @@ final class CasoDtos {
         }
     }
 
+    /** v0.7: el especialista va por su código de cuenta; su firma sale de esa cuenta, no de la petición. */
+    record AsignarEspecialistaRequest(@NotBlank @Size(max = 40) String especialistaCodigo) {}
+
     record CambiarItemRequest(@NotNull EstadoItem estado, @Size(max = 255) String observacion) {}
 
     // ------------------------------------------------------------- uso interno

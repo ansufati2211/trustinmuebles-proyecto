@@ -32,6 +32,11 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 | Retirar la autorización (v0.7) | `DELETE /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
 | Publicar un caso (v0.7) | `POST /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409, 422 |
 | Retirar la publicación (v0.7) | `DELETE /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409 |
+| Asignar especialista a una inspección (v0.7) | `PUT /casos/{codigo}/inspeccion/asignacion` (`{"especialistaCodigo"}`) | **GESTOR** | 200, 400, 401, 403, 404, 409 |
+| Solicitar contacto (v0.7) | `POST /casos/{codigo}/contactos` (`{"motivo"}`) | **COMPRADOR** | 201, 400, 401, 403, 404, 409 |
+| Listar contactos (v0.7) | `GET /contactos?estado=PENDIENTE\|ATENDIDA` | **GESTOR** | 200, 401, 403 |
+| Marcar un contacto atendido (v0.7) | `PUT /contactos/{id}/atencion` | **GESTOR** | 200, 401, 403, 404, 409 |
+| Panel de cartera (v0.7) | `GET /cartera/panel` | **GESTOR** | 200, 401, 403 |
 | Historial de evaluaciones del indicador A (v0.7) | `GET /casos/{codigo}/historial` | REVISOR, GESTOR, ESPECIALISTA, PROPIETARIO del caso | 200, 401, 403 (comprador), 404 |
 
 **Visibilidad (v0.7):** el COMPRADOR solo ve casos `PUBLICADO` y el PROPIETARIO solo los suyos (listado, detalle, PDF y

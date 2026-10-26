@@ -184,8 +184,16 @@ class ExpedienteService {
         UsuarioActual u = UsuarioActual.actual();
         if (u.rol() != Rol.ESPECIALISTA) throw new AccessDeniedException("Solo el especialista emite el informe técnico");
         Expediente e = buscar(codigo);
-        inspeccion.registrar(e.getId(), informe, u.id());
+        inspeccion.registrar(e.getId(), informe, u.id(), u.codigoCuenta());
         return aDetalle(e);
+    }
+
+    /**
+     * v0.7: el gestor asigna la inspección solicitada o en curso a un especialista. No recalcula el indicador A (I8).
+     */
+    EvaluacionTecnicaDto asignarEspecialista(String codigo, String especialistaCodigo) {
+        exigirRol(Rol.GESTOR, "Solo el gestor asigna inspecciones");
+        return inspeccion.asignar(buscar(codigo).getId(), especialistaCodigo);
     }
 
     record DocumentoPlano(byte[] datos, String nombre) {}

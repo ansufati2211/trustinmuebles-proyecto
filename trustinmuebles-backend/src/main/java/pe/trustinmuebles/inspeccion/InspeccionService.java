@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import pe.trustinmuebles.identidad.AuthService;
 import pe.trustinmuebles.identidad.PerfilProfesional;
+import pe.trustinmuebles.identidad.Rol;
+import org.springframework.security.access.AccessDeniedException;
 import pe.trustinmuebles.shared.ConflictoException;
 import pe.trustinmuebles.shared.ReglaNegocioException;
 
@@ -69,12 +71,36 @@ public class InspeccionService {
      * M8: el especialista registra el avance o el informe. El nombre, la especialidad y la colegiatura salen de su
      * cuenta, nunca del cuerpo de la petición. Exige que el expediente tenga una solicitud.
      */
-    public EvaluacionTecnicaDto registrar(Long expedienteId, InformeDatos d, Long especialistaId) {
+    public EvaluacionTecnicaDto registrar(Long expedienteId, InformeDatos d, Long especialistaId,
+            String especialistaCodigo) {
         EvaluacionTecnica e = repo.findByExpedienteId(expedienteId).orElseThrow(
                 () -> new ConflictoException("Este expediente no tiene una solicitud de inspección técnica"));
+        // v0.7: con asignación, solo el especialista asignado emite; sin ella se conserva el comportamiento anterior.
+        if (e.getEspecialistaAsignadoCodigo() != null && !e.getEspecialistaAsignadoCodigo().equals(especialistaCodigo)) {
+            throw new AccessDeniedException("Esta inspección está asignada a otro especialista");
+        }
         PerfilProfesional perfil = identidad.perfilProfesional(especialistaId).orElseThrow(
                 () -> new ReglaNegocioException("Tu cuenta no tiene datos profesionales (nombre y colegiatura) para firmar el informe"));
         return guardar(e, d, perfil);
+    }
+
+    /**
+     * v0.7: el gestor asigna una inspección solicitada o en curso a un especialista válido (cuenta ESPECIALISTA con datos
+     * profesionales para firmar). Reasignar mientras no esté emitida reemplaza la asignación. No toca el indicador A.
+     */
+    public EvaluacionTecnicaDto asignar(Long expedienteId, String especialistaCodigo) {
+        EvaluacionTecnica e = repo.findByExpedienteId(expedienteId).orElseThrow(
+                () -> new ConflictoException("Este expediente no tiene una solicitud de inspección técnica"));
+        if (e.getEstado() != EstadoTecnico.SOLICITADA && e.getEstado() != EstadoTecnico.EN_INSPECCION) {
+            throw new ConflictoException("Solo se asigna una inspección solicitada o en curso");
+        }
+        String codigo = especialistaCodigo == null ? null : especialistaCodigo.trim();
+        if (!identidad.tieneRol(codigo, Rol.ESPECIALISTA) || identidad.perfilProfesional(codigo).isEmpty()) {
+            throw new IllegalArgumentException("especialistaCodigo: «" + codigo + "» no es un especialista válido");
+        }
+        e.setEspecialistaAsignadoCodigo(codigo);
+        e.setActualizadoEn(ahora());
+        return EvaluacionTecnicaDto.de(repo.save(e), servicio);
     }
 
     /**

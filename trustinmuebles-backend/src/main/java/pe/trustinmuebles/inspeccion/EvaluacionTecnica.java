@@ -70,4 +70,8 @@ class EvaluacionTecnica {
     /** Especialidad del profesional (por ejemplo, Ingeniero Civil). Sale de su cuenta, como el nombre y la colegiatura. */
     @Column(name = "profesional_especialidad")
     private String profesionalEspecialidad;
+
+    /** v0.7: especialista que asignó el gestor. Si existe, solo él emite el informe; si es null, cualquiera. */
+    @Column(name = "especialista_asignado_codigo")
+    private String especialistaAsignadoCodigo;
 }

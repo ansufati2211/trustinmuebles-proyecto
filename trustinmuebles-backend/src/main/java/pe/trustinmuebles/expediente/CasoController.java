@@ -123,6 +123,12 @@ class CasoController {
         return servicio.registrarInforme(codigo, req.datos());
     }
 
+    /** v0.7: solo el GESTOR asigna un especialista a una inspección solicitada o en curso. */
+    @PutMapping("/{codigo}/inspeccion/asignacion")
+    EvaluacionTecnicaDto asignar(@PathVariable String codigo, @Valid @RequestBody AsignarEspecialistaRequest req) {
+        return servicio.asignarEspecialista(codigo, req.especialistaCodigo());
+    }
+
     @GetMapping("/{codigo}/inspeccion/documento")
     ResponseEntity<byte[]> informeDocumento(@PathVariable String codigo) {
         ExpedienteService.DocumentoPlano d = servicio.informeDocumento(codigo);

@@ -32,7 +32,15 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     static final List<Cuenta> CUENTAS = List.of(new Cuenta("comprador-01", Rol.COMPRADOR),
             new Cuenta("revisor-01", Rol.REVISOR), new Cuenta("especialista-01", Rol.ESPECIALISTA),
             new Cuenta("gestor-01", Rol.GESTOR), new Cuenta("propietario-01", Rol.PROPIETARIO),
-            new Cuenta("propietario-02", Rol.PROPIETARIO));
+            new Cuenta("propietario-02", Rol.PROPIETARIO), new Cuenta("especialista-02", Rol.ESPECIALISTA));
+
+    /**
+     * Segundo especialista (v0.7), para la asignación. Perfil ficticio: el nombre dice que es ficticio y la colegiatura
+     * lleva el prefijo SIM-, que ningún colegio profesional usa (I11).
+     */
+    static final String ESPECIALISTA_02_NOMBRE = "Arq. Perfil Ficticio 02";
+    static final String ESPECIALISTA_02_ESPECIALIDAD = "Arquitecto";
+    static final String ESPECIALISTA_02_COLEGIATURA = "SIM-CAP-0002";
 
     /** Datos profesionales del especialista de la demostración. Son ficticios y la interfaz los rotula así. */
     static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
@@ -47,6 +55,8 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         crearCuentasQueFalten();
         auth.completarPerfilProfesional("especialista-01", ESPECIALISTA_NOMBRE, ESPECIALISTA_ESPECIALIDAD,
                 ESPECIALISTA_COLEGIATURA);
+        auth.completarPerfilProfesional("especialista-02", ESPECIALISTA_02_NOMBRE, ESPECIALISTA_02_ESPECIALIDAD,
+                ESPECIALISTA_02_COLEGIATURA);
         auth.completarFuncion("gestor-01", FUNCION_GESTOR);
     }
 
