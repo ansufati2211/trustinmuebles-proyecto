@@ -4,13 +4,13 @@ Lo que quedó abierto al cerrar la sesión 1 (backend y pruebas). Cada punto dic
 
 ## Fuera del alcance de la sesión 1
 
-- **Interfaz (sesión 2).** El frontend no se modificó: no hay pantallas para el gestor, el propietario, el contacto, la
-  asignación, el historial ni el panel de cartera. La API ya los ofrece (ver `docs/api.md`).
+- **Interfaz.** Resuelto en la sesión 2 (F4): ya hay pantallas para el gestor, el propietario, el contacto, la asignación, el
+  historial y el panel de cartera. Falta verificarlas en un navegador (ver «Sesión 2»).
 - **Recorrido de navegador.** `docs/pruebas/recorrido-v06.mjs` no se repitió: no se levantaron servidores en esta sesión.
 
 ## Por confirmar con el equipo o el docente
 
-- **Supuestos D32 a D42** de `docs/decisiones.md`, en especial: retirar la autorización despublica el caso (D34), el origen
+- **Supuestos D32 a D49** de `docs/decisiones.md`, en especial: retirar la autorización despublica el caso (D34), el origen
   `EDICION` para el PDF de la partida (D37), el historial que se conserva al borrar una partida transcrita (D36) y la
   reasignación de una inspección en curso (D40).
 - **Informe del curso.** Los roles GESTOR y PROPIETARIO, la publicación, el contacto y el historial son funciones nuevas que el
@@ -27,3 +27,18 @@ Lo que quedó abierto al cerrar la sesión 1 (backend y pruebas). Cada punto dic
 - **Registro de la línea base fuera del repositorio.** La salida de la primera ejecución quedó por error en
   `C:\Users\gab02\OneDrive\Desktop\UTP\Ciclo 8\Trustin\linea-base-tmp.txt` (carpeta superior al repositorio). No se borró;
   se puede eliminar a mano.
+
+## Sesión 2 (interfaz y documentación)
+
+- **Verificación en navegador.** No se levantaron servidores ni se abrió un navegador: el aspecto visual y el comportamiento
+  real de las vistas Cartera, Mis inmuebles, publicación, autorización, historial, contacto y asignación quedan **pendientes de
+  comprobación manual**. Lo mismo vale para la nueva I7 (pie y login).
+- **Estado del contacto para el comprador.** El backend no ofrece una ruta para que el comprador consulte sus solicitudes; la
+  interfaz solo muestra la respuesta de la solicitud mientras dura la página (D46). Para mostrar «atendida» hace falta una ruta
+  nueva en el backend.
+- **Lista de especialistas.** El selector de asignación usa las dos cuentas de la demostración porque no hay una ruta que liste
+  especialistas (D45).
+- **Recorrido de navegador nuevo.** `docs/pruebas/recorrido-v06.mjs` quedó obsoleto; hace falta uno que recorra los 5 roles.
+- **Tamaño del paquete.** `pnpm build` avisa que el JavaScript principal supera 500 kB (543 kB; en la línea base ya eran 512 kB).
+  No se cambió la configuración de Vite.
+- No se encontró ningún error del backend que bloqueara la integración: el backend no se modificó en esta sesión.

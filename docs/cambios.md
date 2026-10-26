@@ -86,6 +86,7 @@ Rama `feature/v0.7-ciclo-cartera`, en dos sesiones. Ver `docs/RESUMEN-v0.7.md`.
 | F6 | `9c23269` | `CicloCarteraTest`, ciclo completo con base propia (140 pruebas) |
 | F7 (sesión 1) | `4836955` | Resumen y pendientes del backend |
 | F4 | `35291ad` | Interfaz: vistas Cartera y Mis inmuebles, publicación, autorización, asignación, historial, contacto, navegación por rol, cuentas nuevas en el login y rótulos de datos simulados en un solo lugar (60 pruebas de Vitest) |
-| F5 | este commit | Documentación: modelo de negocio, hipótesis de valor, hoja de ruta, I7 redefinida, API, trazabilidad, funcionalidades y README |
+| F5 | `0a17f2f` | Documentación: modelo de negocio, hipótesis de valor, hoja de ruta, I7 redefinida, API, trazabilidad, funcionalidades y README |
+| F7 (sesión 2) | este commit | Resumen final y pendientes: backend 140/140, frontend 60/60, build correcto |
 
-Pendiente: verificación en navegador de las vistas nuevas, aprobación de los supuestos D32 a D48 y revisión del informe.
+Pendiente: verificación en navegador de las vistas nuevas, aprobación de los supuestos D32 a D49 y revisión del informe.

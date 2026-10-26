@@ -19,9 +19,9 @@ trustinmuebles/` está vacío).
 | F2. Subsanación e historial | Completa | `e0d41fd` | 131 / 0 / 0 / 0 |
 | F3. Contacto, asignación y panel | Completa | `c2ea59c` | 139 / 0 / 0 / 0 |
 | F6. Ciclo completo (`CicloCarteraTest`) | Completa | `9c23269` | 140 / 0 / 0 / 0 |
-| F7. Cierre | Completa | este commit | 140 / 0 / 0 / 0 (ejecución final, ver abajo) |
+| F7. Cierre (sesión 1) | Completa | `4836955` | 140 / 0 / 0 / 0 |
 
-F4 y F5 no forman parte de esta sesión (son de la sesión 2, la interfaz).
+F4 y F5 son de la sesión 2 (ver «Sesión 2: interfaz y documentación», al final).
 
 **Conteo final real:** 140 pruebas ejecutadas, 140 aprobadas, 0 fallos, 0 errores, 0 omitidas (`mvnw test` del cierre). La
 línea base coincidió con las 107 esperadas. Pruebas nuevas: `CaptacionPublicacionTest` (11), `MigracionV6Test` (1),
@@ -102,3 +102,79 @@ Ver `docs/PENDIENTES.md`. No se verificó: la interfaz (no se tocó), el arranqu
 la base real—, el recorrido de navegador y la documentación Swagger de las rutas nuevas. No hay errores sin resolver.
 
 **Confirmación:** no se modificó ningún archivo del frontend (`trustinmuebles/`).
+
+---
+
+# Sesión 2: interfaz y documentación
+
+Sin cambios en el backend (`git diff 4836955..HEAD -- trustinmuebles-backend/src` vacío; solo se actualizó su `README.md`).
+**No se levantaron servidores ni se usó un navegador:** el aspecto visual y el comportamiento real de las vistas nuevas quedan
+pendientes de comprobación manual. Nada de lo que sigue afirma que se vean o funcionen bien en pantalla.
+
+## Fases
+
+| Fase | Estado | Commit | Pruebas y compilación al cerrar la fase |
+|---|---|---|---|
+| F4. Interfaz del ciclo de cartera | Completa | `35291ad` | `pnpm test`: 60 pruebas en 9 archivos, 60 aprobadas, 0 fallidas; `pnpm build` correcto |
+| F5. Documentación | Completa | `0a17f2f` | 60 / 60; build correcto |
+| F7. Cierre (sesión 2) | Completa | este commit | Ver «Resultados finales» |
+
+Línea base del frontend al empezar: 33 pruebas en 6 archivos, todas aprobadas, y build correcto. Pruebas nuevas: 27 (11 en
+`permisos.test.ts`, 7 en `cartera.test.ts`, 5 en `historial.test.ts` y 4 en `contacto.test.ts`; 33 + 27 = 60).
+
+## Resultados finales (ejecuciones reales del 25 de octubre de 2026)
+
+| Comprobación | Resultado |
+|---|---|
+| Backend `.\mvnw.cmd test` | 140 ejecutadas, 140 aprobadas, 0 fallos, 0 errores, 0 omitidas; `ModularityTests` en verde |
+| Frontend `npx --yes pnpm@9 test` | 9 archivos; 60 ejecutadas, 60 aprobadas, 0 fallidas (Vitest no informó omitidas) |
+| Frontend `npx --yes pnpm@9 build` | Correcto (`tsc --noEmit` y `vite build`). Aviso de tamaño: el JS principal pesa 543 kB (512 kB en la línea base) |
+
+## Vistas y endpoints consumidos
+
+| Vista o componente | Endpoints |
+|---|---|
+| `Cartera` (`#/cartera`, GESTOR) | `GET /cartera/panel`, `GET /casos`, `GET /contactos?estado=PENDIENTE`, `PUT /contactos/{id}/atencion` |
+| `MisInmuebles` (`#/mis-inmuebles`, PROPIETARIO) | `GET /casos`, `GET /casos/{codigo}`, `PUT` y `DELETE /casos/{codigo}/autorizacion` |
+| `PanelPublicacion` (detalle) | `PUT` y `DELETE /casos/{codigo}/autorizacion`, `POST` y `DELETE /casos/{codigo}/publicacion`, `GET /casos/{codigo}` |
+| `HistorialEvaluaciones` (detalle) | `GET /casos/{codigo}/historial` |
+| `SolicitudContacto` (detalle, COMPRADOR) | `POST /casos/{codigo}/contactos` |
+| `PanelEvaluacionTecnica` (asignación, GESTOR) | `PUT /casos/{codigo}/inspeccion/asignacion`, `GET /casos/{codigo}` |
+| `RegistrarPartida` (REVISOR) | `POST /casos` con `propietarioCodigo` |
+
+Ninguna vista usa una ruta que el backend no tenga ni fija el color de A.
+
+## Roles, permisos y navegación
+
+| Rol | Menú | Vistas que abre | Acciones nuevas en el detalle |
+|---|---|---|---|
+| COMPRADOR | Inicio, Expedientes | Catálogo y detalle (solo publicados) | Solicitar contacto (solo en publicados) |
+| REVISOR | Inicio, Expedientes, Registrar partida | Catálogo, detalle, registro | Indicar el propietario al registrar; ver el historial. No puede autorizar |
+| ESPECIALISTA | Inicio, Expedientes | Catálogo y detalle | Ver el historial; emitir solo si no hay asignación o es el asignado |
+| GESTOR | Inicio, Expedientes, Cartera | Catálogo, detalle, Cartera | Publicar o retirar, asignar especialista, ver el historial, atender contactos |
+| PROPIETARIO | Inicio, Mis inmuebles | Mis inmuebles y detalle de sus casos | Autorizar o retirar su autorización, ver el historial |
+
+Lo decide `lib/permisos.ts` (`navegacion`, `puedeAbrirVista` y los `puede…`) y lo prueba `permisos.test.ts`. `RequireVista`
+bloquea la URL escrita a mano. El servidor sigue siendo la autoridad (I4).
+
+## Supuestos nuevos
+
+D43 a D49 en `docs/decisiones.md`: navegación y guarda por rol (D43), operaciones que vuelven a consultar al servidor (D44), lista
+fija de especialistas (D45), estado del contacto solo en la respuesta (D46), rótulos de datos simulados en un solo lugar (D47),
+texto fijo de la etapa 9 (D48) y nueve etapas, hipótesis de valor e I7 redefinida (D49).
+
+## Desvíos respecto del plan
+
+- **Sin pruebas existentes adaptadas:** las 33 pruebas anteriores siguen igual; `permisos.test.ts` solo se amplió.
+- **`TopBar.tsx`** (no se usa en el shell actual) se tocó solo para que compile con los dos roles nuevos (primer intento de
+  `pnpm build` falló por eso; resuelto en el segundo).
+- **Sin token de diseño nuevo:** no hizo falta tocar `index.css`.
+- **Estado del contacto del comprador** limitado a la respuesta de la solicitud (no hay ruta en el backend, D46).
+
+## Pendientes y no verificado
+
+Ver `docs/PENDIENTES.md`, «Sesión 2». No verificado: aspecto visual y comportamiento en el navegador de todas las vistas nuevas y
+de los textos del pie y el login (I7); accesibilidad de los componentes nuevos con teclado y lector de pantalla; recorrido de
+navegador de la v0.7 (no existe; `recorrido-v06.mjs` quedó obsoleto).
+
+**Confirmación:** no se levantaron servidores ni se hizo ninguna verificación visual en un navegador.
