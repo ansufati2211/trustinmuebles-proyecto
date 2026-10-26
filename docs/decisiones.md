@@ -385,3 +385,14 @@ no parecer una persona real (I11) y la colegiatura lleva `SIM-`.
 `GET /cartera/panel` (solo GESTOR, solo lectura): total de casos, totales por color de A y por estado de publicación (con ceros),
 casos con faltantes, inspecciones solicitadas o en curso con su especialista asignado y cuántas están asignadas o no, y los
 contactos pendientes. No ordena ni califica casos (sin rankings).
+
+## D42. v0.7: prueba del ciclo completo con base propia (F6)
+**Qué:** `CicloCarteraTest` usa `@TestPropertySource` con una URL H2 en memoria de nombre aleatorio
+(`jdbc:h2:mem:ciclo-${random.uuid}`), así que arranca un contexto propio con una base nueva: no comparte datos con las demás
+pruebas, no depende del orden de ejecución y no toca `data/`. No se borra ningún archivo ni base para prepararla.
+`MigracionV6Test` hace lo mismo con su propia base para probar V6 sobre datos v0.6.
+**Recorrido:** el revisor crea una vivienda transcrita (AMARILLO por RV-04, según las reglas reales), el propietario la
+autoriza, el gestor la publica, el comprador la ve y pide contacto, el gestor lo atiende, el comprador pide la inspección, el
+gestor asigna a `especialista-02`, este emite un informe con riesgo (A no cambia), el revisor incorpora los planos (VERDE por las
+reglas) y adjunta un PDF, y el historial registra los tres recálculos. Incluye los 403 y 404 de cada rol y, al final, el retiro
+de la autorización (I14).
