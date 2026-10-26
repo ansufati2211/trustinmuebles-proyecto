@@ -35,7 +35,14 @@ final class CasoDtos {
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             long pendientes, String origen, String fuente, LocalDate fechaConsulta,
             EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
-            PredioDto predio) {}
+            PredioDto predio, EstadoPublicacion estadoPublicacion) {}
+
+    /**
+     * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se
+     * muestra al comprador. {@code autorizada} es verdadero si hay una autorización vigente.
+     */
+    record PublicacionDto(EstadoPublicacion estado, String propietarioCodigo, boolean autorizada,
+            java.time.Instant autorizacionFecha) {}
 
     /**
      * Datos del predio para el catálogo. El área es la del terreno inscrita en la partida y el precio es referencial
@@ -62,7 +69,7 @@ final class CasoDtos {
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
             String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
             EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
-            PredioDto predio) {}
+            PredioDto predio, PublicacionDto publicacion) {}
 
     record DocumentoDto(String codigo, String sha256) {}
 
@@ -140,7 +147,9 @@ final class CasoDtos {
             TipoPredio tipoPredio,
             @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruidaInscrita,
             @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
-            @NotNull Boolean confirmaSinDatosPersonales) {
+            @NotNull Boolean confirmaSinDatosPersonales,
+            /* v0.7: cuenta PROPIETARIO del caso. El caso nace en BORRADOR y sin autorización. */
+            @NotBlank @Size(max = 40) String propietarioCodigo) {
 
         DatosExpediente datos() {
             return new DatosExpediente(condicionRepresentada, completitud, fechaConsulta, nota, zonaRegistral,

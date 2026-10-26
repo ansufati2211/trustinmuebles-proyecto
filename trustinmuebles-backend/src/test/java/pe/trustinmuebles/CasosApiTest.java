@@ -27,7 +27,7 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Contenido v0.4 cargado: 10 casos simulados, 48 términos, 9 reglas (3 prioritarias), 3 cuentas")
+    @DisplayName("Contenido v0.4 cargado: 10 casos simulados, 48 términos, 9 reglas (3 prioritarias), las cuentas de demostración")
     void contenidoCargado() {
         assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
@@ -41,7 +41,7 @@ class CasosApiTest extends BaseApiTest {
         assertThat(jdbc.queryForObject(
                 "select count(*) from regla where estado_revision not like '%pendiente de revisión especializada%'",
                 Integer.class)).as("toda regla está rotulada como borrador").isZero();
-        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(CUENTAS_DEMO);
     }
 
     @Test

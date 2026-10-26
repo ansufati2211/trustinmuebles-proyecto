@@ -89,6 +89,10 @@ class CasosSeeder implements ApplicationRunner {
         caso.setDistrito(c.distrito());
         caso.setPrecioReferencial(c.precioReferencial());
         caso.setResponsableId(responsableId);
+        // v0.7: los casos de demostración nacen publicados, con la autorización de su propietario (I14).
+        caso.setPropietarioCodigo(propietarioDe(c.codigo()));
+        caso.setAutorizacionFecha(java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
+        caso.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
         casos.save(caso);
 
         Expediente e = servicio.crear(caso, c.datos());
@@ -109,6 +113,14 @@ class CasosSeeder implements ApplicationRunner {
     static final String COMPRADOR_DEMO = "comprador-01";
     static final String ESPECIALISTA_DEMO = "especialista-01";
 
+    /** Reparto de los casos de demostración entre los dos propietarios. Es el mismo que aplica la migración V6. */
+    static final java.util.Set<String> DEL_PROPIETARIO_02 = java.util.Set.of("SIM-11052690", "SIM-11070419",
+            "SIM-11081204", "SIM-11093320", "SIM-11104029");
+
+    static String propietarioDe(String codigo) {
+        return DEL_PROPIETARIO_02.contains(codigo) ? "propietario-02" : "propietario-01";
+    }
+
     /**
      * Completa un caso ya cargado con lo que el contenido agregó después (v0.6): distrito, precio referencial e ítems
      * de checklist nuevos, como la declaración jurada municipal. Solo rellena lo que falta; no pisa lo editado.
@@ -117,6 +129,8 @@ class CasosSeeder implements ApplicationRunner {
         CasoLote caso = casos.findByCodigo(c.codigo()).orElseThrow();
         if (caso.getDistrito() == null) caso.setDistrito(c.distrito());
         if (caso.getPrecioReferencial() == null) caso.setPrecioReferencial(c.precioReferencial());
+        // Solo rellena el propietario si falta; el estado de publicación y la autorización no se tocan.
+        if (caso.getPropietarioCodigo() == null) caso.setPropietarioCodigo(propietarioDe(c.codigo()));
         Expediente e = expedientes.findByCasoCodigo(c.codigo()).orElseThrow();
         var actuales = checklist.listar(e.getId());
         java.util.Set<String> nombres = new java.util.HashSet<>();

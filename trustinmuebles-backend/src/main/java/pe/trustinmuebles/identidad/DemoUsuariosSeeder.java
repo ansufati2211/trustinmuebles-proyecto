@@ -1,5 +1,6 @@
 package pe.trustinmuebles.identidad;
 
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
@@ -7,8 +8,9 @@ import org.springframework.core.annotation.Order;
 import org.springframework.stereotype.Component;
 
 /**
- * Crea las cuentas de prueba (comprador-01, revisor-01 y especialista-01) que falten.
- * La contraseña viene de APP_SEED_PASSWORD y nunca se guarda en texto plano.
+ * Crea las cuentas de prueba que falten, también en una base ya creada (v0.7). Es idempotente: no duplica cuentas ni
+ * cambia la contraseña o el rol de las que ya existen. La contraseña viene de APP_SEED_PASSWORD y nunca se guarda en
+ * texto plano.
  */
 @Component
 @Order(10)
@@ -24,10 +26,20 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         this.password = password;
     }
 
+    record Cuenta(String codigo, Rol rol) {}
+
+    /** Cuentas de la demostración. Se identifican solo por su código; no guardan nombres, DNI ni teléfonos (I11). */
+    static final List<Cuenta> CUENTAS = List.of(new Cuenta("comprador-01", Rol.COMPRADOR),
+            new Cuenta("revisor-01", Rol.REVISOR), new Cuenta("especialista-01", Rol.ESPECIALISTA),
+            new Cuenta("gestor-01", Rol.GESTOR), new Cuenta("propietario-01", Rol.PROPIETARIO),
+            new Cuenta("propietario-02", Rol.PROPIETARIO));
+
     /** Datos profesionales del especialista de la demostración. Son ficticios y la interfaz los rotula así. */
     static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
     static final String ESPECIALISTA_ESPECIALIDAD = "Ingeniero Civil";
     static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
+
+    static final String FUNCION_GESTOR = "Asesor comercial";
 
     @Override
     public void run(ApplicationArguments args) {
@@ -35,21 +47,17 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         crearCuentasQueFalten();
         auth.completarPerfilProfesional("especialista-01", ESPECIALISTA_NOMBRE, ESPECIALISTA_ESPECIALIDAD,
                 ESPECIALISTA_COLEGIATURA);
+        auth.completarFuncion("gestor-01", FUNCION_GESTOR);
     }
 
     private void crearCuentasQueFalten() {
-        boolean hayCuentas = auth.hayUsuarios();
-        // Una base creada antes del rol de especialista solo necesita su cuenta; no se recrean las demás.
-        if (hayCuentas && auth.existeCuenta("especialista-01")) return;
+        List<Cuenta> faltan = CUENTAS.stream().filter(c -> !auth.existeCuenta(c.codigo())).toList();
+        if (faltan.isEmpty()) return;
         if (password == null || password.length() < 8) {
             throw new IllegalStateException(
                     "Define APP_SEED_PASSWORD (mínimo 8 caracteres) para crear las cuentas de prueba, "
                             + "o desactiva la carga con app.seed.enabled=false.");
         }
-        if (!hayCuentas) {
-            auth.crearCuentaDePrueba("comprador-01", password, Rol.COMPRADOR);
-            auth.crearCuentaDePrueba("revisor-01", password, Rol.REVISOR);
-        }
-        auth.crearCuentaDePrueba("especialista-01", password, Rol.ESPECIALISTA);
+        faltan.forEach(c -> auth.crearCuentaDePrueba(c.codigo(), password, c.rol()));
     }
 }

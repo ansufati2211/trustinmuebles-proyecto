@@ -89,6 +89,17 @@ public class AuthService {
         });
     }
 
+    /** Completa la función de una cuenta de prueba que aún no la tiene. No pisa datos existentes. */
+    public void completarFuncion(String codigoCuenta, String funcion) {
+        repo.findByCodigoCuenta(codigoCuenta).filter(u -> u.getFuncion() == null).ifPresent(u -> u.setFuncion(funcion));
+    }
+
+    /** ¿Existe la cuenta y tiene ese rol? Lo usan la captación (propietario) y la asignación (especialista). */
+    @Transactional(readOnly = true)
+    public boolean tieneRol(String codigoCuenta, Rol rol) {
+        return codigoCuenta != null && repo.findByCodigoCuenta(codigoCuenta).map(u -> u.getRol() == rol).orElse(false);
+    }
+
     private static Optional<PerfilProfesional> perfil(Usuario u) {
         if (u.getNombreCompleto() == null || u.getColegiatura() == null) return Optional.empty();
         return Optional.of(new PerfilProfesional(u.getCodigoCuenta(), u.getNombreCompleto(), u.getEspecialidad(),

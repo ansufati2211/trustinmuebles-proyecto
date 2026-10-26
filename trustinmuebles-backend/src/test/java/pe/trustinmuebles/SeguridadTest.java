@@ -91,7 +91,7 @@ class SeguridadTest extends BaseApiTest {
     @DisplayName("CP-01 la contraseña se guarda como hash BCrypt, nunca en texto plano")
     void contrasenaConHash() {
         var hashes = jdbc.queryForList("select password_hash from usuario", String.class);
-        assertThat(hashes).hasSize(3).allSatisfy(h -> {
+        assertThat(hashes).hasSize(CUENTAS_DEMO).allSatisfy(h -> {
             assertThat(h).startsWith("$2");
             assertThat(h).doesNotContain(password);
         });
@@ -116,6 +116,6 @@ class SeguridadTest extends BaseApiTest {
         mvc.perform(post("/api/v1/auth/register").contentType(MediaType.APPLICATION_JSON)
                 .content("{\"codigoCuenta\":\"nuevo\",\"password\":\"clave-larga-123\"}"))
                 .andExpect(status().is4xxClientError());
-        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(3);
+        assertThat(jdbc.queryForObject("select count(*) from usuario", Integer.class)).isEqualTo(CUENTAS_DEMO);
     }
 }

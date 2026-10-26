@@ -44,6 +44,7 @@ class RegistrarPartidaTest extends BaseApiTest {
         d.put("estado", "VIGENTE");
         d.put("texto", "Hipoteca a favor de Persona natural 1, en garantía de un préstamo.");
         p.put("confirmaSinDatosPersonales", true);
+        p.put("propietarioCodigo", "propietario-01"); // v0.7: el revisor indica el propietario al crear el expediente
         return p;
     }
 
@@ -70,6 +71,11 @@ class RegistrarPartidaTest extends BaseApiTest {
                     .andExpect(jsonPath("$.terminos", not(empty())))
                     .andExpect(jsonPath("$.expediente.tieneDocumento").value(true));
 
+            // v0.7: nace en borrador; el comprador la ve cuando el propietario autoriza y el gestor publica.
+            mvc.perform(put("/api/v1/casos/" + NUMERO + "/autorizacion").header("Authorization", propietario(1)))
+                    .andExpect(status().isOk());
+            mvc.perform(post("/api/v1/casos/" + NUMERO + "/publicacion").header("Authorization", gestor()))
+                    .andExpect(status().isOk());
             mvc.perform(get("/api/v1/casos").header("Authorization", comprador())).andExpect(status().isOk())
                     .andExpect(jsonPath("$[?(@.codigo=='" + NUMERO + "')].origen", contains("TRANSCRITA")));
 
@@ -132,7 +138,7 @@ class RegistrarPartidaTest extends BaseApiTest {
     void edicionProtegida() throws Exception {
         try {
             registrar(partida(NUMERO), revisor()).andExpect(status().isCreated());
-            ObjectNode p = peticion(leer(NUMERO));
+            ObjectNode p = peticion(leerComo(NUMERO, revisor())); // v0.7: en borrador solo la ve el equipo
             ((ObjectNode) ((ArrayNode) p.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");
             actualizarExpediente(NUMERO, revisor(), p).andExpect(status().isBadRequest());
         } finally {

@@ -291,3 +291,42 @@ del repositorio.
 los 6 pasos son el alcance del servicio; «en inspección» marca hechos los pasos 1 y 2 (revisión documental y de planos) y en
 curso el 3 (visita); con el informe emitido, los 6 quedan hechos. Si el equipo quiere registrar cada paso, hace falta un campo
 nuevo en `evaluacion_tecnica`.
+
+## D32. v0.7: roles GESTOR y PROPIETARIO, y cuentas que faltan (supuesto)
+**Qué:** se agregan `gestor-01` (rol GESTOR, función «Asesor comercial», columna `usuario.funcion`), `propietario-01` y
+`propietario-02` (rol PROPIETARIO). `DemoUsuariosSeeder` crea **cada** cuenta de la lista que falte, también en una base ya
+creada, y no cambia la contraseña ni el rol de las que existen. Antes solo creaba `especialista-01` en una base con cuentas;
+ahora la regla es la misma para todas.
+**I11:** las cuentas nuevas no guardan nombre, DNI ni teléfono. El propietario se identifica solo por su código de cuenta.
+**Pruebas adaptadas:** `CasosApiTest.contenidoCargado` y `SeguridadTest` (`contrasenaConHash`, `sinRegistroAbierto`) contaban
+3 cuentas; ahora usan la constante `CUENTAS_DEMO` de `BaseApiTest`. La aserción es la misma (cuentas creadas por la carga y
+ninguna más), con el nuevo número.
+
+## D33. v0.7: captación y publicación por caso (migración V6)
+**Qué:** `caso_lote` gana `propietario_codigo`, `autorizacion_fecha` (nula si no hay autorización) y `estado_publicacion`
+(`BORRADOR`, `PUBLICADO`, `RETIRADO`). Una restricción de la base impide un caso `PUBLICADO` sin autorización (I14).
+**Los diez casos de demostración** quedan publicados y autorizados, alternados entre los dos propietarios por orden de partida
+(propietario-01: Parcona, Subtanjalla, Pueblo Nuevo, Salas y Pachacútec; propietario-02: La Tinguiña, Los Aquijes, Santiago,
+San José de los Molinos e Ica). Así cada propietario tiene casos de varios colores. Lo aplica V6 en una base existente y
+`CasosSeeder` en una base nueva (la tabla está vacía cuando corre la migración). Una partida transcrita anterior a la v0.7 queda
+en `BORRADOR` y sin propietario.
+**Supuesto:** la fecha de autorización de los casos de demostración es la de la migración o la carga, no una fecha inventada.
+
+## D34. v0.7: reglas de captación y publicación (supuestos)
+- `POST /casos` exige `propietarioCodigo`, que debe ser una cuenta PROPIETARIO (400 si no). El caso nace en `BORRADOR` y sin
+  autorización. Por eso `RegistrarPartidaTest.revisorRegistra` ahora autoriza (propietario) y publica (gestor) antes de
+  comprobar que el comprador ve la partida, y `edicionProtegida` lee el caso como revisor: un borrador no es visible para el
+  comprador. Es el cambio mínimo que exige la etapa 1.
+- `PUT|DELETE /casos/{c}/autorizacion`: solo el PROPIETARIO **de ese caso**. Otro rol o el propietario de otro caso: 403.
+  Autorizar dos veces conserva la primera fecha.
+- **Retirar la autorización de un caso publicado lo deja `RETIRADO`** (supuesto): un caso no puede seguir publicado sin
+  autorización vigente (I14). No es una acción del gestor, sino la consecuencia del retiro del consentimiento.
+- `POST|DELETE /casos/{c}/publicacion`: solo el GESTOR. Publicar sin autorización da **422**; publicar algo ya publicado o
+  retirar algo que no lo está da 409. Publicar no mira el color de A (I10).
+- Ninguna de estas operaciones recalcula ni toca la evaluación (I8).
+
+## D35. v0.7: visibilidad por rol (404 y no 403)
+**Qué:** el comprador solo ve casos `PUBLICADO` y el propietario solo los suyos, en el listado, el detalle, los PDF y la
+solicitud de inspección. Un caso que no puede ver responde **404**, igual que uno inexistente, para no revelar que existe.
+Revisor, gestor y especialista ven todos. La comprobación está en `ExpedienteService.visible` (servidor).
+**I11:** el bloque `publicacion` del detalle no muestra el código del propietario al comprador.

@@ -29,6 +29,7 @@ import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
 import pe.trustinmuebles.inspeccion.InformeDatos;
 import pe.trustinmuebles.inspeccion.InspeccionService;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.Procedencia;
+import pe.trustinmuebles.identidad.AuthService;
 import pe.trustinmuebles.identidad.Rol;
 import pe.trustinmuebles.identidad.UsuarioActual;
 import org.springframework.security.access.AccessDeniedException;
@@ -47,10 +48,11 @@ class ExpedienteService {
     private final GlosarioService glosario;
     private final AlmacenamientoService almacenamiento;
     private final InspeccionService inspeccion;
+    private final AuthService identidad;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
-            InspeccionService inspeccion) {
+            InspeccionService inspeccion, AuthService identidad) {
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -58,6 +60,7 @@ class ExpedienteService {
         this.glosario = glosario;
         this.almacenamiento = almacenamiento;
         this.inspeccion = inspeccion;
+        this.identidad = identidad;
     }
 
     /**
@@ -66,19 +69,21 @@ class ExpedienteService {
      */
     @Transactional(readOnly = true)
     List<ResumenCaso> listar(FiltroCatalogo filtro) {
-        return expedientes.findAllByOrderByCasoCodigoAsc().stream().map(e -> {
+        UsuarioActual u = UsuarioActual.actual();
+        return expedientes.findAllByOrderByCasoCodigoAsc().stream().filter(e -> visible(e.getCaso(), u)).map(e -> {
             EvaluacionDto ev = clasificacion.obtener(e.getId()).orElse(null);
             EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
             return new ResumenCaso(e.getCaso().getCodigo(), e.getCaso().getDenominacion(), e.getCaso().getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
-                    e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e));
+                    e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
+                    e.getCaso().getEstadoPublicacion());
         }).filter(filtro::acepta).toList();
     }
 
     @Transactional(readOnly = true)
     DetalleCaso detalle(String codigo) {
-        return aDetalle(buscar(codigo));
+        return aDetalle(buscarVisible(codigo));
     }
 
     /**
@@ -116,7 +121,7 @@ class ExpedienteService {
     EvaluacionTecnicaDto solicitarInspeccion(String codigo) {
         UsuarioActual u = UsuarioActual.actual();
         if (u.rol() != Rol.COMPRADOR) throw new AccessDeniedException("Solo un comprador puede solicitar la inspección");
-        return inspeccion.solicitar(buscar(codigo).getId(), u.codigoCuenta());
+        return inspeccion.solicitar(buscarVisible(codigo).getId(), u.codigoCuenta());
     }
 
     /**
@@ -136,7 +141,7 @@ class ExpedienteService {
     /** El informe técnico en PDF. Solo existe cuando el especialista lo emitió. */
     @Transactional(readOnly = true)
     DocumentoPlano informeDocumento(String codigo) {
-        Expediente e = buscar(codigo);
+        Expediente e = buscarVisible(codigo);
         EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
         if (t.estado() != EstadoTecnico.EMITIDO) throw new NoEncontradoException("Informe técnico", codigo);
         List<InformeTecnicoPdf.PlanoResumen> planos = new java.util.ArrayList<>();
@@ -167,7 +172,7 @@ class ExpedienteService {
     /** El PDF que subió el revisor o, si no hay, una lámina 2D referencial generada con los datos del plano. */
     @Transactional(readOnly = true)
     DocumentoPlano planoDocumento(String codigo, Especialidad especialidad) {
-        Expediente e = buscar(codigo);
+        Expediente e = buscarVisible(codigo);
         PlanoTecnico p = planoDe(e, especialidad);
         if (p == null || (p.getEstado() != EstadoPlano.PRESENTADO && p.getEstado() != EstadoPlano.OBSERVADO)) {
             throw new NoEncontradoException("Plano", especialidad.etiqueta());
@@ -232,6 +237,10 @@ class ExpedienteService {
             throw new ConflictoException("La partida " + req.numero() + " ya está registrada");
         }
         verificarDatosPersonales(req.datos(), req.denominacion(), req.contexto());
+        String propietario = req.propietarioCodigo().trim();
+        if (!identidad.tieneRol(propietario, Rol.PROPIETARIO)) {
+            throw new IllegalArgumentException("propietarioCodigo: «" + propietario + "» no es una cuenta de propietario");
+        }
 
         CasoLote caso = new CasoLote();
         caso.setCodigo(req.numero());
@@ -244,6 +253,10 @@ class ExpedienteService {
         caso.setDistrito(distritoDe(req.contexto()));
         caso.setSinDatosPersonales(true);
         caso.setResponsableId(UsuarioActual.actual().id());
+        // Etapa 1 (captación): el caso nace en borrador y sin autorización; solo el propietario puede otorgarla.
+        caso.setPropietarioCodigo(propietario);
+        caso.setAutorizacionFecha(null);
+        caso.setEstadoPublicacion(EstadoPublicacion.BORRADOR);
         casos.save(caso);
 
         Expediente e = crear(caso, req.datos());
@@ -330,7 +343,7 @@ class ExpedienteService {
 
     @Transactional(readOnly = true)
     ArchivoContenido documento(String codigo) {
-        Expediente e = buscar(codigo);
+        Expediente e = buscarVisible(codigo);
         if (e.getDocumentoArchivoId() == null) throw new NoEncontradoException("Documento del caso", codigo);
         return almacenamiento.leer(e.getDocumentoArchivoId());
     }
@@ -469,6 +482,94 @@ class ExpedienteService {
         return expedientes.findByCasoCodigo(codigo).orElseThrow(() -> new NoEncontradoException("Caso", codigo));
     }
 
+    /**
+     * Un caso que la sesión puede consultar. El comprador solo ve los publicados y el propietario solo los suyos; para
+     * los demás la respuesta es 404, igual que un caso inexistente, para no revelar que existe.
+     */
+    private Expediente buscarVisible(String codigo) {
+        Expediente e = buscar(codigo);
+        if (!visible(e.getCaso(), UsuarioActual.actual())) throw new NoEncontradoException("Caso", codigo);
+        return e;
+    }
+
+    static boolean visible(CasoLote c, UsuarioActual u) {
+        return switch (u.rol()) {
+            case COMPRADOR -> c.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO;
+            case PROPIETARIO -> u.codigoCuenta().equals(c.getPropietarioCodigo());
+            case REVISOR, GESTOR, ESPECIALISTA -> true;
+        };
+    }
+
+    // ------------------------------------------------------ captación y publicación
+
+    /**
+     * Etapa 1: el propietario autoriza la evaluación y publicación de su propio caso (I13). Es su única escritura. Si
+     * ya estaba autorizado se conserva la fecha original. No recalcula ni cambia el color del indicador A (I8).
+     */
+    PublicacionDto autorizar(String codigo) {
+        CasoLote c = casoDelPropietario(codigo);
+        if (c.getAutorizacionFecha() == null) c.setAutorizacionFecha(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        return publicacion(casos.saveAndFlush(c), UsuarioActual.actual());
+    }
+
+    /**
+     * El propietario retira su autorización. Como un caso no puede estar publicado sin ella (I14), uno publicado pasa a
+     * RETIRADO. El historial y el color del indicador A no cambian.
+     */
+    PublicacionDto retirarAutorizacion(String codigo) {
+        CasoLote c = casoDelPropietario(codigo);
+        c.setAutorizacionFecha(null);
+        if (c.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO) c.setEstadoPublicacion(EstadoPublicacion.RETIRADO);
+        return publicacion(casos.saveAndFlush(c), UsuarioActual.actual());
+    }
+
+    /** Etapa 5: solo el gestor publica, y solo con autorización vigente (I14). No depende del color de A (I10). */
+    PublicacionDto publicar(String codigo) {
+        UsuarioActual u = exigirRol(Rol.GESTOR, "Solo el gestor publica casos");
+        CasoLote c = buscar(codigo).getCaso();
+        if (c.getAutorizacionFecha() == null) {
+            throw new ReglaNegocioException("No se puede publicar: el propietario no ha autorizado este caso");
+        }
+        if (c.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO) {
+            throw new ConflictoException("El caso ya está publicado");
+        }
+        c.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        return publicacion(casos.saveAndFlush(c), u);
+    }
+
+    /** Solo el gestor retira la publicación. No borra el historial ni cambia el indicador A. */
+    PublicacionDto retirarPublicacion(String codigo) {
+        UsuarioActual u = exigirRol(Rol.GESTOR, "Solo el gestor retira la publicación");
+        CasoLote c = buscar(codigo).getCaso();
+        if (c.getEstadoPublicacion() != EstadoPublicacion.PUBLICADO) {
+            throw new ConflictoException("El caso no está publicado");
+        }
+        c.setEstadoPublicacion(EstadoPublicacion.RETIRADO);
+        return publicacion(casos.saveAndFlush(c), u);
+    }
+
+    /** El caso del propietario autenticado. Otro rol, o el propietario de otro caso, recibe 403. */
+    private CasoLote casoDelPropietario(String codigo) {
+        UsuarioActual u = exigirRol(Rol.PROPIETARIO, "Solo el propietario autoriza su caso");
+        CasoLote c = buscar(codigo).getCaso();
+        if (!u.codigoCuenta().equals(c.getPropietarioCodigo())) {
+            throw new AccessDeniedException("Solo el propietario de este caso puede autorizarlo");
+        }
+        return c;
+    }
+
+    private static UsuarioActual exigirRol(Rol rol, String mensaje) {
+        UsuarioActual u = UsuarioActual.actual();
+        if (u.rol() != rol) throw new AccessDeniedException(mensaje);
+        return u;
+    }
+
+    /** El comprador no ve el código del propietario (I11). */
+    static PublicacionDto publicacion(CasoLote c, UsuarioActual u) {
+        return new PublicacionDto(c.getEstadoPublicacion(), u.rol() == Rol.COMPRADOR ? null : c.getPropietarioCodigo(),
+                c.getAutorizacionFecha() != null, c.getAutorizacionFecha());
+    }
+
     /** El motor evalúa los asientos del rubro D (gravámenes y cargas), con su estado ya normalizado. */
     static EntradaClasificacion entrada(Expediente e) {
         return new EntradaClasificacion(e.getCondicionRepresentada(), e.getTitularidad(), e.getCompletitud(),
@@ -500,7 +601,7 @@ class ExpedienteService {
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
                 c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
-                glosario.terminosDe(e.getId()), predio(e));
+                glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()));
     }
 
     /** ¿El área del plano coincide con la inscrita (diferencia de hasta 1 %)? Null si falta alguno de los dos datos. */

@@ -35,4 +35,7 @@ public class Usuario {
     private String especialidad;
 
     private String colegiatura;
+
+    /** Función dentro de la inmobiliaria (por ejemplo, «Asesor comercial» del gestor). No es un dato personal. */
+    private String funcion;
 }

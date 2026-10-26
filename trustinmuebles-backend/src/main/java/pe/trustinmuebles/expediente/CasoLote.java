@@ -55,4 +55,16 @@ class CasoLote {
     /** Revisor responsable del registro del caso. No otorga edición al comprador. */
     @Column(name = "responsable_id", nullable = false)
     private Long responsableId;
+
+    /** Cuenta del propietario (I11: solo el código, sin nombre ni DNI). Lo indica el revisor al crear el expediente. */
+    @Column(name = "propietario_codigo")
+    private String propietarioCodigo;
+
+    /** Cuándo autorizó el propietario la evaluación y publicación. Null si no hay autorización vigente. */
+    @Column(name = "autorizacion_fecha")
+    private java.time.Instant autorizacionFecha;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_publicacion", nullable = false)
+    private EstadoPublicacion estadoPublicacion = EstadoPublicacion.BORRADOR;
 }

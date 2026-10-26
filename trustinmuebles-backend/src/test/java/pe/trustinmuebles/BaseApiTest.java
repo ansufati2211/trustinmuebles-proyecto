@@ -60,8 +60,24 @@ public abstract class BaseApiTest {
         return token("revisor-01");
     }
 
+    /** v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01 y propietario-02. */
+    protected static final int CUENTAS_DEMO = 6;
+
+    protected String gestor() throws Exception {
+        return token("gestor-01");
+    }
+
+    protected String propietario(int n) throws Exception {
+        return token("propietario-0" + n);
+    }
+
     protected JsonNode leer(String codigo) throws Exception {
-        String r = mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
+        return leerComo(codigo, comprador());
+    }
+
+    /** Lee un caso con otra sesión: un caso en borrador no es visible para el comprador (v0.7). */
+    protected JsonNode leerComo(String codigo, String authorization) throws Exception {
+        String r = mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", authorization))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
         return json.readTree(r);
     }

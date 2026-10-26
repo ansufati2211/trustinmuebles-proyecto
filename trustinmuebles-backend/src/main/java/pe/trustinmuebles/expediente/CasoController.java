@@ -79,6 +79,31 @@ class CasoController {
                 .body(c.datos());
     }
 
+    // ---------------------------------------------------- captación y publicación (v0.7)
+
+    /** Solo el PROPIETARIO del caso otorga su autorización (I13). */
+    @PutMapping("/{codigo}/autorizacion")
+    PublicacionDto autorizar(@PathVariable String codigo) {
+        return servicio.autorizar(codigo);
+    }
+
+    /** Solo el PROPIETARIO del caso la retira; un caso publicado pasa a RETIRADO (I14). */
+    @DeleteMapping("/{codigo}/autorizacion")
+    PublicacionDto retirarAutorizacion(@PathVariable String codigo) {
+        return servicio.retirarAutorizacion(codigo);
+    }
+
+    /** Solo el GESTOR publica, con autorización vigente y sin importar el color del indicador A (I10). */
+    @PostMapping("/{codigo}/publicacion")
+    PublicacionDto publicar(@PathVariable String codigo) {
+        return servicio.publicar(codigo);
+    }
+
+    @DeleteMapping("/{codigo}/publicacion")
+    PublicacionDto retirarPublicacion(@PathVariable String codigo) {
+        return servicio.retirarPublicacion(codigo);
+    }
+
     // ---------------------------------------------------- inspección técnica y planos
 
     @PostMapping("/{codigo}/inspeccion/solicitud")

@@ -28,6 +28,16 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 | Registrar una partida transcrita | `POST /casos` | REVISOR | 201, 400, 401, 403, 409 |
 | Eliminar una partida transcrita | `DELETE /casos/{codigo}` | REVISOR | 204, 401, 403, 404, 409 |
 | Glosario cerrado | `GET /glosario` | Sesión | 200, 401 |
+| Autorizar la evaluación y publicación (v0.7) | `PUT /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
+| Retirar la autorización (v0.7) | `DELETE /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
+| Publicar un caso (v0.7) | `POST /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409, 422 |
+| Retirar la publicación (v0.7) | `DELETE /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409 |
+
+**Visibilidad (v0.7):** el COMPRADOR solo ve casos `PUBLICADO` y el PROPIETARIO solo los suyos (listado, detalle, PDF y
+solicitud de inspección); para los demás la respuesta es 404. REVISOR, GESTOR y ESPECIALISTA ven todos. `POST /casos` exige
+`propietarioCodigo` (una cuenta PROPIETARIO) y el caso nace en `BORRADOR`, sin autorización. Publicar sin autorización da 422.
+El detalle trae `publicacion` (`estado`, `propietarioCodigo` —nulo para el comprador—, `autorizada`, `autorizacionFecha`) y
+el listado `estadoPublicacion`. Ninguna de estas operaciones cambia el color del indicador A.
 
 ## Catálogo y filtros (M13)
 
