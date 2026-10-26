@@ -1,3 +1,7 @@
+// OBSOLETO desde la v0.7: verifica el diseño anterior al rediseño de landing y login, solo 3 roles y rótulos que ya no
+// existen («Precio referencial · dato simulado», «Datos ficticios de demostración»). No recorre las vistas de la v0.7
+// (Cartera, Mis inmuebles, publicación, historial, contacto). Se conserva como referencia; ver LEEME.md, «Pruebas».
+//
 // Recorrido de navegador de la v0.6 con los 3 roles (39 verificaciones).
 // Requisitos: backend con una base NUEVA (cambia el caso de Santiago) y APP_SEED_PASSWORD=prueba-local-1234, interfaz en
 // http://localhost:5173 y Google Chrome instalado. puppeteer-core se instala aparte, fuera del repositorio:

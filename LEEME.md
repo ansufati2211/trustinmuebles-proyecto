@@ -1,4 +1,4 @@
-# Trustinmuebles — MVP académico de orientación documental (v0.6.0)
+# Trustinmuebles — MVP académico de orientación documental (v0.7.0)
 
 Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Trustinmuebles es el sistema de transparencia
 precompra de **una sola inmobiliaria de Ica**, que carga a mano su propia cartera (sin scraping de otros portales ni APIs
@@ -8,7 +8,8 @@ saneamiento, no recomienda comprar, no consulta fuentes oficiales y no reemplaza
 
 ## Modelo de negocio
 
-**Quién lo ofrece:** una sola inmobiliaria de Ica, que carga a mano su propia cartera. **Quién lo usa:** el comprador.
+**Quién lo ofrece:** una sola inmobiliaria de Ica, que carga a mano su propia cartera. **Quién lo usa:** el comprador, y
+dentro de la inmobiliaria el revisor, el gestor y los especialistas; el propietario autoriza su caso.
 
 **Problema que reduce:** el comprador suele decidir sin entender la partida registral ni saber qué documentos faltan; el
 sistema ordena esa información, la explica y señala los vacíos. **Qué NO hace:** certificar saneamiento, recomendar la
@@ -18,14 +19,78 @@ compra, consultar fuentes oficiales en línea ni reemplazar a un abogado o notar
 |---|---|---|
 | Servicio | Pre-evaluación documental automática por reglas | Evaluación técnica presencial de 6 pasos |
 | Quién lo activa | Se calcula para todo inmueble de la cartera | El comprador, a pedido |
-| Costo | Incluido | Referencial S/ 250.00, sin pasarela de pago |
+| Costo | Incluido | S/ 250.00 (dato de la demostración), sin pasarela de pago |
 | Resultado | Verde («Sin alertas en los campos evaluados»), amarillo, rojo o gris | Informe del especialista en PDF |
 
 B nunca cambia el color de A (RN-10): así el comprador distingue lo que dicen los documentos de lo que se vio en la visita.
 
-- **Comprador:** consulta la cartera y decide si solicita el indicador B.
-- **Revisor:** carga y mantiene partidas, planos y checklist, que alimentan el indicador A.
-- **Especialista:** visita el inmueble y emite el informe del indicador B.
+### Actores y responsabilidades
+
+| Actor | Rol en el sistema | Responsabilidad |
+|---|---|---|
+| Comprador | COMPRADOR | Consulta los casos publicados, pide contacto y solicita la inspección (indicador B) |
+| Revisor | REVISOR | Capta el expediente indicando al propietario, mantiene partidas, planos y checklist, y subsana faltantes |
+| Gestor (asesor comercial) | GESTOR | Publica y retira casos, atiende contactos, asigna inspecciones y sigue la cartera en su panel |
+| Especialista | ESPECIALISTA | Visita el inmueble y emite el informe técnico; si la inspección está asignada, solo el asignado |
+| Propietario | PROPIETARIO | Consulta sus casos y otorga o retira su autorización. No edita ni sube documentos |
+| Abogado o notario | — (fuera del sistema) | Verificación jurídica antes de comprar |
+
+### Flujo de nueve etapas
+
+«Implementado» significa que existe en el backend con pruebas automáticas y en la interfaz con pruebas de sus funciones
+puras; el aspecto y el comportamiento en el navegador de las vistas de la v0.7 **no se han verificado** (ver
+`docs/RESUMEN-v0.7.md`).
+
+| # | Etapa | Quién | Estado |
+|---|---|---|---|
+| 1 | Captación: el revisor crea el expediente e indica el código del propietario; nace en borrador | Revisor | Implementado (v0.7) |
+| 2 | Autorización del propietario para evaluar y publicar | Propietario | Implementado (v0.7) |
+| 3 | Pre-evaluación documental automática (indicador A) | Motor de reglas | Implementado |
+| 4 | Subsanación: el revisor incorpora documentos faltantes, el motor recalcula y el historial lo registra | Revisor | Implementado (v0.7) |
+| 5 | Publicación, solo con autorización vigente | Gestor | Implementado (v0.7) |
+| 6 | Consulta del comprador y solicitud de contacto | Comprador, gestor | Implementado (v0.7) |
+| 7 | Evaluación técnica presencial (indicador B), con asignación del especialista | Comprador, gestor, especialista | Implementado (asignación en v0.7) |
+| 8 | Seguimiento de la cartera en el panel del gestor | Gestor | Implementado (v0.7) |
+| 9 | Verificación jurídica con abogado o notario | Comprador | **Fuera del sistema** |
+
+### Reglas que no deben romperse
+
+- Verde significa exactamente «Sin alertas en los campos evaluados» (I1).
+- El color de A solo cambia cuando el motor recalcula por un cambio de datos o documentos; ningún botón ni ruta lo fija, y
+  publicar, retirar, autorizar, contactar o asignar no lo tocan (I8).
+- B nunca cambia A (I2) y el checklist, incluida la HR y PU, tampoco (I3).
+- Adjuntar un plano o un PDF no levanta un rojo por embargo, bloqueo o demanda: solo una partida transcrita nueva (I9).
+- Publicar y pedir contacto no dependen del color de A (I10), pero nada se publica sin autorización vigente del propietario (I14).
+- Sin nombres, DNI ni teléfonos de propietarios o compradores: se identifican por su código de cuenta y el contacto usa motivos
+  de una lista cerrada (I11).
+- El historial de evaluaciones es de solo adición (I12) y el propietario solo autoriza sus propios casos (I13).
+- La autorización la valida el servidor (I4); la interfaz solo oculta lo que el rol no puede hacer.
+
+### Casos de demostración y propietarios
+
+Los diez casos (ver «Casos cargados») están publicados y autorizados, repartidos entre los dos propietarios por orden de partida
+(D33): **propietario-01** tiene Parcona, Subtanjalla, Pueblo Nuevo, Salas y Pachacútec; **propietario-02**, La Tinguiña, Los
+Aquijes, Santiago, San José de los Molinos e Ica. Las cuentas de demostración están en «Cuentas de prueba».
+
+### Cómo se genera valor (hipótesis por validar)
+
+Son hipótesis de negocio, sin cifras: no se han validado con ninguna inmobiliaria.
+- **Suscripción de la inmobiliaria:** la inmobiliaria pagaría por usar el sistema con su cartera, a cambio de vender con más
+  transparencia y menos consultas repetidas.
+- **Parte del ingreso de la inspección:** el sistema recibiría una parte de lo que se cobre por cada evaluación técnica
+  presencial (indicador B).
+
+**Validación propuesta (actividad futura):** un piloto con entre tres y cinco inmobiliarias de Ica para comprobar si la propuesta
+de valor les sirve y si estarían dispuestas a pagar por ella. Ese piloto **no se ha realizado**.
+
+### Hoja de ruta (no implementado)
+
+- **Vigencia automática** de la información registral. Hoy no existe a propósito: RN-08 pide fecha referencial sin
+  vencimiento automático.
+- **Comparador** de inmuebles.
+- **Posventa.**
+- **Inteligencia artificial** (por ejemplo, para leer documentos). Hoy no hay OCR, visión artificial ni IA.
+- La etapa 9 (verificación jurídica) sigue fuera del sistema.
 
 **Fuentes:** gratuitas (Conoce Aquí y Visor Catastral de SUNARP, consultados a mano) frente a aportadas o pagadas (copia
 literal certificada, planos, HR y PU, inspección). Sin scraping ni APIs inexistentes (ver «Fuentes de información»).
@@ -35,9 +100,10 @@ literal certificada, planos, HR y PU, inspección). Sin scraping ni APIs inexist
 El producto se llama Trustinmuebles en el código, en la documentación y en el informe (ver `docs/decisiones.md`, D2).
 
 Dos carpetas:
-- `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 8 módulos: `identidad`,
-  `expediente`, `clasificacion`, `inspeccion`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
-- `trustinmuebles/` — interfaz de React 19 con Vite: catálogo comercial con filtros, detalle con planos e inspección, y un
+- `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 9 módulos: `identidad`,
+  `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
+- `trustinmuebles/` — interfaz de React 19 con Vite: catálogo comercial con filtros, detalle con planos e inspección, vistas
+  «Cartera» (gestor) y «Mis inmuebles» (propietario), historial de evaluaciones y solicitud de contacto (v0.7), y un
   sistema visual propio (tokens en `src/index.css`). Los casos y planos usan ilustraciones SVG propias, pero la landing y el
   login (rediseño del equipo) cargan fotografías externas decorativas (Unsplash): **la demo necesita internet**. Incluye barra
   de navegación, pie con los límites legales y pantalla de carga.
@@ -144,18 +210,20 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 
 ```powershell
 cd trustinmuebles-backend; .\mvnw.cmd test     # 140 pruebas del backend (v0.7)
-cd trustinmuebles; npx pnpm@9 test              # 33 pruebas del frontend
+cd trustinmuebles; npx pnpm@9 test              # 60 pruebas del frontend (v0.7)
 cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 ```
 
-En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. El backend pasó de 107 a **140 pruebas** en la v0.7 (ejecución del 25 de
-octubre de 2026, ver `docs/RESUMEN-v0.7.md`); las 33 del frontend son las de la v0.6 (ver `docs/RESUMEN-v0.6.md`), que no se
-volvieron a ejecutar en la sesión del backend. El rendimiento se mide con
-`node scripts/medir-nf02.mjs` y el recorrido de navegador de la v0.6 con `docs/pruebas/recorrido-v06.mjs` (39 verificaciones con
-los 3 roles, obtenidas con el diseño anterior al rediseño de landing y login; deben repetirse: **por verificar**). Resultados y
-evidencias en `docs/pruebas/`.
+En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. En la v0.7 el backend pasó de 107 a **140 pruebas** y el frontend de 33 a
+**60** (ejecuciones reales del 25 de octubre de 2026; los conteos finales están en `docs/RESUMEN-v0.7.md`). Las pruebas del
+frontend son de funciones puras (permisos, navegación, filtros, totales del panel, historial y contacto): no prueban el dibujado
+de las pantallas. El rendimiento se mide con `node scripts/medir-nf02.mjs`.
 
-## Invariantes (cada una con prueba automática)
+**`docs/pruebas/recorrido-v06.mjs` está obsoleto:** sus 39 verificaciones son de la v0.6, con 3 roles y el diseño anterior al
+rediseño de landing y login, y no recorre las vistas de la v0.7. Se conserva como referencia; hace falta un recorrido nuevo
+(**por verificar**). Resultados y evidencias en `docs/pruebas/`.
+
+## Invariantes (todas con prueba automática salvo I7)
 
 | | Invariante | Prueba |
 |---|---|---|
@@ -165,7 +233,7 @@ evidencias en `docs/pruebas/`.
 | I4 | La autorización está en el servidor (403 por rol) | `CatalogoYServiciosTest.soloElCompradorSolicita`, `otroRolNoEmite`, `SeguridadTest` |
 | I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests` |
 | I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` |
-| I7 | Personas, precios y colegiatura se rotulan como simulados | Recorrido `docs/pruebas/recorrido-v06.mjs` (verificaciones de precio y credencial) |
+| I7 | Los límites legales se muestran en el pie de página (incluido que los datos de la demostración son simulados) y el login comunica que es un entorno demostrativo; ya no se repiten rótulos por tarjeta o panel (D47) | Lectura del código de `Footer.tsx` y `Login.tsx`. Sin prueba automática ni recorrido de navegador en la v0.7: **por verificar** |
 | I8 | El color de A cambia solo cuando el motor recalcula; publicar, retirar, asignar, contactar o el historial no lo fijan | `CaptacionPublicacionTest`, `HistorialEvaluacionTest`, `CarteraTest` |
 | I9 | Un plano o PDF no levanta un rojo por embargo, bloqueo o demanda | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
 | I10 | Publicar y pedir contacto no dependen del color de A | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `CarteraTest.contactoSobreRojo` |

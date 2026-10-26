@@ -1,10 +1,14 @@
 # Funcionalidades de Trustinmuebles
 
-> Versión v0.6.0: interfaz comercial (catálogo con ilustraciones, precios referenciales y filtros), solicitud de inspección solo
+> Versión v0.7.0 «Ciclo de cartera»: roles GESTOR y PROPIETARIO, captación con propietario, autorización, publicación,
+> historial de evaluaciones, contacto del comprador, asignación del especialista y panel de cartera (sección 5 bis). Las vistas
+> nuevas de la interfaz no se han verificado en un navegador.
+>
+> v0.6.0: interfaz comercial (catálogo con ilustraciones, precios referenciales y filtros), solicitud de inspección solo
 > del comprador con costo referencial (M5), informe firmado desde la cuenta del especialista (M8), ítem HR y PU en el checklist
 > (M9) y filtros del catálogo en el servidor (M13). Sobre la v0.5.1.
 
-Qué hace el programa hoy (versión v0.6.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+Qué hace el programa hoy (versión v0.7.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
 Trustinmuebles es el sistema de transparencia precompra de **una inmobiliaria de Ica** para su cartera de lotes y viviendas.
@@ -16,7 +20,7 @@ reemplaza asesoría legal.**
 
 | Área | Qué ofrece | Quién |
 |---|---|---|
-| Acceso | Ingreso con código de cuenta y contraseña; tres roles | Todos |
+| Acceso | Ingreso con código de cuenta y contraseña; cinco roles, menú y vistas según el rol | Todos |
 | Catálogo | Tarjetas con ilustración, tipo, distrito, área, precio referencial y los dos indicadores; filtros combinables en la URL | Todos |
 | Expedientes | Búsqueda por número y detalle de cada partida | Todos |
 | Semáforo informativo | Estado verde, amarillo, rojo o gris, con motivos, alertas y faltantes | Todos |
@@ -27,12 +31,20 @@ reemplaza asesoría legal.**
 | Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
 | Evaluación técnica | Solicitud con costo referencial e informe del especialista | Solicitar: comprador. Emitir: especialista |
 | Edición | Cambiar los datos, los asientos y los planos de una partida | Revisor |
-| Partidas transcritas | Registrar y eliminar partidas reales sin datos personales | Revisor |
+| Partidas transcritas | Registrar (indicando al propietario) y eliminar partidas reales sin datos personales | Revisor |
+| Autorización | Otorgar o retirar la autorización de sus propios casos | Propietario |
+| Publicación | Publicar (con autorización vigente) o retirar un caso | Gestor |
+| Historial de evaluaciones | Línea de tiempo de solo lectura de cada recálculo del indicador A | Revisor, gestor, especialista, propietario |
+| Contacto | Solicitar contacto sobre un caso publicado con un motivo de lista cerrada; atenderlo | Solicitar: comprador. Atender: gestor |
+| Asignación de inspecciones | Asignar un especialista a una inspección solicitada o en curso | Gestor |
+| Panel de cartera (`#/cartera`) | Totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable | Gestor |
+| Mis inmuebles (`#/mis-inmuebles`) | Sus casos con indicadores, motivos, faltantes, publicación y autorización | Propietario |
 
 ## 1. Acceso y roles
 
-- **Ingreso** (`#/login`): código de cuenta y contraseña. No hay registro abierto: las cuentas las crea el sistema al primer
-  arranque (`comprador-01`, `revisor-01` y `especialista-01`). Las tres cuentas usan la contraseña de
+- **Ingreso** (`#/login`): código de cuenta y contraseña. No hay registro abierto: las cuentas las crea el sistema al
+  arrancar si faltan (`comprador-01`, `revisor-01`, `especialista-01`, `especialista-02`, `gestor-01`, `propietario-01` y
+  `propietario-02`), y el panel «Cuentas de demostración» las ofrece todas. Todas usan la contraseña de
   `APP_SEED_PASSWORD`.
 - **Sesión:** dura mientras la pestaña esté abierta. Si caduca, el sistema vuelve al ingreso.
 - **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
@@ -41,6 +53,11 @@ reemplaza asesoría legal.**
   - **Especialista:** consulta y emite el informe técnico presencial, firmado con los datos de su cuenta (ficticios: Ing.
     Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910). No edita partidas.
   - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas transcritas.
+  - **Gestor (asesor comercial, v0.7):** ve todos los casos, publica o retira, atiende contactos, asigna inspecciones y usa
+    el panel «Cartera».
+  - **Propietario (v0.7):** ve solo sus casos en «Mis inmuebles» y otorga o retira su autorización. No edita ni sube nada.
+  - **Visibilidad (v0.7):** el comprador solo ve casos publicados; un caso que no le corresponde da «no encontrado».
+  - **Menú por rol:** cada rol ve solo sus enlaces, y escribir a mano la URL de una vista de otro rol muestra un aviso.
   - El servidor verifica el rol en cada operación. Ocultar un botón en pantalla no es la protección.
 
 ## 2. Inicio y avisos
@@ -181,6 +198,27 @@ reemplaza asesoría legal.**
 - Desde su página, con una confirmación dentro de la pantalla. Borra el expediente, el checklist, la evaluación y el documento.
   Sirve, por ejemplo, para atender el pedido de un titular. Las partidas ficticias no se pueden eliminar.
 
+## 5 bis. Ciclo de cartera (v0.7)
+
+- **Captación:** al registrar una partida (`#/casos/nueva`) el revisor indica el código de cuenta del propietario. El caso nace
+  en borrador y sin autorización. El revisor no tiene un botón para autorizar por el propietario.
+- **Autorización:** en «Mis inmuebles» o en el detalle, el propietario usa «Autorizar evaluación» o «Retirar autorización». Si la
+  retira de un caso publicado, el caso pasa a retirado.
+- **Publicación:** en el detalle, el gestor usa «Publicar» (solo con autorización vigente) o «Retirar». Ninguna de estas
+  acciones cambia el color del indicador A; tras cada una la interfaz vuelve a consultar el caso.
+- **Historial de evaluaciones:** en el detalle (salvo para el comprador), cada recálculo con fecha y hora, color anterior →
+  nuevo, origen (edición, plano, partida transcrita o carga inicial), cuenta, criterios, faltantes y motivos. Solo lectura.
+- **Subsanación:** el revisor incorpora un plano o asientos faltantes con la edición de siempre; el motor recalcula y el
+  historial lo registra. Adjuntar un PDF no levanta un rojo por embargo, bloqueo o demanda.
+- **Contacto:** en un caso publicado, el comprador usa «Solicitar contacto» y elige un motivo (información general, consulta de
+  documentos o consulta de inspección). No hay texto libre. Una segunda solicitud pendiente muestra un aviso y no se duplica.
+- **Inspección asignada:** en el panel de inspección, el gestor asigna una inspección solicitada o en curso a un especialista;
+  desde entonces solo ese especialista emite el informe.
+- **Panel «Cartera» (`#/cartera`):** totales por color de A y por publicación, casos con faltantes, inspecciones con su
+  asignación, bandeja de contactos pendientes con «Marcar atendida» y lista de casos filtrable por color, publicación y texto.
+- **Siguiente paso:** el detalle muestra para todos «Siguiente paso: verificación jurídica con abogado o notario, fuera del
+  sistema». No es una función del sistema.
+
 ## 6. Contenido incluido
 
 Cada caso trae también su tipo de inmueble, distrito, precio referencial simulado, ilustración propia y el ítem HR y PU (ver la
@@ -232,3 +270,5 @@ guardan en el repositorio.
 - Aprobación del asesor para las partidas transcritas (desvío de RN-01 y PA2).
 - Prueba de instalación en otro equipo (CP-07), piloto y aplicación del estudio.
 - Pruebas con lector de pantalla y en otros navegadores distintos de Chrome.
+- Verificación en navegador de las vistas de la v0.7 (Cartera, Mis inmuebles, publicación, historial, contacto y asignación).
+- El comprador no puede consultar después el estado de su solicitud de contacto: el backend no ofrece esa ruta (D46).

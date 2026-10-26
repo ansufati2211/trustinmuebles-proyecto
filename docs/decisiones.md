@@ -431,3 +431,14 @@ del login; la nota del precio que envía el backend se conserva en el detalle. E
 ## D48. v0.7 (interfaz): texto fijo de la etapa 9
 El detalle muestra para todos los roles «Siguiente paso: verificación jurídica con abogado o notario, fuera del sistema». Es un
 texto informativo: la verificación jurídica no es una función del sistema.
+
+## D49. v0.7: nueve etapas, hipótesis de valor y nueva I7 (supuestos de documentación)
+- **Etapas:** el pedido nombra la etapa 1 (captación), la 5 (publicación) y la 9 (fuera del sistema). Las demás se ordenaron
+  según el flujo real del código: 2 autorización, 3 indicador A, 4 subsanación, 6 consulta y contacto, 7 indicador B con
+  asignación, 8 seguimiento en el panel. Ver `LEEME.md`, «Flujo de nueve etapas».
+- **Hipótesis de valor:** suscripción de la inmobiliaria y una parte del ingreso de la inspección, sin cifras. El piloto con 3 a
+  5 inmobiliarias de Ica es una propuesta futura, no algo realizado.
+- **I7 redefinida:** antes pedía rotular personas, precios y colegiatura como simulados en cada elemento; ahora pide que los
+  límites legales estén en el pie de página (con el aviso de datos simulados) y que el login comunique el entorno demostrativo
+  (D47). No tiene prueba automática.
+- **`recorrido-v06.mjs`:** queda marcado como obsoleto en su cabecera y en el LEEME; no se borró.

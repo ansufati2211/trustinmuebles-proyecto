@@ -112,3 +112,46 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | I5 Límites de módulos de Spring Modulith | `ModularityTests` |
 | I6 El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` |
 | I7 Personas, precios y colegiatura rotulados como simulados | Recorrido `recorrido-v06.mjs` («Precio referencial · dato simulado», «Datos ficticios de demostración») |
+
+## Ciclo de cartera (v0.7)
+
+Las pruebas del backend son de integración (MockMvc con H2 en memoria); las del frontend, de funciones puras con Vitest. Las
+pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se refiere solo a la prueba indicada.
+
+| Elemento | Backend | Interfaz | Pruebas | Estado |
+|---|---|---|---|---|
+| Roles GESTOR y PROPIETARIO; cuentas creadas si faltan, sin duplicar | `Rol`, `DemoUsuariosSeeder`, migración V6 | Panel «Cuentas de demostración» del login | `CuentasDemoTest` (3), `SeguridadTest` | Probado en el backend |
+| Captación con propietario; nace en borrador | `ExpedienteService.registrar` | `RegistrarPartida` (código del propietario) | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio` | Probado en el backend |
+| Autorización solo del propietario de cada caso (I13) | `ExpedienteService.autorizar`, `SecurityConfig` | `PanelPublicacion`, `MisInmuebles` | `autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` | Probado |
+| Publicación solo del gestor y con autorización (I14, I10) | `ExpedienteService.publicar`, restricción de V6 | `PanelPublicacion` | `sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor`, `MigracionV6Test`; Vitest `permisos.test.ts` | Probado |
+| Visibilidad por rol (404) | `ExpedienteService.visible` | `RequireVista`, `navegacion` | `visibilidadPorRol`, `propietarioVeSoloLoSuyo`; Vitest `permisos.test.ts` | Probado |
+| Migración V6 sobre una base v0.6 | `V6__captacion_y_publicacion.sql` | — | `MigracionV6Test` | Probado en una base en memoria, no en `data/` real |
+| Historial de solo adición (I12) | `HistorialEvaluacion`, migración V7 | `HistorialEvaluaciones` (línea de tiempo) | `HistorialEvaluacionTest` (9); Vitest `historial.test.ts` | Probado |
+| Subsanación y origen del recálculo; un PDF no levanta un rojo (I9) | `ExpedienteService.origenDeLaEdicion` | Edición y planos existentes | `planoFaltanteLlevaAVerde`, `planosNoBastanSiHayOtraAlerta`, `pdfNoLevantaElEmbargo` | Probado en el backend |
+| Contacto con motivos cerrados y sin duplicados (I11) | módulo `cartera`, migración V8 | `SolicitudContacto`, bandeja en `Cartera` | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado`; Vitest `contacto.test.ts` | Probado |
+| Asignación del especialista | `InspeccionService.asignar` | `PanelEvaluacionTecnica` (gestor) | `soloElAsignadoEmite`, `asignacionInvalida`, `sinAsignacionCualquieraEmite`; Vitest `permisos.test.ts` | Probado |
+| Panel de cartera | `CarteraService.panel` | `Cartera` | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` (totales y filtros) | Probado |
+| Ciclo completo | Todos | — | `CicloCarteraTest` (base propia) | Probado en el backend |
+| Navegación por rol y guarda de rutas | — | `Navbar`, `RequireVista` | Vitest `permisos.test.ts` | Probado como función pura; sin prueba en navegador |
+
+## Invariantes de la v0.7
+
+| Invariante | Prueba automática |
+|---|---|
+| I1 Verde significa exactamente «Sin alertas en los campos evaluados» | `CatalogoYServiciosTest.verdeSignificaSinAlertas`, `CicloCarteraTest` |
+| I2 B nunca cambia A | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto`, `CicloCarteraTest` |
+| I3 El checklist (HR y PU) no cambia A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `HistorialEvaluacionTest.operacionesSinRecalculo`, `CicloCarteraTest` |
+| I4 Autorización en el servidor | `SeguridadTest`, `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol`, `CicloCarteraTest` |
+| I5 Límites de módulos | `ModularityTests` (9 módulos, con `cartera`) |
+| I6 Solo `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal`, `CicloCarteraTest` |
+| I7 (redefinida, D47) Límites legales en el pie y entorno demostrativo en el login | **Sin prueba automática.** Revisado leyendo `Footer.tsx` y `Login.tsx`; falta verificarlo en el navegador |
+| I8 El color solo cambia al recalcular | `publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`, `operacionesSinRecalculo`, `contactoSobreRojo`, `soloElAsignadoEmite` |
+| I9 Un plano o PDF no levanta un rojo registral | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
+| I10 Publicar y contactar no dependen del color | `publicarRojoNoCambiaElColor`, `contactoSobreRojo` |
+| I11 Sin nombres, DNI ni teléfonos; motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado`, `demostracionPublicada`; Vitest `contacto.test.ts` |
+| I12 Historial de solo adición | `HistorialEvaluacionTest.historialInmutable` |
+| I13 El propietario solo autoriza lo suyo | `autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` |
+| I14 Sin autorización no se publica | `sinAutorizacionNoSePublica`, `MigracionV6Test`, `CicloCarteraTest`; Vitest `permisos.test.ts` |
+
+La fila I7 de la tabla «Invariantes de la v0.6» queda reemplazada por la de esta tabla: los rótulos «Precio referencial · dato
+simulado» y «Datos ficticios de demostración» ya no existen en la interfaz.

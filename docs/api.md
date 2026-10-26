@@ -262,3 +262,79 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 ```
 
 El costo sale de `app.inspeccion.costo-referencial`; la interfaz no lo repite a mano.
+
+## Ciclo de cartera (v0.7)
+
+Rutas reales del backend de la v0.7, con el rol que exige `SecurityConfig` (y que el servicio vuelve a comprobar). Las consume
+la interfaz desde `PanelPublicacion`, `HistorialEvaluaciones`, `SolicitudContacto`, `PanelEvaluacionTecnica`, `Cartera` y
+`MisInmuebles`.
+
+### Captación
+
+`POST /casos` (REVISOR) exige además `"propietarioCodigo": "propietario-01"` (texto, hasta 40 caracteres, una cuenta con rol
+PROPIETARIO). 400 si falta o no es un propietario. El caso nace con `publicacion.estado = "BORRADOR"` y `autorizada = false`.
+
+### Autorización y publicación
+
+| Ruta | Rol | Cuerpo | Respuesta | Errores |
+|---|---|---|---|---|
+| `PUT /casos/{codigo}/autorizacion` | PROPIETARIO de ese caso | — | 200 `Publicacion` | 403 otro rol u otro propietario; 404 caso inexistente |
+| `DELETE /casos/{codigo}/autorizacion` | PROPIETARIO de ese caso | — | 200 `Publicacion` (un caso publicado pasa a `RETIRADO`) | 403, 404 |
+| `POST /casos/{codigo}/publicacion` | GESTOR | — | 200 `Publicacion` con `estado = "PUBLICADO"` | 403; 404; 409 ya publicado; 422 sin autorización vigente |
+| `DELETE /casos/{codigo}/publicacion` | GESTOR | — | 200 `Publicacion` con `estado = "RETIRADO"` | 403; 404; 409 no está publicado |
+
+```json
+"publicacion": { "estado": "PUBLICADO", "propietarioCodigo": "propietario-01", "autorizada": true,
+  "autorizacionFecha": "2026-10-25T20:15:03.120Z" }
+```
+
+`propietarioCodigo` llega en `null` al comprador (I11). El listado trae `estadoPublicacion` en cada elemento.
+
+### Historial de evaluaciones
+
+`GET /casos/{codigo}/historial` (REVISOR, GESTOR, ESPECIALISTA o PROPIETARIO del caso): 200 con la lista de la más antigua a la
+más reciente. 403 al comprador, 404 al propietario de otro caso o a un caso inexistente. No hay rutas para editar ni borrar.
+
+```json
+[ { "registradaEn": "2026-10-25T20:20:11.400Z", "estadoAnterior": "AMARILLO", "estadoNuevo": "VERDE",
+    "motivos": [ { "tipo": "LIMITE", "texto": "No se detectaron alertas en los campos evaluados (1 anotación(es) revisada(s)). …" } ],
+    "faltantes": [], "versionReglas": "v0.4", "origen": "PLANO_ADJUNTO", "cuentaCodigo": "revisor-01" } ]
+```
+
+`origen`: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA` o `CARGA_INICIAL` (esta última con `cuentaCodigo = "sistema"`).
+
+### Contacto
+
+| Ruta | Rol | Cuerpo | Respuesta | Errores |
+|---|---|---|---|---|
+| `POST /casos/{codigo}/contactos` | COMPRADOR | `{"motivo": "INFORMACION_GENERAL" \| "CONSULTA_DOCUMENTOS" \| "CONSULTA_INSPECCION"}` | 201 `Contacto` | 400 motivo inválido, ausente o cualquier otro campo (sin texto libre); 403; 404 caso no publicado o inexistente; 409 ya hay una pendiente del mismo comprador |
+| `GET /contactos?estado=PENDIENTE\|ATENDIDA` | GESTOR | — | 200 lista (sin `estado`, todas) | 403 |
+| `PUT /contactos/{id}/atencion` | GESTOR | — | 200 `Contacto` con `estado = "ATENDIDA"` | 403; 404; 409 ya atendida |
+
+```json
+{ "id": 3, "casoCodigo": "SIM-11075836", "compradorCodigo": "comprador-01", "motivo": "CONSULTA_DOCUMENTOS",
+  "estado": "PENDIENTE", "creadaEn": "2026-10-25T20:25:40.000Z", "atendidaEn": null, "atendidaPor": null }
+```
+
+El comprador no tiene una ruta para consultar después sus solicitudes (D46).
+
+### Asignación de especialista
+
+`PUT /casos/{codigo}/inspeccion/asignacion` (GESTOR), cuerpo `{"especialistaCodigo": "especialista-02"}`: 200 con la
+`evaluacionTecnica` y `especialistaAsignadoCodigo`. 400 si la cuenta no es un especialista con datos profesionales o falta el
+campo; 403 otro rol; 404 caso inexistente; 409 sin solicitud o informe ya emitido. Con asignación, `PUT /casos/{codigo}/inspeccion`
+da 403 a cualquier otro especialista.
+
+### Panel de cartera
+
+`GET /cartera/panel` (GESTOR), solo lectura:
+
+```json
+{ "totalCasos": 10, "porColor": { "VERDE": 2, "AMARILLO": 4, "ROJO": 2, "GRIS": 2 },
+  "porEstadoPublicacion": { "BORRADOR": 0, "PUBLICADO": 10, "RETIRADO": 0 },
+  "casosConFaltantes": [ { "codigo": "SIM-11061555", "estado": "GRIS", "faltantes": [ "Titularidad", "…" ] } ],
+  "inspecciones": [ { "codigo": "SIM-11093320", "estado": "SOLICITADA", "especialistaAsignadoCodigo": null, "asignada": false } ],
+  "inspeccionesAsignadas": 0, "inspeccionesSinAsignar": 2, "contactosPendientes": [] }
+```
+
+Los totales de este ejemplo son los del contenido de demostración recién cargado (`CarteraTest.panelCoherente`).

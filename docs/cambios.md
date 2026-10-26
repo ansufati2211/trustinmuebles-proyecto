@@ -72,3 +72,20 @@ Interfaz comercial para el comprador y mejoras M5, M8, M9, M10 y M13 (rama `feat
   con planos, comparador de áreas, visor modal e indicador B completo.
 - Documentación (M10): LEEME, README del backend, funcionalidades, API, trazabilidad y decisiones D23 a D31.
 Ver `docs/RESUMEN-v0.6.md`.
+
+## v0.7.0 «Ciclo de cartera»
+
+Rama `feature/v0.7-ciclo-cartera`, en dos sesiones. Ver `docs/RESUMEN-v0.7.md`.
+
+| Fase | Commit | Cambio |
+|---|---|---|
+| F0 | `56c001f` | Versión 0.7.0 del backend; línea base de 107 pruebas |
+| F1 | `5f822f0` | Roles GESTOR y PROPIETARIO, cuentas nuevas, migración V6, autorización del propietario, publicación del gestor y visibilidad por rol (122 pruebas) |
+| F2 | `e0d41fd` | Historial de evaluaciones de solo adición (V7), origen de cada recálculo y `GET /casos/{codigo}/historial` (131 pruebas) |
+| F3 | `c2ea59c` | Módulo `cartera`: contacto con motivos cerrados, asignación de especialista, `especialista-02` y panel de cartera (V8; 139 pruebas) |
+| F6 | `9c23269` | `CicloCarteraTest`, ciclo completo con base propia (140 pruebas) |
+| F7 (sesión 1) | `4836955` | Resumen y pendientes del backend |
+| F4 | `35291ad` | Interfaz: vistas Cartera y Mis inmuebles, publicación, autorización, asignación, historial, contacto, navegación por rol, cuentas nuevas en el login y rótulos de datos simulados en un solo lugar (60 pruebas de Vitest) |
+| F5 | este commit | Documentación: modelo de negocio, hipótesis de valor, hoja de ruta, I7 redefinida, API, trazabilidad, funcionalidades y README |
+
+Pendiente: verificación en navegador de las vistas nuevas, aprobación de los supuestos D32 a D48 y revisión del informe.
