@@ -11,52 +11,16 @@
   --color-card: var(--card);
   --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
-  --color-primary-strong: var(--primary-strong);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
   --color-secondary-foreground: var(--secondary-foreground);
   --color-muted: var(--muted);
   --color-muted-foreground: var(--muted-foreground);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
   --color-border: var(--border);
-  --color-ring: var(--ring);
   --color-success: var(--success);
-  --color-success-foreground: var(--success-foreground);
   --color-warning: var(--warning);
-  --color-warning-foreground: var(--warning-foreground);
   --color-danger: var(--danger);
-  --color-danger-foreground: var(--danger-foreground);
-
-  /* Tokens de la v0.6 (componentes de catálogo, detalle e indicadores) */
-  --color-arena: var(--arena);
-  --color-arena-suave: var(--arena-suave);
-  --color-arena-tinta: var(--arena-tinta);
-  --color-superficie: var(--superficie);
-  --color-tinta-2: var(--tinta-2);
-
-  /* Semáforo: relleno sólido, fondo suave y texto legible sobre el fondo suave. */
-  --color-sem-verde: var(--sem-verde);
-  --color-sem-verde-suave: var(--sem-verde-suave);
-  --color-sem-verde-tinta: var(--sem-verde-tinta);
-  --color-sem-amarillo: var(--sem-amarillo);
-  --color-sem-amarillo-suave: var(--sem-amarillo-suave);
-  --color-sem-amarillo-tinta: var(--sem-amarillo-tinta);
-  --color-sem-rojo: var(--sem-rojo);
-  --color-sem-rojo-suave: var(--sem-rojo-suave);
-  --color-sem-rojo-tinta: var(--sem-rojo-tinta);
-  --color-sem-gris: var(--sem-gris);
-  --color-sem-gris-suave: var(--sem-gris-suave);
-  --color-sem-gris-tinta: var(--sem-gris-tinta);
-  --color-info-suave: var(--info-suave);
-  --color-info-tinta: var(--info-tinta);
-
-  --shadow-tarjeta: 0 1px 2px rgb(23 48 42 / 0.05), 0 4px 16px -6px rgb(23 48 42 / 0.10);
-  --shadow-elevada: 0 2px 4px rgb(23 48 42 / 0.06), 0 18px 40px -16px rgb(23 48 42 / 0.28);
-
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  /* Habilita la utilidad `ease-expo` en Tailwind */
-  --ease-expo: var(--motion-ease);
 }
 
 :root {
@@ -65,39 +29,16 @@
   --card: #FFFFFF;
   --card-foreground: #022C22;
   --primary: #059669;
-  --primary-strong: #047857;
   --primary-foreground: #FFFFFF;
   --secondary: #ECFDF5;
   --secondary-foreground: #047857;
   --muted: #F1F5F9;
   --muted-foreground: #64748B;
-  --accent: #ECFDF5;
-  --accent-foreground: #047857;
   --border: #E2E8F0;
-  --ring: #059669;
   --success: #10B981;
-  --success-foreground: #FFFFFF;
   --warning: #F59E0B;
-  --warning-foreground: #3D2A00;
   --danger: #EF4444;
-  --danger-foreground: #FFFFFF;
   --radius: 1rem;
-
-  /* Tokens de la v0.6 */
-  --superficie: #F5F8F6;
-  --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */
-  --arena: #D99A3D;          /* acento cálido: solo realces, nunca texto sobre blanco */
-  --arena-suave: #FBF0DD;
-  --arena-tinta: #7A4A0B;
-
-  --sem-verde: #22A05A;    --sem-verde-suave: #DFF5E7;    --sem-verde-tinta: #14532D;
-  --sem-amarillo: #E0A21B; --sem-amarillo-suave: #FDF1D2; --sem-amarillo-tinta: #713F12;
-  --sem-rojo: #D33A2C;     --sem-rojo-suave: #FCE4E1;     --sem-rojo-tinta: #8F1D14;
-  --sem-gris: #8A9690;     --sem-gris-suave: #E9EDEB;     --sem-gris-tinta: #36423C;
-  --info-suave: #E3EEF8;   --info-tinta: #1C4A73;
-
-  /* Curva única para todo el sistema de movimiento */
-  --motion-ease: cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 html, body, #root {
@@ -105,204 +46,104 @@ html, body, #root {
   scroll-behavior: smooth;
 }
 
-body {
-  -webkit-font-smoothing: antialiased;
-  text-rendering: optimizeLegibility;
-}
-
-h1, h2, h3 {
-  text-wrap: balance;
-}
-
-.cifras {
-  font-variant-numeric: tabular-nums;
-}
-
-:focus-visible {
-  outline: 2px solid var(--primary);
-  outline-offset: 3px;
-}
-
-/* =====================================================================
-   KEYFRAMES
-   ===================================================================== */
-@keyframes enterUp {
-  from { opacity: 0; transform: translateY(26px); filter: blur(10px); }
-  to   { opacity: 1; transform: translateY(0);    filter: blur(0); }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-@keyframes pageIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes shake {
-  0%, 100% { transform: translateX(0); }
-  15%      { transform: translateX(-9px); }
-  30%      { transform: translateX(8px); }
-  45%      { transform: translateX(-6px); }
-  60%      { transform: translateX(5px); }
-  75%      { transform: translateX(-3px); }
-  90%      { transform: translateX(2px); }
-}
-
-@keyframes shimmer {
-  from { transform: translateX(-120%); }
-  to   { transform: translateX(120%); }
-}
-
-@keyframes indeterminate {
-  0%   { transform: translateX(-110%); }
-  100% { transform: translateX(270%); }
-}
-
-@keyframes pulseSoft {
-  0%, 100% { transform: scale(1);    opacity: 1; }
-  50%      { transform: scale(1.07); opacity: 0.85; }
-}
-
-@keyframes flashRing {
-  0%   { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.5); background-color: rgba(5, 150, 105, 0.10); }
-  45%  { box-shadow: 0 0 0 6px rgba(5, 150, 105, 0.22); background-color: rgba(5, 150, 105, 0.06); }
-  100% { box-shadow: 0 0 0 14px rgba(5, 150, 105, 0); background-color: rgba(5, 150, 105, 0); }
-}
-
 @keyframes floatSlow {
-  0%, 100% { transform: translateY(0px); }
-  50%      { transform: translateY(-10px); }
+  0%, 100% { transform: translateY(0px) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.5deg); }
 }
 
 @keyframes floatReverse {
   0%, 100% { transform: translateY(0px); }
-  50%      { transform: translateY(8px); }
+  50% { transform: translateY(8px); }
 }
 
 @keyframes pulseGlow {
-  0%, 100% { opacity: 0.45; transform: scale(1); }
-  50%      { opacity: 0.8;  transform: scale(1.05); }
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.04); }
 }
 
-/* =====================================================================
-   UTILIDADES DE ENTRADA
-   `backwards` mantiene el estado inicial durante el retraso y, al terminar,
-   devuelve el elemento a su estilo normal (sin dejar `filter` ni `transform`).
-   El retraso se pasa con style={{ "--d": "200ms" }}.
-   ===================================================================== */
+.animate-float { animation: floatSlow 6s ease-in-out infinite; }
+.animate-float-reverse { animation: floatReverse 5s ease-in-out infinite; }
+.animate-glow { animation: pulseGlow 7s ease-in-out infinite; }
+
+.perspective-1000 { perspective: 1200px; }
+.preserve-3d { transform-style: preserve-3d; }
+
+.tilt-3d {
+  transform: rotateX(6deg) rotateY(-4deg) rotateZ(1deg);
+  transition: transform 0.6s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.6s ease;
+}
+.tilt-3d:hover {
+  transform: rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(1.01);
+}
+
+@keyframes animEnter {
+  from { opacity: 0; transform: translateY(20px); filter: blur(4px); }
+  to { opacity: 1; transform: translateY(0); filter: blur(0); }
+}
+
 .anim-enter {
-  animation: enterUp 0.9s var(--motion-ease) backwards;
+  animation: animEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards;
   animation-delay: var(--d, 0ms);
+  opacity: 0;
 }
 
-.anim-fade {
-  animation: fadeIn 0.8s var(--motion-ease) backwards;
-  animation-delay: var(--d, 0ms);
-}
-
-.page-enter {
-  animation: pageIn 0.5s var(--motion-ease) backwards;
-}
-
-/* =====================================================================
-   SCROLL-REVEAL (se activa con la clase .is-visible desde <Reveal>)
-   ===================================================================== */
 .reveal {
   opacity: 0;
-  transform: translateY(28px);
-  filter: blur(8px);
-  transition:
-    opacity 0.9s var(--motion-ease),
-    transform 0.9s var(--motion-ease),
-    filter 0.9s var(--motion-ease);
+  transform: translateY(24px);
+  filter: blur(4px);
+  transition: opacity 0.7s cubic-bezier(0.16, 1, 0.3, 1), transform 0.7s cubic-bezier(0.16, 1, 0.3, 1), filter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
 .reveal.is-visible {
   opacity: 1;
-  transform: none;
-  filter: none;
+  transform: translateY(0);
+  filter: blur(0);
 }
 
-/* =====================================================================
-   FEEDBACK Y ESTADOS
-   ===================================================================== */
-.anim-shake  { animation: shake 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97) both; }
-.anim-flash  { animation: flashRing 1s var(--motion-ease) both; }
-.anim-pulse-soft { animation: pulseSoft 1.8s ease-in-out infinite; }
-.anim-indeterminate { animation: indeterminate 1.4s cubic-bezier(0.65, 0, 0.35, 1) infinite; }
-
-/* Brillo que recorre un botón mientras carga */
-.shimmer { position: relative; overflow: hidden; }
-.shimmer::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 25%, rgba(255, 255, 255, 0.38) 50%, transparent 75%);
-  transform: translateX(-120%);
-  animation: shimmer 1.3s ease-in-out infinite;
-  pointer-events: none;
+.spotlight {
+  position: relative;
+  overflow: hidden;
 }
-
-/* Destello al pasar el mouse sobre un botón (barrido de luz) */
-.btn-glint { position: relative; overflow: hidden; }
-.btn-glint::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.35) 50%, transparent 70%);
-  transform: translateX(-120%);
-  transition: transform 0.8s var(--motion-ease);
-  pointer-events: none;
-}
-.btn-glint:hover::after { transform: translateX(120%); }
-
-/* Spotlight que sigue al cursor. Las variables --mx y --my las actualiza el componente. */
 .spotlight::before {
   content: "";
   position: absolute;
   inset: 0;
-  background: radial-gradient(340px circle at var(--mx, 50%) var(--my, 50%), rgba(5, 150, 105, 0.12), transparent 62%);
+  background: radial-gradient(800px circle at var(--mx, 0) var(--my, 0), rgba(5, 150, 105, 0.06), transparent 40%);
   opacity: 0;
-  transition: opacity 0.4s ease;
+  transition: opacity 0.3s ease;
   pointer-events: none;
 }
-.spotlight:hover::before { opacity: 1; }
-
-/* =====================================================================
-   MOVIMIENTO AMBIENTAL (solo para 1-2 elementos protagonistas)
-   ===================================================================== */
-.animate-float { animation: floatSlow 6s ease-in-out infinite; }
-.animate-float-reverse { animation: floatReverse 5s ease-in-out infinite; }
-.animate-glow { animation: pulseGlow 8s ease-in-out infinite; }
-
-.perspective-1000 { perspective: 1200px; }
-
-.tilt-3d {
-  transform: rotateX(6deg) rotateY(-8deg);
-  transition: transform 0.7s var(--motion-ease);
-  will-change: transform;
+.spotlight:hover::before {
+  opacity: 1;
 }
-.tilt-3d:hover { transform: rotateX(0deg) rotateY(0deg); }
 
-/* =====================================================================
-   ACCESIBILIDAD: usuarios sensibles al movimiento
-   ===================================================================== */
+.btn-glint {
+  position: relative;
+  overflow: hidden;
+}
+.btn-glint::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent 40%, rgba(255, 255, 255, 0.25) 50%, transparent 60%);
+  transform: translateX(-100%);
+  transition: transform 0.7s ease;
+}
+.btn-glint:hover::after {
+  transform: translateX(100%);
+}
+
+@keyframes shimmer {
+  100% { transform: translateX(100%); }
+}
+
 @media (prefers-reduced-motion: reduce) {
-  html, body, #root { scroll-behavior: auto; }
-
-  *, *::before, *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    animation-delay: 0ms !important;
-    transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
+  .anim-enter, .reveal, .animate-glow, .animate-float, .animate-float-reverse {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
   }
-
-  .reveal { opacity: 1; transform: none; filter: none; }
-  .tilt-3d { transform: none; }
-  .shimmer::after, .btn-glint::after { display: none; }
-  .anim-indeterminate { animation: none; transform: none; width: 100%; }
 }

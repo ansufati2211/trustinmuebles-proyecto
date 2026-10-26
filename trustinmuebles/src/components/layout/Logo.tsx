@@ -1,12 +1,7 @@
 interface LogoMarkProps {
-  /** Clases de tamaño del contenedor, por ejemplo "w-10 h-10". */
   className?: string;
 }
 
-/**
- * Marca de Trustinmuebles: una casa con una marca de verificación.
- * Todo el dibujo vive dentro del contenedor (overflow-hidden), así ningún trazo se sale de la caja.
- */
 export function LogoMark({ className = "w-10 h-10" }: LogoMarkProps) {
   return (
     <span

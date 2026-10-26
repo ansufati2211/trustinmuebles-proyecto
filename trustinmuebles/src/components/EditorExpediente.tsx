@@ -1,14 +1,20 @@
-import { useState } from "react";
-import { Pencil } from "lucide-react";
+import { useState, type FormEvent } from "react";
+import { FileUp, Pencil, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
+import { Campo, claseAreaTexto, claseCampo } from "@/components/base/Campo";
+import { Desplegable } from "@/components/base/Desplegable";
+import { Mensaje } from "@/components/base/Mensaje";
+import { SelectorFecha } from "@/components/base/SelectorFecha";
+import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { api, put, subirArchivo } from "@/lib/api";
 import { ESTADOS, ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
-import { campo, FilasAsientos, filasAPeticion, type Fila } from "@/components/FilasAsientos";
+import { FilasAsientos, filasAPeticion, type Fila } from "@/components/FilasAsientos";
 import { BloqueTecnico, tecnicoAPeticion, tecnicoDesde } from "@/components/BloqueTecnico";
 import type { Completitud, DetalleCaso, PeticionExpediente } from "@/lib/types";
 
-/** Asociar el PDF del expediente (REQ-F03). El servidor acepta solo PDF de hasta 5 MB. */
+const OPCIONES_COMPLETITUD = (Object.keys(ETIQUETA_COMPLETITUD) as Completitud[]).map((c) => ({ valor: c, etiqueta: ETIQUETA_COMPLETITUD[c] }));
+
 function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
   const [archivo, setArchivo] = useState<File | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -34,29 +40,40 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
 
   const generado = detalle.expediente.documentoGenerado;
   return (
-    <div className="mt-8 pt-6 border-t border-border">
-      <h3 className="text-sm font-bold mb-1.5">Documento PDF</h3>
-      <p className="text-xs text-tinta-2 mb-3 leading-relaxed">
-        {generado
-          ? "El sistema genera la copia literal a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
-          : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
-        {" "}Solo PDF, hasta 5 MB. No subas documentos con datos reales de personas o predios.
-      </p>
-      <div className="flex flex-wrap items-center gap-3">
+    <div className="mt-8 space-y-4 rounded-3xl border border-border bg-superficie p-5 sm:p-6">
+      <div className="flex items-start gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
+          <FileUp className="size-5" aria-hidden="true" />
+        </span>
+        <div>
+          <h3 className="text-lg font-extrabold tracking-tight text-foreground">Documento PDF</h3>
+          <p className="mt-1 text-sm leading-relaxed text-tinta-2">
+            {generado
+              ? "El sistema genera la copia literal a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
+              : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
+            {" "}Solo PDF, hasta 5 MB. No subas documentos con datos reales de personas o predios.
+          </p>
+        </div>
+      </div>
+      <div className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card p-4">
         <label htmlFor="ed-pdf" className="sr-only">Archivo PDF</label>
-        <input id="ed-pdf" type="file" accept="application/pdf" onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
-          className="text-sm file:mr-3 file:rounded-lg file:border-0 file:bg-secondary file:px-4 file:py-2 file:text-sm file:font-bold file:text-primary" />
-        <Button type="button" variant="outline" size="sm" disabled={!archivo || subiendo} onClick={subir}>
+        <input
+          id="ed-pdf"
+          type="file"
+          accept="application/pdf"
+          onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+          className="min-w-0 flex-1 text-sm text-tinta-2 file:mr-3 file:cursor-pointer file:rounded-xl file:border-0 file:bg-secondary file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-secondary-foreground file:transition-colors hover:file:bg-primary hover:file:text-white"
+        />
+        <Button type="button" variant="outline" disabled={!archivo || subiendo} onClick={subir}>
           {subiendo ? "Subiendo…" : "Asociar PDF"}
         </Button>
       </div>
-      {error && <p role="alert" className="mt-3 text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
-      {mensaje && <p role="status" className="mt-3 text-sm font-semibold text-foreground">{mensaje}</p>}
+      {error && <Mensaje tono="error">{error}</Mensaje>}
+      {mensaje && <Mensaje tono="ok">{mensaje}</Mensaje>}
     </div>
   );
 }
 
-/** Edición del expediente, solo para el revisor. El servidor vuelve a verificar el rol y valida todo (PA4, NF04). */
 export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
   const x = detalle.expediente;
   const desde = (d: DetalleCaso) => ({
@@ -100,7 +117,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const guardar = async (e: React.FormEvent) => {
+  const guardar = async (e: FormEvent) => {
     e.preventDefault();
     setErrores([]);
     setMensaje(null);
@@ -124,9 +141,18 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
       const nuevo = await put<DetalleCaso>(`/casos/${detalle.codigo}/expediente`, cuerpo);
       alGuardar(nuevo);
       const d = desde(nuevo);
-      setCondicion(d.condicion); setCompletitud(d.completitud); setFecha(d.fecha); setNota(d.nota);
-      setZona(d.zona); setOficina(d.oficina); setUbicacion(d.ubicacion); setArea(d.area);
-      setLinderos(d.linderos); setAntecedente(d.antecedente); setFilas(d.filas); setTecnico(tecnicoDesde(nuevo.expediente));
+      setCondicion(d.condicion);
+      setCompletitud(d.completitud);
+      setFecha(d.fecha);
+      setNota(d.nota);
+      setZona(d.zona);
+      setOficina(d.oficina);
+      setUbicacion(d.ubicacion);
+      setArea(d.area);
+      setLinderos(d.linderos);
+      setAntecedente(d.antecedente);
+      setFilas(d.filas);
+      setTecnico(tecnicoDesde(nuevo.expediente));
       const estado = nuevo.evaluacion ? ESTADOS[nuevo.evaluacion.estado].nombre : "sin evaluar";
       setMensaje(`Guardado. El estado se recalculó con las reglas ${nuevo.evaluacion?.versionReglas ?? ""}: ${estado}.`);
     } catch (err) {
@@ -138,79 +164,73 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
   };
 
   return (
-    <Card className="rounded-3xl border-2 border-primary/20 shadow-sm">
-      <CardContent className="p-8">
-        <h2 className="flex items-center gap-2 text-xl font-bold text-foreground mb-2">
-          <Pencil className="w-5 h-5 text-primary" aria-hidden="true" /> Editar partida
-        </h2>
-        <p className="text-sm text-tinta-2 mb-6 leading-relaxed">
-          Solo el revisor puede editar. El color no se elige: se recalcula con las reglas al guardar. La titularidad sale del
-          último asiento C, y un gravamen figura cancelado cuando un asiento E lo cancela. Si un dato no consta en el
-          extracto, déjalo vacío.
-        </p>
+    <Card className="rounded-[2rem] border-2 border-primary/20 shadow-tarjeta">
+      <CardContent className="space-y-7 p-6 sm:p-8">
+        <TituloSeccion
+          icono={Pencil}
+          descripcion="Solo el revisor puede editar. El color no se elige: se recalcula con las reglas al guardar. La titularidad sale del último asiento C, y un gravamen figura cancelado cuando un asiento E lo cancela. Si un dato no consta en el extracto, déjalo vacío."
+        >
+          Editar partida
+        </TituloSeccion>
 
-        <form onSubmit={guardar} className="space-y-5" noValidate>
-          <div>
-            <label htmlFor="ed-condicion" className="block text-sm font-bold mb-1.5">Condición representada</label>
-            <input id="ed-condicion" className={campo} maxLength={255} value={condicion} onChange={(e) => setCondicion(e.target.value)} />
+        <form onSubmit={guardar} className="space-y-6" noValidate>
+          <Campo etiqueta="Condición representada">
+            {(p) => <input {...p} className={claseCampo} maxLength={255} value={condicion} onChange={(e) => setCondicion(e.target.value)} />}
+          </Campo>
+
+          <div className="grid gap-5 sm:grid-cols-2">
+            <Campo etiqueta="Zona registral">
+              {(p) => <input {...p} className={claseCampo} maxLength={120} value={zona} onChange={(e) => setZona(e.target.value)} />}
+            </Campo>
+            <Campo etiqueta="Oficina registral">
+              {(p) => <input {...p} className={claseCampo} maxLength={120} value={oficina} onChange={(e) => setOficina(e.target.value)} />}
+            </Campo>
           </div>
-          <div className="grid sm:grid-cols-2 gap-5">
-            <div>
-              <label htmlFor="ed-zona" className="block text-sm font-bold mb-1.5">Zona registral</label>
-              <input id="ed-zona" className={campo} maxLength={120} value={zona} onChange={(e) => setZona(e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="ed-oficina" className="block text-sm font-bold mb-1.5">Oficina registral</label>
-              <input id="ed-oficina" className={campo} maxLength={120} value={oficina} onChange={(e) => setOficina(e.target.value)} />
-            </div>
+
+          <Campo etiqueta="Ubicación">
+            {(p) => <input {...p} className={claseCampo} maxLength={255} value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />}
+          </Campo>
+
+          <div className="grid gap-5 sm:grid-cols-3">
+            <Campo etiqueta="Área (m²)">
+              {(p) => <input {...p} type="number" step="0.01" min="0" className={claseCampo} value={area} onChange={(e) => setArea(e.target.value)} />}
+            </Campo>
+            <Desplegable
+              etiqueta="Completitud del extracto"
+              valor={completitud}
+              opciones={OPCIONES_COMPLETITUD}
+              alCambiar={(v) => setCompletitud(v as Completitud)}
+            />
+            <SelectorFecha
+              etiqueta="Fecha referencial"
+              valor={fecha}
+              alCambiar={setFecha}
+              permitirVacio={false}
+            />
           </div>
-          <div>
-            <label htmlFor="ed-ubicacion" className="block text-sm font-bold mb-1.5">Ubicación</label>
-            <input id="ed-ubicacion" className={campo} maxLength={255} value={ubicacion} onChange={(e) => setUbicacion(e.target.value)} />
-          </div>
-          <div className="grid sm:grid-cols-3 gap-5">
-            <div>
-              <label htmlFor="ed-area" className="block text-sm font-bold mb-1.5">Área (m²)</label>
-              <input id="ed-area" type="number" step="0.01" min="0" className={campo} value={area} onChange={(e) => setArea(e.target.value)} />
-            </div>
-            <div>
-              <label htmlFor="ed-completitud" className="block text-sm font-bold mb-1.5">Completitud del extracto</label>
-              <select id="ed-completitud" className={campo} value={completitud} onChange={(e) => setCompletitud(e.target.value as Completitud)}>
-                {(Object.keys(ETIQUETA_COMPLETITUD) as Completitud[]).map((c) => <option key={c} value={c}>{ETIQUETA_COMPLETITUD[c]}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="ed-fecha" className="block text-sm font-bold mb-1.5">Fecha referencial</label>
-              <input id="ed-fecha" type="date" className={campo} value={fecha} onChange={(e) => setFecha(e.target.value)} />
-            </div>
-          </div>
-          <div>
-            <label htmlFor="ed-linderos" className="block text-sm font-bold mb-1.5">Linderos y medidas perimétricas</label>
-            <textarea id="ed-linderos" rows={3} maxLength={1000} className={`${campo} h-auto py-2`} value={linderos} onChange={(e) => setLinderos(e.target.value)} />
-          </div>
-          <div>
-            <label htmlFor="ed-antecedente" className="block text-sm font-bold mb-1.5">Antecedente dominial</label>
-            <textarea id="ed-antecedente" rows={2} maxLength={500} className={`${campo} h-auto py-2`} value={antecedente} onChange={(e) => setAntecedente(e.target.value)} />
-          </div>
-          <div>
-            <label htmlFor="ed-nota" className="block text-sm font-bold mb-1.5">Nota del extracto (opcional)</label>
-            <textarea id="ed-nota" rows={2} maxLength={500} className={`${campo} h-auto py-2`} value={nota} onChange={(e) => setNota(e.target.value)} />
-          </div>
+
+          <Campo etiqueta="Linderos y medidas perimétricas">
+            {(p) => <textarea {...p} rows={3} maxLength={1000} className={claseAreaTexto} value={linderos} onChange={(e) => setLinderos(e.target.value)} />}
+          </Campo>
+          <Campo etiqueta="Antecedente dominial">
+            {(p) => <textarea {...p} rows={2} maxLength={500} className={claseAreaTexto} value={antecedente} onChange={(e) => setAntecedente(e.target.value)} />}
+          </Campo>
+          <Campo etiqueta="Nota del extracto (opcional)">
+            {(p) => <textarea {...p} rows={2} maxLength={500} className={claseAreaTexto} value={nota} onChange={(e) => setNota(e.target.value)} />}
+          </Campo>
 
           <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} />
           <FilasAsientos filas={filas} setFilas={setFilas} />
 
           {errores.length > 0 && (
-            <div role="alert" className="rounded-2xl border border-danger/30 bg-danger/10 p-4">
-              <p className="font-bold text-sem-rojo-tinta mb-1">No se guardó ningún cambio</p>
-              <ul className="list-disc pl-5 text-sm text-sem-rojo-tinta space-y-1">
-                {errores.map((m, i) => <li key={i}>{m}</li>)}
-              </ul>
-            </div>
+            <Mensaje tono="error" titulo="No se guardó ningún cambio">
+              <ul className="list-disc space-y-1 pl-5">{errores.map((m, i) => <li key={i}>{m}</li>)}</ul>
+            </Mensaje>
           )}
-          {mensaje && <p role="status" className="rounded-2xl border border-success/30 bg-success/10 p-4 text-sm font-semibold text-foreground">{mensaje}</p>}
+          {mensaje && <Mensaje tono="ok">{mensaje}</Mensaje>}
 
-          <Button type="submit" disabled={guardando} className="rounded-xl">
+          <Button type="submit" size="lg" disabled={guardando}>
+            <RefreshCw className={guardando ? "animate-spin" : ""} aria-hidden="true" />
             {guardando ? "Guardando…" : "Guardar y recalcular"}
           </Button>
         </form>

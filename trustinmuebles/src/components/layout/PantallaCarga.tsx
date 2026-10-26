@@ -2,15 +2,9 @@ import { LogoMark } from "@/components/layout/Logo";
 
 interface PantallaCargaProps {
   mensaje?: string;
-  /** true: ocupa toda la pantalla. false: se integra dentro del contenido (debajo del Navbar). */
   pantallaCompleta?: boolean;
 }
 
-/**
- * Loader corporativo para la verificación de sesión.
- * Úsalo en RequireAuth en lugar del texto plano "Cargando...":
- *   if (cargando) return <PantallaCarga />;
- */
 export function PantallaCarga({ mensaje = "Verificando tu sesión", pantallaCompleta = true }: PantallaCargaProps) {
   return (
     <div

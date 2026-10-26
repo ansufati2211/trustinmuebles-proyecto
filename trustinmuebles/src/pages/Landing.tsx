@@ -10,14 +10,8 @@ import {
 import { ESTADOS, PROCEDIMIENTO_INSPECCION } from "@/lib/semaforo";
 import type { EstadoSemaforo } from "@/lib/types";
 
-/* ------------------------------------------------------------------ */
-/* Utilidades de movimiento                                            */
-/* ------------------------------------------------------------------ */
-
-/** Retraso escalonado para las clases .anim-enter / .anim-fade (lee la variable --d del CSS). */
 const retraso = (ms: number): CSSProperties => ({ "--d": `${ms}ms` } as CSSProperties);
 
-/** Observa un elemento y avisa una sola vez cuando entra en pantalla. */
 function useInView<T extends Element>() {
   const ref = useRef<T | null>(null);
   const [visto, setVisto] = useState(false);
@@ -45,7 +39,6 @@ function useInView<T extends Element>() {
   return [ref, visto] as const;
 }
 
-/** Hace entrar a su contenido con fade + slide-up + blur cuando aparece al hacer scroll. */
 function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; delay?: number; className?: string }) {
   const [ref, visto] = useInView<HTMLDivElement>();
   return (
@@ -59,7 +52,6 @@ function Reveal({ children, delay = 0, className = "" }: { children: ReactNode; 
   );
 }
 
-/** Actualiza la posición del cursor dentro de la tarjeta para el efecto spotlight (ver .spotlight en index.css). */
 const spot = (e: MouseEvent<HTMLElement>) => {
   const r = e.currentTarget.getBoundingClientRect();
   e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
@@ -67,10 +59,6 @@ const spot = (e: MouseEvent<HTMLElement>) => {
 };
 
 const SOMBRA_HOVER = "hover:shadow-[0_20px_50px_-12px_rgba(5,150,105,0.18)]";
-
-/* ------------------------------------------------------------------ */
-/* Datos                                                               */
-/* ------------------------------------------------------------------ */
 
 const LIMITES = [
   "No certifica saneamiento",
@@ -136,10 +124,6 @@ const FAQS = [
   { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un ingeniero civil o arquitecto colegiado verifica en campo las 4 especialidades y emite un informe técnico independiente que no altera el color del semáforo documental." },
 ];
 
-/* ------------------------------------------------------------------ */
-/* Acordeón animado (altura con grid-template-rows, sin <details>)     */
-/* ------------------------------------------------------------------ */
-
 function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; respuesta: string }) {
   const [abierto, setAbierto] = useState(false);
   const idPanel = `faq-panel-${id}`;
@@ -191,10 +175,6 @@ function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; r
     </div>
   );
 }
-
-/* ------------------------------------------------------------------ */
-/* Página                                                              */
-/* ------------------------------------------------------------------ */
 
 export default function Landing() {
   const location = useLocation();

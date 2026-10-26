@@ -1,10 +1,16 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { CheckCircle2, ClipboardList, FolderOpen, FunnelX, HardHat, Inbox, LayoutDashboard, Search, UserCheck } from "lucide-react";
+import {
+  CheckCircle2, ClipboardList, FolderOpen, FunnelX, HardHat, Inbox, LayoutDashboard, Search, UserCheck, X,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/base/Badge";
+import { Desplegable } from "@/components/base/Desplegable";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
+import { Mensaje } from "@/components/base/Mensaje";
+import { TituloSeccion } from "@/components/base/TituloSeccion";
+import { claseCampo } from "@/components/base/Campo";
 import { TarjetaPredio } from "@/components/TarjetaPredio";
 import { InsigniaPublicacion } from "@/components/PanelPublicacion";
 import { put } from "@/lib/api";
@@ -18,17 +24,19 @@ import { ESTADOS } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
 import type { Contacto, PanelCartera, ResumenCaso } from "@/lib/types";
 
-const campo = "h-11 w-full rounded-xl border border-border bg-card px-3 text-sm font-medium text-foreground focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20";
-const tarjeta = "rounded-3xl border border-border bg-card p-6 shadow-tarjeta";
+const tarjeta = "rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta sm:p-7";
 
-/** Bandeja de solicitudes de contacto pendientes. «Marcar atendida» y después se vuelve a consultar al servidor. */
+const OPCIONES_COLOR = COLORES.map((c) => ({ valor: c, etiqueta: `${ESTADOS[c].nombre} · ${ESTADOS[c].resumen}` }));
+const OPCIONES_PUBLICACION = ESTADOS_PUBLICACION.map((e) => ({ valor: e, etiqueta: ETIQUETA_PUBLICACION[e] }));
+
 function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
   const { data, loading, error, reload } = useApi<Contacto[]>("/contactos?estado=PENDIENTE");
   const [enviando, setEnviando] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);
 
   const atender = async (c: Contacto) => {
-    setMensaje(null); setEnviando(c.id);
+    setMensaje(null);
+    setEnviando(c.id);
     try {
       await put(`/contactos/${c.id}/atencion`, {});
       setMensaje({ tipo: "ok", texto: `Solicitud de ${c.compradorCodigo} sobre ${c.casoCodigo} marcada como atendida.` });
@@ -42,34 +50,44 @@ function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
   };
 
   return (
-    <section aria-labelledby="titulo-bandeja" className={tarjeta}>
-      <h2 id="titulo-bandeja" className="mb-4 flex items-center gap-2 text-xl font-bold text-foreground">
-        <Inbox className="size-5 text-primary" aria-hidden="true" /> Contactos pendientes
-      </h2>
-      {mensaje && (
-        <p role={mensaje.tipo === "ok" ? "status" : "alert"}
-          className={`mb-4 text-sm font-semibold ${mensaje.tipo === "ok" ? "text-sem-verde-tinta" : "text-sem-rojo-tinta"}`}>{mensaje.texto}</p>
-      )}
+    <section aria-labelledby="titulo-bandeja" className={`${tarjeta} space-y-5`}>
+      <TituloSeccion
+        icono={Inbox}
+        id="titulo-bandeja"
+        derecha={
+          data && data.length > 0 ? (
+            <span className="cifras rounded-full bg-primary px-3.5 py-1 text-sm font-black text-white">{data.length}</span>
+          ) : undefined
+        }
+      >
+        Contactos pendientes
+      </TituloSeccion>
+      {mensaje && <Mensaje tono={mensaje.tipo}>{mensaje.texto}</Mensaje>}
       {loading && !data ? (
         <Cargando texto="Cargando solicitudes…" />
       ) : error ? (
         <ErrorCarga mensaje={error.message} alReintentar={reload} />
       ) : !data || data.length === 0 ? (
-        <p className="text-sm text-tinta-2">No hay solicitudes de contacto pendientes.</p>
+        <p className="rounded-2xl border-2 border-dashed border-border bg-superficie p-5 text-sm font-semibold text-tinta-2">
+          No hay solicitudes de contacto pendientes.
+        </p>
       ) : (
-        <ul className="divide-y divide-border">
+        <ul className="space-y-3">
           {data.map((c) => (
-            <li key={c.id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+            <li
+              key={c.id}
+              className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-superficie p-4 transition-colors hover:border-primary/30"
+            >
               <div className="min-w-0">
                 <p className="font-bold text-foreground">
-                  <Link to={`/casos/${c.casoCodigo}`} className="hover:text-primary">Partida {c.casoCodigo}</Link>
+                  <Link to={`/casos/${c.casoCodigo}`} className="transition-colors hover:text-primary">Partida {c.casoCodigo}</Link>
                   <span className="font-semibold text-tinta-2"> · {etiquetaMotivo(c.motivo)}</span>
                 </p>
-                <p className="text-xs text-tinta-2">Cuenta {c.compradorCodigo} · {fechaHora(c.creadaEn)}</p>
+                <p className="mt-0.5 text-xs text-tinta-2">Cuenta {c.compradorCodigo} · {fechaHora(c.creadaEn)}</p>
               </div>
               <div className="flex items-center gap-2">
                 <Badge tono="info" icono={Inbox} tamano="sm">Pendiente</Badge>
-                <Button size="sm" variant="outline" className="rounded-xl" disabled={enviando !== null} onClick={() => atender(c)}>
+                <Button size="sm" variant="outline" disabled={enviando !== null} onClick={() => atender(c)}>
                   <CheckCircle2 aria-hidden="true" /> {enviando === c.id ? "Marcando…" : "Marcar atendida"}
                 </Button>
               </div>
@@ -81,7 +99,6 @@ function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
   );
 }
 
-/** Panel de cartera del gestor (v0.7). Solo lectura salvo la atención de contactos; ningún dato cambia el color de A. */
 export default function Cartera() {
   const panel = useApi<PanelCartera>("/cartera/panel");
   const casos = useApi<ResumenCaso[]>("/casos");
@@ -93,16 +110,43 @@ export default function Cartera() {
 
   return (
     <div className="flex w-full flex-col">
-      <section className="border-b border-border bg-card">
-        <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-          <p className="text-xs font-bold uppercase tracking-wider text-primary">Gestión comercial</p>
-          <h1 className="mt-1 flex items-center gap-3 text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
-            <LayoutDashboard className="size-8 text-primary" aria-hidden="true" /> Cartera
-          </h1>
-          <p className="mt-2 max-w-2xl text-tinta-2">
-            Estado de la cartera, inspecciones en curso y contactos pendientes. Publicar o retirar un caso se hace desde su
-            expediente y nunca cambia el color del indicador A.
-          </p>
+      <section className="relative isolate overflow-hidden bg-foreground">
+        <img
+          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 -z-20 h-full w-full object-cover"
+        />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground via-foreground/90 to-foreground/55" aria-hidden="true" />
+        <div className="animate-glow pointer-events-none absolute -left-20 -top-24 -z-10 h-[340px] w-[480px] rounded-full bg-primary/30 blur-[100px]" aria-hidden="true" />
+        <div
+          className="absolute inset-0 -z-10 opacity-60 [background-image:radial-gradient(circle_at_1px_1px,rgba(255,255,255,0.09)_1px,transparent_0)] [background-size:24px_24px] [mask-image:linear-gradient(to_bottom,black,transparent_90%)]"
+          aria-hidden="true"
+        />
+
+        <div className="mx-auto grid max-w-7xl gap-8 px-4 pb-16 pt-14 sm:px-6 lg:grid-cols-[1fr_auto] lg:items-end lg:px-8">
+          <div>
+            <span className="anim-enter inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-3.5 py-1.5 text-xs font-bold uppercase tracking-wider text-emerald-300 backdrop-blur-md">
+              <LayoutDashboard className="size-4" aria-hidden="true" /> Gestión comercial
+            </span>
+            <h1 style={{ "--d": "100ms" } as React.CSSProperties} className="anim-enter mt-5 text-4xl font-black leading-tight tracking-tight text-white md:text-6xl">
+              Cartera
+            </h1>
+            <p style={{ "--d": "200ms" } as React.CSSProperties} className="anim-enter mt-3 max-w-2xl leading-relaxed text-gray-200 md:text-lg">
+              Estado de la cartera, inspecciones en curso y contactos pendientes. Publicar o retirar un caso se hace desde su
+              expediente y nunca cambia el color del indicador A.
+            </p>
+          </div>
+          <dl style={{ "--d": "300ms" } as React.CSSProperties} className="anim-enter grid grid-cols-2 gap-3 sm:min-w-[320px]">
+            <div className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-xl">
+              <dt className="text-xs font-bold uppercase tracking-wide text-gray-300">Casos</dt>
+              <dd className="cifras mt-1 text-3xl font-black text-white">{panel.loading && !p ? "—" : t.total}</dd>
+            </div>
+            <div className="rounded-2xl border border-emerald-300/30 bg-primary/30 p-4 backdrop-blur-xl">
+              <dt className="text-xs font-bold uppercase tracking-wide text-emerald-200">Inspecciones</dt>
+              <dd className="cifras mt-1 text-3xl font-black text-white">{panel.loading && !p ? "—" : (p?.inspecciones?.length ?? 0)}</dd>
+            </div>
+          </dl>
         </div>
       </section>
 
@@ -114,25 +158,32 @@ export default function Cartera() {
         ) : (
           <>
             <div className="grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="titulo-colores" className={tarjeta}>
-                <h2 id="titulo-colores" className="mb-4 text-lg font-bold text-foreground">Indicador A · {t.total} casos</h2>
+              <section aria-labelledby="titulo-colores" className={`${tarjeta} space-y-5`}>
+                <TituloSeccion icono={LayoutDashboard} id="titulo-colores">Indicador A · {t.total} casos</TituloSeccion>
                 <ul className="grid grid-cols-2 gap-3">
                   {COLORES.map((c) => (
-                    <li key={c} className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-superficie p-3">
+                    <li
+                      key={c}
+                      className="flex items-center justify-between gap-2 rounded-2xl border border-border bg-superficie p-4 transition-all duration-500 ease-expo hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-tarjeta"
+                    >
                       <IndicadorA estado={c} tamano="sm" conPrefijo={false} />
-                      <span className="cifras text-2xl font-extrabold text-foreground">{t.porColor[c]}</span>
+                      <span className="cifras text-3xl font-black text-foreground">{t.porColor[c]}</span>
                     </li>
                   ))}
                 </ul>
-                <p className="mt-3 text-xs text-tinta-2">Verde = {ESTADOS.VERDE.resumen}.</p>
+                <p className="text-xs text-tinta-2">Verde = {ESTADOS.VERDE.resumen}.</p>
               </section>
-              <section aria-labelledby="titulo-publicacion-totales" className={tarjeta}>
-                <h2 id="titulo-publicacion-totales" className="mb-4 text-lg font-bold text-foreground">Publicación</h2>
+
+              <section aria-labelledby="titulo-publicacion-totales" className={`${tarjeta} space-y-5`}>
+                <TituloSeccion icono={FolderOpen} id="titulo-publicacion-totales">Publicación</TituloSeccion>
                 <ul className="grid grid-cols-3 gap-3">
                   {ESTADOS_PUBLICACION.map((e) => (
-                    <li key={e} className="flex flex-col items-start gap-2 rounded-2xl border border-border bg-superficie p-3">
+                    <li
+                      key={e}
+                      className="flex flex-col items-start gap-3 rounded-2xl border border-border bg-superficie p-4 transition-all duration-500 ease-expo hover:-translate-y-0.5 hover:border-primary/30 hover:shadow-tarjeta"
+                    >
                       <InsigniaPublicacion estado={e} tamano="sm" />
-                      <span className="cifras text-2xl font-extrabold text-foreground">{t.porPublicacion[e]}</span>
+                      <span className="cifras text-3xl font-black text-foreground">{t.porPublicacion[e]}</span>
                     </li>
                   ))}
                 </ul>
@@ -140,38 +191,44 @@ export default function Cartera() {
             </div>
 
             <div className="grid gap-6 lg:grid-cols-2">
-              <section aria-labelledby="titulo-faltantes" className={tarjeta}>
-                <h2 id="titulo-faltantes" className="mb-4 flex items-center gap-2 text-lg font-bold text-foreground">
-                  <ClipboardList className="size-5 text-primary" aria-hidden="true" /> Casos con faltantes
-                </h2>
+              <section aria-labelledby="titulo-faltantes" className={`${tarjeta} space-y-5`}>
+                <TituloSeccion icono={ClipboardList} id="titulo-faltantes">Casos con faltantes</TituloSeccion>
                 {!p?.casosConFaltantes?.length ? (
-                  <p className="text-sm text-tinta-2">Ningún caso tiene información faltante.</p>
+                  <p className="rounded-2xl border-2 border-dashed border-border bg-superficie p-5 text-sm font-semibold text-tinta-2">
+                    Ningún caso tiene información faltante.
+                  </p>
                 ) : (
                   <ul className="space-y-3">
                     {p.casosConFaltantes.map((c) => (
-                      <li key={c.codigo} className="rounded-2xl border border-border bg-superficie p-3">
+                      <li key={c.codigo} className="rounded-2xl border border-border bg-superficie p-4 transition-colors hover:border-primary/30">
                         <div className="flex flex-wrap items-center justify-between gap-2">
-                          <Link to={`/casos/${c.codigo}`} className="font-bold text-foreground hover:text-primary">Partida {c.codigo}</Link>
+                          <Link to={`/casos/${c.codigo}`} className="font-bold text-foreground transition-colors hover:text-primary">Partida {c.codigo}</Link>
                           <IndicadorA estado={c.estado} tamano="sm" conPrefijo={false} />
                         </div>
-                        <p className="mt-1 text-xs text-tinta-2">Falta: {(c.faltantes ?? []).join(", ")}</p>
+                        <p className="mt-1.5 text-xs text-tinta-2">Falta: {(c.faltantes ?? []).join(", ")}</p>
                       </li>
                     ))}
                   </ul>
                 )}
               </section>
-              <section aria-labelledby="titulo-inspecciones" className={tarjeta}>
-                <h2 id="titulo-inspecciones" className="mb-1 flex items-center gap-2 text-lg font-bold text-foreground">
-                  <HardHat className="size-5 text-primary" aria-hidden="true" /> Inspecciones solicitadas o en curso
-                </h2>
-                <p className="mb-4 text-xs text-tinta-2">{p?.inspeccionesAsignadas ?? 0} asignadas · {p?.inspeccionesSinAsignar ?? 0} sin asignar. Se asignan desde el expediente.</p>
+
+              <section aria-labelledby="titulo-inspecciones" className={`${tarjeta} space-y-5`}>
+                <TituloSeccion
+                  icono={HardHat}
+                  id="titulo-inspecciones"
+                  descripcion={`${p?.inspeccionesAsignadas ?? 0} asignadas · ${p?.inspeccionesSinAsignar ?? 0} sin asignar. Se asignan desde el expediente.`}
+                >
+                  Inspecciones solicitadas o en curso
+                </TituloSeccion>
                 {!p?.inspecciones?.length ? (
-                  <p className="text-sm text-tinta-2">No hay inspecciones solicitadas ni en curso.</p>
+                  <p className="rounded-2xl border-2 border-dashed border-border bg-superficie p-5 text-sm font-semibold text-tinta-2">
+                    No hay inspecciones solicitadas ni en curso.
+                  </p>
                 ) : (
                   <ul className="space-y-3">
                     {p.inspecciones.map((i) => (
-                      <li key={i.codigo} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-superficie p-3">
-                        <Link to={`/casos/${i.codigo}#evaluacion-tecnica`} className="font-bold text-foreground hover:text-primary">Partida {i.codigo}</Link>
+                      <li key={i.codigo} className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-border bg-superficie p-4 transition-colors hover:border-primary/30">
+                        <Link to={`/casos/${i.codigo}#evaluacion-tecnica`} className="font-bold text-foreground transition-colors hover:text-primary">Partida {i.codigo}</Link>
                         <div className="flex flex-wrap gap-2">
                           <IndicadorB estado={i.estado} tamano="sm" conPrefijo={false} />
                           {i.asignada
@@ -189,45 +246,85 @@ export default function Cartera() {
 
         <BandejaContactos alCambiar={panel.reload} />
 
-        <section aria-labelledby="titulo-lista">
-          <h2 id="titulo-lista" className="mb-4 text-xl font-bold text-foreground">Casos de la cartera</h2>
-          <form role="search" onSubmit={(e) => e.preventDefault()} aria-label="Filtrar los casos de la cartera"
-            className="mb-6 grid gap-4 rounded-3xl border border-border bg-card p-5 shadow-tarjeta md:grid-cols-3">
-            <div>
-              <label htmlFor="c-q" className="mb-1.5 block text-xs font-bold text-tinta-2">Buscar por partida, distrito o nombre</label>
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-tinta-2" aria-hidden="true" />
-                <input id="c-q" type="search" maxLength={40} className={`${campo} pl-9`} value={filtro.q}
-                  onChange={(e) => setFiltro({ ...filtro, q: e.target.value })} />
+        <section aria-labelledby="titulo-lista" className="space-y-6">
+          <TituloSeccion icono={FolderOpen} id="titulo-lista">Casos de la cartera</TituloSeccion>
+
+          <form
+            role="search"
+            onSubmit={(e) => e.preventDefault()}
+            aria-label="Filtrar los casos de la cartera"
+            className="relative z-30 space-y-4 rounded-[2rem] border border-border bg-card p-5 shadow-tarjeta sm:p-6"
+          >
+            <div className="grid gap-4 md:grid-cols-3">
+              <div>
+                <label htmlFor="c-q" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-tinta-2">Buscar por partida, distrito o nombre</label>
+                <div className="relative">
+                  <Search className="pointer-events-none absolute left-4 top-1/2 size-4 -translate-y-1/2 text-tinta-2" aria-hidden="true" />
+                  <input
+                    id="c-q"
+                    type="search"
+                    maxLength={40}
+                    autoComplete="off"
+                    className={`${claseCampo} pl-11 pr-11 [&::-webkit-search-cancel-button]:hidden`}
+                    value={filtro.q}
+                    onChange={(e) => setFiltro({ ...filtro, q: e.target.value })}
+                  />
+                  {filtro.q && (
+                    <button
+                      type="button"
+                      onClick={() => setFiltro({ ...filtro, q: "" })}
+                      aria-label="Borrar búsqueda"
+                      className="absolute right-3 top-1/2 flex size-7 -translate-y-1/2 items-center justify-center rounded-full text-tinta-2 transition-colors hover:bg-muted hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50"
+                    >
+                      <X className="size-4" aria-hidden="true" />
+                    </button>
+                  )}
+                </div>
               </div>
+              <Desplegable
+                etiqueta="Indicador A"
+                valor={filtro.color}
+                opciones={OPCIONES_COLOR}
+                textoTodos="Todos los colores"
+                alCambiar={(v) => setFiltro({ ...filtro, color: v as FiltroCartera["color"] })}
+              />
+              <Desplegable
+                etiqueta="Publicación"
+                valor={filtro.publicacion}
+                opciones={OPCIONES_PUBLICACION}
+                textoTodos="Todos los estados"
+                alCambiar={(v) => setFiltro({ ...filtro, publicacion: v as FiltroCartera["publicacion"] })}
+              />
             </div>
-            <div>
-              <label htmlFor="c-color" className="mb-1.5 block text-xs font-bold text-tinta-2">Indicador A</label>
-              <select id="c-color" className={campo} value={filtro.color}
-                onChange={(e) => setFiltro({ ...filtro, color: e.target.value as FiltroCartera["color"] })}>
-                <option value="">Todos los colores</option>
-                {COLORES.map((c) => <option key={c} value={c}>{ESTADOS[c].nombre} · {ESTADOS[c].resumen}</option>)}
-              </select>
-            </div>
-            <div>
-              <label htmlFor="c-pub" className="mb-1.5 block text-xs font-bold text-tinta-2">Publicación</label>
-              <select id="c-pub" className={campo} value={filtro.publicacion}
-                onChange={(e) => setFiltro({ ...filtro, publicacion: e.target.value as FiltroCartera["publicacion"] })}>
-                <option value="">Todos los estados</option>
-                {ESTADOS_PUBLICACION.map((e) => <option key={e} value={e}>{ETIQUETA_PUBLICACION[e]}</option>)}
-              </select>
+            <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
+              <p role="status" aria-live="polite" className="cifras text-sm font-bold text-foreground">
+                {casos.loading && !casos.data ? "Buscando casos…" : casos.error ? "" : `${visibles.length} caso${visibles.length === 1 ? "" : "s"}`}
+              </p>
+              {hayFiltro && (
+                <Button type="button" variant="ghost" size="sm" onClick={() => setFiltro(FILTRO_CARTERA_VACIO)}>
+                  <FunnelX aria-hidden="true" /> Limpiar filtros
+                </Button>
+              )}
             </div>
           </form>
+
           {casos.loading && !casos.data ? (
             <Cargando texto="Cargando los casos…" tarjetas={3} />
           ) : casos.error ? (
             <ErrorCarga mensaje={casos.error.message} alReintentar={casos.reload} />
           ) : visibles.length === 0 ? (
-            <Vacio icono={FolderOpen} titulo={hayFiltro ? "Ningún caso cumple estos filtros" : "Todavía no hay casos en la cartera"}
-              accion={hayFiltro ? <Button className="rounded-xl" onClick={() => setFiltro(FILTRO_CARTERA_VACIO)}><FunnelX aria-hidden="true" /> Limpiar filtros</Button> : undefined} />
+            <Vacio
+              icono={FolderOpen}
+              titulo={hayFiltro ? "Ningún caso cumple estos filtros" : "Todavía no hay casos en la cartera"}
+              accion={hayFiltro ? <Button onClick={() => setFiltro(FILTRO_CARTERA_VACIO)}><FunnelX aria-hidden="true" /> Limpiar filtros</Button> : undefined}
+            />
           ) : (
             <ul className="grid grid-cols-1 gap-6 pb-12 sm:grid-cols-2 xl:grid-cols-3">
-              {visibles.map((c) => <li key={c.codigo}><TarjetaPredio c={c} conPublicacion /></li>)}
+              {visibles.map((c, i) => (
+                <li key={c.codigo} style={{ "--d": `${Math.min(i, 8) * 70}ms` } as React.CSSProperties} className="anim-enter">
+                  <TarjetaPredio c={c} conPublicacion />
+                </li>
+              ))}
             </ul>
           )}
         </section>

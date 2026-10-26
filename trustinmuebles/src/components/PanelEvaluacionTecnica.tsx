@@ -1,13 +1,17 @@
-import { useState } from "react";
+import { useState, type FormEvent } from "react";
 import {
   AlertTriangle, BadgeCheck, BrickWall, CheckCircle2, Circle, CircleDashed, ClipboardCheck, Droplets, ExternalLink,
-  HardHat, Info, LoaderCircle, Zap, type LucideIcon,
+  HardHat, Info, LoaderCircle, ShieldCheck, Zap, type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, type TonoBadge } from "@/components/base/Badge";
+import { Campo, claseAreaTexto } from "@/components/base/Campo";
+import { Desplegable } from "@/components/base/Desplegable";
 import { IndicadorB } from "@/components/base/Indicadores";
+import { Mensaje } from "@/components/base/Mensaje";
 import { Modal } from "@/components/base/Modal";
-import { campo } from "@/components/FilasAsientos";
+import { SelectorFecha } from "@/components/base/SelectorFecha";
+import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { abrirPdf, api, post, put } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { etapasStepper, pasosInspeccion } from "@/lib/etapas";
@@ -16,7 +20,9 @@ import { puedeAsignarEspecialista, puedeEmitirInforme, puedeSolicitarInspeccion,
 import { ETIQUETA_ESPECIALIDAD, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
 
-/** Insignia del indicador B. Delega en IndicadorB; se conserva el nombre para quien ya la usa. */
+const FOTO_ESPECIALISTA =
+  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=400&q=80";
+
 export function InsigniaTecnica({ estado, resultado, className = "" }: { estado: EstadoTecnico; resultado?: ResultadoTecnico | null; className?: string }) {
   return <IndicadorB estado={estado} resultado={resultado} className={className} />;
 }
@@ -30,7 +36,6 @@ const VERIFICACIONES: { clave: ClaveVerif; especialidad: keyof typeof ETIQUETA_E
   { clave: "verifSanitarias", especialidad: "SANITARIAS" },
 ];
 
-/** Las tres tarjetas de estado físico que muestra el indicador B. */
 const ESTADO_FISICO: { clave: ClaveVerif; titulo: string; Icono: LucideIcon; queMira: string }[] = [
   { clave: "verifEstructuras", titulo: "Estructuras", Icono: BrickWall, queMira: "Cimentación, columnas, vigas y muros: fisuras y humedad." },
   { clave: "verifElectricas", titulo: "Instalaciones eléctricas", Icono: Zap, queMira: "Tablero, llave diferencial, cableado y pozo a tierra." },
@@ -43,6 +48,18 @@ const VERIF: Record<VerificacionCampo, { tono: TonoBadge; Icono: LucideIcon }> =
   NO_VERIFICADO: { tono: "gris", Icono: CircleDashed },
 };
 
+const OPCIONES_RESULTADO = (Object.keys(ETIQUETA_RESULTADO) as ResultadoTecnico[]).map((r) => ({ valor: r, etiqueta: ETIQUETA_RESULTADO[r] }));
+const OPCIONES_VERIF = (Object.keys(ETIQUETA_VERIFICACION) as VerificacionCampo[]).map((v) => ({ valor: v, etiqueta: ETIQUETA_VERIFICACION[v] }));
+const OPCIONES_ESTADO_INFORME = [
+  { valor: "EN_INSPECCION", etiqueta: "En inspección" },
+  { valor: "EMITIDO", etiqueta: "Informe emitido" },
+];
+
+export const ESPECIALISTAS_DEMO = ["especialista-01", "especialista-02"];
+
+const iniciales = (nombre: string) =>
+  nombre.split(/\s+/).filter((p) => !/^(ing|arq|dr|dra)\.?$/i.test(p)).slice(0, 2).map((p) => p.charAt(0).toUpperCase()).join("");
+
 function Stepper({ estado }: { estado: EstadoTecnico }) {
   const etapas = etapasStepper(estado);
   return (
@@ -51,14 +68,28 @@ function Stepper({ estado }: { estado: EstadoTecnico }) {
         const completada = e.estado === "completada";
         const actual = e.estado === "actual";
         return (
-          <li key={e.clave} aria-current={actual ? "step" : undefined}
-            className={`flex items-center gap-2.5 rounded-2xl border px-3 py-2.5 ${actual ? "border-primary bg-secondary" : completada ? "border-sem-verde/40 bg-sem-verde-suave" : "border-border bg-card"}`}>
-            <span className={`grid size-7 shrink-0 place-items-center rounded-full text-xs font-bold ${completada ? "bg-sem-verde text-white" : actual ? "bg-primary text-white" : "bg-muted text-tinta-2"}`}>
-              {completada ? <CheckCircle2 className="size-4" aria-hidden="true" /> : i + 1}
+          <li
+            key={e.clave}
+            aria-current={actual ? "step" : undefined}
+            className={`relative flex flex-col gap-2.5 overflow-hidden rounded-2xl border p-4 transition-all duration-500 ease-expo ${
+              actual
+                ? "border-primary bg-secondary shadow-md shadow-primary/15"
+                : completada
+                  ? "border-sem-verde/40 bg-sem-verde-suave"
+                  : "border-border bg-background"
+            }`}
+          >
+            {actual && <span className="absolute inset-x-0 top-0 h-1 bg-primary" aria-hidden="true" />}
+            <span
+              className={`grid size-9 place-items-center rounded-full text-sm font-black ${
+                completada ? "bg-sem-verde text-white" : actual ? "bg-primary text-white" : "bg-muted text-tinta-2"
+              }`}
+            >
+              {completada ? <CheckCircle2 className="size-5" aria-hidden="true" /> : i + 1}
             </span>
-            <span className="text-sm font-bold leading-tight text-foreground">
-              {e.etiqueta}
-              <span className="sr-only">{completada ? " (completada)" : actual ? " (etapa actual)" : " (pendiente)"}</span>
+            <span className="text-sm font-bold leading-tight text-foreground">{e.etiqueta}</span>
+            <span className="text-[11px] font-bold uppercase tracking-wider text-tinta-2">
+              {completada ? "Completada" : actual ? "Etapa actual" : "Pendiente"}
             </span>
           </li>
         );
@@ -67,35 +98,56 @@ function Stepper({ estado }: { estado: EstadoTecnico }) {
   );
 }
 
-/** Avatar dibujado (no es una foto de una persona real). */
-function AvatarEspecialista() {
+function FotoEspecialista({ nombre }: { nombre: string }) {
+  const [fallo, setFallo] = useState(false);
+  if (fallo) {
+    return (
+      <span
+        className="grid size-20 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-700 text-2xl font-black text-white"
+        aria-hidden="true"
+      >
+        {iniciales(nombre)}
+      </span>
+    );
+  }
   return (
-    <svg viewBox="0 0 64 64" className="size-16 shrink-0" role="img" aria-label="Avatar ilustrativo del especialista">
-      <circle cx="32" cy="32" r="32" fill="#E6F2EC" />
-      <path d="M12 58 C 14 44, 50 44, 52 58 Z" fill="#2B6E57" />
-      <circle cx="32" cy="30" r="11" fill="#E9C9A9" />
-      <path d="M19 26 C 19 15, 45 15, 45 26 Z" fill="#D99A3D" />
-      <rect x="16" y="25" width="32" height="4" rx="2" fill="#C2852F" />
-    </svg>
+    <img
+      src={FOTO_ESPECIALISTA}
+      alt={`Fotografía de ${nombre}`}
+      loading="lazy"
+      onError={() => setFallo(true)}
+      className="size-20 shrink-0 rounded-3xl border-4 border-white object-cover shadow-lg shadow-foreground/15"
+    />
   );
 }
 
 function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
   if (!t.profesional) {
     return (
-      <div className="flex items-center gap-3 rounded-2xl border border-dashed border-border bg-superficie p-4">
-        <HardHat className="size-6 text-tinta-2" aria-hidden="true" />
-        <p className="text-sm font-semibold text-tinta-2">Especialista por asignar: la inmobiliaria coordina la visita.</p>
+      <div className="flex items-center gap-4 rounded-3xl border-2 border-dashed border-border bg-superficie p-5">
+        <span className="grid size-14 place-items-center rounded-2xl bg-muted text-tinta-2">
+          <HardHat className="size-7" aria-hidden="true" />
+        </span>
+        <p className="text-sm font-semibold leading-relaxed text-tinta-2">Especialista por asignar: la inmobiliaria coordina la visita.</p>
       </div>
     );
   }
   return (
-    <div className="flex flex-wrap items-center gap-4 rounded-2xl border border-border bg-card p-4 shadow-tarjeta">
-      <AvatarEspecialista />
-      <div className="min-w-0 flex-1">
-        <p className="text-xs font-bold uppercase tracking-wider text-tinta-2">Especialista a cargo</p>
-        <p className="text-lg font-bold text-foreground">{t.profesional}</p>
-        <p className="text-sm text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"} · {t.colegiatura}</p>
+    <div className="relative isolate overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tarjeta sm:p-6">
+      <div className="pointer-events-none absolute -right-12 -top-12 -z-10 size-48 rounded-full bg-primary/10 blur-[60px]" aria-hidden="true" />
+      <div className="flex flex-wrap items-center gap-5">
+        <FotoEspecialista nombre={t.profesional} />
+        <div className="min-w-0 flex-1">
+          <p className="text-xs font-bold uppercase tracking-wider text-primary">Especialista a cargo</p>
+          <p className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">{t.profesional}</p>
+          <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"}</p>
+        </div>
+        {t.colegiatura && (
+          <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground">
+            <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
+            <span className="cifras">{t.colegiatura}</span>
+          </span>
+        )}
       </div>
     </div>
   );
@@ -104,22 +156,27 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
 function TarjetasEstadoFisico({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
   const inspeccionada = t.estado === "EN_INSPECCION" || t.estado === "EMITIDO";
   return (
-    <ul className="grid gap-3 sm:grid-cols-3" aria-label="Estado físico verificado en campo">
+    <ul className="grid gap-4 sm:grid-cols-3" aria-label="Estado físico verificado en campo">
       {ESTADO_FISICO.map(({ clave, titulo, Icono, queMira }) => {
         const v = t[clave];
         const estilo = v ? VERIF[v] : null;
         return (
-          <li key={clave} className="flex flex-col gap-2 rounded-2xl border border-border bg-card p-4">
-            <div className="flex items-center gap-2">
-              <span className="grid size-9 place-items-center rounded-xl bg-secondary text-primary"><Icono className="size-5" aria-hidden="true" /></span>
-              <h4 className="font-bold leading-tight text-foreground">{titulo}</h4>
-            </div>
+          <li
+            key={clave}
+            className="group flex flex-col gap-3 rounded-3xl border border-border bg-card p-5 transition-all duration-500 ease-expo hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevada"
+          >
+            <span className="grid size-12 place-items-center rounded-2xl bg-secondary text-primary transition-transform duration-500 ease-expo group-hover:scale-110 group-hover:-rotate-3">
+              <Icono className="size-6" aria-hidden="true" />
+            </span>
+            <h4 className="font-extrabold leading-tight text-foreground">{titulo}</h4>
             <p className="text-xs leading-relaxed text-tinta-2">{queMira}</p>
-            {estilo && v ? (
-              <Badge tono={estilo.tono} icono={estilo.Icono} tamano="sm" className="self-start">{ETIQUETA_VERIFICACION[v]}</Badge>
-            ) : (
-              <Badge tono="gris" icono={CircleDashed} tamano="sm" className="self-start">{inspeccionada ? "Aún sin verificar" : "Sin inspección"}</Badge>
-            )}
+            <div className="mt-auto pt-1">
+              {estilo && v ? (
+                <Badge tono={estilo.tono} icono={estilo.Icono} tamano="sm">{ETIQUETA_VERIFICACION[v]}</Badge>
+              ) : (
+                <Badge tono="gris" icono={CircleDashed} tamano="sm">{inspeccionada ? "Aún sin verificar" : "Sin inspección"}</Badge>
+              )}
+            </div>
           </li>
         );
       })}
@@ -130,14 +187,17 @@ function TarjetasEstadoFisico({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
 function PasosInspeccion({ estado }: { estado: EstadoTecnico }) {
   const avance = pasosInspeccion(estado, PROCEDIMIENTO_INSPECCION.length);
   return (
-    <ol className="space-y-3" aria-label="Procedimiento de la inspección en 6 pasos">
+    <ol className="relative space-y-4" aria-label="Procedimiento de la inspección en 6 pasos">
+      <span className="absolute bottom-3 left-[0.6rem] top-3 w-px bg-border" aria-hidden="true" />
       {PROCEDIMIENTO_INSPECCION.map((p, i) => {
         const a = avance[i];
         const Icono = a === "hecho" ? CheckCircle2 : a === "en-curso" ? LoaderCircle : Circle;
         const color = a === "hecho" ? "text-sem-verde-tinta" : a === "en-curso" ? "text-info-tinta" : "text-sem-gris";
         return (
-          <li key={p.titulo} className="flex gap-3">
-            <Icono className={`mt-0.5 size-5 shrink-0 ${color}`} aria-hidden="true" />
+          <li key={p.titulo} className="relative flex gap-3.5">
+            <span className="relative z-10 grid size-5 shrink-0 place-items-center rounded-full bg-card">
+              <Icono className={`size-5 ${color} ${a === "en-curso" ? "animate-spin" : ""}`} aria-hidden="true" />
+            </span>
             <p className="text-sm leading-relaxed">
               <span className="font-bold text-foreground">{i + 1}. {p.titulo}. </span>
               <span className="text-tinta-2">{p.texto}</span>
@@ -166,11 +226,12 @@ function FormularioInforme({ detalle, alCambiar }: { detalle: DetalleCaso; alCam
   const [mensaje, setMensaje] = useState<string | null>(null);
   const [guardando, setGuardando] = useState(false);
 
-  const guardar = async (e: React.FormEvent) => {
+  const guardar = async (e: FormEvent) => {
     e.preventDefault();
-    setErrores([]); setMensaje(null); setGuardando(true);
+    setErrores([]);
+    setMensaje(null);
+    setGuardando(true);
     try {
-      // Sin nombre ni colegiatura: el servidor los toma de la cuenta del especialista (M8).
       const nuevo = await put<DetalleCaso>(`/casos/${detalle.codigo}/inspeccion`, {
         estado, resultado: resultado || null, fechaInspeccion: fechaInspeccion || null,
         verifArquitectura: verif.verifArquitectura || null, verifEstructuras: verif.verifEstructuras || null,
@@ -188,72 +249,79 @@ function FormularioInforme({ detalle, alCambiar }: { detalle: DetalleCaso; alCam
   };
 
   return (
-    <form onSubmit={guardar} noValidate className="space-y-4 rounded-2xl border border-border bg-superficie p-5" aria-label="Informe técnico del especialista">
-      <h3 className="font-bold text-foreground">Informe técnico (solo el especialista lo llena)</h3>
-      <p className="text-xs text-tinta-2">Tu nombre, especialidad y colegiatura se toman de tu cuenta: no se escriben aquí.</p>
-      <div className="grid gap-4 sm:grid-cols-3">
+    <form
+      onSubmit={guardar}
+      noValidate
+      className="space-y-6 rounded-3xl border-2 border-primary/20 bg-superficie p-5 sm:p-7"
+      aria-label="Informe técnico del especialista"
+    >
+      <div className="flex items-start gap-3.5">
+        <span className="grid size-11 shrink-0 place-items-center rounded-2xl bg-secondary text-primary">
+          <ClipboardCheck className="size-5" aria-hidden="true" />
+        </span>
         <div>
-          <label htmlFor="it-estado" className="mb-1 block text-xs font-bold text-tinta-2">Estado</label>
-          <select id="it-estado" className={campo} value={estado} onChange={(e) => setEstado(e.target.value as "EN_INSPECCION" | "EMITIDO")}>
-            <option value="EN_INSPECCION">En inspección</option>
-            <option value="EMITIDO">Informe emitido</option>
-          </select>
-        </div>
-        <div className="sm:col-span-2">
-          <label htmlFor="it-resultado" className="mb-1 block text-xs font-bold text-tinta-2">Conclusión del informe</label>
-          <select id="it-resultado" className={campo} value={resultado} onChange={(e) => setResultado(e.target.value as ResultadoTecnico | "")}>
-            <option value="">Elegir (al emitir)</option>
-            {(Object.keys(ETIQUETA_RESULTADO) as ResultadoTecnico[]).map((r) => <option key={r} value={r}>{ETIQUETA_RESULTADO[r]}</option>)}
-          </select>
+          <h3 className="text-lg font-extrabold tracking-tight text-foreground">Informe técnico</h3>
+          <p className="mt-0.5 text-sm text-tinta-2">Solo el especialista lo llena. Tu nombre, especialidad y colegiatura se toman de tu cuenta.</p>
         </div>
       </div>
-      <div>
-        <label htmlFor="it-fecha" className="mb-1 block text-xs font-bold text-tinta-2">Fecha de la inspección presencial</label>
-        <input id="it-fecha" type="date" className={`${campo} sm:max-w-xs`} value={fechaInspeccion} onChange={(e) => setFechaInspeccion(e.target.value)} />
+
+      <div className="grid gap-4 sm:grid-cols-3">
+        <Desplegable etiqueta="Estado" valor={estado} opciones={OPCIONES_ESTADO_INFORME} alCambiar={(v) => setEstado(v as "EN_INSPECCION" | "EMITIDO")} />
+        <Desplegable
+          className="sm:col-span-2"
+          etiqueta="Conclusión del informe"
+          valor={resultado}
+          opciones={OPCIONES_RESULTADO}
+          textoTodos="Elegir (al emitir)"
+          alCambiar={(v) => setResultado(v as ResultadoTecnico | "")}
+        />
       </div>
-      <fieldset className="grid gap-4 sm:grid-cols-2">
-        <legend className="mb-1 text-xs font-bold text-tinta-2">Verificación en campo, por especialidad</legend>
-        {VERIFICACIONES.map(({ clave, especialidad }) => (
-          <div key={clave}>
-            <label htmlFor={`it-${clave}`} className="mb-1 block text-xs font-bold text-tinta-2">{ETIQUETA_ESPECIALIDAD[especialidad]}</label>
-            <select id={`it-${clave}`} className={campo} value={verif[clave]} onChange={(e) => setVerif({ ...verif, [clave]: e.target.value as VerificacionCampo | "" })}>
-              <option value="">Elegir</option>
-              {(Object.keys(ETIQUETA_VERIFICACION) as VerificacionCampo[]).map((v) => <option key={v} value={v}>{ETIQUETA_VERIFICACION[v]}</option>)}
-            </select>
-          </div>
-        ))}
+
+      <SelectorFecha
+        etiqueta="Fecha de la inspección presencial"
+        className="sm:max-w-xs"
+        valor={fechaInspeccion}
+        alCambiar={setFechaInspeccion}
+      />
+
+      <fieldset>
+        <legend className="mb-3 text-xs font-bold uppercase tracking-wider text-tinta-2">Verificación en campo, por especialidad</legend>
+        <div className="grid gap-4 sm:grid-cols-2">
+          {VERIFICACIONES.map(({ clave, especialidad }) => (
+            <Desplegable
+              key={clave}
+              etiqueta={ETIQUETA_ESPECIALIDAD[especialidad]}
+              valor={verif[clave]}
+              opciones={OPCIONES_VERIF}
+              textoTodos="Elegir"
+              alCambiar={(v) => setVerif({ ...verif, [clave]: v as VerificacionCampo | "" })}
+            />
+          ))}
+        </div>
       </fieldset>
-      <div>
-        <label htmlFor="it-obs" className="mb-1 block text-xs font-bold text-tinta-2">Observaciones y deficiencias físicas detectadas</label>
-        <textarea id="it-obs" rows={3} maxLength={1500} className={`${campo} h-auto py-2`} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} />
-      </div>
-      <div>
-        <label htmlFor="it-conc" className="mb-1 block text-xs font-bold text-tinta-2">Conclusiones sustentadas por la inspección</label>
-        <textarea id="it-conc" rows={3} maxLength={1500} className={`${campo} h-auto py-2`} value={conclusiones} onChange={(e) => setConclusiones(e.target.value)} />
-      </div>
-      <div>
-        <label htmlFor="it-est" className="mb-1 block text-xs font-bold text-tinta-2">Estudios adicionales requeridos</label>
-        <textarea id="it-est" rows={2} maxLength={1000} className={`${campo} h-auto py-2`} value={estudios} onChange={(e) => setEstudios(e.target.value)} />
-      </div>
+
+      <Campo etiqueta="Observaciones y deficiencias físicas detectadas">
+        {(p) => <textarea {...p} rows={3} maxLength={1500} className={claseAreaTexto} value={observaciones} onChange={(e) => setObservaciones(e.target.value)} />}
+      </Campo>
+      <Campo etiqueta="Conclusiones sustentadas por la inspección">
+        {(p) => <textarea {...p} rows={3} maxLength={1500} className={claseAreaTexto} value={conclusiones} onChange={(e) => setConclusiones(e.target.value)} />}
+      </Campo>
+      <Campo etiqueta="Estudios adicionales requeridos">
+        {(p) => <textarea {...p} rows={2} maxLength={1000} className={claseAreaTexto} value={estudios} onChange={(e) => setEstudios(e.target.value)} />}
+      </Campo>
+
       {errores.length > 0 && (
-        <div role="alert" className="rounded-2xl border border-sem-rojo/40 bg-sem-rojo-suave p-4">
-          <p className="mb-1 font-bold text-sem-rojo-tinta">No se guardó el informe</p>
-          <ul className="list-disc space-y-1 pl-5 text-sm text-sem-rojo-tinta">{errores.map((m, i) => <li key={i}>{m}</li>)}</ul>
-        </div>
+        <Mensaje tono="error" titulo="No se guardó el informe">
+          <ul className="list-disc space-y-1 pl-5">{errores.map((m, i) => <li key={i}>{m}</li>)}</ul>
+        </Mensaje>
       )}
-      {mensaje && <p role="status" className="rounded-2xl border border-sem-verde/40 bg-sem-verde-suave p-4 text-sm font-semibold text-sem-verde-tinta">{mensaje}</p>}
-      <Button type="submit" disabled={guardando} className="rounded-xl">{guardando ? "Guardando…" : "Guardar informe"}</Button>
+      {mensaje && <Mensaje tono="ok">{mensaje}</Mensaje>}
+
+      <Button type="submit" size="lg" disabled={guardando}>{guardando ? "Guardando…" : "Guardar informe"}</Button>
     </form>
   );
 }
 
-/**
- * Cuentas de especialista de la demostración. No hay una ruta que liste cuentas, así que la lista es fija; el servidor
- * valida que la cuenta elegida sea un especialista con datos profesionales (400 si no).
- */
-export const ESPECIALISTAS_DEMO = ["especialista-01", "especialista-02"];
-
-/** El gestor asigna la inspección solicitada o en curso (v0.7). Tras asignar se vuelve a consultar el caso. */
 function AsignacionEspecialista({ detalle, alCambiar }: { detalle: DetalleCaso; alCambiar: (d: DetalleCaso) => void }) {
   const actual = detalle.evaluacionTecnica.especialistaAsignadoCodigo ?? "";
   const [codigo, setCodigo] = useState(actual || ESPECIALISTAS_DEMO[0]);
@@ -262,7 +330,9 @@ function AsignacionEspecialista({ detalle, alCambiar }: { detalle: DetalleCaso; 
   const [aviso, setAviso] = useState<string | null>(null);
 
   const asignar = async () => {
-    setError(null); setAviso(null); setEnviando(true);
+    setError(null);
+    setAviso(null);
+    setEnviando(true);
     try {
       await put(`/casos/${detalle.codigo}/inspeccion/asignacion`, { especialistaCodigo: codigo });
       alCambiar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
@@ -275,26 +345,26 @@ function AsignacionEspecialista({ detalle, alCambiar }: { detalle: DetalleCaso; 
   };
 
   return (
-    <div className="space-y-3 rounded-2xl border border-border bg-superficie p-5">
-      <h3 className="font-bold text-foreground">Asignar especialista</h3>
+    <div className="space-y-4 rounded-3xl border border-border bg-superficie p-5 sm:p-6">
+      <h3 className="font-extrabold text-foreground">Asignar especialista</h3>
       <div className="flex flex-wrap items-end gap-3">
-        <div>
-          <label htmlFor="asig-esp" className="mb-1 block text-xs font-bold text-tinta-2">Cuenta del especialista</label>
-          <select id="asig-esp" className={`${campo} min-w-56`} value={codigo} onChange={(e) => setCodigo(e.target.value)}>
-            {ESPECIALISTAS_DEMO.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
-        <Button className="rounded-xl" onClick={asignar} disabled={enviando || codigo === actual}>
+        <Desplegable
+          className="min-w-60 flex-1"
+          etiqueta="Cuenta del especialista"
+          valor={codigo}
+          opciones={ESPECIALISTAS_DEMO.map((c) => ({ valor: c, etiqueta: c }))}
+          alCambiar={setCodigo}
+        />
+        <Button size="lg" className="h-12" onClick={asignar} disabled={enviando || codigo === actual}>
           {enviando ? "Asignando…" : actual ? "Reasignar" : "Asignar"}
         </Button>
       </div>
-      {aviso && <p role="status" className="text-sm font-semibold text-sem-verde-tinta">{aviso}</p>}
-      {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
+      {aviso && <Mensaje tono="ok">{aviso}</Mensaje>}
+      {error && <Mensaje tono="error">{error}</Mensaje>}
     </div>
   );
 }
 
-/** Modal de solicitud: alcance de los 6 pasos, costo del servicio que envía el backend y confirmación. */
 function ModalSolicitud({ detalle, abierto, alCerrar, alSolicitar }: {
   detalle: DetalleCaso; abierto: boolean; alCerrar: () => void; alSolicitar: (d: DetalleCaso) => void;
 }) {
@@ -303,7 +373,8 @@ function ModalSolicitud({ detalle, abierto, alCerrar, alSolicitar }: {
   const [error, setError] = useState<string | null>(null);
 
   const confirmar = async () => {
-    setError(null); setEnviando(true);
+    setError(null);
+    setEnviando(true);
     try {
       await post(`/casos/${detalle.codigo}/inspeccion/solicitud`);
       alSolicitar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
@@ -315,36 +386,41 @@ function ModalSolicitud({ detalle, abierto, alCerrar, alSolicitar }: {
   };
 
   return (
-    <Modal abierto={abierto} alCerrar={alCerrar} ancho="lg" titulo="Solicitar inspección técnica presencial"
+    <Modal
+      abierto={abierto}
+      alCerrar={alCerrar}
+      ancho="lg"
+      titulo="Solicitar inspección técnica presencial"
       descripcion={`Para ${detalle.denominacion} (partida ${detalle.codigo}).`}
-      pie={<>
-        <Button variant="outline" className="rounded-xl" onClick={alCerrar} disabled={enviando}>Cancelar</Button>
-        <Button className="rounded-xl" onClick={confirmar} disabled={enviando}>
-          <HardHat aria-hidden="true" /> {enviando ? "Enviando…" : "Confirmar solicitud"}
-        </Button>
-      </>}>
+      pie={
+        <>
+          <Button variant="outline" onClick={alCerrar} disabled={enviando}>Cancelar</Button>
+          <Button onClick={confirmar} disabled={enviando}>
+            <HardHat aria-hidden="true" /> {enviando ? "Enviando…" : "Confirmar solicitud"}
+          </Button>
+        </>
+      }
+    >
       <div className="space-y-5">
-        <div className="rounded-2xl border border-arena/40 bg-arena-suave p-4">
+        <div className="rounded-2xl border border-arena/40 bg-arena-suave p-5">
           <p className="text-xs font-bold uppercase tracking-wider text-arena-tinta">Costo del servicio</p>
-          <p className="cifras mt-1 text-3xl font-extrabold text-foreground">{servicio ? soles(servicio.costoReferencial) : "Por coordinar"}</p>
+          <p className="cifras mt-1 text-4xl font-black tracking-tight text-foreground">{servicio ? soles(servicio.costoReferencial) : "Por coordinar"}</p>
           {servicio && <p className="mt-1 text-sm text-arena-tinta">{servicio.condiciones}</p>}
         </div>
         <div>
-          <p className="mb-3 font-bold text-foreground">Qué incluye: el procedimiento en 6 pasos</p>
+          <p className="mb-4 font-extrabold text-foreground">Qué incluye: el procedimiento en 6 pasos</p>
           <PasosInspeccion estado="NO_SOLICITADA" />
         </div>
-        <p className="flex gap-2 rounded-2xl border border-border bg-superficie p-4 text-sm text-foreground">
-          <Info className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
+        <Mensaje tono="info">
           El informe del especialista es independiente: no cambia el color del indicador A (documental). La solicitud queda a
           tu nombre de cuenta y con la fecha de hoy; la visita se coordina con la inmobiliaria.
-        </p>
-        {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
+        </Mensaje>
+        {error && <Mensaje tono="error">{error}</Mensaje>}
       </div>
     </Modal>
   );
 }
 
-/** Indicador B: la verificación física que hace un profesional en el inmueble. Es independiente del semáforo documental. */
 export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: DetalleCaso; alCambiar: (d: DetalleCaso) => void }) {
   const { usuario } = useAuth();
   const t = detalle.evaluacionTecnica;
@@ -354,56 +430,59 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
 
   const verInforme = async () => {
     setError(null);
-    try { await abrirPdf(`/casos/${detalle.codigo}/inspeccion/documento`); }
-    catch (e) { setError(e instanceof Error ? e.message : "No se pudo abrir el informe"); }
+    try {
+      await abrirPdf(`/casos/${detalle.codigo}/inspeccion/documento`);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo abrir el informe");
+    }
   };
 
   return (
-    <section id="evaluacion-tecnica" aria-labelledby="titulo-indicador-b" className="space-y-6 rounded-3xl border border-border bg-card p-6 shadow-tarjeta sm:p-8">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <h2 id="titulo-indicador-b" className="flex items-center gap-2 text-xl font-bold text-foreground">
-            <ClipboardCheck className="size-5 text-primary" aria-hidden="true" /> Evaluación técnica presencial (Indicador B)
-          </h2>
-          <p className="mt-1 max-w-2xl text-sm leading-relaxed text-tinta-2">
-            Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba un ingeniero civil o
-            arquitecto colegiado en el inmueble.
-          </p>
-        </div>
-        <IndicadorB estado={t.estado} resultado={t.resultado} tamano="lg" conPrefijo={false} />
-      </div>
+    <section
+      id="evaluacion-tecnica"
+      aria-labelledby="titulo-indicador-b"
+      className="scroll-mt-28 space-y-7 rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta sm:p-8"
+    >
+      <TituloSeccion
+        icono={ClipboardCheck}
+        id="titulo-indicador-b"
+        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba un ingeniero civil o arquitecto colegiado en el inmueble."
+        derecha={<IndicadorB estado={t.estado} resultado={t.resultado} tamano="lg" conPrefijo={false} />}
+      >
+        Evaluación técnica presencial (Indicador B)
+      </TituloSeccion>
 
-      <p className="flex gap-2 rounded-2xl border border-info-tinta/20 bg-info-suave p-4 text-sm font-semibold text-info-tinta">
-        <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
-        El indicador B es independiente y no cambia el color del indicador A (documental).
-      </p>
+      <Mensaje tono="info">El indicador B es independiente y no cambia el color del indicador A (documental).</Mensaje>
 
       <Stepper estado={t.estado} />
 
       {t.fechaSolicitud && (
-        <p className="text-sm text-foreground">
+        <p className="rounded-2xl bg-superficie px-4 py-3 text-sm text-foreground">
           <span className="font-bold">Solicitada</span>
           {t.solicitanteCodigo ? <> por la cuenta <span className="font-bold">{t.solicitanteCodigo}</span></> : null} el {fecha(t.fechaSolicitud)}
           {t.fechaInspeccion ? <> · inspección presencial del {fecha(t.fechaInspeccion)}</> : null}.
         </p>
       )}
-      {aviso && <p role="status" className="rounded-2xl border border-sem-verde/40 bg-sem-verde-suave p-4 text-sm font-semibold text-sem-verde-tinta">{aviso}</p>}
+      {aviso && <Mensaje tono="ok">{aviso}</Mensaje>}
 
       {t.estado === "NO_SOLICITADA" && (
         veBotonSolicitar(usuario?.rol) ? (
-          <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-arena/40 bg-arena-suave p-4">
+          <div className="relative isolate flex flex-wrap items-center gap-5 overflow-hidden rounded-3xl border border-arena/40 bg-arena-suave p-6">
+            <span className="grid size-14 shrink-0 place-items-center rounded-2xl bg-card text-arena-tinta shadow-sm">
+              <HardHat className="size-7" aria-hidden="true" />
+            </span>
             <div className="min-w-0 flex-1">
-              <p className="font-bold text-foreground">¿Quieres saber cómo está la obra por dentro?</p>
-              <p className="text-sm text-arena-tinta">
+              <p className="text-lg font-extrabold text-foreground">¿Quieres saber cómo está la obra por dentro?</p>
+              <p className="mt-0.5 text-sm text-arena-tinta">
                 Costo del servicio: {t.servicio ? soles(t.servicio.costoReferencial) : "por coordinar"}. Antes de confirmar verás el alcance.
               </p>
             </div>
-            <Button className="rounded-xl" onClick={() => setModal(true)} disabled={!puedeSolicitarInspeccion(usuario?.rol, t.estado)}>
+            <Button size="lg" onClick={() => setModal(true)} disabled={!puedeSolicitarInspeccion(usuario?.rol, t.estado)}>
               <HardHat aria-hidden="true" /> Solicitar inspección técnica
             </Button>
           </div>
         ) : (
-          <p className="rounded-2xl border border-dashed border-border bg-superficie p-4 text-sm text-tinta-2">
+          <p className="rounded-2xl border-2 border-dashed border-border bg-superficie p-5 text-sm text-tinta-2">
             Aún no hay una solicitud. La inspección la pide el comprador desde este expediente.
           </p>
         )
@@ -418,41 +497,44 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
             : <span className="text-tinta-2">Sin especialista asignado: cualquier especialista habilitado puede emitir el informe.</span>}
         </p>
       )}
-      {puedeAsignarEspecialista(usuario?.rol, t.estado) && (
-        <AsignacionEspecialista detalle={detalle} alCambiar={alCambiar} />
-      )}
+      {puedeAsignarEspecialista(usuario?.rol, t.estado) && <AsignacionEspecialista detalle={detalle} alCambiar={alCambiar} />}
 
-      <div>
-        <h3 className="mb-3 font-bold text-foreground">Estado físico verificado en campo</h3>
+      <div className="space-y-4">
+        <h3 className="text-lg font-extrabold tracking-tight text-foreground">Estado físico verificado en campo</h3>
         <TarjetasEstadoFisico t={t} />
       </div>
 
       {(t.estado === "EN_INSPECCION" || t.estado === "EMITIDO") && (
-        <div className="space-y-3" aria-label="Resumen del informe técnico">
+        <div className="space-y-3 rounded-3xl border border-border bg-superficie p-5 sm:p-6" aria-label="Resumen del informe técnico">
           {t.estado === "EMITIDO" && t.resultado && (
-            <p className="flex items-center gap-2 text-base font-bold text-foreground">
-              <BadgeCheck className="size-5 text-primary" aria-hidden="true" /> Conclusión: {ETIQUETA_RESULTADO[t.resultado]}
+            <p className="flex items-center gap-2 text-lg font-extrabold text-foreground">
+              <BadgeCheck className="size-6 text-primary" aria-hidden="true" /> Conclusión: {ETIQUETA_RESULTADO[t.resultado]}
             </p>
           )}
           {t.verifArquitectura && (
-            <p className="text-sm text-tinta-2">Arquitectura (contraste con el plano): <span className="font-bold text-foreground">{ETIQUETA_VERIFICACION[t.verifArquitectura]}</span></p>
+            <p className="text-sm text-tinta-2">
+              Arquitectura (contraste con el plano): <span className="font-bold text-foreground">{ETIQUETA_VERIFICACION[t.verifArquitectura]}</span>
+            </p>
           )}
-          {t.observaciones && <p className="text-sm"><span className="font-bold">Observaciones: </span>{t.observaciones}</p>}
-          {t.conclusiones && <p className="text-sm"><span className="font-bold">Conclusiones: </span>{t.conclusiones}</p>}
-          {t.estudiosAdicionales && <p className="text-sm"><span className="font-bold">Estudios adicionales: </span>{t.estudiosAdicionales}</p>}
+          {t.observaciones && <p className="text-sm leading-relaxed"><span className="font-bold">Observaciones: </span>{t.observaciones}</p>}
+          {t.conclusiones && <p className="text-sm leading-relaxed"><span className="font-bold">Conclusiones: </span>{t.conclusiones}</p>}
+          {t.estudiosAdicionales && <p className="text-sm leading-relaxed"><span className="font-bold">Estudios adicionales: </span>{t.estudiosAdicionales}</p>}
           {t.estado === "EMITIDO" && (
-            <Button variant="outline" className="rounded-xl" onClick={verInforme}>
+            <Button variant="outline" onClick={verInforme}>
               Ver informe técnico (PDF) <ExternalLink aria-hidden="true" />
             </Button>
           )}
         </div>
       )}
-      {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
+      {error && <Mensaje tono="error">{error}</Mensaje>}
 
-      <div className="rounded-2xl border border-border bg-superficie p-5">
-        <h3 className="mb-3 font-bold text-foreground">Procedimiento de la inspección (6 pasos)</h3>
+      <div className="rounded-3xl border border-border bg-superficie p-5 sm:p-6">
+        <h3 className="mb-5 text-lg font-extrabold tracking-tight text-foreground">Procedimiento de la inspección (6 pasos)</h3>
         <PasosInspeccion estado={t.estado} />
-        <p className="mt-4 text-xs font-semibold text-tinta-2">{t.limite}</p>
+        <p className="mt-6 flex gap-2 border-t border-border pt-4 text-xs font-semibold leading-relaxed text-tinta-2">
+          <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+          {t.limite}
+        </p>
       </div>
 
       {puedeEmitirInforme(usuario?.rol, t.estado, t.especialistaAsignadoCodigo, usuario?.codigoCuenta)
@@ -466,13 +548,17 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
       )}
 
       {veBotonSolicitar(usuario?.rol) && (
-        <ModalSolicitud detalle={detalle} abierto={modal} alCerrar={() => setModal(false)}
+        <ModalSolicitud
+          detalle={detalle}
+          abierto={modal}
+          alCerrar={() => setModal(false)}
           alSolicitar={(d) => {
             setModal(false);
             alCambiar(d);
             const s = d.evaluacionTecnica;
             setAviso(`Solicitud registrada${s.solicitanteCodigo ? ` a nombre de ${s.solicitanteCodigo}` : ""}${s.fechaSolicitud ? ` el ${fecha(s.fechaSolicitud)}` : ""}.`);
-          }} />
+          }}
+        />
       )}
     </section>
   );

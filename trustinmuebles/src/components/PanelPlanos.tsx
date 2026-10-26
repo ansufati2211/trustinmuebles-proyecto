@@ -1,11 +1,12 @@
 import { useEffect, useState } from "react";
 import {
-  AlertTriangle, CheckCircle2, CircleHelp, Columns3, DraftingCompass, Droplets, ExternalLink, Eye, Ruler, Zap,
+  AlertTriangle, CheckCircle2, CircleHelp, Columns3, DraftingCompass, Droplets, ExternalLink, Eye, Ruler, Upload, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, type TonoBadge } from "@/components/base/Badge";
 import { Modal } from "@/components/base/Modal";
+import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { abrirPdf, api, pdfComoUrl, subirArchivo } from "@/lib/api";
 import { compararAreas } from "@/lib/areas";
 import { m2 } from "@/lib/formato";
@@ -28,12 +29,13 @@ const ESTADO: Record<EstadoPlano, { tono: TonoBadge; Icono: LucideIcon }> = {
   NO_APLICA: { tono: "gris", Icono: CircleHelp },
 };
 
-/** Miniatura esquemática de cada especialidad, dibujada aquí. No es el plano: solo anuncia de qué tipo es. */
+const hayPlano = (estado: EstadoPlano) => estado === "PRESENTADO" || estado === "OBSERVADO";
+
 function Miniatura({ especialidad, apagada }: { especialidad: Especialidad; apagada: boolean }) {
   const trazo = apagada ? "#A9B4AF" : "#2B5F86";
   const fino = { stroke: trazo, strokeWidth: 1.2, fill: "none" } as const;
   return (
-    <svg viewBox="0 0 120 72" className="h-full w-full" aria-hidden="true" focusable="false">
+    <svg viewBox="0 0 120 72" preserveAspectRatio="xMidYMid slice" className="h-full w-full" aria-hidden="true" focusable="false">
       <rect width="120" height="72" fill={apagada ? "#F1F3F2" : "#EEF4F9"} />
       {Array.from({ length: 11 }, (_, i) => <line key={`v${i}`} x1={i * 12} y1="0" x2={i * 12} y2="72" stroke="#D7E3EC" strokeWidth="0.5" />)}
       {Array.from({ length: 7 }, (_, i) => <line key={`h${i}`} x1="0" y1={i * 12} x2="120" y2={i * 12} stroke="#D7E3EC" strokeWidth="0.5" />)}
@@ -70,29 +72,32 @@ function Miniatura({ especialidad, apagada }: { especialidad: Especialidad; apag
   );
 }
 
-/** Barras a la misma escala para comparar el área del plano arquitectónico con la inscrita en la partida. */
 function ComparadorAreas({ plano, inscrita }: { plano: number | null; inscrita: number | null }) {
   const r = compararAreas(plano, inscrita);
   if (r.estado === "sin-plano") return <p className="text-sm text-tinta-2">El plano no indica su área construida.</p>;
   if (r.estado === "sin-inscrita") {
-    return <p className="text-sm font-semibold text-sem-amarillo-tinta">Área en plano: {m2(r.plano)}. No consta un área construida inscrita para contrastar.</p>;
+    return (
+      <p className="text-sm font-semibold text-sem-amarillo-tinta">
+        Área en plano: {m2(r.plano)}. No consta un área construida inscrita para contrastar.
+      </p>
+    );
   }
   const discrepa = r.estado === "discrepa";
   const barra = discrepa ? "bg-sem-amarillo" : "bg-sem-verde";
   return (
-    <figure className={`rounded-2xl border p-3 ${discrepa ? "border-sem-amarillo/50 bg-sem-amarillo-suave" : "border-border bg-superficie"}`}>
+    <figure className={`rounded-2xl border p-3.5 ${discrepa ? "border-sem-amarillo/50 bg-sem-amarillo-suave" : "border-border bg-superficie"}`}>
       <figcaption className="sr-only">Comparación del área del plano con el área inscrita</figcaption>
-      <dl className="space-y-2 text-xs">
+      <dl className="space-y-2.5 text-xs">
         <div>
           <div className="flex justify-between font-bold text-foreground"><dt>Área en plano</dt><dd className="cifras">{m2(r.plano)}</dd></div>
-          <div className="mt-1 h-2.5 rounded-full bg-card"><div className={`h-2.5 rounded-full ${barra}`} style={{ width: `${r.anchoPlano}%` }} /></div>
+          <div className="mt-1 h-2.5 rounded-full bg-card"><div className={`h-2.5 rounded-full transition-all duration-700 ease-expo ${barra}`} style={{ width: `${r.anchoPlano}%` }} /></div>
         </div>
         <div>
           <div className="flex justify-between font-bold text-foreground"><dt>Área inscrita (partida)</dt><dd className="cifras">{m2(r.inscrita)}</dd></div>
-          <div className="mt-1 h-2.5 rounded-full bg-card"><div className="h-2.5 rounded-full bg-primary" style={{ width: `${r.anchoInscrita}%` }} /></div>
+          <div className="mt-1 h-2.5 rounded-full bg-card"><div className="h-2.5 rounded-full bg-primary transition-all duration-700 ease-expo" style={{ width: `${r.anchoInscrita}%` }} /></div>
         </div>
       </dl>
-      <p className={`mt-2.5 flex items-start gap-1.5 text-sm font-bold ${discrepa ? "text-sem-amarillo-tinta" : "text-sem-verde-tinta"}`}>
+      <p className={`mt-3 flex items-start gap-1.5 text-sm font-bold ${discrepa ? "text-sem-amarillo-tinta" : "text-sem-verde-tinta"}`}>
         {discrepa ? <AlertTriangle className="mt-0.5 size-4 shrink-0" aria-hidden="true" /> : <CheckCircle2 className="mt-0.5 size-4 shrink-0" aria-hidden="true" />}
         {discrepa
           ? `No coincide: el plano tiene ${m2(Math.abs(r.diferencia))} ${r.diferencia > 0 ? "más" : "menos"} que lo inscrito (${r.porcentaje} %). Puede ser una ampliación no declarada.`
@@ -102,7 +107,6 @@ function ComparadorAreas({ plano, inscrita }: { plano: number | null; inscrita: 
   );
 }
 
-/** Visor de la lámina dentro de la página. El PDF se pide con la sesión y se muestra como blob local. */
 function VisorLamina({ codigo, especialidad, abierto, alCerrar }: { codigo: string; especialidad: Especialidad; abierto: boolean; alCerrar: () => void }) {
   const [url, setUrl] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -112,26 +116,56 @@ function VisorLamina({ codigo, especialidad, abierto, alCerrar }: { codigo: stri
     if (!abierto) return;
     let vigente = true;
     let creada: string | null = null;
-    setUrl(null); setError(null);
+    setUrl(null);
+    setError(null);
     pdfComoUrl(ruta)
-      .then((u) => { creada = u; if (vigente) setUrl(u); else URL.revokeObjectURL(u); })
-      .catch((e) => vigente && setError(e instanceof Error ? e.message : "No se pudo abrir la lámina"));
-    return () => { vigente = false; if (creada) URL.revokeObjectURL(creada); };
+      .then((u) => {
+        creada = u;
+        if (vigente) setUrl(u);
+        else URL.revokeObjectURL(u);
+      })
+      .catch((e) => {
+        if (vigente) setError(e instanceof Error ? e.message : "No se pudo abrir la lámina");
+      });
+    return () => {
+      vigente = false;
+      if (creada) URL.revokeObjectURL(creada);
+    };
   }, [abierto, ruta]);
 
+  const abrirAparte = () => {
+    abrirPdf(ruta).catch((e) => setError(e instanceof Error ? e.message : "No se pudo abrir el PDF"));
+  };
+
   return (
-    <Modal abierto={abierto} alCerrar={alCerrar} ancho="xl" titulo={`Lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`}
+    <Modal
+      abierto={abierto}
+      alCerrar={alCerrar}
+      ancho="xl"
+      titulo={`Lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`}
       descripcion="Esquema referencial dibujado con las medidas del expediente, con marca de agua y sin sello ni firma. Si el revisor subió el plano real, se muestra ese."
-      pie={<>
-        <Button variant="outline" className="rounded-xl" onClick={() => abrirPdf(ruta).catch(() => undefined)}>
-          Abrir el PDF en otra pestaña <ExternalLink aria-hidden="true" />
-        </Button>
-        <Button className="rounded-xl" onClick={alCerrar}>Cerrar</Button>
-      </>}>
+      pie={
+        <>
+          <Button variant="outline" onClick={abrirAparte}>
+            Abrir el PDF en otra pestaña <ExternalLink aria-hidden="true" />
+          </Button>
+          <Button onClick={alCerrar}>Cerrar</Button>
+        </>
+      }
+    >
       <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
-        {error ? <p role="alert" className="p-6 text-sm font-semibold text-sem-rojo-tinta">{error}</p>
-          : url ? <iframe title={`PDF de la lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`} src={url} className="h-full w-full" />
-          : <p role="status" className="p-6 text-sm font-semibold text-tinta-2">Cargando la lámina…</p>}
+        {error ? (
+          <p role="alert" className="p-6 text-sm font-semibold text-sem-rojo-tinta">{error}</p>
+        ) : url ? (
+          <iframe title={`PDF de la lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`} src={url} className="h-full w-full" />
+        ) : (
+          <div role="status" className="grid h-full place-items-center">
+            <span className="flex items-center gap-3 text-sm font-semibold text-tinta-2">
+              <span className="size-5 animate-spin rounded-full border-2 border-primary/20 border-t-primary" aria-hidden="true" />
+              Cargando la lámina…
+            </span>
+          </div>
+        )}
       </div>
     </Modal>
   );
@@ -148,28 +182,40 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
   const estado: EstadoPlano = plano?.estado ?? "NO_PRESENTADO";
   const { tono, Icono: IconoEstado } = ESTADO[estado];
   const Icono = ICONO[especialidad];
-  const hay = estado === "PRESENTADO" || estado === "OBSERVADO";
+  const hay = hayPlano(estado);
   const ruta = `/casos/${codigo}/planos/${especialidad}/documento`;
 
   const subir = async () => {
     if (!archivo) return;
-    setError(null); setSubiendo(true);
-    try { await subirArchivo(ruta, "documento", archivo); setArchivo(null); alCambiar(); }
-    catch (e) { setError(e instanceof Error ? e.message : "No se pudo subir el plano"); }
-    finally { setSubiendo(false); }
+    setError(null);
+    setSubiendo(true);
+    try {
+      await subirArchivo(ruta, "documento", archivo);
+      setArchivo(null);
+      alCambiar();
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo subir el plano");
+    } finally {
+      setSubiendo(false);
+    }
   };
 
   return (
-    <li className="flex flex-col overflow-hidden rounded-2xl border border-border bg-card" data-especialidad={especialidad}>
-      <div className="relative h-24 border-b border-border">
-        <Miniatura especialidad={especialidad} apagada={!hay} />
-        <span className="absolute left-3 top-3 grid size-9 place-items-center rounded-xl bg-card text-primary shadow-tarjeta">
+    <li
+      className="group flex flex-col overflow-hidden rounded-3xl border border-border bg-card transition-all duration-500 ease-expo hover:-translate-y-1 hover:border-primary/40 hover:shadow-elevada"
+      data-especialidad={especialidad}
+    >
+      <div className="relative h-28 overflow-hidden border-b border-border">
+        <div className="h-full w-full transition-transform duration-700 ease-expo group-hover:scale-105">
+          <Miniatura especialidad={especialidad} apagada={!hay} />
+        </div>
+        <span className="absolute left-3 top-3 grid size-10 place-items-center rounded-xl bg-card text-primary shadow-tarjeta">
           <Icono className="size-5" aria-hidden="true" />
         </span>
       </div>
-      <div className="flex flex-1 flex-col gap-3 p-4">
+      <div className="flex flex-1 flex-col gap-3 p-5">
         <div className="flex flex-wrap items-start justify-between gap-2">
-          <h3 className="font-bold leading-snug text-foreground">{CORTO[especialidad]}</h3>
+          <h3 className="font-extrabold leading-snug text-foreground">{CORTO[especialidad]}</h3>
           <Badge tono={tono} icono={IconoEstado} tamano="sm">{ETIQUETA_ESTADO_PLANO[estado]}</Badge>
         </div>
         <p className="text-sm leading-relaxed text-tinta-2">{QUE_VALIDA[especialidad]}</p>
@@ -178,7 +224,9 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
         {hay && especialidad === "ESTRUCTURAS" && (
           <p className="text-sm font-semibold text-foreground">Sistema constructivo: {plano?.sistemaConstructivoEtiqueta ?? "no indicado"}.</p>
         )}
-        {plano?.observacion && <p className="rounded-xl border border-border bg-superficie p-3 text-sm text-foreground">Observación: {plano.observacion}</p>}
+        {plano?.observacion && (
+          <p className="rounded-xl border border-border bg-superficie p-3 text-sm text-foreground">Observación: {plano.observacion}</p>
+        )}
         {!hay && (
           <p className="rounded-xl border border-dashed border-sem-gris/60 bg-sem-gris-suave p-3 text-sm font-semibold text-sem-gris-tinta">
             {estado === "NO_APLICA" ? "No aplica a este predio." : "No presentado: el expediente aún no tiene este plano."}
@@ -187,21 +235,30 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
 
         {hay && (
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
-            <Button variant="outline" size="sm" className="rounded-xl" onClick={() => setVisor(true)}>
+            <Button variant="outline" size="sm" onClick={() => setVisor(true)}>
               <Eye aria-hidden="true" /> Ver lámina
             </Button>
-            <Button variant="ghost" size="sm" className="rounded-xl"
-              onClick={() => abrirPdf(ruta).catch((e) => setError(e instanceof Error ? e.message : "No se pudo abrir el plano"))}>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => abrirPdf(ruta).catch((e) => setError(e instanceof Error ? e.message : "No se pudo abrir el plano"))}
+            >
               PDF <ExternalLink aria-hidden="true" />
             </Button>
           </div>
         )}
         {hay && esRevisor && (
-          <div className="flex flex-wrap items-center gap-2 text-sm">
+          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-dashed border-border bg-superficie p-3">
             <label htmlFor={`plano-pdf-${especialidad}`} className="sr-only">PDF del plano {ETIQUETA_ESPECIALIDAD[especialidad]}</label>
-            <input id={`plano-pdf-${especialidad}`} type="file" accept="application/pdf" className="max-w-[12rem] text-xs"
-              onChange={(e) => setArchivo(e.target.files?.[0] ?? null)} />
-            <Button type="button" variant="outline" size="sm" className="rounded-xl" disabled={!archivo || subiendo} onClick={subir}>
+            <input
+              id={`plano-pdf-${especialidad}`}
+              type="file"
+              accept="application/pdf"
+              className="min-w-0 max-w-full flex-1 text-xs file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-secondary-foreground"
+              onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
+            />
+            <Button type="button" variant="outline" size="sm" disabled={!archivo || subiendo} onClick={subir}>
+              <Upload aria-hidden="true" />
               {subiendo ? "Subiendo…" : plano?.tieneDocumentoPropio ? "Reemplazar PDF" : "Subir PDF real"}
             </Button>
           </div>
@@ -213,32 +270,57 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
   );
 }
 
-/** Los 4 planos de una vivienda. Es una revisión documental: un plano que está no demuestra que la obra esté bien. */
 export function PanelPlanos({ detalle, esRevisor, alCambiar }: { detalle: DetalleCaso; esRevisor: boolean; alCambiar: (d: DetalleCaso) => void }) {
   const x = detalle.expediente;
   const recargar = async () => alCambiar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
+  const presentes = ESPECIALIDADES.filter((e) => hayPlano(x.planos.find((p) => p.especialidad === e)?.estado ?? "NO_PRESENTADO")).length;
+
   return (
-    <section aria-labelledby="titulo-planos" className="rounded-3xl border border-border bg-card p-6 shadow-tarjeta sm:p-8">
-      <h2 id="titulo-planos" className="mb-2 flex items-center gap-2 text-xl font-bold text-foreground">
-        <Ruler className="size-5 text-primary" aria-hidden="true" /> Expediente técnico de planos (2D)
-      </h2>
+    <section id="ex-planos" aria-labelledby="titulo-planos" className="scroll-mt-28 space-y-6 rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta sm:p-8">
+      <TituloSeccion
+        icono={Ruler}
+        id="titulo-planos"
+        descripcion={
+          x.tipoPredio === "LOTE"
+            ? undefined
+            : "Una vivienda necesita cuatro planos distintos. Aquí se revisa solo si están y si el área coincide con la partida; no se evalúa si la obra está bien hecha. Eso lo verifica el especialista en la inspección presencial."
+        }
+      >
+        Expediente técnico de planos (2D)
+      </TituloSeccion>
+
       {x.tipoPredio === "LOTE" ? (
         <p className="rounded-2xl border border-dashed border-border bg-superficie p-4 text-sm leading-relaxed text-tinta-2">
           Los planos no aplican: este predio es un lote sin edificación. Se revisan cuando hay una vivienda construida.
         </p>
       ) : (
         <>
-          <p className="mb-5 text-sm leading-relaxed text-tinta-2">
-            Una vivienda necesita cuatro planos distintos. Aquí se revisa solo si están y si el área coincide con la partida;
-            no se evalúa si la obra está bien hecha. Eso lo verifica el especialista en la inspección presencial.
-          </p>
-          <ul className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <div className="mb-1.5 flex items-center justify-between text-xs font-bold text-tinta-2">
+              <span>Planos presentados</span>
+              <span className="cifras text-foreground">{presentes} de {ESPECIALIDADES.length}</span>
+            </div>
+            <div className="h-2 overflow-hidden rounded-full bg-muted" role="presentation">
+              <div
+                className="h-full rounded-full bg-primary transition-all duration-700 ease-expo"
+                style={{ width: `${(presentes / ESPECIALIDADES.length) * 100}%` }}
+              />
+            </div>
+          </div>
+          <ul className="grid gap-5 sm:grid-cols-2">
             {ESPECIALIDADES.map((e) => (
-              <TarjetaPlano key={e} codigo={detalle.codigo} especialidad={e} plano={x.planos.find((p) => p.especialidad === e)}
-                inscrita={x.areaConstruidaInscrita} esRevisor={esRevisor} alCambiar={recargar} />
+              <TarjetaPlano
+                key={e}
+                codigo={detalle.codigo}
+                especialidad={e}
+                plano={x.planos.find((p) => p.especialidad === e)}
+                inscrita={x.areaConstruidaInscrita}
+                esRevisor={esRevisor}
+                alCambiar={recargar}
+              />
             ))}
           </ul>
-          <p className="cifras mt-4 text-xs font-medium text-tinta-2">
+          <p className="cifras text-xs font-medium text-tinta-2">
             Área construida inscrita en la partida: {x.areaConstruidaInscrita == null ? "no consta" : m2(x.areaConstruidaInscrita)}.
           </p>
         </>
