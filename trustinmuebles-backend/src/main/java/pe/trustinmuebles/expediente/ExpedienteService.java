@@ -17,6 +17,8 @@ import pe.trustinmuebles.checklist.ItemChecklistDto;
 import pe.trustinmuebles.clasificacion.ClasificacionService;
 import pe.trustinmuebles.clasificacion.EntradaClasificacion;
 import pe.trustinmuebles.clasificacion.EvaluacionDto;
+import pe.trustinmuebles.clasificacion.HistorialEvaluacionDto;
+import pe.trustinmuebles.clasificacion.OrigenEvaluacion;
 import pe.trustinmuebles.expediente.CasoDtos.*;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.AsientoCopia;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.DatosCopia;
@@ -96,11 +98,61 @@ class ExpedienteService {
         if (!req.versionEsperada().equals(e.getVersion())) {
             throw new ConflictoException("El expediente cambió mientras lo editaba. Recargue e intente de nuevo.");
         }
+        String asientosAntes = firmaAsientos(e);
+        String planosAntes = firmaPlanos(e);
         List<String> archivosViejos = aplicar(e, req.datos());
         expedientes.saveAndFlush(e);
         archivosViejos.forEach(almacenamiento::eliminar);
-        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e));
+        recalcular(e, origenDeLaEdicion(asientosAntes, planosAntes, e));
         return aDetalle(e);
+    }
+
+    /**
+     * Origen del recálculo de una edición (F2). Si cambian los asientos se incorporó partida transcrita nueva (I9: es lo
+     * único que puede levantar un embargo, un bloqueo o una demanda); si solo cambian los planos, se adjuntó un plano.
+     */
+    static OrigenEvaluacion origenDeLaEdicion(String asientosAntes, String planosAntes, Expediente e) {
+        if (!asientosAntes.equals(firmaAsientos(e))) return OrigenEvaluacion.PARTIDA_TRANSCRITA;
+        if (!planosAntes.equals(firmaPlanos(e))) return OrigenEvaluacion.PLANO_ADJUNTO;
+        return OrigenEvaluacion.EDICION;
+    }
+
+    private static String firmaAsientos(Expediente e) {
+        return e.getAsientos().stream().map(a -> String.join("|", a.getReferencia(), String.valueOf(a.getTipoActo()),
+                String.valueOf(a.getEstado()), String.valueOf(a.getTexto()), String.valueOf(a.getCanceloNumero()),
+                String.valueOf(a.getTitulares()), String.valueOf(a.getFechaInscripcion()),
+                String.valueOf(a.getTituloNumero()), String.valueOf(a.getFechaPresentacion())))
+                .collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    private static String firmaPlanos(Expediente e) {
+        return e.getTipoPredio() + "|" + numero(e.getAreaConstruidaInscrita()) + "\n" + e.getPlanos().stream()
+                .map(p -> String.join("|", String.valueOf(p.getEspecialidad()), String.valueOf(p.getEstado()),
+                        numero(p.getAreaConstruida()), String.valueOf(p.getSistemaConstructivo()),
+                        String.valueOf(p.getObservacion())))
+                .sorted().collect(java.util.stream.Collectors.joining("\n"));
+    }
+
+    /** 84.5 y 84.50 son la misma área: se compara el valor, no la escala. */
+    private static String numero(java.math.BigDecimal n) {
+        return n == null ? "null" : n.stripTrailingZeros().toPlainString();
+    }
+
+    /** Recalcula con la cuenta autenticada como autora; el historial guarda su código (I12). */
+    private void recalcular(Expediente e, OrigenEvaluacion origen) {
+        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e), origen, UsuarioActual.actual().codigoCuenta());
+    }
+
+    /**
+     * Historial de evaluaciones (F2): revisor, gestor, especialista y el propietario del caso. El comprador recibe 403
+     * (también lo exige SecurityConfig) y el propietario de otro caso, 404. Solo lectura.
+     */
+    @Transactional(readOnly = true)
+    List<HistorialEvaluacionDto> historial(String codigo) {
+        if (UsuarioActual.actual().rol() == Rol.COMPRADOR) {
+            throw new AccessDeniedException("El comprador no consulta el historial de evaluaciones");
+        }
+        return clasificacion.historial(buscarVisible(codigo).getId());
     }
 
     /** Crea el expediente de un caso nuevo (carga de contenido). La evaluación la calcula quien llama. */
@@ -211,6 +263,9 @@ class ExpedienteService {
         p.setArchivoId(guardado.id());
         expedientes.saveAndFlush(e);
         if (viejo != null) almacenamiento.eliminar(viejo);
+        // F2: adjuntar el PDF de un plano deja constancia en el historial. El motor no lee el archivo, solo el estado
+        // del plano, así que el color no puede cambiar por esto (I9).
+        recalcular(e, OrigenEvaluacion.PLANO_ADJUNTO);
         return new DocumentoDto(codigo, guardado.sha256());
     }
 
@@ -263,7 +318,7 @@ class ExpedienteService {
         int orden = 0;
         for (String nombre : CHECKLIST_TRANSCRITA) checklist.agregar(e.getId(), nombre, EstadoItem.PENDIENTE, orden++);
         glosario.asociar(e.getId(), TERMINOS_TRANSCRITA);
-        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e));
+        recalcular(e, OrigenEvaluacion.PARTIDA_TRANSCRITA);
         return aDetalle(e);
     }
 
@@ -337,7 +392,8 @@ class ExpedienteService {
         // correspondiendo a la versión vigente (RN-06).
         expedientes.saveAndFlush(e);
         if (viejo != null) almacenamiento.eliminar(viejo);
-        clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e));
+        // Un PDF no es una partida transcrita: el motor no lo lee, así que no puede levantar un rojo (I9).
+        recalcular(e, OrigenEvaluacion.EDICION);
         return new DocumentoDto(codigo, guardado.sha256());
     }
 

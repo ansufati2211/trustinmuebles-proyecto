@@ -330,3 +330,32 @@ en `BORRADOR` y sin propietario.
 solicitud de inspección. Un caso que no puede ver responde **404**, igual que uno inexistente, para no revelar que existe.
 Revisor, gestor y especialista ven todos. La comprobación está en `ExpedienteService.visible` (servidor).
 **I11:** el bloque `publicacion` del detalle no muestra el código del propietario al comprador.
+
+## D36. v0.7: historial de evaluaciones de solo adición (migración V7)
+**Qué:** tabla `historial_evaluacion` en el módulo de clasificación. Cada recálculo agrega una fila con fecha, color anterior
+(nulo en la primera) y nuevo, motivos y faltantes (JSON), versión de reglas, origen y código de la cuenta. La carga de
+contenido figura como cuenta `sistema`. No guarda nombres, DNI ni teléfonos.
+**Inmutable (I12):** la entidad es `@Immutable` con columnas `updatable = false`, el repositorio extiende `Repository` (no
+`JpaRepository`) y solo tiene `save` y consultas, y no hay ruta HTTP para editar ni borrar. `GET /casos/{c}/historial` es la
+única operación.
+**Sin clave foránea:** `expediente_id` es una referencia por valor. Si se elimina una partida transcrita (D20), su historial se
+conserva: es de solo adición y no contiene datos personales (supuesto).
+**Carga inicial:** al arrancar, cada expediente sin filas recibe una con origen `CARGA_INICIAL` tomada de su evaluación vigente
+(una base de la v0.6). En una base nueva esa fila la deja el primer cálculo. Volver a arrancar no duplica nada.
+**Supuesto:** la evaluación vigente (`evaluacion`) se mantiene como estaba; el historial se agrega al lado y no la reemplaza.
+
+## D37. v0.7: origen de cada recálculo (supuesto)
+La lista es cerrada: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL`.
+- `POST /casos` (partida transcrita): `PARTIDA_TRANSCRITA`.
+- `PUT /casos/{c}/expediente`: si cambian los asientos, `PARTIDA_TRANSCRITA` (se incorporó partida transcrita nueva, I9); si
+  solo cambian los planos o el bloque técnico, `PLANO_ADJUNTO`; si no, `EDICION`. Las áreas se comparan por valor (84.5 = 84.50).
+- `POST /casos/{c}/planos/{e}/documento`: ahora **recalcula** con `PLANO_ADJUNTO`, para que el historial registre la
+  subsanación. El motor no lee el archivo, solo el estado del plano, así que el color no puede cambiar por esto.
+- `POST /casos/{c}/documento` (PDF del caso): `EDICION`. La lista no tiene un origen para el PDF de la partida y no es un plano.
+- Checklist, publicación, autorización, contacto y asignación **no** recalculan ni agregan filas (I3, I8).
+**I9:** un PDF o un plano nunca levanta un rojo por embargo, bloqueo o demanda: eso solo ocurre cuando los asientos de la
+partida cambian (por ejemplo, un asiento E que cancela el embargo) y el motor recalcula. No hay vigencia automática (RN-08).
+
+## D38. v0.7: acceso al historial
+REVISOR, GESTOR, ESPECIALISTA y el PROPIETARIO del caso. El COMPRADOR recibe 403 (en `SecurityConfig` y en el servicio) y el
+propietario de otro caso, 404 (D35).

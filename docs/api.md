@@ -32,12 +32,18 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 | Retirar la autorización (v0.7) | `DELETE /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
 | Publicar un caso (v0.7) | `POST /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409, 422 |
 | Retirar la publicación (v0.7) | `DELETE /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409 |
+| Historial de evaluaciones del indicador A (v0.7) | `GET /casos/{codigo}/historial` | REVISOR, GESTOR, ESPECIALISTA, PROPIETARIO del caso | 200, 401, 403 (comprador), 404 |
 
 **Visibilidad (v0.7):** el COMPRADOR solo ve casos `PUBLICADO` y el PROPIETARIO solo los suyos (listado, detalle, PDF y
 solicitud de inspección); para los demás la respuesta es 404. REVISOR, GESTOR y ESPECIALISTA ven todos. `POST /casos` exige
 `propietarioCodigo` (una cuenta PROPIETARIO) y el caso nace en `BORRADOR`, sin autorización. Publicar sin autorización da 422.
 El detalle trae `publicacion` (`estado`, `propietarioCodigo` —nulo para el comprador—, `autorizada`, `autorizacionFecha`) y
 el listado `estadoPublicacion`. Ninguna de estas operaciones cambia el color del indicador A.
+
+**Historial (v0.7):** cada elemento trae `registradaEn`, `estadoAnterior` (nulo en la primera), `estadoNuevo`, `motivos`,
+`faltantes`, `versionReglas`, `origen` (`EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL`) y `cuentaCodigo`.
+Es de solo adición: no existe ruta para editarlo ni borrarlo. Subir el PDF de un plano también recalcula (origen
+`PLANO_ADJUNTO`), aunque el color no puede cambiar por el archivo.
 
 ## Catálogo y filtros (M13)
 

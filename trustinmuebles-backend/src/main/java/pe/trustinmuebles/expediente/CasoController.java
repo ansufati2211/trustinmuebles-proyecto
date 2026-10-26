@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.trustinmuebles.almacenamiento.ArchivoContenido;
 import pe.trustinmuebles.checklist.ItemChecklistDto;
 import pe.trustinmuebles.clasificacion.Especialidad;
+import pe.trustinmuebles.clasificacion.HistorialEvaluacionDto;
 import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
 import pe.trustinmuebles.expediente.CasoDtos.*;
 
@@ -77,6 +78,12 @@ class CasoController {
                 .header("Content-Disposition", "inline; filename=\"" + codigo + ".pdf\"")
                 .cacheControl(CacheControl.noStore())
                 .body(c.datos());
+    }
+
+    /** Historial de evaluaciones del indicador A, solo lectura (I12). No existe ruta para editarlo ni borrarlo. */
+    @GetMapping("/{codigo}/historial")
+    List<HistorialEvaluacionDto> historial(@PathVariable String codigo) {
+        return servicio.historial(codigo);
     }
 
     // ---------------------------------------------------- captación y publicación (v0.7)

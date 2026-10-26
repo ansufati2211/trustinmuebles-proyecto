@@ -7,7 +7,10 @@ import java.util.Set;
 import lombok.Getter;
 import lombok.Setter;
 
-/** Evaluación vigente de un expediente (una como máximo, sin historial). El color nunca se fija a mano (RN-06). */
+/**
+ * Evaluación vigente de un expediente (una como máximo). Desde la v0.7 cada recálculo deja además una fila en
+ * {@link HistorialEvaluacion}. El color nunca se fija a mano (RN-06).
+ */
 @Entity
 @Table(name = "evaluacion")
 @Getter

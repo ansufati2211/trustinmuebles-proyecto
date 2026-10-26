@@ -17,6 +17,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import pe.trustinmuebles.checklist.ChecklistService;
 import pe.trustinmuebles.clasificacion.ClasificacionService;
+import pe.trustinmuebles.clasificacion.OrigenEvaluacion;
 import pe.trustinmuebles.expediente.ContenidoCaso.CasoJson;
 import pe.trustinmuebles.identidad.AuthService;
 import pe.trustinmuebles.inspeccion.EstadoTecnico;
@@ -75,8 +76,11 @@ class CasosSeeder implements ApplicationRunner {
         }
         for (Expediente e : expedientes.findAll()) {
             if (clasificacion.necesitaRecalculo(e.getId(), e.getVersion())) {
-                clasificacion.recalcular(e.getId(), e.getVersion(), ExpedienteService.entrada(e));
+                clasificacion.recalcular(e.getId(), e.getVersion(), ExpedienteService.entrada(e),
+                        OrigenEvaluacion.CARGA_INICIAL, ClasificacionService.CUENTA_SISTEMA);
             }
+            // v0.7: una base anterior al historial recibe una fila inicial por caso; si ya la tiene, no se duplica.
+            clasificacion.registrarInicialSiFalta(e.getId());
         }
     }
 

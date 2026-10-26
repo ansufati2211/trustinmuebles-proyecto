@@ -89,6 +89,9 @@ class SecurityConfig {
                         // v0.7: el propietario solo otorga o retira su autorización (I13); el gestor publica o retira.
                         .requestMatchers("/api/v1/casos/*/autorizacion").hasRole("PROPIETARIO")
                         .requestMatchers("/api/v1/casos/*/publicacion").hasRole("GESTOR")
+                        // Historial de evaluaciones: solo lectura y nunca para el comprador.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/historial")
+                                .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO")
                         // PA4: solo el revisor modifica. El rol se verifica aquí, en el servidor, no solo en la interfaz.
                         .requestMatchers(HttpMethod.PUT, "/api/v1/casos/**").hasRole("REVISOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/**").hasRole("REVISOR")
