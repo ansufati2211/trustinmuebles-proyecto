@@ -91,12 +91,18 @@ Si falta `APP_SEED_PASSWORD`, el backend se detiene con un mensaje que lo explic
 | `comprador-01` | COMPRADOR | Consultar la cartera y los expedientes, y **solicitar la inspección técnica** (solo este rol) |
 | `revisor-01` | REVISOR | Consultar, editar expedientes y planos, cambiar el checklist, subir PDF y registrar partidas |
 | `especialista-01` | ESPECIALISTA | Consultar y emitir el informe técnico de una inspección solicitada. No edita partidas |
+| `especialista-02` | ESPECIALISTA | Igual que `especialista-01`; perfil ficticio «Arq. Perfil Ficticio 02», `SIM-CAP-0002` (v0.7) |
+| `gestor-01` | GESTOR (asesor comercial) | Publicar y retirar casos, atender contactos, asignar inspecciones y ver el panel de cartera (v0.7) |
+| `propietario-01`, `propietario-02` | PROPIETARIO | Consultar solo sus casos y otorgar o retirar su autorización; nada más (v0.7) |
+
+**v0.7 (solo backend):** el comprador ve únicamente casos publicados; un caso nuevo nace en borrador y solo se publica con la
+autorización de su propietario. La interfaz todavía no tiene pantallas para estos roles (ver `docs/RESUMEN-v0.7.md`).
 
 El especialista de la demostración firma como **Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910**. Son datos
 ficticios y la interfaz los rotula así; el servidor los toma de la cuenta y no del formulario (M8).
 
-Las tres cuentas usan la contraseña de `APP_SEED_PASSWORD`. Se crean solo cuando la base está vacía: si cambias la variable con una base
-ya creada, la contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base de la v0.5 se actualiza
+Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD`. Al arrancar se crea cada cuenta que falte, también en una base ya
+creada (v0.7); las que existen no se tocan: si cambias la variable con una base ya creada, su contraseña no cambia. Para empezar de cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base de la v0.5 se actualiza
 sola al arrancar (migración V5): recibe distrito, precio, el ítem HR y PU y el perfil del especialista, pero sus informes ya
 guardados conservan el profesional anterior.
 No hay registro abierto.
@@ -137,13 +143,14 @@ Es un desvío de RN-01 y PA2 que el asesor debe aprobar.
 ## Pruebas
 
 ```powershell
-cd trustinmuebles-backend; .\mvnw.cmd test     # 107 pruebas del backend
+cd trustinmuebles-backend; .\mvnw.cmd test     # 140 pruebas del backend (v0.7)
 cd trustinmuebles; npx pnpm@9 test              # 33 pruebas del frontend
 cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 ```
 
-En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. En total, **140 pruebas automáticas** (107 + 33), según la última
-ejecución del 19 de octubre de 2026 (ver `docs/RESUMEN-v0.6.md`). El rendimiento se mide con
+En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. El backend pasó de 107 a **140 pruebas** en la v0.7 (ejecución del 25 de
+octubre de 2026, ver `docs/RESUMEN-v0.7.md`); las 33 del frontend son las de la v0.6 (ver `docs/RESUMEN-v0.6.md`), que no se
+volvieron a ejecutar en la sesión del backend. El rendimiento se mide con
 `node scripts/medir-nf02.mjs` y el recorrido de navegador de la v0.6 con `docs/pruebas/recorrido-v06.mjs` (39 verificaciones con
 los 3 roles, obtenidas con el diseño anterior al rediseño de landing y login; deben repetirse: **por verificar**). Resultados y
 evidencias en `docs/pruebas/`.
@@ -159,6 +166,13 @@ evidencias en `docs/pruebas/`.
 | I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests` |
 | I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` |
 | I7 | Personas, precios y colegiatura se rotulan como simulados | Recorrido `docs/pruebas/recorrido-v06.mjs` (verificaciones de precio y credencial) |
+| I8 | El color de A cambia solo cuando el motor recalcula; publicar, retirar, asignar, contactar o el historial no lo fijan | `CaptacionPublicacionTest`, `HistorialEvaluacionTest`, `CarteraTest` |
+| I9 | Un plano o PDF no levanta un rojo por embargo, bloqueo o demanda | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
+| I10 | Publicar y pedir contacto no dependen del color de A | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `CarteraTest.contactoSobreRojo` |
+| I11 | Sin nombres, DNI ni teléfonos; contacto con motivos cerrados | `CuentasDemoTest`, `CarteraTest.motivoCerrado` |
+| I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` |
+| I13 | El propietario solo autoriza sus casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura` |
+| I14 | No se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `CicloCarteraTest` |
 
 ## Funcionalidades implementadas
 
