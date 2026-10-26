@@ -1,0 +1,30 @@
+# Stack para Portainer (Stacks → Add stack → Repository o Web editor).
+# Variables obligatorias: APP_SEED_PASSWORD, APP_JWT_SECRET, APP_STORAGE_KEY.
+name: trustinmuebles
+
+services:
+  backend:
+    build: ./trustinmuebles-backend
+    image: trustinmuebles-backend:0.7.0
+    restart: unless-stopped
+    environment:
+      APP_SEED_PASSWORD: ${APP_SEED_PASSWORD:?Define APP_SEED_PASSWORD (mínimo 8 caracteres)}
+      APP_JWT_SECRET: ${APP_JWT_SECRET:?Define APP_JWT_SECRET (mínimo 32 caracteres)}
+      APP_STORAGE_KEY: ${APP_STORAGE_KEY:?Define APP_STORAGE_KEY}
+      APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-http://localhost:5173}
+    volumes:
+      - backend-data:/app/data
+    # Sin puertos publicados: solo el frontend lo alcanza por la red interna.
+
+  frontend:
+    build: ./trustinmuebles
+    image: trustinmuebles-frontend:0.7.0
+    restart: unless-stopped
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "${FRONTEND_PORT:-8081}:80"
+
+volumes:
+  backend-data:
