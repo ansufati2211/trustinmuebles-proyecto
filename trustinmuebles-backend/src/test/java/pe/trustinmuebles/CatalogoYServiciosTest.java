@@ -146,13 +146,13 @@ class CatalogoYServiciosTest extends BaseApiTest {
             i.put("colegiatura", "CAP 000001");
             i.put("profesionalEspecialidad", "Arquitecto");
             emitir(SANTIAGO, especialista(), i).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Carlos Alberto Mendoza Quispe"))
+                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Perfil Ficticio 01"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesionalEspecialidad").value("Ingeniero Civil"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CIP N.° 248910"));
+                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CIP N.° SIM-CIP-0001"));
             String guardado = jdbc.queryForObject("select profesional || ' | ' || colegiatura from evaluacion_tecnica "
                     + "where expediente_id = (select e.id from expediente e join caso_lote c on c.id = e.caso_id "
                     + "where c.codigo = ?)", String.class, SANTIAGO);
-            assertThat(guardado).isEqualTo("Ing. Carlos Alberto Mendoza Quispe | CIP N.° 248910");
+            assertThat(guardado).isEqualTo("Ing. Perfil Ficticio 01 | CIP N.° SIM-CIP-0001");
         } finally {
             limpiarInspeccion(SANTIAGO);
         }
@@ -195,7 +195,7 @@ class CatalogoYServiciosTest extends BaseApiTest {
         mvc.perform(get("/api/v1/casos/" + SALAS).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacionTecnica.resultado").value("CON_RIESGO"))
                 .andExpect(jsonPath("$.evaluacionTecnica.riesgoFisicoDetectado").value(true))
-                .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Carlos Alberto Mendoza Quispe"))
+                .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Perfil Ficticio 01"))
                 .andExpect(jsonPath("$.evaluacionTecnica.solicitanteCodigo").value("comprador-01"));
         mvc.perform(get("/api/v1/casos/" + MOLINOS).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacionTecnica.estado").value("SOLICITADA"))

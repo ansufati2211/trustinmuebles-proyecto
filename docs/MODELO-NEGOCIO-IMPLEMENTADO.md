@@ -177,13 +177,13 @@ el despliegue con Docker.
 
 | Cuenta | Nombre | Especialidad | Colegiatura | ¿Prefijo `SIM-`? |
 |---|---|---|---|---|
-| `especialista-01` | Ing. Carlos Alberto Mendoza Quispe | Ingeniero Civil | CIP N.° 248910 | **No** |
+| `especialista-01` | Ing. Perfil Ficticio 01 | Ingeniero Civil | CIP N.° SIM-CIP-0001 | Sí |
 | `especialista-02` | Arq. Perfil Ficticio 02 | Arquitecto | SIM-CAP-0002 | Sí |
 
-  Los 5 informes de demostración (4 emitidos y 1 en inspección) los firma `especialista-01`. **En pantalla, la credencial
-  del especialista no los rotula como ficticios** (el rótulo se quitó en D47) y muestra una **fotografía de stock de
-  Unsplash** de una persona real como avatar. Solo el PDF del informe lo dice («Datos del profesional ficticios, solo para la
-  demostración», `InformeTecnicoPdf`). Que «CIP N.° 248910» no pertenezca a un ingeniero real: **No verificado**.
+  Los 5 informes de demostración (4 emitidos y 1 en inspección) los firma `especialista-01`. La credencial en pantalla usa
+  las iniciales y dice «Perfil ficticio de demostración»; el PDF del informe también lo rotula («Datos del profesional
+  ficticios, solo para la demostración», `InformeTecnicoPdf`). La migración V9 actualiza el perfil y los informes firmados
+  en bases existentes (`MigracionEspecialistaTest`).
 
 ## 10. Modelo de ingresos (HIPÓTESIS NO VALIDADAS)
 
@@ -265,7 +265,6 @@ comprador (D46), listado de especialistas para la asignación (D45) y precio en 
 - **Recorrido de navegador de la v0.7:** no existe; `docs/pruebas/recorrido-v06.mjs` está obsoleto. Ninguna vista de la v0.7
   ni el rediseño `567cbfc` se ha comprobado en un navegador.
 - **I7 incumplida en el pie** desde el rediseño `567cbfc` (ver sección 7).
-- **Credencial del especialista** sin rótulo de ficticio y con foto de una persona real (ver sección 9); CIP sin `SIM-`.
 - **Docker** contradice el uso solo local (I6, D9) y D3; no se ha probado.
 - **Instalación en otro equipo (CP-07)**, piloto, reclutamiento, consentimientos y aplicación del estudio: pendientes.
 - **Accesibilidad** con teclado y lector de pantalla de los componentes de la v0.7 y del rediseño: No verificado.

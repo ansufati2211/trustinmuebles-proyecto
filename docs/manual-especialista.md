@@ -17,5 +17,5 @@ No edita partidas, planos ni el checklist, y su informe **no cambia el semáforo
 5. **Qué dice el sistema del alcance.** El informe se basa en la inspección visual e instrumental. Lo que exige ensayos o estudios
    especializados queda fuera y debe indicarse en «Estudios adicionales».
 
-En la demostración, la cuenta `especialista-01` firma como Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910.
+En la demostración, la cuenta `especialista-01` firma como Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001.
 Son datos ficticios y la interfaz y el PDF los rotulan así. El sistema no firma ni sella el informe.

@@ -20,9 +20,6 @@ import { puedeAsignarEspecialista, puedeEmitirInforme, puedeSolicitarInspeccion,
 import { ETIQUETA_ESPECIALIDAD, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
 
-const FOTO_ESPECIALISTA =
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=400&q=80";
-
 export function InsigniaTecnica({ estado, resultado, className = "" }: { estado: EstadoTecnico; resultado?: ResultadoTecnico | null; className?: string }) {
   return <IndicadorB estado={estado} resultado={resultado} className={className} />;
 }
@@ -98,26 +95,14 @@ function Stepper({ estado }: { estado: EstadoTecnico }) {
   );
 }
 
-function FotoEspecialista({ nombre }: { nombre: string }) {
-  const [fallo, setFallo] = useState(false);
-  if (fallo) {
-    return (
-      <span
-        className="grid size-20 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-700 text-2xl font-black text-white"
-        aria-hidden="true"
-      >
-        {iniciales(nombre)}
-      </span>
-    );
-  }
+function AvatarEspecialista({ nombre }: { nombre: string }) {
   return (
-    <img
-      src={FOTO_ESPECIALISTA}
-      alt={`Fotografía de ${nombre}`}
-      loading="lazy"
-      onError={() => setFallo(true)}
-      className="size-20 shrink-0 rounded-3xl border-4 border-white object-cover shadow-lg shadow-foreground/15"
-    />
+    <span
+      className="grid size-20 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-700 text-2xl font-black text-white"
+      aria-hidden="true"
+    >
+      {iniciales(nombre)}
+    </span>
   );
 }
 
@@ -136,11 +121,12 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
     <div className="relative isolate overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tarjeta sm:p-6">
       <div className="pointer-events-none absolute -right-12 -top-12 -z-10 size-48 rounded-full bg-primary/10 blur-[60px]" aria-hidden="true" />
       <div className="flex flex-wrap items-center gap-5">
-        <FotoEspecialista nombre={t.profesional} />
+        <AvatarEspecialista nombre={t.profesional} />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-wider text-primary">Especialista a cargo</p>
           <p className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">{t.profesional}</p>
           <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"}</p>
+          <p className="mt-1 text-xs font-bold text-arena-tinta">Perfil ficticio de demostración</p>
         </div>
         {t.colegiatura && (
           <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground">

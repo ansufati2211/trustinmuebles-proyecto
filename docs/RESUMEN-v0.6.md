@@ -35,7 +35,7 @@ Total de pruebas automáticas: 140 (107 + 33). Las capturas del recorrido están
 - **M5:** solo el comprador solicita la inspección (403 para revisor y especialista, en `SecurityConfig` y en el servicio). Se
   guardan `solicitanteCodigo`, tomado de la sesión, y la fecha. Hay una sola solicitud por caso (409). El costo referencial
   S/ 250.00 sale de `app.inspeccion.costo-referencial` y viaja en `evaluacionTecnica.servicio`.
-- **M8:** `especialista-01` tiene perfil ficticio (Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910). El
+- **M8:** `especialista-01` tiene perfil ficticio (Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001). El
   informe toma nombre, especialidad y colegiatura de la cuenta autenticada mediante la API pública de `identidad`
   (`AuthService.perfilProfesional`). Lo que mande el cliente se ignora. Los informes de demostración también los firma esa cuenta.
 - **M9:** ítem «Declaración Jurada Municipal (HR y PU)» en los 10 casos. Hay 4 revisados, 4 observados con su motivo y 2
@@ -106,8 +106,8 @@ Total de pruebas automáticas: 140 (107 + 33). Las capturas del recorrido están
 
 ## Qué no quedó hecho o queda pendiente
 
-- **Número de colegiatura.** «CIP N.° 248910» se usó tal como se pidió, pero no lleva `SIM-` (excepción a D22). Conviene
-  verificar que no pertenezca a un ingeniero real o cambiarlo por uno con `SIM-`.
+- **Número de colegiatura.** Resuelto en la v0.7: la migración V9 dejó el perfil como «Ing. Perfil Ficticio 01» y
+  «CIP N.° SIM-CIP-0001», con el prefijo `SIM-`.
 - **Bases anteriores.** Una base v0.5 migra bien, pero sus informes ya guardados conservan el profesional anterior
   (Hernán Gustavo Paredes Lazo, `CIP SIM-0001`) y no tienen solicitante. Para verlo todo como en la v0.6, borra
   `trustinmuebles-backend/data/`.

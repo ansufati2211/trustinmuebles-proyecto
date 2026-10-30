@@ -51,7 +51,7 @@ reemplaza asesoría legal.**
 - **Roles:**
   - **Comprador:** consulta todo y es el único que solicita la inspección técnica; no modifica nada.
   - **Especialista:** consulta y emite el informe técnico presencial, firmado con los datos de su cuenta (ficticios: Ing.
-    Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910). No edita partidas.
+    Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001). No edita partidas.
   - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas transcritas.
   - **Gestor (asesor comercial, v0.7):** ve todos los casos, publica o retira, atiende contactos, asigna inspecciones y usa
     el panel «Cartera».

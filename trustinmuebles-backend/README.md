@@ -84,7 +84,7 @@ Swagger: `http://localhost:8080/swagger-ui.html`. La API está descrita en [../d
 Todas usan la contraseña de `APP_SEED_PASSWORD`. Al arrancar se crea cada cuenta que falte, también en una base ya creada, sin
 cambiar las que existen. El rol se verifica en el
 servidor en cada ruta. Solo el comprador solicita la inspección (403 para los demás roles). La cuenta del especialista trae su
-perfil profesional ficticio: Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910.
+perfil profesional ficticio: Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001.
 
 ## Variables de entorno
 

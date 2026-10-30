@@ -168,9 +168,9 @@ Cada rol tiene su menú: el comprador y el especialista ven «Expedientes»; el 
 «Cartera»; el propietario ve solo «Mis inmuebles». Un caso nuevo nace en borrador y solo se publica con la autorización de su
 propietario.
 
-El especialista `especialista-01` firma como **Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910**. Son datos
-ficticios, pero **en pantalla la credencial no lo dice** y usa una fotografía de stock como avatar; solo el PDF del informe
-los rotula como ficticios. El servidor toma esos datos de la cuenta y no del formulario (M8). El CIP no lleva el prefijo `SIM-`.
+El especialista `especialista-01` firma como **Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001**. Son datos
+ficticios: la credencial en pantalla usa iniciales y dice «Perfil ficticio de demostración», y el PDF del informe también los
+rotula así. El servidor toma esos datos de la cuenta y no del formulario (M8).
 
 Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD`. Al arrancar se crea cada cuenta que falte, también en una base ya
 creada; las que existen no se tocan: si cambias la variable con una base ya creada, su contraseña no cambia. Para empezar de
@@ -312,8 +312,7 @@ puede consultar después el estado de su solicitud de contacto (D46).
 Revisión especializada del contenido, aprobación de D20 por el asesor, confirmación de los supuestos D32 a D49, recorrido de
 navegador de la v0.7, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y presupuesto. Los materiales del
 estudio (formas A y B, claves y bases vacías) están en la carpeta `estudio/`, que se mantiene **fuera de este repositorio** a
-propósito. El CIP N.° 248910 del especialista no lleva el prefijo `SIM-`: **por verificar** que no pertenezca a un profesional
-real. La lista completa está en la sección 14 del modelo de negocio.
+propósito. La lista completa está en la sección 14 del modelo de negocio.
 
 ## Uso local
 

@@ -15,8 +15,8 @@ Lo que quedó abierto al cerrar la sesión 1 (backend y pruebas). Cada punto dic
   reasignación de una inspección en curso (D40).
 - **Informe del curso.** Los roles GESTOR y PROPIETARIO, la publicación, el contacto y el historial son funciones nuevas que el
   informe todavía no describe.
-- **Colegiatura de `especialista-01`.** Sigue siendo «CIP N.° 248910», sin el prefijo `SIM-` (pendiente desde la v0.6, D24).
-  La nueva cuenta `especialista-02` ya usa `SIM-CAP-0002`.
+- **Colegiatura de `especialista-01`.** Resuelto: «CIP N.° SIM-CIP-0001», con el prefijo `SIM-` (migración V9, D24).
+  La cuenta `especialista-02` usa `SIM-CAP-0002`.
 
 ## Observaciones técnicas
 

@@ -240,9 +240,9 @@ expediente (409 a la segunda). El costo referencial (S/ 250.00) sale de `app.ins
 `InspeccionTest.validaElInforme` dejó de exigir 400 cuando faltan el nombre o la colegiatura: ese contrato lo reemplazó M8.
 Los informes de demostración también los firma `especialista-01`.
 
-**Datos del especialista:** Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910, tal como se pidió. Son ficticios
-y se rotulan así en la interfaz y en el PDF. Es una excepción a D22 (números con `SIM-`): **conviene verificar que ese número de
-colegiatura no pertenezca a un ingeniero real** o cambiarlo por uno con `SIM-`.
+**Datos del especialista:** Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001, tal como se pidió. Son ficticios
+y se rotulan así en la interfaz y en el PDF. Actualizado en la v0.7 (V9): el nombre y la colegiatura anteriores se reemplazaron
+por estos, que ya cumplen D22 (números con `SIM-`).
 
 **Base existente:** la migración V5 y la carga de contenido completan distrito, precio, ítem HR y PU y el perfil del especialista
 sin borrar nada. Los informes que ya estaban guardados conservan el profesional anterior; para verlos firmados por la cuenta del
