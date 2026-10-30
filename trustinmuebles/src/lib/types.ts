@@ -111,7 +111,7 @@ export interface DetalleCaso {
 }
 
 /** Qué provocó un recálculo del indicador A (lista cerrada del backend). */
-export type OrigenEvaluacion = "EDICION" | "PLANO_ADJUNTO" | "PARTIDA_TRANSCRITA" | "CARGA_INICIAL";
+export type OrigenEvaluacion = "EDICION" | "PLANO_ADJUNTO" | "PARTIDA_TRANSCRITA" | "PARTIDA_SIMULADA" | "CARGA_INICIAL";
 
 /** Una fila del historial de evaluaciones (GET /casos/{codigo}/historial). Solo lectura. */
 export interface EntradaHistorial {

@@ -136,7 +136,7 @@ export function Footer() {
               <div>
                 <p className="text-xs font-bold text-white">Indicador B · En Campo</p>
                 <p className="text-[11px] text-gray-400 leading-snug mt-0.5">
-                  Inspección física independiente por Ing. / Arq. colegiado.
+                  Inspección presencial por un especialista de la inmobiliaria. Los perfiles de la demostración son ficticios.
                 </p>
               </div>
             </div>

@@ -112,9 +112,14 @@ class ExpedienteService {
      * único que puede levantar un embargo, un bloqueo o una demanda); si solo cambian los planos, se adjuntó un plano.
      */
     static OrigenEvaluacion origenDeLaEdicion(String asientosAntes, String planosAntes, Expediente e) {
-        if (!asientosAntes.equals(firmaAsientos(e))) return OrigenEvaluacion.PARTIDA_TRANSCRITA;
+        if (!asientosAntes.equals(firmaAsientos(e))) return origenDeLaPartida(e.getCaso());
         if (!planosAntes.equals(firmaPlanos(e))) return OrigenEvaluacion.PLANO_ADJUNTO;
         return OrigenEvaluacion.EDICION;
+    }
+
+    /** Una partida simulada captada no se rotula como transcrita en el historial. */
+    private static OrigenEvaluacion origenDeLaPartida(CasoLote c) {
+        return c.esCaptado() && c.isSintetico() ? OrigenEvaluacion.PARTIDA_SIMULADA : OrigenEvaluacion.PARTIDA_TRANSCRITA;
     }
 
     private static String firmaAsientos(Expediente e) {
@@ -333,7 +338,7 @@ class ExpedienteService {
         int orden = 0;
         for (String nombre : CHECKLIST_TRANSCRITA) checklist.agregar(e.getId(), nombre, EstadoItem.PENDIENTE, orden++);
         glosario.asociar(e.getId(), TERMINOS_TRANSCRITA);
-        recalcular(e, OrigenEvaluacion.PARTIDA_TRANSCRITA);
+        recalcular(e, origenDeLaPartida(caso));
         return aDetalle(e);
     }
 

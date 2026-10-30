@@ -208,6 +208,33 @@ class RegistrarPartidaTest extends BaseApiTest {
         mvc.perform(get("/api/v1/casos/" + SIMULADA).header("Authorization", revisor())).andExpect(status().isNotFound());
     }
 
+    String origenesDelHistorial(String codigo) throws Exception {
+        return mvc.perform(get("/api/v1/casos/" + codigo + "/historial").header("Authorization", revisor()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    @DisplayName("El historial rotula como simulada una partida simulada, al registrarla y al corregir sus asientos")
+    void historialDeSimulada() throws Exception {
+        try {
+            registrar(simulada(), revisor()).andExpect(status().isCreated());
+            ObjectNode edicion = peticion(leerComo(SIMULADA, revisor()));
+            ((ObjectNode) ((ArrayNode) edicion.get("asientos")).get(0)).put("texto", "Inmobiliaria Los Sauces S.A.C. compró el predio.");
+            actualizarExpediente(SIMULADA, revisor(), edicion).andExpect(status().isOk());
+            assertThat(json.readTree(origenesDelHistorial(SIMULADA)).findValuesAsString("origen"))
+                    .containsExactly("PARTIDA_SIMULADA", "PARTIDA_SIMULADA");
+        } finally {
+            borrar(SIMULADA);
+        }
+        try {
+            registrar(partida(NUMERO), revisor()).andExpect(status().isCreated());
+            assertThat(json.readTree(origenesDelHistorial(NUMERO)).findValuesAsString("origen"))
+                    .containsExactly("PARTIDA_TRANSCRITA");
+        } finally {
+            borrar(NUMERO);
+        }
+    }
+
     @Test
     @DisplayName("El precio referencial es opcional y se muestra en el catálogo y en el detalle, sin alterar el indicador A")
     void precioEnElCatalogo() throws Exception {

@@ -11,6 +11,8 @@ public enum OrigenEvaluacion {
     PLANO_ADJUNTO,
     /** El revisor registró una partida transcrita o incorporó asientos nuevos de la partida. */
     PARTIDA_TRANSCRITA,
+    /** El revisor registró una partida simulada o incorporó asientos nuevos a una partida simulada captada. */
+    PARTIDA_SIMULADA,
     /** Carga de contenido al arrancar (primera evaluación o cambio de versión de reglas). */
     CARGA_INICIAL
 }

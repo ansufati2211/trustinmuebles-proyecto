@@ -18,4 +18,11 @@ describe("límites legales del pie (I7)", () => {
     const html = renderToStaticMarkup(<MemoryRouter><Footer /></MemoryRouter>);
     for (const limite of LIMITES_LEGALES) expect(html).toContain(limite);
   });
+
+  it("el pie atribuye la inspección a un especialista de la inmobiliaria con perfil ficticio", () => {
+    const html = renderToStaticMarkup(<MemoryRouter><Footer /></MemoryRouter>);
+    expect(html).toContain("especialista de la inmobiliaria");
+    expect(html).toContain("perfiles de la demostración son ficticios");
+    expect(html).not.toContain("independiente");
+  });
 });
