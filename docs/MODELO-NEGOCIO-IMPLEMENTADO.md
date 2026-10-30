@@ -9,12 +9,13 @@ el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No veri
 |---|---|
 | Versión | `0.7.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`) |
 | Fecha de esta revisión | 30 de octubre de 2026, sobre la rama `mejoras-v0.7`, creada desde `main` en `9b155a5` |
-| Pruebas del backend | `./mvnw test`: **148 ejecutadas, 148 aprobadas**, 0 fallos, 0 errores, 0 omitidas; `BUILD SUCCESS` |
-| Pruebas del frontend | `npx pnpm@9 test`: **11 archivos, 64 pruebas, 64 aprobadas** |
+| Pruebas del backend | `./mvnw test`: **149 ejecutadas, 149 aprobadas**, 0 fallos, 0 errores, 0 omitidas; `BUILD SUCCESS` |
+| Pruebas del frontend | `npx pnpm@9 test`: **11 archivos, 66 pruebas, 66 aprobadas** |
 | Compilación del frontend | `npx pnpm@9 build`: correcta (`tsc --noEmit` y `vite build`), con aviso de tamaño del JS principal |
 | Organización de referencia del caso | LedCons, sin acta ni acuerdo formal acreditado |
 | Alcance | MVP académico con **datos simulados**, para **una sola inmobiliaria de Ica** |
-| Verificación en navegador | **No verificado** para ninguna vista de la v0.7 ni para el rediseño del 26 de octubre (`567cbfc`): el recorrido nuevo se saltó porque `puppeteer-core` no estaba instalado |
+| Verificación en navegador | Recorrido de 15 pasos con los 5 roles en Chrome: **15 de 15 correctos** el 30 de octubre de 2026 (`docs/pruebas/RESULTADO-recorrido-v07.md`). No cubre lectores de pantalla ni otros navegadores |
+| Rendimiento (NF02) | **20 de 20** en 2 s o menos; mediana 25,2 ms, máximo 54,3 ms. Solo la API |
 
 Las pruebas del backend son de integración (MockMvc con H2 en memoria) y unitarias; las del frontend son de funciones puras
 (Vitest), más una que renderiza el pie (`limitesLegales.test.tsx`); **no prueban cómo se dibujan las demás pantallas**.
@@ -69,8 +70,7 @@ inmobiliaria coordina la visita» (`PanelEvaluacionTecnica.tsx`). El código no 
 
 ## 4. Flujo de vida del inmueble
 
-Ninguna pantalla de este flujo se ha recorrido en un navegador: la columna «Pantalla» viene de leer el código (**No
-verificado** en pantalla).
+Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con los 5 roles (`docs/pruebas/RESULTADO-recorrido-v07.md`).
 
 | ID | Etapa | Quién | Qué ocurre | Pantalla / ruta del frontend | Endpoint | Prueba | Estado |
 |---|---|---|---|---|---|---|---|
@@ -207,8 +207,9 @@ pagarían por ella. **No se ha realizado.**
   modo PostgreSQL (`./data/h2/`), PDFBox para los PDF, Swagger en `/swagger-ui.html`.
 - **Módulos** (9; `ModularityTests`): `identidad`, `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`,
   `orientacion`, `almacenamiento` y `shared`.
-- **Migraciones:** `V1__esquema` a `V10__asignacion_obligatoria`. V6 captación y publicación, V7 historial, V8 contacto y
-  asignación, V9 perfil ficticio de `especialista-01`, V10 asignación de la inspección en curso de la demostración.
+- **Migraciones:** `V1__esquema` a `V11__historial_partida_simulada`. V6 captación y publicación, V7 historial, V8 contacto y
+  asignación, V9 perfil ficticio de `especialista-01`, V10 asignación de la inspección en curso de la demostración, V11 origen
+  `PARTIDA_SIMULADA` en el historial.
 - **Contenido:** casos, reglas y glosario en JSON versionado; versión activa `v0.4` (`app.reglas.version`).
 - **Interfaz:** React 19, Vite 8, Tailwind 4, React Router 8 con rutas `#/…`. El servidor de desarrollo reenvía `/api` al
   backend.
@@ -265,10 +266,8 @@ comprador (D46) y listado de especialistas para la asignación (D45).
   aprobado).
 - **Aprobación de D20** (partidas transcritas, desvío de RN-01 y PA2) por el asesor: pendiente.
 - **Supuestos D32 a D49** por confirmar con el equipo y el docente.
-- **Recorrido de navegador de la v0.7:** no existe; `docs/pruebas/recorrido-v06.mjs` está obsoleto y el recorrido nuevo se saltó
-  porque `puppeteer-core` no estaba instalado. Ninguna vista de la v0.7 ni el rediseño `567cbfc` se ha comprobado en un
-  navegador, y no hay capturas de esta versión.
-- **NF02 sin repetir en la v0.7:** la última medición es del 17 de octubre de 2026 (20 de 20; máximo 93 ms, solo la API).
+- **Respaldo y restauración (CP13):** sin ejecutar.
+- **Separación de demostración, estudio y operación (CP15) e inspección presencial real (CP16):** pendientes.
 - **Docker** no se ha probado: ni las imágenes ni el enlace a `127.0.0.1` se ejecutaron.
 - **Instalación en otro equipo (CP-07)**, piloto, reclutamiento, consentimientos y aplicación del estudio: pendientes.
 - **Accesibilidad** con teclado y lector de pantalla de los componentes de la v0.7 y del rediseño: No verificado.
@@ -325,31 +324,25 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 
 ## 16. Correspondencia con el informe
 
-Relaciona los identificadores del informe del curso con los de este documento. **El texto del informe no está en este
-repositorio:** las correspondencias de RN y CUN son las que indicó el equipo, y lo que depende de la definición de un RF o de un CP
-que no consta aquí dice **No verificado**.
+Relaciona los identificadores del informe del curso con los de este documento. Las pruebas son automáticas salvo «Paso n», que es un
+paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 correctos el 30 de octubre de 2026).
 
 ### 16.1 Requisitos funcionales
 
-RF01 a RF12 no están definidos en el repositorio, que usa REQ-F01 a REQ-F06 (`docs/trazabilidad.md`), y no se puede asumir que la
-numeración coincida. Por eso la tabla parte de las funciones comprobadas: al equipo le falta anotar en la primera columna el RF que
-corresponda según el informe.
-
-| RF | Función | ETP | Prueba | Estado |
-|---|---|---|---|---|
-| Por asignar | Acceso con código de cuenta y permisos por rol | Transversal | `SeguridadTest`, `CuentasDemoTest`, `CarteraTest.permisosPorRol` | Implementado |
-| Por asignar | Captación con origen, propietario y precio opcional | ETP-1 | `CaptacionPublicacionTest.naceEnBorrador`, `RegistrarPartidaTest.prefijoSegunElOrigen`, `precioInvalido` | Implementado |
-| Por asignar | Autorización del propietario | ETP-2 | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Implementado |
-| Por asignar | Pre-evaluación documental (indicador A) | ETP-3 | `MotorClasificacionTest`, `MotorPlanosTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Implementado. Reglas pendientes de revisión especializada |
-| Por asignar | Subsanación e historial | ETP-4 | `HistorialEvaluacionTest` | Implementado |
-| Por asignar | Publicación por el gestor | ETP-5 | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `soloElGestorPublica` | Implementado |
-| Por asignar | Catálogo, filtros y detalle | ETP-6 | `CatalogoYServiciosTest.filtrosCombinados`, `CaptacionPublicacionTest.visibilidadPorRol`; Vitest `catalogo.test.ts` | Implementado |
-| Por asignar | Solicitud de contacto | ETP-6 | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado` | Implementado |
-| Por asignar | Solicitud de inspección y asignación obligatoria | ETP-7 | `CatalogoYServiciosTest.soloElCompradorSolicita`, `CarteraTest.sinAsignacionNadieEmite` | Implementado |
-| Por asignar | Informe técnico (indicador B) | ETP-7 | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `InformeTecnicoPdfTest` | Implementado |
-| Por asignar | Panel de cartera | ETP-8 | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Implementado |
-| Por asignar | Partida, planos, checklist y glosario | ETP-3, ETP-6 | `PlanosApiTest`, `CasosApiTest.checklistSoloRevisor`, `CopiaLiteralPdfTest`, `LaminaPdfTest` | Implementado |
-| Por asignar | Verificación jurídica con abogado o notario | ETP-9 | Texto fijo; `limitesLegales.test.tsx` cubre el pie | Fuera del sistema |
+| RF | Requisito | ETP | Prueba | Recorrido | Estado |
+|---|---|---|---|---|---|
+| RF01 | Acceso: autenticar y autorizar cinco roles en el servidor | Transversal | `SeguridadTest`, `CuentasDemoTest`, `CarteraTest.permisosPorRol` | Pasos 2, 3, 4 y 11 | Implementado |
+| RF02 | Captación: crear expediente en borrador vinculado al propietario por código | ETP-1 | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.prefijoSegunElOrigen` | Paso 1 | Implementado |
+| RF03 | Autorización: otorgar o retirar autorización solo sobre casos propios | ETP-2 | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Pasos 5 y 14 | Implementado |
+| RF04 | Expediente: mantener partida transcrita, planos y checklist | ETP-1, ETP-4 | `CasosApiTest.guardarPersiste`, `checklistSoloRevisor`; `PlanosApiTest` | Paso 7 | Implementado |
+| RF05 | Indicador A: calcular color, motivos y faltantes por reglas | ETP-3 | `MotorClasificacionTest`, `MotorPlanosTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Pasos 1, 6 y 7 | Implementado. Reglas pendientes de revisión especializada |
+| RF06 | Historial: registrar recálculos de A por adición | ETP-3, ETP-4 | `HistorialEvaluacionTest.cadaRecalculoAgregaUnaFila`, `historialInmutable` | Pasos 6 y 7 | Implementado |
+| RF07 | Publicación: el gestor publica o retira y el comprador ve publicados | ETP-5 | `CaptacionPublicacionTest.soloElGestorPublica`, `sinAutorizacionNoSePublica`, `visibilidadPorRol` | Pasos 2, 4, 8 y 14 | Implementado |
+| RF08 | Consulta: expediente, glosario, documentos y filtros simples | ETP-6 | `CatalogoYServiciosTest.filtrosCombinados`, `CasosApiTest.glosario`; `CopiaLiteralPdfTest`; Vitest `catalogo.test.ts` | Paso 9 | Implementado |
+| RF09 | Contacto: el comprador solicita con motivo cerrado; el gestor atiende | ETP-6 | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado` | Pasos 9 y 10 | Implementado |
+| RF10 | Inspección B: solicitar, asignar y registrar informe de seis pasos | ETP-7 | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite` | Pasos 9 a 12 | Implementado |
+| RF11 | Propietario: consultar casos propios sin editar | ETP-2 | `CaptacionPublicacionTest.propietarioVeSoloLoSuyo`, `propietarioSoloLectura` | Pasos 3 y 5 | Implementado |
+| RF12 | Cartera: el gestor consulta estados, contactos e inspecciones | ETP-8 | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Paso 13 | Implementado |
 
 ### 16.2 Reglas de negocio
 
@@ -370,27 +363,36 @@ corresponda según el informe.
 
 ### 16.3 Casos de uso de negocio
 
-| Informe | Etapas | Prueba de punta a punta | Estado |
-|---|---|---|---|
-| CUN01 | ETP-1, ETP-2, ETP-4 | `CicloCarteraTest.cicloCompleto` | Implementado |
-| CUN02 | ETP-3, ETP-5, ETP-6 | `CicloCarteraTest.cicloCompleto` | Implementado |
-| CUN03 | ETP-6 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.contactoSobreRojo` | Implementado |
-| CUN04 | ETP-7 | `CicloCarteraTest.cicloCompleto`, `InspeccionTest.flujoCompleto` | Implementado |
-| CUN05 | ETP-8 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.panelCoherente` | Implementado |
+| Informe | Etapas | Prueba de punta a punta | Recorrido | Estado |
+|---|---|---|---|---|
+| CUN01 | ETP-1, ETP-2, ETP-4 | `CicloCarteraTest.cicloCompleto` | Pasos 1, 5 y 7 | Implementado |
+| CUN02 | ETP-3, ETP-5, ETP-6 | `CicloCarteraTest.cicloCompleto` | Pasos 6, 8 y 9 | Implementado |
+| CUN03 | ETP-6 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.contactoSobreRojo` | Pasos 9 y 10 | Implementado |
+| CUN04 | ETP-7 | `CicloCarteraTest.cicloCompleto`, `InspeccionTest.flujoCompleto` | Pasos 10 a 12 | Implementado |
+| CUN05 | ETP-8 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.panelCoherente` | Paso 13 | Implementado |
 
 ### 16.4 Casos de prueba
 
-El repositorio define CP-01 a CP-07 (`docs/pruebas/registro.md`); se asume que equivalen a CP01 a CP07 del informe. CP08 a CP17 no
-están definidos aquí. El recorrido de navegador no se ejecutó, así que ningún CP se apoya en pasos de ese recorrido.
+**Nota sobre la numeración:** los CP-01 a CP-07 de `docs/pruebas/registro.md` y `docs/trazabilidad.md` son de una etapa anterior y **no
+coinciden** con los CP01 a CP07 del informe: por ejemplo, allí CP-04 es orientación y CP-07 es la instalación en otro equipo. Esta tabla usa
+la numeración del informe. CP-05b (reglas con tabla especializada) sigue sin aprobarse, y CP-07 del repositorio equivale en parte a CP13.
 
-| Informe | Prueba | Estado |
-|---|---|---|
-| CP01 | `SeguridadTest` (8) | Aprobado |
-| CP02 | `CasosApiTest.cadaCodigoDevuelveSusDatos`, `sinRastrosDelEstudio` | Aprobado |
-| CP03 | `CasosApiTest.guardarPersiste`, `entradaInvalidaNoGuarda`, `versionVieja`; `NormalizadorAsientosTest` | Aprobado |
-| CP04 | `CasosApiTest.glosario` | Aprobado. Contenido sin revisión especializada |
-| CP05 | `MotorClasificacionTest`, `CasosApiTest.cancelarLaHipotecaRecalcula`, `colorNoSeFijaAMano` | Aprobado, salvo CP-05b, pendiente de revisión especializada |
-| CP06 | `CasosApiTest.checklistSoloRevisor`, `checklistValidaPertenenciaYEstado` | Aprobado |
-| CP07 | Instalación en otro equipo | Pendiente |
-| CP08 a CP12, CP14, CP17 | Definición no disponible en el repositorio | **No verificado** |
-| CP13, CP15, CP16 | Definición no disponible en el repositorio | Pendiente |
+| Informe | Caso | Prueba | Recorrido | Estado |
+|---|---|---|---|---|
+| CP01 | Permisos por cinco roles | `SeguridadTest`, `CarteraTest.permisosPorRol` | Pasos 2, 3, 4 y 11 | Aprobado |
+| CP02 | Crear expediente y vincular propietario; borrador no visible al comprador | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`, `visibilidadPorRol` | Pasos 1 y 2 | Aprobado |
+| CP03 | Autorizar o retirar, y acceso a caso ajeno | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioVeSoloLoSuyo` | Pasos 3, 5 y 14 | Aprobado |
+| CP04 | Editar partida, planos y HR/PU; el checklist no cambia A | `CasosApiTest.guardarPersiste`, `PlanosApiTest`, `CatalogoYServiciosTest.hrPuNoCambiaElColor` | Paso 7 (planos) | Aprobado |
+| CP05 | Recalcular A: motivos y faltantes, sin color manual | `CasosApiTest.cancelarLaHipotecaRecalcula`, `colorNoSeFijaAMano`; `MotorClasificacionTest` | Paso 7 | Aprobado. Reglas pendientes de revisión especializada |
+| CP06 | Historial: entrada nueva y anterior conservada | `HistorialEvaluacionTest.cadaRecalculoAgregaUnaFila`, `historialInmutable` | Pasos 6 y 7 | Aprobado |
+| CP07 | Publicar sin autorización y con distintos colores | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor` | Pasos 4 y 8 | Aprobado |
+| CP08 | Consulta de casos y glosario por el comprador | `CasosApiTest.glosario`, `CatalogoYServiciosTest.filtrosCombinados` | Paso 9 | Aprobado |
+| CP09 | Solicitar contacto y atender | `CarteraTest.contactoSobreRojo`, `motivoCerrado` | Pasos 9 y 10 | Aprobado |
+| CP10 | Asignar B, emitir y comparar A | `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite`; `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor` | Pasos 10 a 12 | Aprobado |
+| CP11 | El propietario consulta e intenta editar | `CaptacionPublicacionTest.propietarioSoloLectura` | Paso 5 (consulta). El intento de editar se probó solo en el backend | Aprobado |
+| CP12 | Panel de cartera | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Paso 13 | Aprobado |
+| CP13 | Versiones, arranque, respaldo y restauración, y localhost | `ConfiguracionLocalTest.soloEscuchaEnLocal`; versiones en `docs/PARA-INFORME.md` | Arranque local correcto | **Parcial:** respaldo y restauración sin ejecutar, y sin prueba en otro equipo |
+| CP14 | NF02: 20 mediciones, 19 de 20 en 2 s o menos | `scripts/medir-nf02.mjs` | Tras el paso 15 | Aprobado: 20 de 20, máximo 54,3 ms, solo la API |
+| CP15 | Separación de demostración, estudio y operación | Sin prueba | — | **Pendiente:** los materiales del estudio están fuera del repositorio, pero no se comprobó la separación |
+| CP16 | Inspección presencial real | Fuera del software | — | **Pendiente:** no se ha realizado |
+| CP17 | Textos, motivos, faltantes y distinción A/B | Vitest `limitesLegales.test.tsx`; `CatalogoYServiciosTest.verdeSignificaSinAlertas` | Pasos 6, 12 y 15 | Aprobado técnicamente. Contenido pendiente de revisión especializada |

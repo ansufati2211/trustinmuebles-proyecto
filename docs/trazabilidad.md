@@ -22,7 +22,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 | Requisito | Cómo se verificó | Resultado | Estado |
 |---|---|---|---|
 | REQ-NF01 Interacción: texto y color, glosario por selección | Recorrido en Chrome: el estado aparece con texto, ícono y color; el glosario se abre con Enter y marca `aria-expanded` | 38 de 38 verificaciones | Probado en navegador. No se probó con lector de pantalla |
-| REQ-NF02 Rendimiento local (hasta 2 s en 19 de 20) | `scripts/medir-nf02.mjs` con el backend recién iniciado | 20 de 20; mediana 16,9 ms; máximo 93,0 ms | Probado, solo la API. No incluye el dibujado de la interfaz |
+| REQ-NF02 Rendimiento local (hasta 2 s en 19 de 20) | `scripts/medir-nf02.mjs`, 30 de octubre de 2026, tras el recorrido de la v0.7 | 20 de 20; mediana 25,2 ms; máximo 54,3 ms | Probado, solo la API. No incluye el dibujado de la interfaz |
 | REQ-NF03 Acceso | CP-01: 401 sin sesión, 403 del comprador por ruta directa, hash BCrypt, sin registro abierto | 8 de 8 | Probado |
 | REQ-NF04 Integridad | CP-03: entrada inválida da 400 sin cambios, versión vieja da 409, recarga conserva lo guardado | Todas pasan | Probado |
 | REQ-NF05 Reproducibilidad | Clon limpio del repositorio siguiendo el LEEME: pruebas, compilación y primer arranque | Funciona, pero en el mismo equipo donde se desarrolló | **Parcial**: falta CP-07 en otro equipo |
@@ -44,7 +44,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 
 | Elemento | Dónde | Prueba | Estado |
 |---|---|---|---|
-| Registro y eliminación por el revisor | `ExpedienteService.registrar` y `eliminar` | `RegistrarPartidaTest` (11) | Probado |
+| Registro y eliminación por el revisor | `ExpedienteService.registrar` y `eliminar` | `RegistrarPartidaTest` (12) | Probado |
 | Sin DNI, estado civil ni domicilio en el servidor | `ProteccionDatos` | `entradasInvalidas`, `edicionProtegida` | Probado |
 | Limpieza de nombres en el navegador | `lib/disociar.ts`, `lib/leerPartida.ts` | 12 pruebas con vitest; recorrido de navegador | Probado. Es una heurística |
 | PDF de transcripción | `CopiaLiteralPdf.Procedencia` | `CopiaLiteralPdfTest.transcripcion` | Probado |
@@ -81,6 +81,9 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 
 ## Pruebas que no se pueden dar por aprobadas
 
+Esta sección usa la numeración antigua (CP-01 a CP-07), que no coincide con la del informe: la correspondencia vigente está en la
+sección 16.4 de [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md).
+
 - **CP-05b** (amarillo o rojo según la tabla especializada): se ejecutó con una regla prioritaria ficticia que existe solo
   dentro del test. No se marca aprobada hasta que haya una tabla jurídica revisada con entradas y salidas esperadas.
 - **CP-07** (instalación reproducible): falta que otra persona la haga en otro equipo y registre las incidencias.
@@ -116,7 +119,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 ## Ciclo de cartera (v0.7)
 
 Las pruebas del backend son de integración (MockMvc con H2 en memoria); las del frontend, de funciones puras con Vitest. Las
-pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se refiere solo a la prueba indicada.
+pantallas de la v0.7 se recorrieron en Chrome: ver [pruebas/RESULTADO-recorrido-v07.md](pruebas/RESULTADO-recorrido-v07.md), 15 de 15.
 
 | Elemento | Backend | Interfaz | Pruebas | Estado |
 |---|---|---|---|---|
@@ -146,7 +149,7 @@ pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se
 | I4 Autorización en el servidor | `SeguridadTest`, `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol`, `CicloCarteraTest` |
 | I5 Límites de módulos | `ModularityTests` (9 módulos, con `cartera`) |
 | I6 Solo `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal`, `CicloCarteraTest`. Docker liga el puerto a `127.0.0.1`, sin ejecutar |
-| I7 (redefinida, D47) Límites legales en el pie y entorno demostrativo en el login | Pie: Vitest `limitesLegales.test.tsx`. Login: sin prueba automática. Falta verificar ambos en el navegador |
+| I7 (redefinida, D47) Límites legales en el pie y entorno demostrativo en el login | Pie: Vitest `limitesLegales.test.tsx`. Pie y login: paso 15 del recorrido |
 | I8 El color solo cambia al recalcular | `publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`, `operacionesSinRecalculo`, `contactoSobreRojo`, `soloElAsignadoEmite` |
 | I9 Un plano o PDF no levanta un rojo registral | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
 | I10 Publicar y contactar no dependen del color | `publicarRojoNoCambiaElColor`, `contactoSobreRojo` |

@@ -2,7 +2,7 @@
 
 > Versión v0.7.0 «Ciclo de cartera»: roles GESTOR y PROPIETARIO, captación con propietario, autorización, publicación,
 > historial de evaluaciones, contacto del comprador, asignación del especialista y panel de cartera (sección 5 bis). Las vistas
-> nuevas de la interfaz no se han verificado en un navegador.
+> de la interfaz se recorrieron en Chrome con los 5 roles ([resultado](pruebas/RESULTADO-recorrido-v07.md)).
 >
 > v0.6.0: interfaz comercial (catálogo con ilustraciones, precios referenciales y filtros), solicitud de inspección solo
 > del comprador con costo referencial (M5), informe firmado desde la cuenta del especialista (M8), ítem HR y PU en el checklist
@@ -212,7 +212,7 @@ reemplaza asesoría legal.**
 - **Publicación:** en el detalle, el gestor usa «Publicar» (solo con autorización vigente) o «Retirar». Ninguna de estas
   acciones cambia el color del indicador A; tras cada una la interfaz vuelve a consultar el caso.
 - **Historial de evaluaciones:** en el detalle (salvo para el comprador), cada recálculo con fecha y hora, color anterior →
-  nuevo, origen (edición, plano, partida transcrita o carga inicial), cuenta, criterios, faltantes y motivos. Solo lectura.
+  nuevo, origen (edición, plano, partida transcrita, partida simulada o carga inicial), cuenta, criterios, faltantes y motivos. Solo lectura.
 - **Subsanación:** el revisor incorpora un plano o asientos faltantes con la edición de siempre; el motor recalcula y el
   historial lo registra. Adjuntar un PDF no levanta un rojo por embargo, bloqueo o demanda.
 - **Contacto:** en un caso publicado, el comprador usa «Solicitar contacto» y elige un motivo (información general, consulta de
@@ -251,8 +251,7 @@ guardan en el repositorio.
 - **Contraseñas** con hash BCrypt. **Sesión** con token firmado, que caduca. **API protegida** por rol en cada ruta.
 - **Archivos** cifrados en disco (AES-256-GCM).
 - **Entradas validadas** en el servidor, con mensajes claros y sin cambios parciales.
-- **Tiempo de respuesta** medido el 17 de octubre de 2026, antes de la v0.7: 20 de 20 consultas en menos de 2 segundos (máximo 93 ms,
-  solo la API).
+- **Tiempo de respuesta** medido el 30 de octubre de 2026: 20 de 20 consultas en menos de 2 segundos (máximo 54,3 ms, solo la API).
 - **Solo uso local (I6):** el backend escucha en `127.0.0.1` y la base es H2 en archivo. En Docker, el frontend se publica en
   `127.0.0.1` y el backend no publica puertos (sin ejecutar). No está preparado para un servidor expuesto a la red.
 - **Accesibilidad básica:** teclado y foco visible, enlace «Saltar al contenido», modales con foco atrapado y Escape, estados con
@@ -278,5 +277,4 @@ guardan en el repositorio.
 - Aprobación del asesor para las partidas transcritas (desvío de RN-01 y PA2).
 - Prueba de instalación en otro equipo (CP-07), piloto y aplicación del estudio.
 - Pruebas con lector de pantalla y en otros navegadores distintos de Chrome.
-- Verificación en navegador de las vistas de la v0.7 (Cartera, Mis inmuebles, publicación, historial, contacto y asignación).
 - El comprador no puede consultar después el estado de su solicitud de contacto: el backend no ofrece esa ruta (D46).

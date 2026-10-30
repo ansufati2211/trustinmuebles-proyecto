@@ -348,7 +348,7 @@ conserva: es de solo adición y no contiene datos personales (supuesto).
 **Supuesto:** la evaluación vigente (`evaluacion`) se mantiene como estaba; el historial se agrega al lado y no la reemplaza.
 
 ## D37. v0.7: origen de cada recálculo (supuesto)
-La lista es cerrada: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL`.
+La lista es cerrada: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL` y, desde V11, `PARTIDA_SIMULADA` (D50).
 - `POST /casos` (partida transcrita): `PARTIDA_TRANSCRITA`.
 - `PUT /casos/{c}/expediente`: si cambian los asientos, `PARTIDA_TRANSCRITA` (se incorporó partida transcrita nueva, I9); si
   solo cambian los planos o el bloque técnico, `PLANO_ADJUNTO`; si no, `EDICION`. Las áreas se comparan por valor (84.5 = 84.50).
@@ -459,8 +459,8 @@ quedaba mal rotulada o no se podía registrar.
 **Cómo:** no hizo falta migración. Una simulada se guarda con `origen = SINTETICO`, que `ck_caso_origen` ya admite, y
 `precio_referencial` existe desde V5. La API sigue devolviendo `origen` `SINTETICO` o `TRANSCRITA`.
 **Consecuencia:** los casos captados se distinguen de los diez de demostración porque llevan `fuente` (`CasoLote.esCaptado`). Se
-pueden eliminar, y se revisan al editarlos; los diez de demostración no. En el historial, ambos orígenes nacen con el origen de
-evaluación `PARTIDA_TRANSCRITA`, también en una simulada (supuesto: no se agregó otro valor a esa lista cerrada).
+pueden eliminar, y se revisan al editarlos; los diez de demostración no. En el historial, una partida simulada captada usa
+`PARTIDA_SIMULADA` («Partida simulada incorporada»), agregado en V11; las filas ya guardadas no se reescriben (I12).
 
 ## D51. v0.7: asignación obligatoria del especialista
 

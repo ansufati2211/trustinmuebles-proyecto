@@ -51,8 +51,7 @@ Revisor, gestor y especialistas son **personal de la inmobiliaria**; el código 
 ### Flujo de nueve etapas
 
 «Implementado» significa que existe en el backend con pruebas automáticas y en la interfaz con pruebas de sus funciones
-puras. **Ninguna pantalla de la v0.7 se ha verificado en un navegador:** el recorrido nuevo sigue sin ejecutarse (ver
-«Pruebas»). El detalle (pantalla, endpoint y prueba de cada
+puras. Las pantallas de las etapas 1 a 8 se recorrieron en Chrome con los 5 roles (ver «Pruebas»). El detalle (pantalla, endpoint y prueba de cada
 etapa) está en la sección 4 del modelo de negocio.
 
 | ID | Etapa | Quién | Estado |
@@ -106,8 +105,8 @@ El producto se llama Trustinmuebles en el código, en la documentación y en el 
 - `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 9 módulos: `identidad`,
   `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
 - `trustinmuebles/` — interfaz de React 19 con Vite. Los predios y las láminas usan ilustraciones SVG propias. La landing, el
-  login, el catálogo, la cartera y el registro de partida usan fotografías locales de `public/img/`: la demo no depende de
-  internet para verlas. La credencial del especialista usa sus iniciales.
+  login, el catálogo y el registro de partida usan fotografías locales de `public/img/`, y la cartera un fondo de color: la demo no
+  depende de internet para verlos. La credencial del especialista usa sus iniciales.
 
 Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para
 el informe. Para saber qué hace el programa, empieza por `docs/MODELO-NEGOCIO-IMPLEMENTADO.md` y `docs/funcionalidades.md`.
@@ -179,7 +178,7 @@ firman informes reales.**
 
 Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD`. Al arrancar se crea cada cuenta que falte, también en una base ya
 creada; las que existen no se tocan: si cambias la variable con una base ya creada, su contraseña no cambia. Para empezar de
-cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base anterior se migra al arrancar (V5 a V10);
+cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base anterior se migra al arrancar (V5 a V11);
 V6, V9 y V10 se probaron sobre bases en memoria (`MigracionV6Test`, `MigracionEspecialistaTest`, `MigracionAsignacionTest`),
 **no sobre una base real en `data/`**. V9 actualiza el perfil de `especialista-01` y los informes ya firmados con el perfil
 anterior. No hay registro abierto.
@@ -232,24 +231,25 @@ debe aprobar.
 ## Pruebas
 
 ```powershell
-cd trustinmuebles-backend; .\mvnw.cmd test     # 148 pruebas del backend
-cd trustinmuebles; npx pnpm@9 test              # 64 pruebas del frontend
+cd trustinmuebles-backend; .\mvnw.cmd test     # 149 pruebas del backend
+cd trustinmuebles; npx pnpm@9 test              # 66 pruebas del frontend
 cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 ```
 
 En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. Las pruebas del backend no necesitan `APP_SEED_PASSWORD`: usan la
 contraseña de `src/test/resources/application-test.properties` y una base en memoria.
 
-**Última ejecución real (30 de octubre de 2026, rama `mejoras-v0.7`):** backend 148 ejecutadas, 148 aprobadas, 0 fallos, 0
-errores, 0 omitidas; frontend 11 archivos, 64 aprobadas; build correcto, con aviso de tamaño del JS principal. Las pruebas del
+**Última ejecución real (30 de octubre de 2026, rama `mejoras-v0.7`):** backend 149 ejecutadas, 149 aprobadas, 0 fallos, 0
+errores, 0 omitidas; frontend 11 archivos, 66 aprobadas; build correcto, con aviso de tamaño del JS principal. Las pruebas del
 frontend son de funciones puras (permisos, navegación, filtros, totales del panel, historial y contacto), más una que renderiza el
 pie: no prueban el dibujado de las demás pantallas.
 
-**Recorrido de navegador de la v0.7: no ejecutado.** `docs/pruebas/recorrido-v06.mjs` está obsoleto y el recorrido nuevo se saltó
-porque `puppeteer-core`, su herramienta, no estaba instalada en el equipo. Por lo mismo no hay capturas de la v0.7.
+**Recorrido de navegador de la v0.7:** 15 de 15 pasos correctos con los 5 roles en Chrome, el 30 de octubre de 2026. Script en
+`docs/pruebas/recorrido-v07.mjs`, capturas en `docs/pruebas/capturas-v07/` y tabla en `docs/pruebas/RESULTADO-recorrido-v07.md`.
+`docs/pruebas/recorrido-v06.mjs` está obsoleto.
 
-**Rendimiento (NF02):** la última medición es la del 17 de octubre de 2026 (20 de 20; máximo 93 ms, solo la API), anterior a la
-v0.7. No se repitió sobre esta versión; se mide con `node scripts/medir-nf02.mjs`.
+**Rendimiento (NF02):** 20 de 20 en 2 s o menos el 30 de octubre de 2026 (mediana 25,2 ms, máximo 54,3 ms, solo la API). Se mide con
+`node scripts/medir-nf02.mjs`.
 
 ## Invariantes
 
@@ -303,7 +303,7 @@ Datos sintéticos». Cada resultado de A muestra «No certifica saneamiento ni r
     (ETP-8).
   - Texto fijo de la etapa 9 en el detalle (ETP-9).
 
-El detalle por pantalla está en `docs/funcionalidades.md`; las pantallas de la v0.7 no se han verificado en un navegador.
+El detalle por pantalla está en `docs/funcionalidades.md`.
 
 ## Fuentes de información
 
@@ -326,8 +326,7 @@ puede consultar después el estado de su solicitud de contacto (D46).
 
 ## Pendiente fuera del código
 
-Revisión especializada del contenido, aprobación de D20 por el asesor, confirmación de los supuestos D32 a D49, recorrido de
-navegador de la v0.7, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y presupuesto. Los materiales del
+Revisión especializada del contenido, aprobación de D20 por el asesor, confirmación de los supuestos D32 a D49, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y presupuesto. Los materiales del
 estudio (formas A y B, claves y bases vacías) están en la carpeta `estudio/`, que se mantiene **fuera de este repositorio** a
 propósito. La lista completa está en la sección 14 del modelo de negocio.
 
