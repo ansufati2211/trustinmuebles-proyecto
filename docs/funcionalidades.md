@@ -31,12 +31,12 @@ reemplaza asesoría legal.**
 | Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
 | Evaluación técnica | Solicitud con costo referencial e informe del especialista | Solicitar: comprador. Emitir: especialista |
 | Edición | Cambiar los datos, los asientos y los planos de una partida | Revisor |
-| Partidas transcritas | Registrar (indicando al propietario) y eliminar partidas reales sin datos personales | Revisor |
+| Captación de partidas | Registrar, con origen obligatorio (transcrita o simulada), propietario y precio opcional; eliminar las captadas | Revisor |
 | Autorización | Otorgar o retirar la autorización de sus propios casos | Propietario |
 | Publicación | Publicar (con autorización vigente) o retirar un caso | Gestor |
 | Historial de evaluaciones | Línea de tiempo de solo lectura de cada recálculo del indicador A | Revisor, gestor, especialista, propietario |
 | Contacto | Solicitar contacto sobre un caso publicado con un motivo de lista cerrada; atenderlo | Solicitar: comprador. Atender: gestor |
-| Asignación de inspecciones | Asignar un especialista a una inspección solicitada o en curso | Gestor |
+| Asignación de inspecciones | Asignar un especialista a una inspección solicitada o en curso; sin asignación nadie registra avance ni emite | Gestor |
 | Panel de cartera (`#/cartera`) | Totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable | Gestor |
 | Mis inmuebles (`#/mis-inmuebles`) | Sus casos con indicadores, motivos, faltantes, publicación y autorización | Propietario |
 
@@ -50,9 +50,10 @@ reemplaza asesoría legal.**
 - **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
 - **Roles:**
   - **Comprador:** consulta todo y es el único que solicita la inspección técnica; no modifica nada.
-  - **Especialista:** consulta y emite el informe técnico presencial, firmado con los datos de su cuenta (ficticios: Ing.
-    Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001). No edita partidas.
-  - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas transcritas.
+  - **Especialista:** consulta y, si el gestor le asignó la inspección, registra el avance y emite el informe técnico presencial,
+    firmado con los datos de su cuenta (ficticios: Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001). Los perfiles
+    de especialista son ficticios y no firman informes reales. No edita partidas.
+  - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas captadas.
   - **Gestor (asesor comercial, v0.7):** ve todos los casos, publica o retira, atiende contactos, asigna inspecciones y usa
     el panel «Cartera».
   - **Propietario (v0.7):** ve solo sus casos en «Mis inmuebles» y otorga o retira su autorización. No edita ni sube nada.
@@ -74,12 +75,13 @@ reemplaza asesoría legal.**
   - Lo que Trustinmuebles **no** hace.
 - **Barra superior** en todas las pantallas, con una franja fina: entorno de demostración, partidas ficticias y transcritas sin
   nombres de personas, precios y profesionales simulados, información referencial.
-- **Pie comercial** con los límites legales siempre visibles: «Verde = Sin alertas en los campos evaluados; no certifica
-  saneamiento ni reemplaza asesoría legal; los datos de esta demostración son simulados», y el aviso de uso local.
+- **Pie** con los límites legales visibles en la landing y en todas las pantallas con sesión (I7): no certifica saneamiento, no
+  recomienda comprar, no reemplaza asesoría legal, los datos y los especialistas son simulados, y la verificación jurídica con
+  abogado o notario se realiza fuera del sistema. El login no lleva pie: dice «Entorno académico demostrativo · Datos sintéticos».
 
 ## 3. Cartera de inmuebles (`#/casos`)
 
-- **Tarjetas:** ilustración propia del predio, tipo de inmueble, precio referencial (rotulado «dato simulado»), denominación,
+- **Tarjetas:** ilustración propia del predio, tipo de inmueble, precio referencial («Precio a consultar» si no tiene), denominación,
   distrito, área del terreno, número de partida, los dos indicadores (A documental y B técnico, siempre separados y con ícono y
   texto), pendientes del checklist y, si corresponde, la insignia «Transcrita de SUNARP».
 - **Filtros combinables:** tipo de inmueble, indicador A (verde, amarillo, rojo o gris) e indicador B (no solicitada,
@@ -132,13 +134,13 @@ reemplaza asesoría legal.**
 - **Solicitud (M5):** solo el comprador ve el botón «Solicitar inspección técnica». Abre un modal con el alcance de los 6 pasos y
   el costo referencial (S/ 250.00, que envía el backend; sin pasarela de pago) y pide confirmación. Después el expediente muestra
   la cuenta solicitante y la fecha. El servidor rechaza con 403 la solicitud de otro rol y con 409 una segunda solicitud.
-- **Especialista (M8):** credencial con avatar ilustrativo, nombre, especialidad y CIP, rotulada «Datos ficticios de
+- **Especialista (M8):** credencial con las iniciales, nombre, especialidad y colegiatura, rotulada «Perfil ficticio de
   demostración». El servidor toma esos datos de la cuenta; el formulario ya no los pide y, si alguien los envía, se ignoran.
 - **Estado físico:** tarjetas de Estructuras, Instalaciones eléctricas e Instalaciones sanitarias con lo verificado en campo.
 - **Los 6 pasos** con su ícono de avance y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos
   queda fuera.
-- El **especialista** llena el informe: fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones y
-  estudios adicionales.
+- El **especialista asignado** llena el informe: fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones
+  y estudios adicionales. Sin asignación, la pantalla dice «Pendiente de asignación por el gestor» y el servidor responde 409.
 
 ### Documentos PDF (todos con marca de agua y aviso en cada página)
 - **Copia literal:** encabezado en cada página, descripción y antecedente, asientos por rubro con el cuerpo en tipografía de texto registral
@@ -161,7 +163,7 @@ reemplaza asesoría legal.**
 
 ### Documento del expediente
 - «Abrir documento» muestra un PDF en otra pestaña, con la sesión del usuario (no hay enlace público).
-- **Partida ficticia:** copia literal simulada, con marca de agua «Documento simulado · Sin valor legal» en cada página.
+- **Partida ficticia o simulada:** copia literal simulada, con marca de agua «Documento simulado · Sin valor legal» en cada página.
 - **Partida transcrita:** transcripción referencial, con marca de agua «Transcripción referencial · No es publicidad registral».
 - El PDF imita la estructura de una copia literal (rubros, asientos, títulos), pero **no lleva logos, sellos, firmas, códigos de
   verificación ni QR**.
@@ -180,9 +182,11 @@ reemplaza asesoría legal.**
 - Solo PDF, hasta 5 MB. Se verifica que sea un PDF real. Desde ese momento el sistema deja de regenerar el documento. El archivo
   se guarda cifrado. No se deben subir documentos con datos reales de personas o predios.
 
-### Registrar una partida transcrita (`#/casos/nueva`)
-1. Datos de la partida: número, denominación, distrito, fecha de consulta, condición y completitud.
-2. **Pegar el texto** de la partida copiado de Conoce Aquí. «Leer asientos» lo divide en asientos y deduce el tipo de acto, la
+### Registrar una partida (`#/casos/nueva`)
+1. Datos de la partida: **origen** (obligatorio), precio referencial en soles (opcional), número, denominación, distrito, fecha de
+   consulta, condición y completitud. Una partida **transcrita de Conoce Aquí** no admite el prefijo `SIM-`; una **simulada para
+   demostración** lo exige (por ejemplo `SIM-99000404`).
+2. **Pegar el texto** de la partida copiado de Conoce Aquí, o los asientos inventados si es simulada. «Leer asientos» lo divide en asientos y deduce el tipo de acto, la
    cancelación, las fechas, el título y los titulares.
 3. Corregir lo que haga falta en los asientos.
 4. **Vista previa sin datos personales:**
@@ -191,18 +195,19 @@ reemplaza asesoría legal.**
    - El revisor puede **ocultar a mano** un nombre que no se detectó o indicar que algo detectado **no es una persona**.
    - Los nombres originales **nunca salen del navegador**.
 5. **Confirmar** que no quedan datos personales y registrar. El servidor vuelve a rechazar cualquier DNI, estado civil o domicilio.
-- La partida queda con su semáforo, checklist inicial, glosario, PDF de transcripción y la fuente («Conoce Aquí – SUNARP») con la
-  fecha de consulta.
+- La partida queda con su semáforo, checklist inicial, glosario, PDF y la fuente: «Conoce Aquí – SUNARP» con la fecha de consulta, o
+  «Partida simulada para demostración». El rechazo de datos personales se aplica a los dos orígenes.
 
-### Eliminar una partida transcrita
+### Eliminar una partida captada
 - Desde su página, con una confirmación dentro de la pantalla. Borra el expediente, el checklist, la evaluación y el documento.
-  Sirve, por ejemplo, para atender el pedido de un titular. Las partidas ficticias no se pueden eliminar.
+  Sirve, por ejemplo, para atender el pedido de un titular. Los diez casos de demostración no se pueden eliminar.
 
 ## 5 bis. Ciclo de cartera (v0.7)
 
-- **Captación:** al registrar una partida (`#/casos/nueva`) el revisor indica el código de cuenta del propietario. El caso nace
-  en borrador y sin autorización. El revisor no tiene un botón para autorizar por el propietario.
-- **Autorización:** en «Mis inmuebles» o en el detalle, el propietario usa «Autorizar evaluación» o «Retirar autorización». Si la
+- **Captación:** al registrar una partida (`#/casos/nueva`) el revisor indica el origen y el código de cuenta del propietario. El
+  caso nace en borrador y sin autorización: el indicador A se calcula ahora y el gestor solo podrá publicarlo con la autorización
+  del propietario. El revisor no tiene un botón para autorizar por el propietario.
+- **Autorización:** en «Mis inmuebles» o en el detalle, el propietario usa «Autorizar publicación» o «Retirar autorización». Si la
   retira de un caso publicado, el caso pasa a retirado.
 - **Publicación:** en el detalle, el gestor usa «Publicar» (solo con autorización vigente) o «Retirar». Ninguna de estas
   acciones cambia el color del indicador A; tras cada una la interfaz vuelve a consultar el caso.
@@ -212,8 +217,9 @@ reemplaza asesoría legal.**
   historial lo registra. Adjuntar un PDF no levanta un rojo por embargo, bloqueo o demanda.
 - **Contacto:** en un caso publicado, el comprador usa «Solicitar contacto» y elige un motivo (información general, consulta de
   documentos o consulta de inspección). No hay texto libre. Una segunda solicitud pendiente muestra un aviso y no se duplica.
-- **Inspección asignada:** en el panel de inspección, el gestor asigna una inspección solicitada o en curso a un especialista;
-  desde entonces solo ese especialista emite el informe.
+- **Inspección asignada:** en el panel de inspección, el gestor debe asignar la inspección solicitada o en curso a un especialista.
+  Solo ese especialista registra el avance y emite el informe. Mientras no haya asignación, la pantalla dice «Pendiente de
+  asignación por el gestor» y nadie puede emitir.
 - **Panel «Cartera» (`#/cartera`):** totales por color de A y por publicación, casos con faltantes, inspecciones con su
   asignación, bandeja de contactos pendientes con «Marcar atendida» y lista de casos filtrable por color, publicación y texto.
 - **Siguiente paso:** el detalle muestra para todos «Siguiente paso: verificación jurídica con abogado o notario, fuera del
@@ -233,8 +239,8 @@ tabla completa en el [LEEME](../LEEME.md)). Solo Santiago es un lote (D23).
 | `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Rojo | Embargo vigente ordenado por un juzgado civil; 4 planos |
 | `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Verde | Lote recién independizado, sin cargas; los planos no aplican |
 | `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Amarillo | Sucesión intestada con coherederos; servidumbre de paso; adobe; informe con riesgo |
-| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada |
-| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso |
+| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada, pendiente de asignación |
+| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso, asignada a `especialista-01` |
 | `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Amarillo | Reserva vial (carga técnica); plano de estructuras observado; informe favorable |
 
 Son partidas ficticias: personas, empresas, números y montos inventados. Las partidas transcritas se registran aparte y no se
@@ -245,9 +251,10 @@ guardan en el repositorio.
 - **Contraseñas** con hash BCrypt. **Sesión** con token firmado, que caduca. **API protegida** por rol en cada ruta.
 - **Archivos** cifrados en disco (AES-256-GCM).
 - **Entradas validadas** en el servidor, con mensajes claros y sin cambios parciales.
-- **Tiempo de respuesta** medido: 20 de 20 consultas en menos de 2 segundos (máximo 93 ms, solo la API).
-- **Solo uso local (I6):** el backend escucha en `127.0.0.1` y la base es H2 en archivo. No está preparado para un servidor
-  expuesto a la red; la estética comercial de la v0.6 no cambia el modelo de seguridad.
+- **Tiempo de respuesta** medido el 17 de octubre de 2026, antes de la v0.7: 20 de 20 consultas en menos de 2 segundos (máximo 93 ms,
+  solo la API).
+- **Solo uso local (I6):** el backend escucha en `127.0.0.1` y la base es H2 en archivo. En Docker, el frontend se publica en
+  `127.0.0.1` y el backend no publica puertos (sin ejecutar). No está preparado para un servidor expuesto a la red.
 - **Accesibilidad básica:** teclado y foco visible, enlace «Saltar al contenido», modales con foco atrapado y Escape, estados con
   ícono y texto (contraste AA), y texto alternativo en cada ilustración.
 
@@ -261,7 +268,8 @@ guardan en el repositorio.
 - No afirma el estado físico de una vivienda: eso solo lo dice el informe del especialista.
 - Sin pagos en línea, agenda de visitas, contratos, firmas, tours ni posventa (sección 1.7 del informe). El costo de la
   inspección es referencial y se coordina con la inmobiliaria.
-- Las ilustraciones son dibujos propios, no fotos de los inmuebles.
+- Las ilustraciones de los predios son dibujos propios, no fotos de los inmuebles. Las fotografías de ambiente están en
+  `public/img/` y ninguna muestra a una persona identificable.
 - La lámina 2D es un esquema referencial, no el plano aprobado. La ubicación del predio solo se enlaza al Visor BGR de SUNARP.
 
 ## 9. Pendiente

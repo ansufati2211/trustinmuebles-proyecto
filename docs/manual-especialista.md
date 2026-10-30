@@ -4,7 +4,8 @@ El especialista (ingeniero civil o arquitecto colegiado) es el único que emite 
 No edita partidas, planos ni el checklist, y su informe **no cambia el semáforo documental**.
 
 1. **Ingreso.** Con la cuenta `especialista-01`.
-2. **Elegir un expediente con inspección solicitada.** El comprador la pide desde el expediente. Sin solicitud no se puede emitir un informe.
+2. **Elegir un expediente con inspección asignada.** El comprador la pide desde el expediente y el gestor te la asigna. Sin solicitud
+   o sin asignación no se puede registrar el avance ni emitir el informe: la pantalla dice «Pendiente de asignación por el gestor».
 3. **Seguir el procedimiento de 6 pasos** que figura en el panel «Evaluación técnica por especialista»: revisión documental previa,
    verificación de los 4 planos, inspección física, observaciones y riesgos, informe, y alcance con estudios adicionales.
 4. **Llenar el informe** («Informe técnico»):
@@ -18,4 +19,5 @@ No edita partidas, planos ni el checklist, y su informe **no cambia el semáforo
    especializados queda fuera y debe indicarse en «Estudios adicionales».
 
 En la demostración, la cuenta `especialista-01` firma como Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001.
-Son datos ficticios y la interfaz y el PDF los rotulan así. El sistema no firma ni sella el informe.
+Son datos ficticios y la interfaz y el PDF los rotulan así. Los perfiles de especialista son ficticios y no firman informes reales.
+El sistema no firma ni sella el informe.

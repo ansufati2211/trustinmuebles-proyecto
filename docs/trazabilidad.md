@@ -44,7 +44,7 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 
 | Elemento | Dónde | Prueba | Estado |
 |---|---|---|---|
-| Registro y eliminación por el revisor | `ExpedienteService.registrar` y `eliminar` | `RegistrarPartidaTest` (6) | Probado |
+| Registro y eliminación por el revisor | `ExpedienteService.registrar` y `eliminar` | `RegistrarPartidaTest` (11) | Probado |
 | Sin DNI, estado civil ni domicilio en el servidor | `ProteccionDatos` | `entradasInvalidas`, `edicionProtegida` | Probado |
 | Limpieza de nombres en el navegador | `lib/disociar.ts`, `lib/leerPartida.ts` | 12 pruebas con vitest; recorrido de navegador | Probado. Es una heurística |
 | PDF de transcripción | `CopiaLiteralPdf.Procedencia` | `CopiaLiteralPdfTest.transcripcion` | Probado |
@@ -55,8 +55,8 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 |---|---|---|---|
 | Reglas RV-04, RV-05 y RV-06 | `MotorClasificacion` | `MotorPlanosTest` (7) | Probado. Reglas pendientes de revisión especializada |
 | Planos por especialidad y su guardado | `ExpedienteService`, `PlanoTecnico` | `PlanosApiTest` (6) | Probado |
-| Lámina 2D referencial | `LaminaPdf` | `LaminaPdfTest` (2), `laminaReferencial` | Probado |
-| Solicitud e informe técnico, solo del especialista | `inspeccion`, `SecurityConfig` | `InspeccionTest` (5) | Probado |
+| Lámina 2D referencial | `LaminaPdf` | `LaminaPdfTest` (6), `laminaReferencial` | Probado |
+| Solicitud e informe técnico, solo del especialista | `inspeccion`, `SecurityConfig` | `InspeccionTest` (6) | Probado |
 | El informe no cambia el color documental | `InspeccionTest.flujoCompleto` | Recorrido de navegador | Probado |
 
 ## Realismo de los documentos (v0.5)
@@ -121,7 +121,8 @@ pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se
 | Elemento | Backend | Interfaz | Pruebas | Estado |
 |---|---|---|---|---|
 | Roles GESTOR y PROPIETARIO; cuentas creadas si faltan, sin duplicar | `Rol`, `DemoUsuariosSeeder`, migración V6 | Panel «Cuentas de demostración» del login | `CuentasDemoTest` (3), `SeguridadTest` | Probado en el backend |
-| Captación con propietario; nace en borrador | `ExpedienteService.registrar` | `RegistrarPartida` (código del propietario) | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio` | Probado en el backend |
+| Captación con origen y propietario; nace en borrador con ambos orígenes | `ExpedienteService.registrar`, `OrigenCaptacion` | `RegistrarPartida` (origen, precio y código del propietario) | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.origenObligatorio`, `prefijoSegunElOrigen`, `simuladaRegistrada`; Vitest `fuentes.test.ts` | Probado |
+| Precio referencial opcional en la captación y el catálogo | `CasoDtos.RegistrarPartidaRequest`, `ExpedienteService.predio` | `RegistrarPartida`, `TarjetaPredio` | `RegistrarPartidaTest.precioEnElCatalogo`, `precioInvalido` | Probado en el backend |
 | Autorización solo del propietario de cada caso (I13) | `ExpedienteService.autorizar`, `SecurityConfig` | `PanelPublicacion`, `MisInmuebles` | `autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` | Probado |
 | Publicación solo del gestor y con autorización (I14, I10) | `ExpedienteService.publicar`, restricción de V6 | `PanelPublicacion` | `sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor`, `MigracionV6Test`; Vitest `permisos.test.ts` | Probado |
 | Visibilidad por rol (404) | `ExpedienteService.visible` | `RequireVista`, `navegacion` | `visibilidadPorRol`, `propietarioVeSoloLoSuyo`; Vitest `permisos.test.ts` | Probado |
@@ -129,7 +130,8 @@ pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se
 | Historial de solo adición (I12) | `HistorialEvaluacion`, migración V7 | `HistorialEvaluaciones` (línea de tiempo) | `HistorialEvaluacionTest` (9); Vitest `historial.test.ts` | Probado |
 | Subsanación y origen del recálculo; un PDF no levanta un rojo (I9) | `ExpedienteService.origenDeLaEdicion` | Edición y planos existentes | `planoFaltanteLlevaAVerde`, `planosNoBastanSiHayOtraAlerta`, `pdfNoLevantaElEmbargo` | Probado en el backend |
 | Contacto con motivos cerrados y sin duplicados (I11) | módulo `cartera`, migración V8 | `SolicitudContacto`, bandeja en `Cartera` | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado`; Vitest `contacto.test.ts` | Probado |
-| Asignación del especialista | `InspeccionService.asignar` | `PanelEvaluacionTecnica` (gestor) | `soloElAsignadoEmite`, `asignacionInvalida`, `sinAsignacionCualquieraEmite`; Vitest `permisos.test.ts` | Probado |
+| Asignación obligatoria del especialista | `InspeccionService.asignar` y `registrar`, migración V10 | `PanelEvaluacionTecnica` (gestor), `Cartera` | `soloElAsignadoEmite`, `asignacionInvalida`, `sinAsignacionNadieEmite`, `cargaConAsignacion`, `MigracionAsignacionTest`; Vitest `permisos.test.ts` | Probado |
+| Perfil ficticio de `especialista-01` | `DemoUsuariosSeeder`, migración V9 | `PanelEvaluacionTecnica` (iniciales y rótulo) | `identidadDelEspecialistaBloqueada`, `informesDeDemostracionFirmados`, `MigracionEspecialistaTest` | Probado en el backend |
 | Panel de cartera | `CarteraService.panel` | `Cartera` | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` (totales y filtros) | Probado |
 | Ciclo completo | Todos | — | `CicloCarteraTest` (base propia) | Probado en el backend |
 | Navegación por rol y guarda de rutas | — | `Navbar`, `RequireVista` | Vitest `permisos.test.ts` | Probado como función pura; sin prueba en navegador |
@@ -143,8 +145,8 @@ pantallas de la v0.7 **no se han probado en un navegador**: «Probado» abajo se
 | I3 El checklist (HR y PU) no cambia A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `HistorialEvaluacionTest.operacionesSinRecalculo`, `CicloCarteraTest` |
 | I4 Autorización en el servidor | `SeguridadTest`, `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol`, `CicloCarteraTest` |
 | I5 Límites de módulos | `ModularityTests` (9 módulos, con `cartera`) |
-| I6 Solo `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal`, `CicloCarteraTest` |
-| I7 (redefinida, D47) Límites legales en el pie y entorno demostrativo en el login | **Sin prueba automática.** Revisado leyendo `Footer.tsx` y `Login.tsx`; falta verificarlo en el navegador |
+| I6 Solo `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal`, `CicloCarteraTest`. Docker liga el puerto a `127.0.0.1`, sin ejecutar |
+| I7 (redefinida, D47) Límites legales en el pie y entorno demostrativo en el login | Pie: Vitest `limitesLegales.test.tsx`. Login: sin prueba automática. Falta verificar ambos en el navegador |
 | I8 El color solo cambia al recalcular | `publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`, `operacionesSinRecalculo`, `contactoSobreRojo`, `soloElAsignadoEmite` |
 | I9 Un plano o PDF no levanta un rojo registral | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
 | I10 Publicar y contactar no dependen del color | `publicarRojoNoCambiaElColor`, `contactoSobreRojo` |

@@ -25,10 +25,10 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 | Ver el informe técnico en PDF | `GET /casos/{codigo}/inspeccion/documento` | Sesión | 200, 401, 404 |
 | Ver la lámina o el PDF de un plano | `GET /casos/{codigo}/planos/{especialidad}/documento` | Sesión | 200, 401, 404 |
 | Subir el PDF real de un plano | `POST /casos/{codigo}/planos/{especialidad}/documento` | REVISOR | 201, 401, 403, 404, 413, 422 |
-| Registrar una partida transcrita | `POST /casos` | REVISOR | 201, 400, 401, 403, 409 |
-| Eliminar una partida transcrita | `DELETE /casos/{codigo}` | REVISOR | 204, 401, 403, 404, 409 |
+| Captar una partida transcrita o simulada | `POST /casos` | REVISOR | 201, 400, 401, 403, 409 |
+| Eliminar una partida captada | `DELETE /casos/{codigo}` | REVISOR | 204, 401, 403, 404, 409 |
 | Glosario cerrado | `GET /glosario` | Sesión | 200, 401 |
-| Autorizar la evaluación y publicación (v0.7) | `PUT /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
+| Autorizar la publicación (v0.7) | `PUT /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
 | Retirar la autorización (v0.7) | `DELETE /casos/{codigo}/autorizacion` | **PROPIETARIO** del caso | 200, 401, 403, 404 |
 | Publicar un caso (v0.7) | `POST /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409, 422 |
 | Retirar la publicación (v0.7) | `DELETE /casos/{codigo}/publicacion` | **GESTOR** | 200, 401, 403, 404, 409 |
@@ -74,7 +74,7 @@ Cada elemento trae, además de lo anterior, `resultadoTecnico`, `riesgoFisicoDet
 }
 ```
 
-El precio es informativo y no interviene en el semáforo. Las partidas transcritas no tienen precio (`null`). El detalle
+El precio es informativo y no interviene en el semáforo. En una partida captada es opcional (`null` si no se indicó). El detalle
 (`GET /casos/{codigo}`) también trae el bloque `predio`.
 
 No existe ninguna ruta para fijar el color del semáforo (RN-06), para registrar cuentas ni para leer claves de respuesta.
@@ -227,13 +227,14 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 | 422 | El archivo no es un PDF válido, o la cuenta del especialista no tiene datos profesionales para firmar |
 | 429 | Demasiados intentos de login |
 
-## Partidas transcritas (solo REVISOR)
+## Captación de partidas (solo REVISOR)
 
-- `POST /api/v1/casos` registra una partida transcrita. Cuerpo: `numero` (ocho dígitos, con letra inicial opcional; no admite `SIM-`),
-  `denominacion`, `contexto`, `fechaConsulta`, los datos del expediente, `asientos` y `confirmaSinDatosPersonales: true`.
-  Responde 201 con el detalle, 409 si ya existe, 400 si falta la confirmación, el número es inválido o el texto trae un DNI,
-  el estado civil o un domicilio.
-- `DELETE /api/v1/casos/{codigo}` borra una partida transcrita (204). Una partida ficticia da 409.
+- `POST /api/v1/casos` capta una partida. Cuerpo: `origen` (obligatorio: `TRANSCRITA_CONOCE_AQUI` o `SIMULADA_DEMOSTRACION`),
+  `numero` (transcrita: ocho dígitos, con letra inicial opcional, sin `SIM-`; simulada: `SIM-` y ocho dígitos), `precioReferencial`
+  (opcional, positivo, hasta dos decimales, en soles), `denominacion`, `contexto`, `fechaConsulta`, los datos del expediente,
+  `asientos` y `confirmaSinDatosPersonales: true`. Responde 201 con el detalle, 409 si ya existe, 400 si falta el origen o la
+  confirmación, el número no corresponde al origen, el precio es inválido o el texto trae un DNI, el estado civil o un domicilio.
+- `DELETE /api/v1/casos/{codigo}` borra una partida captada (204). Un caso de demostración da 409.
 - `ResumenCaso` y `DetalleCaso` incluyen `origen` (`SINTETICO` o `TRANSCRITA`), `fuente` y `fechaConsulta`.
 
 ## Planos e inspección técnica
@@ -251,7 +252,8 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 - `PUT /casos/{c}/inspeccion` (solo ESPECIALISTA): guarda el avance (`EN_INSPECCION`) o el informe (`EMITIDO`). Cuerpo: `estado`,
   `resultado`, `fechaInspeccion`, `verifArquitectura`, `verifEstructuras`, `verifElectricas`, `verifSanitarias`,
   `observaciones`, `conclusiones` y `estudiosAdicionales`. **No lleva** nombre, especialidad ni colegiatura (M8): el servidor
-  los toma de la cuenta autenticada y, si el cliente los envía, se ignoran. 409 si no hay solicitud; 400 si un informe emitido
+  los toma de la cuenta autenticada y, si el cliente los envía, se ignoran. 409 si no hay solicitud o el gestor no asignó un
+  especialista («El gestor debe asignar un especialista»); 403 si está asignada a otro; 400 si un informe emitido
   no trae resultado, fecha (no futura), las 4 verificaciones y conclusiones.
 - `evaluacionTecnica` trae, además: `profesional`, `profesionalEspecialidad` y `colegiatura` (de la cuenta), `solicitanteCodigo`,
   `riesgoFisicoDetectado` y `servicio`, con las condiciones del servicio aunque no esté solicitado:
@@ -322,8 +324,8 @@ El comprador no tiene una ruta para consultar después sus solicitudes (D46).
 
 `PUT /casos/{codigo}/inspeccion/asignacion` (GESTOR), cuerpo `{"especialistaCodigo": "especialista-02"}`: 200 con la
 `evaluacionTecnica` y `especialistaAsignadoCodigo`. 400 si la cuenta no es un especialista con datos profesionales o falta el
-campo; 403 otro rol; 404 caso inexistente; 409 sin solicitud o informe ya emitido. Con asignación, `PUT /casos/{codigo}/inspeccion`
-da 403 a cualquier otro especialista.
+campo; 403 otro rol; 404 caso inexistente; 409 sin solicitud o informe ya emitido. `PUT /casos/{codigo}/inspeccion` da 409 sin
+asignación y 403 a cualquier otro especialista.
 
 ### Panel de cartera
 
