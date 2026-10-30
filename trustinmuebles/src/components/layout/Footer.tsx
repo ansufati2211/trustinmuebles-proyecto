@@ -2,6 +2,7 @@ import { Link } from "react-router";
 import { ArrowUpRight, ArrowUp, MapPin, ShieldCheck, FileCheck2, HardHat } from "lucide-react";
 import { LogoMark } from "@/components/layout/Logo";
 import { CONOCE_AQUI, VISOR_BGR, abrirExterno } from "@/lib/fuentes";
+import { LIMITES_LEGALES } from "@/lib/limitesLegales";
 
 const enlaceInterno =
   "group inline-flex items-center gap-1.5 text-sm font-medium text-gray-400 hover:text-emerald-300 transition-colors duration-200";
@@ -141,6 +142,14 @@ export function Footer() {
             </div>
           </div>
         </div>
+
+        <section aria-label="Límites legales" className="pt-8">
+          <ul className="flex flex-wrap gap-x-6 gap-y-2 text-xs font-medium leading-relaxed text-gray-300">
+            {LIMITES_LEGALES.map((limite) => (
+              <li key={limite}>{limite}</li>
+            ))}
+          </ul>
+        </section>
       </div>
     </footer>
   );
