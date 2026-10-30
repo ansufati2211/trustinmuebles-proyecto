@@ -284,7 +284,7 @@ export default function Landing() {
 
               <div className="tilt-3d relative rounded-[2rem] overflow-hidden border-4 border-white shadow-[0_35px_80px_-20px_rgba(2,44,34,0.35)] bg-foreground">
                 <img
-                  src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=1400&q=85"
+                  src="/img/vivienda-moderna-piscina.jpg"
                   alt="Vivienda urbana moderna en evaluación documental y técnica"
                   className="w-full h-[400px] sm:h-[460px] lg:h-[560px] object-cover"
                 />

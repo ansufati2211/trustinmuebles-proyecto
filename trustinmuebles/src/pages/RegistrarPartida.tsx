@@ -188,7 +188,7 @@ export default function RegistrarPartida() {
     <div className="flex-1 bg-superficie pb-24">
       <section className="relative isolate overflow-hidden bg-foreground">
         <img
-          src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=2000&q=80"
+          src="/img/firma-documentos.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 -z-20 h-full w-full object-cover"

@@ -21,8 +21,7 @@ const CUENTAS_DEMO: Cuenta[] = [
   { codigo: "propietario-02", rol: "Propietario", desc: "Mis inmuebles", Icono: Home },
 ];
 
-const IMAGEN_FONDO =
-  "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1800&q=80";
+const IMAGEN_FONDO = "/img/vivienda-fachada-nocturna.jpg";
 
 const retraso = (ms: number): CSSProperties => ({ "--d": `${ms}ms` } as CSSProperties);
 

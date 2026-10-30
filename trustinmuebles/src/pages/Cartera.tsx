@@ -112,7 +112,7 @@ export default function Cartera() {
     <div className="flex w-full flex-col">
       <section className="relative isolate overflow-hidden bg-foreground">
         <img
-          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80"
+          src="/img/edificios-oficinas.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 -z-20 h-full w-full object-cover"
