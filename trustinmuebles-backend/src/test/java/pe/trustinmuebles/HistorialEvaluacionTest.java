@@ -48,6 +48,7 @@ class HistorialEvaluacionTest extends BaseApiTest {
     /** Vivienda transcrita con arquitectura y estructuras, sin II.EE. ni II.SS.: las reglas la dejan en AMARILLO (RV-04). */
     ObjectNode vivienda(String numero) {
         ObjectNode p = json.createObjectNode();
+        p.put("origen", "TRANSCRITA_CONOCE_AQUI");
         p.put("numero", numero);
         p.put("denominacion", "Mz. J Lote 4 · Hab. Urb. Los Sauces · Ica");
         p.put("contexto", "Ica, Ica");

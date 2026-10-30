@@ -16,6 +16,8 @@ export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
 /** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
 export type Origen = "SINTETICO" | "TRANSCRITA";
+/** Origen que el revisor elige al captar una partida (ETP-1). */
+export type OrigenCaptacion = "TRANSCRITA_CONOCE_AQUI" | "SIMULADA_DEMOSTRACION";
 export type Completitud = "COMPLETA" | "INCOMPLETA" | "DESCONOCIDA";
 export type EstadoItem = "PENDIENTE" | "REVISADO" | "OBSERVADO";
 export type TipoActo =
