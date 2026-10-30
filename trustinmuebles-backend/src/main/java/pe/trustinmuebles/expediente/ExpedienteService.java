@@ -567,7 +567,7 @@ class ExpedienteService {
     // ------------------------------------------------------ captación y publicación
 
     /**
-     * Etapa 1: el propietario autoriza la evaluación y publicación de su propio caso (I13). Es su única escritura. Si
+     * Etapa 2: el propietario autoriza la publicación de su propio caso (I13). Es su única escritura. Si
      * ya estaba autorizado se conserva la fecha original. No recalcula ni cambia el color del indicador A (I8).
      */
     PublicacionDto autorizar(String codigo) {

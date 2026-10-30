@@ -249,7 +249,7 @@ export default function RegistrarPartida() {
 
             <Campo
               etiqueta="Código de cuenta del propietario"
-              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador hasta que el propietario lo autorice desde su cuenta."
+              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador: el indicador A se calcula ahora y el gestor solo podrá publicarlo con la autorización del propietario."
             >
               {(p) => (
                 <>

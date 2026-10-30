@@ -60,7 +60,7 @@ class CasoLote {
     @Column(name = "propietario_codigo")
     private String propietarioCodigo;
 
-    /** Cuándo autorizó el propietario la evaluación y publicación. Null si no hay autorización vigente. */
+    /** Cuándo autorizó el propietario la publicación. Null si no hay autorización vigente. */
     @Column(name = "autorizacion_fecha")
     private java.time.Instant autorizacionFecha;
 
