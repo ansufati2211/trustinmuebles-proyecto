@@ -233,7 +233,7 @@ export default function Cartera() {
                           <IndicadorB estado={i.estado} tamano="sm" conPrefijo={false} />
                           {i.asignada
                             ? <Badge tono="marca" icono={UserCheck} tamano="sm">{i.especialistaAsignadoCodigo}</Badge>
-                            : <Badge tono="gris" icono={UserCheck} tamano="sm">Sin asignar</Badge>}
+                            : <Badge tono="gris" icono={UserCheck} tamano="sm">Pendiente de asignación por el gestor</Badge>}
                         </div>
                       </li>
                     ))}

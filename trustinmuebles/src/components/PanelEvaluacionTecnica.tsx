@@ -113,7 +113,9 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
         <span className="grid size-14 place-items-center rounded-2xl bg-muted text-tinta-2">
           <HardHat className="size-7" aria-hidden="true" />
         </span>
-        <p className="text-sm font-semibold leading-relaxed text-tinta-2">Especialista por asignar: la inmobiliaria coordina la visita.</p>
+        <p className="text-sm font-semibold leading-relaxed text-tinta-2">
+          {t.especialistaAsignadoCodigo ? "Especialista asignado: la inmobiliaria coordina la visita." : "Pendiente de asignación por el gestor"}
+        </p>
       </div>
     );
   }
@@ -480,7 +482,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
         <p className="text-sm text-foreground">
           {t.especialistaAsignadoCodigo
             ? <>Especialista asignado: <span className="font-bold">{t.especialistaAsignadoCodigo}</span>. Solo esa cuenta emite el informe.</>
-            : <span className="text-tinta-2">Sin especialista asignado: cualquier especialista habilitado puede emitir el informe.</span>}
+            : <span className="text-tinta-2">Pendiente de asignación por el gestor. Sin asignación nadie puede emitir el informe.</span>}
         </p>
       )}
       {puedeAsignarEspecialista(usuario?.rol, t.estado) && <AsignacionEspecialista detalle={detalle} alCambiar={alCambiar} />}
@@ -527,7 +529,11 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
         && <FormularioInforme key={detalle.codigo} detalle={detalle} alCambiar={alCambiar} />}
       {usuario?.rol === "ESPECIALISTA" && t.estado !== "NO_SOLICITADA"
         && !puedeEmitirInforme(usuario.rol, t.estado, t.especialistaAsignadoCodigo, usuario.codigoCuenta) && (
-        <p className="text-sm text-tinta-2">Esta inspección está asignada a otro especialista: solo esa cuenta puede emitir el informe.</p>
+        <p className="text-sm text-tinta-2">
+          {t.especialistaAsignadoCodigo
+            ? "Esta inspección está asignada a otro especialista: solo esa cuenta puede emitir el informe."
+            : "Pendiente de asignación por el gestor: aún no puedes registrar el avance ni emitir el informe."}
+        </p>
       )}
       {usuario?.rol === "ESPECIALISTA" && t.estado === "NO_SOLICITADA" && (
         <p className="text-sm text-tinta-2">Aún no hay una solicitud: el informe se puede llenar cuando el comprador la pida.</p>

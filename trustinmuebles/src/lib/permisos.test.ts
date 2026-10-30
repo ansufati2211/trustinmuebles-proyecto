@@ -18,8 +18,8 @@ describe("visibilidad por rol", () => {
   });
 
   it("solo el especialista llena el informe, y solo con una solicitud", () => {
-    expect(puedeEmitirInforme("ESPECIALISTA", "SOLICITADA")).toBe(true);
-    expect(puedeEmitirInforme("ESPECIALISTA", "NO_SOLICITADA")).toBe(false);
+    expect(puedeEmitirInforme("ESPECIALISTA", "SOLICITADA", "especialista-01", "especialista-01")).toBe(true);
+    expect(puedeEmitirInforme("ESPECIALISTA", "NO_SOLICITADA", "especialista-01", "especialista-01")).toBe(false);
     expect(puedeEmitirInforme("COMPRADOR", "SOLICITADA")).toBe(false);
     expect(puedeEmitirInforme("REVISOR", "EN_INSPECCION")).toBe(false);
   });
@@ -136,10 +136,10 @@ describe("contacto, asignación e historial (v0.7)", () => {
     expect(puedeAsignarEspecialista("ESPECIALISTA", "SOLICITADA")).toBe(false);
   });
 
-  it("con asignación solo emite el especialista asignado; sin ella, cualquiera", () => {
+  it("con asignación solo emite el especialista asignado; sin ella, nadie", () => {
     expect(puedeEmitirInforme("ESPECIALISTA", "SOLICITADA", "especialista-02", "especialista-02")).toBe(true);
     expect(puedeEmitirInforme("ESPECIALISTA", "SOLICITADA", "especialista-02", "especialista-01")).toBe(false);
-    expect(puedeEmitirInforme("ESPECIALISTA", "EN_INSPECCION", null, "especialista-01")).toBe(true);
+    expect(puedeEmitirInforme("ESPECIALISTA", "EN_INSPECCION", null, "especialista-01")).toBe(false);
     expect(puedeEmitirInforme("GESTOR", "SOLICITADA", null, "gestor-01")).toBe(false);
   });
 

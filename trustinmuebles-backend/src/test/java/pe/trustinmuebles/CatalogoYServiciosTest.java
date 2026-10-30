@@ -35,6 +35,13 @@ class CatalogoYServiciosTest extends BaseApiTest {
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(cuerpo)));
     }
 
+    /** El gestor asigna a especialista-01: sin asignación nadie emite. */
+    void asignar(String codigo) throws Exception {
+        mvc.perform(put("/api/v1/casos/" + codigo + "/inspeccion/asignacion").header("Authorization", gestor())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"especialistaCodigo\":\"especialista-01\"}"))
+                .andExpect(status().isOk());
+    }
+
     ObjectNode informe(String resultado) {
         ObjectNode i = json.createObjectNode();
         i.put("estado", "EMITIDO");
@@ -141,6 +148,7 @@ class CatalogoYServiciosTest extends BaseApiTest {
     void identidadDelEspecialistaBloqueada() throws Exception {
         try {
             solicitar(SANTIAGO, comprador()).andExpect(status().isCreated());
+            asignar(SANTIAGO);
             ObjectNode i = informe("CON_OBSERVACIONES");
             i.put("profesional", "Arq. Persona Inventada");
             i.put("colegiatura", "CAP 000001");
@@ -177,6 +185,7 @@ class CatalogoYServiciosTest extends BaseApiTest {
         try {
             JsonNode antes = leer(SANTIAGO).get("evaluacion");
             solicitar(SANTIAGO, comprador()).andExpect(status().isCreated());
+            asignar(SANTIAGO);
             emitir(SANTIAGO, especialista(), informe("CON_RIESGO")).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacionTecnica.riesgoFisicoDetectado").value(true));
             JsonNode despues = leer(SANTIAGO).get("evaluacion");
@@ -275,6 +284,7 @@ class CatalogoYServiciosTest extends BaseApiTest {
     void filtroDeRiesgoSeActualiza() throws Exception {
         try {
             solicitar(SANTIAGO, comprador()).andExpect(status().isCreated());
+            asignar(SANTIAGO);
             emitir(SANTIAGO, especialista(), informe("CON_RIESGO")).andExpect(status().isOk());
             assertThat(codigos("?riesgoFisicoDetectado=true")).containsExactly(SANTIAGO, SALAS);
             assertThat(codigos("?riesgoFisicoDetectado=true&estado=VERDE")).containsExactly(SANTIAGO);

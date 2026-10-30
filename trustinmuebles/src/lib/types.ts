@@ -69,7 +69,7 @@ export interface EvaluacionTecnica {
   solicitanteCodigo: string | null;
   riesgoFisicoDetectado: boolean;
   servicio: ServicioInspeccion | null;
-  /** v0.7: especialista asignado por el gestor. Si existe, solo él emite el informe. */
+  /** v0.7: especialista asignado por el gestor. Solo él emite el informe; sin asignación, nadie. */
   especialistaAsignadoCodigo?: string | null;
 }
 
