@@ -9,13 +9,15 @@ Fecha: 30 de octubre de 2026. **No se hizo merge ni push.** `main` y `origin/mai
 | Hash de `main` al inicio | `9b155a5a4797f7d782d10edb9d82cf026feed0ff` |
 | Tag de respaldo | `respaldo-antes-mejoras-v0.7`, local, sobre `9b155a5` |
 | Respaldo de `trustinmuebles-backend/data/` | No hubo qué copiar: la carpeta no existía |
-| Bloques | 8 hechos, 1 hecho en parte (B10), 1 saltado (B9), 0 fallidos, 0 stashes |
+| Bloques | 10 hechos (B9 y B10 se completaron en C2 y C3), 3 correcciones (C1 a C3), 0 fallidos, 0 stashes |
 
 | Prueba | Línea base | Final | Diferencia |
 |---|---|---|---|
-| Backend (`mvnw test`) | 140 de 140 | 148 de 148 | +8 |
-| Frontend (`pnpm test`) | 60 de 60, 9 archivos | 64 de 64, 11 archivos | +4 |
-| Compilación (`pnpm build`) | Correcta | Correcta, JS principal de 581,01 kB | |
+| Backend (`mvnw test`) | 140 de 140 | 149 de 149 | +9 |
+| Frontend (`pnpm test`) | 60 de 60, 9 archivos | 66 de 66, 11 archivos | +6 |
+| Compilación (`pnpm build`) | Correcta | Correcta, JS principal de 580,96 kB | |
+| Recorrido de navegador | No existía para la v0.7 | 15 de 15 pasos | |
+| NF02 | 17 de octubre: 20 de 20 | 20 de 20, máximo 54,3 ms, solo la API | |
 
 ## Bloques
 
@@ -29,8 +31,11 @@ Fecha: 30 de octubre de 2026. **No se hizo merge ni push.** `main` y `origin/mai
 | B6 Origen y precio | Hecho | `f415ac0` | Sin migración: el esquema ya lo admitía (D50) |
 | B7 Asignación obligatoria | Hecho | `dc813df` | Migración V10 (D51) |
 | B8 Fotos locales | Hecho | `c9784f4` | 5 fotos revisadas una a una; ninguna muestra un rostro. La sexta era el avatar, retirado en B2 |
-| B9 Recorrido v0.7 | **Saltado** | — | `puppeteer-core` no está instalado. Sin recorrido, capturas ni NF02 nuevo |
-| B10 Documentación | **Hecho en parte** | `aa00738` | Faltan datos del informe. Leer «Lo que queda pendiente» |
+| B9 Recorrido v0.7 | Hecho en C2 | `36d3ba5` | Saltado en la primera sesión; ver C2 |
+| B10 Documentación | Hecho, completado en C3 | `aa00738`, `7c1dc20` | |
+| C1 Correcciones | Hecho | `1982f7e` | Pie, origen simulado en el historial (migración V11) y Cartera con fondo de tokens en vez de la foto |
+| C2 Recorrido y NF02 | Hecho | `36d3ba5` | 15 de 15 en la segunda ejecución; ver «Recorrido» |
+| C3 Correspondencia con el informe | Hecho | `7c1dc20` | RF01–RF12 y CP01–CP17 con las definiciones del informe |
 
 ## Riesgo al fusionar
 
@@ -45,20 +50,27 @@ Si esos datos importan, cópialos fuera del repositorio antes. También se conse
 **Esos archivos siguen en el historial de Git.** B4 no los saca de ahí; hacerlo exigiría reescribir el historial, lo que esta tarea
 prohibía. Qué contienen sigue sin verificarse.
 
+## Recorrido
+
+**Resultado: 15 de 15 pasos correctos**, sin errores de consola. Tabla en `docs/pruebas/RESULTADO-recorrido-v07.md`, capturas en
+`docs/pruebas/capturas-v07/`.
+
+La primera ejecución dio **12 de 15**. Los tres fallos venían del script, no del sistema, y la aplicación no se cambió entre ejecuciones:
+
+- **Paso 9:** la comparación no normalizaba el espacio de no separación del precio.
+- **Paso 12:** el script eligió las 4 verificaciones en el mismo instante y React conservó solo la última.
+- **Paso 13:** consecuencia del paso 12.
+
 ## Lo que queda pendiente
 
-**Nada de la interfaz se ha visto en un navegador.** Los cambios de B1, B2, B5, B6, B7 y B8 están cubiertos por compilación y pruebas
-de funciones puras, más la prueba que renderiza el pie. El formulario nuevo de «Registrar partida» no se ha usado nunca en pantalla.
-
-**B9 sigue por hacer.** `puppeteer-core` se instala fuera del repositorio, como dice la cabecera de `recorrido-v06.mjs`. NF02 no
-depende de esa herramienta, pero se omitió por estar dentro del bloque; su último dato, del 17 de octubre, es anterior a la v0.7.
-
-**El texto del informe no está en el repositorio,** así que la sección 16 del modelo y `docs/PARA-INFORME.md` quedan incompletos:
-
-- **RF01 a RF12:** no están definidos. Las tablas listan las funciones con su ETP, prueba y estado, y la columna RF dice «Por asignar».
-- **CP08 a CP17:** no están definidos. CP01 a CP07 se asumieron iguales a CP-01 a CP-07 de `docs/pruebas/registro.md`.
-- **RN y CUN:** usan exactamente la correspondencia indicada en la tarea.
-- **Anexo 26:** no tiene capturas de la v0.7.
+- **`trustinmuebles-backend/data/` sigue en disco con datos del primer recorrido.** Sus cuentas usan una contraseña temporal, así que
+  el backend no aceptará la tuya. **Apágalo y borra esa carpeta antes de arrancarlo.** Intenté borrarla y el permiso se denegó, por lo
+  que no busqué otra vía. Está ignorada por Git. La segunda ejecución usó una base nueva fuera del repositorio.
+- **CP13 parcial:** respaldo y restauración sin ejecutar, y sin prueba en otro equipo.
+- **CP15 y CP16 pendientes.** CP16 es la inspección presencial real, fuera del software.
+- **Sin cubrir por el recorrido:** lectores de pantalla, otros navegadores, móvil y Docker. El intento del propietario de editar se probó
+  solo en el backend (CP11).
+- **Contenido:** reglas, glosario y casos siguen pendientes de revisión especializada.
 
 ## Pruebas cambiadas
 
@@ -88,7 +100,7 @@ depende de esa herramienta, pero se omitió por estar dentro del bloque; su últ
 | B7 | `InspeccionTest.flujoCompleto`, `validaElInforme` | El gestor asigna antes de emitir |
 | B7 | `CatalogoYServiciosTest.identidadDelEspecialistaBloqueada`, `informeConRiesgoNoCambiaElColor`, `filtroDeRiesgoSeActualiza` | El gestor asigna antes de emitir |
 
-**Pruebas nuevas (12)**
+**Pruebas nuevas (15)**
 
 | Bloque | Pruebas |
 |---|---|
@@ -96,6 +108,7 @@ depende de esa herramienta, pero se omitió por estar dentro del bloque; su últ
 | B2 | `MigracionEspecialistaTest.reemplazaElPerfilAnterior` |
 | B6 | `RegistrarPartidaTest`: `origenObligatorio`, `prefijoSegunElOrigen`, `simuladaRegistrada`, `precioEnElCatalogo`, `precioInvalido`; `fuentes.test.ts` (2) |
 | B7 | `CarteraTest.cargaConAsignacion`, `MigracionAsignacionTest.asignaLaInspeccionEnCurso` |
+| C1 | `RegistrarPartidaTest.historialDeSimulada`; `historial.test.ts`, «una partida simulada no se rotula como transcrita»; `limitesLegales.test.tsx`, «el pie atribuye la inspección» |
 
 No se borró ni desactivó ninguna prueba: no hay `@Disabled`, `.skip` ni `.only` nuevos.
 
@@ -106,7 +119,10 @@ No se borró ni desactivó ninguna prueba: no hay `@Disabled`, `.skip` ni `.only
 | `V9__especialista_ficticio.sql` | Cambia el perfil de `especialista-01` y los informes firmados con los datos anteriores | `MigracionEspecialistaTest` |
 | `V10__asignacion_obligatoria.sql` | Asigna `especialista-01` a la inspección en curso de `SIM-11098467` | `MigracionAsignacionTest` |
 
-Se probaron sobre bases H2 en memoria, no sobre una base real en `data/`. V1 a V8 no se modificaron.
+| `V11__historial_partida_simulada.sql` | Agrega `PARTIDA_SIMULADA` a la lista cerrada del historial, sin tocar filas guardadas | `RegistrarPartidaTest.historialDeSimulada` |
+
+V9 a V11 corrieron en una base nueva durante el recorrido. V9 y V10 también se probaron con datos anteriores, en bases en memoria; ninguna
+sobre una base real ya poblada. V1 a V8 no se modificaron.
 
 ## Decisiones tomadas sin consultar
 
@@ -119,20 +135,25 @@ Se probaron sobre bases H2 en memoria, no sobre una base real en `data/`. V1 a V
   demostración siguen protegidos.
 - **Número en el formulario.** Se envía tal como se escribe, sin quitar `SIM-`. Antes la interfaz lo quitaba en silencio, y eso habría
   hecho pasar un número simulado por transcrito.
+- **Corrección del script.** Tras la primera ejecución del recorrido corregí el script, no la aplicación, y repetí sobre una base nueva.
+- **Base del segundo recorrido.** Pediste usar `trustinmuebles-backend/data/` nueva; como no se pudo borrar, la segunda ejecución usó una
+  carpeta nueva fuera del repositorio, con `SPRING_DATASOURCE_URL` y `APP_STORAGE_PATH`.
+- **Rótulo del historial.** `PARTIDA_SIMULADA` se aplica a las simuladas captadas, al registrarlas y al corregir sus asientos. Los diez casos
+  de demostración siguen usando el rótulo anterior.
+- **Foto de Cartera.** Se eliminó `edificios-oficinas.jpg`, creada en B8, y quedó el fondo de tokens.
 - **Manuales y API.** También se actualizaron `docs/api.md`, `manual-especialista.md` y `manual-revisor.md`: el cambio de contrato los
   dejaba incorrectos.
 
 ## Observaciones sin cambiar
 
-- **El pie contradice el aviso nuevo.** `Footer.tsx` sigue diciendo «Inspección física independiente por Ing. / Arq. colegiado», junto al
-  texto que dice que los especialistas son simulados. Queda fuera de B1.
-- **Historial de una partida simulada.** Nace con el rótulo «Partida transcrita incorporada», porque no se amplió esa lista cerrada (D50).
 - **Informes de demostración emitidos.** No tienen asignación, así que ya no se pueden modificar (D51).
-- **Puerto 8080 ocupado.** Un Apache (`httpd`, PID 9472) ajeno al proyecto escucha en `0.0.0.0:8080`, el puerto del backend. No se tocó.
-  Hay que detenerlo o cambiar `server.port` antes de arrancar el backend para el recorrido o para NF02.
-- **Foto `edificios-oficinas.jpg`.** Se ve el logotipo de un banco en una torre, pequeño. No incumple la condición sobre personas.
+- **Puerto 8080.** En la primera sesión lo ocupaba un Apache (`httpd`) ajeno al proyecto; en esta estaba libre. Si vuelve, el backend no
+  podrá arrancar en ese puerto.
+- **Texto «colegiado».** La landing y el panel técnico siguen hablando de un profesional o ingeniero colegiado. C1 solo cubría el pie.
+- **Dependencia con aviso.** `pnpm` avisa que `react-router` pide React 19.2.7 y hay 19.2.4. Es anterior a estos cambios.
 - **Comportamiento del workflow.** Con B3 fusionado, un push a `main` ya no publica en GHCR. Mientras no se fusione, el `docker.yml` de
   `main` sigue reaccionando a cada push.
+
 
 ## Reglas de seguridad
 
@@ -140,17 +161,21 @@ Se probaron sobre bases H2 en memoria, no sobre una base real en `data/`. V1 a V
 |---|---|
 | R1 | Sin commit, merge, rebase, reset ni push sobre `main`; sin `--force`, `git clean` ni borrado de ramas o tags |
 | R2 | Todo el trabajo está en `mejoras-v0.7` |
-| R3 | Solo se agregaron V9 y V10 |
+| R3 | Solo se agregaron V9, V10 y V11 |
 | R4 | `git diff` vacío para `MotorClasificacion`, `contenido/` y C1–C4 |
 | R5 | El total de pruebas subió en backend y frontend |
-| R6 | `pom.xml` y `pnpm-lock.yaml` sin cambios. `pnpm@9` se usó con `npx`, sin agregarlo al proyecto |
-| R7 | Solo se borró `components/base/Footer.tsx`, indicado en B1 |
+| R6 | `pom.xml` sin cambios. Única dependencia nueva: `puppeteer-core`, como devDependency, con la excepción autorizada. El lockfile solo agrega líneas |
+| R7 | Solo se borraron `components/base/Footer.tsx`, indicado en B1, y `edificios-oficinas.jpg`, creada en B8 |
 
 ## Commits
 
-`git log --oneline main..mejoras-v0.7`, antes del commit de este reporte:
+`git log --oneline main..mejoras-v0.7`, antes del commit de esta actualización:
 
 ```text
+7c1dc20 C3: correspondencia con RF y CP del informe, capturas y NF02
+36d3ba5 C2: recorrido v0.7 de 15 pasos con capturas y medicion NF02
+1982f7e C1: pie con especialista de la inmobiliaria, origen simulado en el historial y fondo sin marcas
+fab4462 docs: reporte de la rama mejoras-v0.7
 aa00738 B10: documentacion de la v0.7, correspondencia con el informe y material para Word
 c9784f4 B8: fotografias locales en public/img
 dc813df B7: asignacion obligatoria del especialista con migracion V10
