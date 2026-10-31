@@ -121,7 +121,7 @@ const FAQS = [
   { p: "¿Trustinmuebles es una entidad del gobierno?", r: "No. Es una plataforma tecnológica privada (PropTech) desarrollada como un MVP académico para transparentar los documentos de una cartera inmobiliaria en Ica." },
   { p: "¿El semáforo verde garantiza que la compra es segura?", r: "No. El semáforo verde indica únicamente que no se detectaron alertas en los campos evaluados del expediente. Nunca certifica saneamiento ni reemplaza a un abogado." },
   { p: "¿Qué pasa cuando hago clic en «Expedientes»?", r: "El sistema te pedirá iniciar sesión con una cuenta autorizada (por ejemplo comprador-01, revisor-01 o especialista-01) para acceder a los 10 expedientes del catálogo." },
-  { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un ingeniero civil o arquitecto colegiado verifica en campo las 4 especialidades y emite un informe técnico independiente que no altera el color del semáforo documental." },
+  { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un especialista de la inmobiliaria verifica en campo las 4 especialidades y emite un informe técnico que no altera el color del semáforo documental. Los perfiles de esta demostración son ficticios." },
 ];
 
 function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; respuesta: string }) {
@@ -278,7 +278,7 @@ export default function Landing() {
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-emerald-300">Indicador B · presencial</p>
-                  <p className="text-sm font-bold">Ingeniero o arquitecto colegiado</p>
+                  <p className="text-sm font-bold">Especialista de la inmobiliaria · perfil ficticio</p>
                 </div>
               </div>
 
@@ -427,7 +427,7 @@ export default function Landing() {
                 <Badge className="bg-white/15 text-emerald-300 mb-5 px-3 py-1 text-xs border-0">Indicador B · presencial · a pedido</Badge>
                 <h3 className="text-2xl lg:text-3xl font-extrabold tracking-tight mb-3">Evaluación técnica en campo</h3>
                 <p className="text-gray-300 mb-7 leading-relaxed">
-                  Un ingeniero civil (CIP) o arquitecto (CAP) visita el predio y sigue un protocolo estandarizado de 6 pasos.
+                  Un especialista de la inmobiliaria visita el predio y sigue un protocolo estandarizado de 6 pasos. Los perfiles de esta demostración son ficticios.
                 </p>
                 <ol className="space-y-3.5 text-sm text-gray-200">
                   {PROCEDIMIENTO_INSPECCION.map((p, idx) => (

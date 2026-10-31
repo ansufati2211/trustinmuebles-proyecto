@@ -127,7 +127,7 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-wider text-primary">Especialista a cargo</p>
           <p className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">{t.profesional}</p>
-          <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"}</p>
+          <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Especialista de la inmobiliaria"}</p>
           <p className="mt-1 text-xs font-bold text-arena-tinta">Perfil ficticio de demostración</p>
         </div>
         {t.colegiatura && (
@@ -434,7 +434,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
       <TituloSeccion
         icono={ClipboardCheck}
         id="titulo-indicador-b"
-        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba un ingeniero civil o arquitecto colegiado en el inmueble."
+        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba en el inmueble un especialista de la inmobiliaria. Los perfiles de esta demostración son ficticios."
         derecha={<IndicadorB estado={t.estado} resultado={t.resultado} tamano="lg" conPrefijo={false} />}
       >
         Evaluación técnica presencial (Indicador B)
