@@ -28,13 +28,16 @@ precio no se puede ingresar.
 de la cuenta, escribe la contraseña y pulsa **Ingresar al sistema**.
 
 **Casos que no se editan.** No edites SIM-11048217, SIM-11052690, SIM-11061555 ni SIM-11070419. Todo cambio se hace en SIM-99000404;
-SIM-11048217 solo se abre para mirar en el paso 9, y SIM-11075836 recibe la solicitud y el informe.
+SIM-11048217 solo se abre para mirar en el paso 9, y SIM-11075836 recibe la solicitud y el informe. SIM-11104029 solo se edita si hace
+falta el plan B del paso 7.
 
 **Límites para las capturas del plan B.** Son del 30 de octubre, anteriores al ajuste de textos y hechas con una partida abreviada:
 
 - Las capturas 01 y 04 a 12 todavía dicen «ingeniero civil o arquitecto colegiado» en el indicador B. Si se ve, aclara: «La captura es
   anterior al ajuste del texto. La inspección la realiza un especialista de la inmobiliaria y los perfiles son ficticios».
 - Las capturas 01 y 04 a 08 muestran solo el asiento C00001. En vivo verás 4 asientos.
+- Las capturas 01 y 04 a 08, 13 y 14 son del recorrido anterior, con los planos presentados desde el registro: muestran amarillo y
+  luego verde. En vivo verás gris y luego amarillo. Si se ve, aclara: «La captura usa otros planos de partida; las reglas son las mismas».
 - Cada captura muestra el estado final del paso, no el momento de pulsar el botón.
 - Son imágenes muy largas: amplía la zona indicada en cada paso.
 
@@ -50,7 +53,12 @@ SIM-11048217 solo se abre para mirar en el paso 9, y SIM-11075836 recibe la soli
 | Distrito | `Ica, Ica` |
 | Ubicación | `Mz. Z, Lote 4, distrito de Ica.` |
 | Área (m²) | No la escribas: «Leer asientos» pone `160.00` |
-| Fecha, completitud, condición, zona y oficina | Déjalos como vienen |
+| Tipo de predio | `Vivienda` |
+| Área construida inscrita (m²) | `90.00` |
+| Los cuatro planos | `No presentado` |
+| Condición | `Lote urbano inscrito en el Registro de Predios.` |
+| Completitud | `Completa` |
+| Fecha, zona y oficina | Déjalos como vienen |
 
 No contiene datos personales: la titular es una empresa ficticia, Inmobiliaria Demo Sur S.A.C. El perímetro de 56.00 ml solo aparece en
 este texto: la pantalla muestra los linderos (8 + 20 + 20 + 8 = 56 ml), no el perímetro.
@@ -101,14 +109,13 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Botones, en orden:**
   1. Llena la tabla de «Datos de la partida».
   2. Pega el texto en **Texto de la partida** y pulsa **Leer asientos**.
-  3. Elige **Tipo de predio** `Vivienda` y escribe **Área construida inscrita (m²)** `90`.
-  4. En **Plano arquitectónico**: Estado `Presentado` y **Área construida del plano (m²)** `90`.
-  5. En **Plano de estructuras**: Estado `Presentado`.
-  6. Deja los dos planos de instalaciones en `No presentado`.
-  7. Marca «Revisé la vista previa y confirmo que no contiene nombres, DNI ni domicilios de personas naturales».
-  8. Pulsa **Registrar partida**.
-- **Debe verse:** antes de registrar, sin «Avisos de la lectura» y con «Nombres detectados (0)». Después, el caso con **Amarillo:
-  Requiere revisión**, precio S/ 150,000, insignia de borrador y «Sin autorización del propietario».
+  3. Elige **Tipo de predio** `Vivienda` y escribe **Área construida inscrita (m²)** `90.00`.
+  4. Deja los cuatro planos en `No presentado`: arquitectónico, estructuras, instalaciones eléctricas e instalaciones sanitarias.
+  5. Revisa que **Condición** diga `Lote urbano inscrito en el Registro de Predios.` y **Completitud**, `Completa`.
+  6. Marca «Revisé la vista previa y confirmo que no contiene nombres, DNI ni domicilios de personas naturales».
+  7. Pulsa **Registrar partida**.
+- **Debe verse:** antes de registrar, sin «Avisos de la lectura» y con «Nombres detectados (0)». Después, el caso con **Gris:
+  Información insuficiente o condición no evaluable**, precio S/ 150,000, insignia de borrador y «Sin autorización del propietario».
 - **Frase:** «El revisor captura la partida y el sistema calcula el indicador A al instante. El caso nace en borrador: nadie
   más lo ve todavía».
 - **Plan B:** `01-registro-borrador.png`. Amplía el encabezado y el panel «Publicación y autorización».
@@ -154,9 +161,10 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Cuenta:** `revisor-01`
 - **Pantalla:** `#/casos/SIM-99000404`, secciones del indicador A y **Historial de evaluaciones**
 - **Botón:** ninguno.
-- **Debe verse:** Amarillo, con dos alertas por los planos de instalaciones faltantes, y una entrada de historial «Partida simulada
-  incorporada».
-- **Frase:** «El amarillo tiene motivos concretos: faltan dos planos. La hipoteca no alerta porque su cancelación está inscrita».
+- **Debe verse:** Gris, con el plano arquitectónico y el de estructuras como datos faltantes, dos alertas por los planos de
+  instalaciones y una entrada de historial «Partida simulada incorporada».
+- **Frase:** «El gris no es una mala noticia: sin los planos principales, el sistema no evalúa. La hipoteca no alerta porque su
+  cancelación está inscrita».
 - **Plan B:** `06-revisor-a-e-historial.png`. Amplía los motivos y el historial.
 
 ### Paso 7. El revisor subsana
@@ -164,21 +172,23 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Cuenta:** `revisor-01`
 - **Pantalla:** `#/casos/SIM-99000404`, tarjeta **Editar partida**, al final de la página
 - **Botones:**
-  1. **Plano de instalaciones eléctricas (II.EE.)**: Estado `Presentado`.
-  2. **Plano de instalaciones sanitarias (II.SS.)**: Estado `Presentado`.
-  3. **Guardar y recalcular**
-- **Debe verse:** «Guardado. El estado se recalculó con las reglas…», el indicador en verde y una entrada nueva, «Plano incorporado o
-  adjuntado», de Amarillo a Verde. La entrada anterior se conserva.
-- **Frase:** «El color no se elige: lo recalculan las reglas. Verde significa sin alertas en los campos evaluados; no certifica
-  saneamiento. Y el historial solo agrega, nunca borra».
-- **Plan B:** `07-subsanacion.png`. Amplía el indicador A y el historial.
+  1. **Plano arquitectónico**: Estado `Presentado`.
+  2. **Plano de estructuras**: Estado `Presentado`.
+  3. Deja los dos planos de instalaciones en `No presentado` y **Guardar y recalcular**.
+- **Debe verse:** «Guardado. El estado se recalculó con las reglas…», el indicador en amarillo, con las dos alertas de instalaciones, y
+  una entrada nueva, «Plano incorporado o adjuntado», de Gris a Amarillo. La entrada anterior se conserva.
+- **Frase:** «El color no se elige: lo recalculan las reglas. Pasó de gris a amarillo porque ya se puede evaluar, y aún faltan los planos
+  de instalaciones. El historial solo agrega, nunca borra».
+- **Plan B:** edita SIM-11104029. En **Plano de estructuras**, cambia Estado de `Observado` a `Presentado` y pulsa **Guardar y
+  recalcular**. Debe verse el mensaje «Guardado…», una entrada nueva en el historial y el indicador en amarillo por la carga técnica
+  vigente (D00001): corregir un plano no levanta esa carga. Después sigue con la captura `07-subsanacion.png`.
 
 ### Paso 8. El gestor publica
 
 - **Cuenta:** `gestor-01`
 - **Pantalla:** `#/casos/SIM-99000404`, panel **Publicación y autorización**
 - **Botón:** **Publicar**
-- **Debe verse:** «Caso publicado.» y el indicador A sigue en verde.
+- **Debe verse:** «Caso publicado.» y el indicador A sigue en amarillo.
 - **Frase:** «Publicar cambia quién puede verlo, no lo que dice el indicador».
 - **Plan B:** `08-gestor-publica.png`. Amplía el panel «Publicación y autorización».
 
@@ -243,7 +253,7 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Cuenta:** `gestor-01`
 - **Pantalla:** menú **Cartera** (`#/cartera`)
 - **Botón:** ninguno.
-- **Debe verse:** 11 casos, 11 publicados, 3 verdes, 0 contactos pendientes y 2 inspecciones: una asignada a `especialista-01` y otra
+- **Debe verse:** 11 casos, 11 publicados, 2 verdes, 0 contactos pendientes y 2 inspecciones: una asignada a `especialista-01` y otra
   «Pendiente de asignación por el gestor».
 - **Frase:** «Todo lo que hicimos se refleja en el panel. Las cifras salen de la cartera, no se cargan a mano».
 - **Plan B:** `13-panel-cartera.png`.
@@ -253,7 +263,7 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Cuenta:** `propietario-02`, luego `comprador-01`
 - **Pantalla:** `#/casos/SIM-99000404`. Con el comprador, `#/casos` y la misma dirección del caso
 - **Botón:** **Retirar autorización**
-- **Debe verse:** «Autorización retirada.», el caso retirado y el indicador A en verde. El comprador ya no lo ve en el catálogo y, por
+- **Debe verse:** «Autorización retirada.», el caso retirado y el indicador A en amarillo. El comprador ya no lo ve en el catálogo y, por
   dirección, recibe «No encontramos este expediente en la cartera».
 - **Frase:** «El propietario conserva el control: si retira su autorización, el caso sale del catálogo. El indicador no cambia».
 - **Plan B:** `14-retira-autorizacion.png`. Muestra lo que ve el comprador al final; el botón no aparece en la captura.
@@ -286,3 +296,7 @@ y los datos de este guion. Los 15 pasos dieron el resultado esperado. En el paso
 carga; al abrir el caso con espera se confirmó que muestra «Sin autorización del propietario».
 
 No se ensayó a mano con una persona frente a la pantalla ni se midió la duración.
+
+Ese ensayo es anterior al cambio de los pasos 1, 6, 7, 8, 13 y 14, y `recorrido-v07.mjs` conserva el recorrido anterior (amarillo a
+verde). Los colores nuevos, gris a amarillo, y el plan B del paso 7 se comprobaron contra la API con una partida equivalente, no en
+pantalla con este guion completo.
