@@ -24,7 +24,8 @@ services:
       backend:
         condition: service_healthy
     ports:
-      - "${FRONTEND_PORT:-8081}:80"
+      # Solo en este equipo (I6, D9): el puerto no se publica en la red.
+      - "127.0.0.1:${FRONTEND_PORT:-8081}:80"
 
 volumes:
   backend-data:

@@ -58,4 +58,6 @@ sistema deja de regenerarlo y deberás mantenerlo tú. **No subas documentos con
 ## Registrar una partida real
 
 Ver [guia-transcripcion.md](guia-transcripcion.md). Resumen: busca el número en Expedientes; si no está, consulta la partida en
-Conoce Aquí, pega el texto, revisa la vista previa sin nombres y confirma. Puedes eliminar una partida transcrita desde su página.
+Conoce Aquí, elige el origen «Transcrita de Conoce Aquí (SUNARP)», pega el texto, revisa la vista previa sin nombres y confirma. Para
+una partida inventada, elige «Simulada para demostración» y usa un número con `SIM-`. Puedes eliminar una partida captada desde su
+página.

@@ -18,10 +18,12 @@ import tools.jackson.databind.node.ObjectNode;
 /** Partidas transcritas de una consulta pública: registro, protección de datos personales y eliminación. */
 class RegistrarPartidaTest extends BaseApiTest {
     static final String NUMERO = "99999999";
+    static final String SIMULADA = "SIM-99999999";
 
     /** Petición válida: una empresa como titular, una hipoteca vigente y nada de datos personales. */
     ObjectNode partida(String numero) {
         ObjectNode p = json.createObjectNode();
+        p.put("origen", "TRANSCRITA_CONOCE_AQUI");
         p.put("numero", numero);
         p.put("denominacion", "Mz. D Lote 5 · Hab. Urb. Los Sauces · Ica");
         p.put("contexto", "Ica, Ica");
@@ -144,6 +146,134 @@ class RegistrarPartidaTest extends BaseApiTest {
         } finally {
             borrar(NUMERO);
         }
+    }
+
+    // ------------------------------------------------------- origen y precio (B6)
+
+    ObjectNode simulada() {
+        ObjectNode p = partida(SIMULADA);
+        p.put("origen", "SIMULADA_DEMOSTRACION");
+        return p;
+    }
+
+    @Test
+    @DisplayName("El origen es obligatorio y cerrado: sin él, o con un valor desconocido, da 400 y no guarda nada")
+    void origenObligatorio() throws Exception {
+        ObjectNode sinOrigen = partida(NUMERO);
+        sinOrigen.remove("origen");
+        registrar(sinOrigen, revisor()).andExpect(status().isBadRequest());
+        ObjectNode desconocido = partida(NUMERO);
+        desconocido.put("origen", "OTRA_FUENTE");
+        registrar(desconocido, revisor()).andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo = ?", Integer.class, NUMERO)).isZero();
+    }
+
+    @Test
+    @DisplayName("El prefijo debe corresponder al origen: SIM- con transcrita y un número sin SIM- con simulada dan 400")
+    void prefijoSegunElOrigen() throws Exception {
+        registrar(partida(SIMULADA), revisor()).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail", containsString("se reserva a las partidas simuladas")));
+        ObjectNode sinPrefijo = simulada();
+        sinPrefijo.put("numero", NUMERO);
+        registrar(sinPrefijo, revisor()).andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.detail", containsString("debe llevar el prefijo SIM-")));
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo in (?, ?)", Integer.class, NUMERO,
+                SIMULADA)).isZero();
+    }
+
+    @Test
+    @DisplayName("Una partida simulada queda sintética y rotulada, con su PDF simulado; las dos protegen los datos personales")
+    void simuladaRegistrada() throws Exception {
+        try {
+            registrar(simulada(), revisor()).andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.codigo").value(SIMULADA))
+                    .andExpect(jsonPath("$.origen").value("SINTETICO"))
+                    .andExpect(jsonPath("$.sintetico").value(true))
+                    .andExpect(jsonPath("$.fuente").value("Partida simulada para demostración"))
+                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"));
+            byte[] pdf = mvc.perform(get("/api/v1/casos/" + SIMULADA + "/documento").header("Authorization", revisor()))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+            try (PDDocument doc = Loader.loadPDF(pdf)) {
+                assertThat(new PDFTextStripper().getText(doc)).contains("SIMULADA").doesNotContain("Conoce Aquí");
+            }
+            ObjectNode edicion = peticion(leerComo(SIMULADA, revisor()));
+            ((ObjectNode) ((ArrayNode) edicion.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");
+            actualizarExpediente(SIMULADA, revisor(), edicion).andExpect(status().isBadRequest());
+        } finally {
+            borrar(SIMULADA);
+        }
+        ObjectNode conDni = simulada();
+        ((ObjectNode) ((ArrayNode) conDni.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");
+        registrar(conDni, revisor()).andExpect(status().isBadRequest());
+        mvc.perform(get("/api/v1/casos/" + SIMULADA).header("Authorization", revisor())).andExpect(status().isNotFound());
+    }
+
+    String origenesDelHistorial(String codigo) throws Exception {
+        return mvc.perform(get("/api/v1/casos/" + codigo + "/historial").header("Authorization", revisor()))
+                .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
+    }
+
+    @Test
+    @DisplayName("El historial rotula como simulada una partida simulada, al registrarla y al corregir sus asientos")
+    void historialDeSimulada() throws Exception {
+        try {
+            registrar(simulada(), revisor()).andExpect(status().isCreated());
+            ObjectNode edicion = peticion(leerComo(SIMULADA, revisor()));
+            ((ObjectNode) ((ArrayNode) edicion.get("asientos")).get(0)).put("texto", "Inmobiliaria Los Sauces S.A.C. compró el predio.");
+            actualizarExpediente(SIMULADA, revisor(), edicion).andExpect(status().isOk());
+            assertThat(json.readTree(origenesDelHistorial(SIMULADA)).findValuesAsString("origen"))
+                    .containsExactly("PARTIDA_SIMULADA", "PARTIDA_SIMULADA");
+        } finally {
+            borrar(SIMULADA);
+        }
+        try {
+            registrar(partida(NUMERO), revisor()).andExpect(status().isCreated());
+            assertThat(json.readTree(origenesDelHistorial(NUMERO)).findValuesAsString("origen"))
+                    .containsExactly("PARTIDA_TRANSCRITA");
+        } finally {
+            borrar(NUMERO);
+        }
+    }
+
+    @Test
+    @DisplayName("El precio referencial es opcional y se muestra en el catálogo y en el detalle, sin alterar el indicador A")
+    void precioEnElCatalogo() throws Exception {
+        try {
+            ObjectNode conPrecio = partida(NUMERO);
+            conPrecio.put("precioReferencial", 152500.50);
+            registrar(conPrecio, revisor()).andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.predio.precioReferencial").value(152500.50))
+                    .andExpect(jsonPath("$.predio.moneda").value("PEN"))
+                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"));
+            mvc.perform(put("/api/v1/casos/" + NUMERO + "/autorizacion").header("Authorization", propietario(1)))
+                    .andExpect(status().isOk());
+            mvc.perform(post("/api/v1/casos/" + NUMERO + "/publicacion").header("Authorization", gestor()))
+                    .andExpect(status().isOk());
+            mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
+                    .andExpect(jsonPath("$[?(@.codigo=='" + NUMERO + "')].predio.precioReferencial", contains(152500.50)));
+        } finally {
+            borrar(NUMERO);
+        }
+        try {
+            registrar(partida(NUMERO), revisor()).andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.predio.precioReferencial").value(nullValue()));
+        } finally {
+            borrar(NUMERO);
+        }
+    }
+
+    @Test
+    @DisplayName("Un precio cero, negativo, con más de dos decimales o que no es un número da 400 y no guarda nada")
+    void precioInvalido() throws Exception {
+        for (double precio : new double[] {0, -1, 1000.123}) {
+            ObjectNode p = partida(NUMERO);
+            p.put("precioReferencial", precio);
+            registrar(p, revisor()).andExpect(status().isBadRequest());
+        }
+        ObjectNode texto = partida(NUMERO);
+        texto.put("precioReferencial", "mucho");
+        registrar(texto, revisor()).andExpect(status().isBadRequest());
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo = ?", Integer.class, NUMERO)).isZero();
     }
 
     @Test

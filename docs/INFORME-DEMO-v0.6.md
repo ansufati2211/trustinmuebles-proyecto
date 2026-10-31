@@ -37,7 +37,7 @@ solo dicen que son 6).
 |---|---|---|
 | `comprador-01` | Comprador | Consultar cartera y expedientes; **único** que solicita la inspección |
 | `revisor-01` | Revisor | Lo anterior salvo solicitar; edita partidas y planos, cambia el checklist, sube PDF, registra partidas transcritas |
-| `especialista-01` | Especialista | Consultar y emitir el informe técnico; no edita partidas. Firma como Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910 (ficticio) |
+| `especialista-01` | Especialista | Consultar y emitir el informe técnico; no edita partidas. Firma como Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001 (ficticio) |
 
 ## 3. Mejoras v0.5.1 → v0.6.0
 
@@ -97,7 +97,7 @@ Cómo mostrar el 403 en vivo (Swagger en `/swagger-ui.html` con el token del rev
 
 | Tema | Situación |
 |---|---|
-| CIP N.° 248910 | No lleva `SIM-`; verificar que no pertenezca a un ingeniero real o cambiarlo |
+| CIP N.° SIM-CIP-0001 | Resuelto en la v0.7 (V9): el perfil y su colegiatura ya son visiblemente ficticios |
 | Bases v0.5 | Migran, pero sus informes conservan el profesional anterior; borrar `data/` para la demo |
 | I7 (rótulos simulados) | Solo se comprueba con el recorrido de navegador, no con `pnpm test` |
 | Capturas | Las de `capturas/` siguen siendo de la v0.5; las nuevas están en `capturas-v06/` |

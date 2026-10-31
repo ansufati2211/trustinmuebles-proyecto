@@ -128,9 +128,10 @@ final class CasoDtos {
                 p.areaConstruida(), p.sistemaConstructivo(), p.observacion())).toList();
     }
 
-    /** Registro de una partida transcrita. El número no puede llevar el prefijo SIM-, reservado a las ficticias. */
+    /** Captación de una partida. El servicio comprueba que el prefijo SIM- del número corresponda a su origen. */
     record RegistrarPartidaRequest(
-            @NotBlank @Pattern(regexp = "[A-Z]?[0-9]{8}", message = "debe tener ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600)") String numero,
+            @NotNull OrigenCaptacion origen,
+            @NotBlank @Pattern(regexp = "SIM-[0-9]{8}|[A-Z]?[0-9]{8}", message = "debe tener ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600), o el prefijo SIM- si es simulada") String numero,
             @NotBlank @Size(max = 255) String denominacion,
             @NotBlank @Size(max = 255) String contexto,
             @NotNull LocalDate fechaConsulta,
@@ -149,7 +150,9 @@ final class CasoDtos {
             @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
             @NotNull Boolean confirmaSinDatosPersonales,
             /* v0.7: cuenta PROPIETARIO del caso. El caso nace en BORRADOR y sin autorización. */
-            @NotBlank @Size(max = 40) String propietarioCodigo) {
+            @NotBlank @Size(max = 40) String propietarioCodigo,
+            /* Opcional, en soles. Es informativo y no interviene en el semáforo. */
+            @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal precioReferencial) {
 
         DatosExpediente datos() {
             return new DatosExpediente(condicionRepresentada, completitud, fechaConsulta, nota, zonaRegistral,

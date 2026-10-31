@@ -20,9 +20,6 @@ import { puedeAsignarEspecialista, puedeEmitirInforme, puedeSolicitarInspeccion,
 import { ETIQUETA_ESPECIALIDAD, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
 
-const FOTO_ESPECIALISTA =
-  "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?auto=format&fit=crop&w=400&h=400&q=80";
-
 export function InsigniaTecnica({ estado, resultado, className = "" }: { estado: EstadoTecnico; resultado?: ResultadoTecnico | null; className?: string }) {
   return <IndicadorB estado={estado} resultado={resultado} className={className} />;
 }
@@ -98,26 +95,14 @@ function Stepper({ estado }: { estado: EstadoTecnico }) {
   );
 }
 
-function FotoEspecialista({ nombre }: { nombre: string }) {
-  const [fallo, setFallo] = useState(false);
-  if (fallo) {
-    return (
-      <span
-        className="grid size-20 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-700 text-2xl font-black text-white"
-        aria-hidden="true"
-      >
-        {iniciales(nombre)}
-      </span>
-    );
-  }
+function AvatarEspecialista({ nombre }: { nombre: string }) {
   return (
-    <img
-      src={FOTO_ESPECIALISTA}
-      alt={`Fotografía de ${nombre}`}
-      loading="lazy"
-      onError={() => setFallo(true)}
-      className="size-20 shrink-0 rounded-3xl border-4 border-white object-cover shadow-lg shadow-foreground/15"
-    />
+    <span
+      className="grid size-20 shrink-0 place-items-center rounded-3xl bg-gradient-to-br from-primary to-emerald-700 text-2xl font-black text-white"
+      aria-hidden="true"
+    >
+      {iniciales(nombre)}
+    </span>
   );
 }
 
@@ -128,7 +113,9 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
         <span className="grid size-14 place-items-center rounded-2xl bg-muted text-tinta-2">
           <HardHat className="size-7" aria-hidden="true" />
         </span>
-        <p className="text-sm font-semibold leading-relaxed text-tinta-2">Especialista por asignar: la inmobiliaria coordina la visita.</p>
+        <p className="text-sm font-semibold leading-relaxed text-tinta-2">
+          {t.especialistaAsignadoCodigo ? "Especialista asignado: la inmobiliaria coordina la visita." : "Pendiente de asignación por el gestor"}
+        </p>
       </div>
     );
   }
@@ -136,11 +123,12 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
     <div className="relative isolate overflow-hidden rounded-3xl border border-border bg-card p-5 shadow-tarjeta sm:p-6">
       <div className="pointer-events-none absolute -right-12 -top-12 -z-10 size-48 rounded-full bg-primary/10 blur-[60px]" aria-hidden="true" />
       <div className="flex flex-wrap items-center gap-5">
-        <FotoEspecialista nombre={t.profesional} />
+        <AvatarEspecialista nombre={t.profesional} />
         <div className="min-w-0 flex-1">
           <p className="text-xs font-bold uppercase tracking-wider text-primary">Especialista a cargo</p>
           <p className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">{t.profesional}</p>
-          <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Profesional colegiado"}</p>
+          <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Especialista de la inmobiliaria"}</p>
+          <p className="mt-1 text-xs font-bold text-arena-tinta">Perfil ficticio de demostración</p>
         </div>
         {t.colegiatura && (
           <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground">
@@ -446,7 +434,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
       <TituloSeccion
         icono={ClipboardCheck}
         id="titulo-indicador-b"
-        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba un ingeniero civil o arquitecto colegiado en el inmueble."
+        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba en el inmueble un especialista de la inmobiliaria. Los perfiles de esta demostración son ficticios."
         derecha={<IndicadorB estado={t.estado} resultado={t.resultado} tamano="lg" conPrefijo={false} />}
       >
         Evaluación técnica presencial (Indicador B)
@@ -494,7 +482,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
         <p className="text-sm text-foreground">
           {t.especialistaAsignadoCodigo
             ? <>Especialista asignado: <span className="font-bold">{t.especialistaAsignadoCodigo}</span>. Solo esa cuenta emite el informe.</>
-            : <span className="text-tinta-2">Sin especialista asignado: cualquier especialista habilitado puede emitir el informe.</span>}
+            : <span className="text-tinta-2">Pendiente de asignación por el gestor. Sin asignación nadie puede emitir el informe.</span>}
         </p>
       )}
       {puedeAsignarEspecialista(usuario?.rol, t.estado) && <AsignacionEspecialista detalle={detalle} alCambiar={alCambiar} />}
@@ -541,7 +529,11 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
         && <FormularioInforme key={detalle.codigo} detalle={detalle} alCambiar={alCambiar} />}
       {usuario?.rol === "ESPECIALISTA" && t.estado !== "NO_SOLICITADA"
         && !puedeEmitirInforme(usuario.rol, t.estado, t.especialistaAsignadoCodigo, usuario.codigoCuenta) && (
-        <p className="text-sm text-tinta-2">Esta inspección está asignada a otro especialista: solo esa cuenta puede emitir el informe.</p>
+        <p className="text-sm text-tinta-2">
+          {t.especialistaAsignadoCodigo
+            ? "Esta inspección está asignada a otro especialista: solo esa cuenta puede emitir el informe."
+            : "Pendiente de asignación por el gestor: aún no puedes registrar el avance ni emitir el informe."}
+        </p>
       )}
       {usuario?.rol === "ESPECIALISTA" && t.estado === "NO_SOLICITADA" && (
         <p className="text-sm text-tinta-2">Aún no hay una solicitud: el informe se puede llenar cuando el comprador la pida.</p>

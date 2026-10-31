@@ -12,10 +12,10 @@ import { BloqueTecnico, TECNICO_VACIO, tecnicoAPeticion } from "@/components/Blo
 import { post } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { disociar } from "@/lib/disociar";
-import { abrirExterno, CONOCE_AQUI, normalizarNumero, pareceNumeroDePartida, VISOR_BGR } from "@/lib/fuentes";
+import { abrirExterno, CONOCE_AQUI, normalizarNumero, numeroValidoParaOrigen, VISOR_BGR } from "@/lib/fuentes";
 import { leerPartida } from "@/lib/leerPartida";
 import { ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
-import type { Completitud, DetalleCaso } from "@/lib/types";
+import type { Completitud, DetalleCaso, OrigenCaptacion } from "@/lib/types";
 
 const CONDICIONES = [
   "Lote urbano inscrito en el Registro de Predios.",
@@ -26,6 +26,11 @@ const OPCIONES_CONDICION = CONDICIONES.map((c) => ({ valor: c, etiqueta: c }));
 const OPCIONES_COMPLETITUD = (Object.keys(ETIQUETA_COMPLETITUD) as Completitud[]).map((c) => ({ valor: c, etiqueta: ETIQUETA_COMPLETITUD[c] }));
 
 const PROPIETARIOS_DEMO = ["propietario-01", "propietario-02"];
+
+const OPCIONES_ORIGEN: { valor: OrigenCaptacion; etiqueta: string }[] = [
+  { valor: "TRANSCRITA_CONOCE_AQUI", etiqueta: "Transcrita de Conoce Aquí (SUNARP)" },
+  { valor: "SIMULADA_DEMOSTRACION", etiqueta: "Simulada para demostración" },
+];
 
 const hoy = () => new Date().toISOString().slice(0, 10);
 
@@ -64,7 +69,9 @@ export default function RegistrarPartida() {
   const navigate = useNavigate();
   const [params] = useSearchParams();
 
+  const [origen, setOrigen] = useState<OrigenCaptacion | "">("");
   const [numero, setNumero] = useState(normalizarNumero(params.get("numero") ?? ""));
+  const [precio, setPrecio] = useState("");
   const [denominacion, setDenominacion] = useState("");
   const [contexto, setContexto] = useState("");
   const [propietario, setPropietario] = useState("");
@@ -135,7 +142,9 @@ export default function RegistrarPartida() {
     setGuardando(true);
     const l = limpio();
     const cuerpo = {
-      numero: normalizarNumero(numero),
+      origen,
+      numero,
+      precioReferencial: precio.trim() === "" ? null : Number(precio),
       denominacion: denominacion.trim(),
       contexto: contexto.trim(),
       fechaConsulta,
@@ -166,7 +175,8 @@ export default function RegistrarPartida() {
 
   const vista = limpio();
   const hayTexto = filas.length > 0;
-  const numeroValido = pareceNumeroDePartida(numero);
+  const simulada = origen === "SIMULADA_DEMOSTRACION";
+  const numeroValido = origen !== "" && numeroValidoParaOrigen(numero, origen);
   const completados = [
     numeroValido && denominacion.trim() !== "" && propietario.trim() !== "",
     pegado.trim() !== "" || hayTexto,
@@ -178,7 +188,7 @@ export default function RegistrarPartida() {
     <div className="flex-1 bg-superficie pb-24">
       <section className="relative isolate overflow-hidden bg-foreground">
         <img
-          src="https://images.unsplash.com/photo-1450101499163-c8848c66ca85?auto=format&fit=crop&w=2000&q=80"
+          src="/img/firma-documentos.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 -z-20 h-full w-full object-cover"
@@ -232,12 +242,27 @@ export default function RegistrarPartida() {
 
         <form onSubmit={guardar} noValidate className="space-y-8">
           <Paso n={1} titulo="Datos de la partida">
+            <div className="grid gap-5 sm:grid-cols-2">
+              <Desplegable
+                etiqueta="Origen de la partida"
+                valor={origen}
+                opciones={OPCIONES_ORIGEN}
+                textoTodos="Elegir el origen"
+                alCambiar={(v) => setOrigen(v as OrigenCaptacion | "")}
+              />
+              <Campo etiqueta="Precio referencial en soles (opcional)">
+                {(p) => <input {...p} type="number" step="0.01" min="0.01" className={claseCampo} value={precio} onChange={(e) => setPrecio(e.target.value)} />}
+              </Campo>
+            </div>
+
             <div className="grid gap-5 sm:grid-cols-3">
               <Campo
                 etiqueta="Número de partida"
-                error={numero !== "" && !numeroValido ? "Ocho dígitos, con una letra inicial opcional (P07044600)." : undefined}
+                error={numero !== "" && origen !== "" && !numeroValido
+                  ? (simulada ? "Prefijo SIM- y ocho dígitos (SIM-99000404)." : "Ocho dígitos, con una letra inicial opcional (P07044600), sin SIM-.")
+                  : undefined}
               >
-                {(p) => <input {...p} className={claseCampo} maxLength={9} value={numero} onChange={(e) => setNumero(normalizarNumero(e.target.value))} />}
+                {(p) => <input {...p} className={claseCampo} maxLength={12} value={numero} onChange={(e) => setNumero(e.target.value.toUpperCase().replace(/\s/g, ""))} />}
               </Campo>
               <Campo etiqueta="Denominación del predio" className="sm:col-span-2">
                 {(p) => (
@@ -249,7 +274,7 @@ export default function RegistrarPartida() {
 
             <Campo
               etiqueta="Código de cuenta del propietario"
-              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador hasta que el propietario lo autorice desde su cuenta."
+              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador: el indicador A se calcula ahora y el gestor solo podrá publicarlo con la autorización del propietario."
             >
               {(p) => (
                 <>
@@ -305,7 +330,9 @@ export default function RegistrarPartida() {
           <Paso
             n={2}
             titulo="Pega el texto de la partida"
-            descripcion="Copia los asientos desde Conoce Aquí (C00001, D00001, E00001…). El texto original no se envía: solo se guarda la versión limpia que ves en el paso 4. Si el sitio muestra imágenes, escribe los asientos a mano en el paso 3."
+            descripcion={simulada
+              ? "Pega los asientos inventados para la demostración (C00001, D00001, E00001…) o escríbelos a mano en el paso 3. También se revisan para que no contengan datos de personas naturales."
+              : "Copia los asientos desde Conoce Aquí (C00001, D00001, E00001…). El texto original no se envía: solo se guarda la versión limpia que ves en el paso 4. Si el sitio muestra imágenes, escribe los asientos a mano en el paso 3."}
           >
             <Campo etiqueta="Texto de la partida">
               {(p) => (

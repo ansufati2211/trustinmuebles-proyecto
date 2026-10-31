@@ -22,6 +22,9 @@ publicación en GitHub Pages, Docker y el perfil PostgreSQL.
 **Por qué:** 1.7, 4.3 y 6.5.4 los excluyen. Además los datos de ejemplo usaban nombres, direcciones, partidas y fotos con
 apariencia real, lo que contradice RN-01 y PA2.
 **Cómo se recupera:** el código anterior sigue en el historial de Git (commit `3a97ad5`).
+**Actualización (v0.7):** Docker volvió el 26 de octubre (`edd0bbc`, `42321d1`) como opción de ejecución, en contra de esta
+decisión. Se conserva con dos límites para respetar I6 y D9: el puerto publicado se liga a `127.0.0.1` y el flujo de GHCR solo se
+lanza a mano. Sigue sin haberse ejecutado; el perfil PostgreSQL y las demás exclusiones se mantienen.
 
 ## D4. El contenido vive en JSON versionado, no en SQL
 
@@ -84,7 +87,7 @@ recorrido del navegador. Derivarlo hace imposible la contradicción. El PDF tamb
 
 ## D11. Versión de reglas
 
-La versión activa sale de `app.reglas.version` (hoy `v0.2`). Al arrancar, cada expediente cuya evaluación falte, use otra
+La versión activa sale de `app.reglas.version` (hoy `v0.4`). Al arrancar, cada expediente cuya evaluación falte, use otra
 versión o esté atrasada se recalcula. Cada evaluación guarda la versión con que se calculó (RN-06).
 
 ## D12. Los Aquijes es la partida de familiarización
@@ -240,13 +243,13 @@ expediente (409 a la segunda). El costo referencial (S/ 250.00) sale de `app.ins
 `InspeccionTest.validaElInforme` dejó de exigir 400 cuando faltan el nombre o la colegiatura: ese contrato lo reemplazó M8.
 Los informes de demostración también los firma `especialista-01`.
 
-**Datos del especialista:** Ing. Carlos Alberto Mendoza Quispe, Ingeniero Civil, CIP N.° 248910, tal como se pidió. Son ficticios
-y se rotulan así en la interfaz y en el PDF. Es una excepción a D22 (números con `SIM-`): **conviene verificar que ese número de
-colegiatura no pertenezca a un ingeniero real** o cambiarlo por uno con `SIM-`.
+**Datos del especialista:** Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001, tal como se pidió. Son ficticios
+y se rotulan así en la interfaz y en el PDF. Actualizado en la v0.7 (V9): el nombre y la colegiatura anteriores se reemplazaron
+por estos, que ya cumplen D22 (números con `SIM-`).
 
 **Base existente:** la migración V5 y la carga de contenido completan distrito, precio, ítem HR y PU y el perfil del especialista
-sin borrar nada. Los informes que ya estaban guardados conservan el profesional anterior; para verlos firmados por la cuenta del
-especialista hay que empezar con una base nueva.
+sin borrar nada. Actualizado en la v0.7: la migración V9 cambia el perfil de `especialista-01` y los informes firmados con los
+datos anteriores; otros informes guardados conservan su profesional.
 
 ## D25. v0.6: filtros del catálogo en el servidor (M13)
 **Qué:** `GET /api/v1/casos` acepta `tipoInmueble`, `estado`, `estadoTecnico` (también `INFORME_EMITIDO`) y
@@ -345,7 +348,7 @@ conserva: es de solo adición y no contiene datos personales (supuesto).
 **Supuesto:** la evaluación vigente (`evaluacion`) se mantiene como estaba; el historial se agrega al lado y no la reemplaza.
 
 ## D37. v0.7: origen de cada recálculo (supuesto)
-La lista es cerrada: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL`.
+La lista es cerrada: `EDICION`, `PLANO_ADJUNTO`, `PARTIDA_TRANSCRITA`, `CARGA_INICIAL` y, desde V11, `PARTIDA_SIMULADA` (D50).
 - `POST /casos` (partida transcrita): `PARTIDA_TRANSCRITA`.
 - `PUT /casos/{c}/expediente`: si cambian los asientos, `PARTIDA_TRANSCRITA` (se incorporó partida transcrita nueva, I9); si
   solo cambian los planos o el bloque técnico, `PLANO_ADJUNTO`; si no, `EDICION`. Las áreas se comparan por valor (84.5 = 84.50).
@@ -377,7 +380,7 @@ y caso: la columna única `pendiente_clave` lo garantiza también en la base; la
 **Qué:** `PUT /casos/{c}/inspeccion/asignacion` (solo GESTOR) con `especialistaCodigo`. Exige una inspección `SOLICITADA` o
 `EN_INSPECCION` (otro estado o sin solicitud: 409) y una cuenta ESPECIALISTA con datos profesionales (otra: 400). Se puede
 reasignar mientras no esté emitida (supuesto). Con asignación, solo el asignado emite (otro especialista: 403); sin asignación
-se conserva el comportamiento anterior. La firma sigue saliendo de la cuenta autenticada (M8).
+se conservaba el comportamiento anterior, lo que **D51 reemplaza**. La firma sigue saliendo de la cuenta autenticada (M8).
 **`especialista-02`:** «Arq. Perfil Ficticio 02», Arquitecto, colegiatura `SIM-CAP-0002`. El nombre dice que es ficticio para
 no parecer una persona real (I11) y la colegiatura lleva `SIM-`.
 
@@ -427,6 +430,9 @@ ficticios de demostración» de la credencial del especialista, «Costo referenc
 servicio de inspección, y «Precios referenciales y datos simulados» del encabezado del catálogo. El aviso queda en el pie de
 página («Los datos de esta demostración … son simulados») y en la línea «Entorno académico demostrativo · Datos sintéticos»
 del login; la nota del precio que envía el backend se conserva en el detalle. Esto redefine I7 (ver `LEEME.md`).
+**Corrección (v0.7):** el rediseño `567cbfc` dejó esos textos en un pie sin uso. Ahora están en el pie activo
+(`lib/limitesLegales.ts`, con prueba). La credencial del especialista vuelve a llevar un rótulo, «Perfil ficticio de demostración»,
+y usa iniciales en lugar de una fotografía: un perfil ficticio no debe parecer una persona real.
 
 ## D48. v0.7 (interfaz): texto fijo de la etapa 9
 El detalle muestra para todos los roles «Siguiente paso: verificación jurídica con abogado o notario, fuera del sistema». Es un
@@ -442,3 +448,27 @@ texto informativo: la verificación jurídica no es una función del sistema.
   límites legales estén en el pie de página (con el aviso de datos simulados) y que el login comunique el entorno demostrativo
   (D47). No tiene prueba automática.
 - **`recorrido-v06.mjs`:** queda marcado como obsoleto en su cabecera y en el LEEME; no se borró.
+
+## D50. v0.7: captación con origen obligatorio y precio referencial
+
+**Qué:** `POST /casos` exige `origen`: `TRANSCRITA_CONOCE_AQUI` (sin `SIM-`, fuente «Conoce Aquí – SUNARP») o
+`SIMULADA_DEMOSTRACION` (con `SIM-`, fuente «Partida simulada para demostración», `sintetico = true`). Un prefijo que no
+corresponde al origen da 400. `precioReferencial` es opcional, positivo y con dos decimales. `ProteccionDatos` se aplica a los dos.
+**Por qué:** antes solo se podía captar una partida rotulada como fuente SUNARP, y una partida inventada para la demostración
+quedaba mal rotulada o no se podía registrar.
+**Cómo:** no hizo falta migración. Una simulada se guarda con `origen = SINTETICO`, que `ck_caso_origen` ya admite, y
+`precio_referencial` existe desde V5. La API sigue devolviendo `origen` `SINTETICO` o `TRANSCRITA`.
+**Consecuencia:** los casos captados se distinguen de los diez de demostración porque llevan `fuente` (`CasoLote.esCaptado`). Se
+pueden eliminar, y se revisan al editarlos; los diez de demostración no. En el historial, una partida simulada captada usa
+`PARTIDA_SIMULADA` («Partida simulada incorporada»), agregado en V11; las filas ya guardadas no se reescriben (I12).
+
+## D51. v0.7: asignación obligatoria del especialista
+
+**Qué:** sin especialista asignado por el gestor, nadie registra avance ni emite: 409 «El gestor debe asignar un especialista». Con
+asignación, otro especialista recibe 403. Reemplaza el comportamiento sin asignación de D40.
+**Por qué:** el gestor es quien coordina las inspecciones; sin esta regla cualquier especialista podía tomar una inspección sin
+asignar, y el panel de cartera no reflejaba quién la llevaba.
+**Datos:** la semilla asigna `especialista-01` a la inspección en curso de `SIM-11098467` y deja `SIM-11093320` solicitada y sin
+asignar. V10 hace lo mismo en bases existentes. Otra inspección en curso sin asignar de una base existente queda esperando al
+gestor.
+**Consecuencia:** un informe de demostración ya emitido no tiene asignación: no se puede modificar (409) ni reasignar (409).

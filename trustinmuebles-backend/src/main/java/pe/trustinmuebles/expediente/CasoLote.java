@@ -33,7 +33,7 @@ class CasoLote {
     @Column(nullable = false)
     private Origen origen = Origen.SINTETICO;
 
-    /** Dónde se consultó una partida transcrita, por ejemplo «Conoce Aquí – SUNARP». */
+    /** Procedencia de una partida captada, por ejemplo «Conoce Aquí – SUNARP». Los casos de demostración no la tienen. */
     private String fuente;
 
     @Column(name = "fecha_consulta")
@@ -48,7 +48,7 @@ class CasoLote {
     /** Distrito del predio, para el catálogo y sus filtros. */
     private String distrito;
 
-    /** Precio referencial en soles. Es informativo, no una oferta; las partidas transcritas no lo tienen. */
+    /** Precio referencial en soles. Es informativo, no una oferta; en una partida captada es opcional. */
     @Column(name = "precio_referencial")
     private java.math.BigDecimal precioReferencial;
 
@@ -60,11 +60,16 @@ class CasoLote {
     @Column(name = "propietario_codigo")
     private String propietarioCodigo;
 
-    /** Cuándo autorizó el propietario la evaluación y publicación. Null si no hay autorización vigente. */
+    /** Cuándo autorizó el propietario la publicación. Null si no hay autorización vigente. */
     @Column(name = "autorizacion_fecha")
     private java.time.Instant autorizacionFecha;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "estado_publicacion", nullable = false)
     private EstadoPublicacion estadoPublicacion = EstadoPublicacion.BORRADOR;
+
+    /** ¿Entró por «Registrar partida»? Toda partida captada lleva fuente; los casos de demostración, no. */
+    boolean esCaptado() {
+        return fuente != null;
+    }
 }

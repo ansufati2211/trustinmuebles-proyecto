@@ -95,7 +95,7 @@ t = await texto();
 check("Detalle: discrepancia 98 contra 72 m² resaltada", t.includes("98.00 m²") && t.includes("72.00 m²") && t.includes("26.00 m² más"));
 check("Detalle: texto fijo RN-10 visible", t.includes("El indicador B es independiente y no cambia el color del indicador A"));
 check("Detalle: stepper en «En inspección»", await page.$eval("[aria-current=step]", (e) => e.innerText.includes("En inspección")));
-check("Detalle: credencial ficticia del especialista", t.includes("Ing. Carlos Alberto Mendoza Quispe") && t.includes("CIP N.° 248910") && t.includes("Datos ficticios de demostración"));
+check("Detalle: credencial ficticia del especialista", t.includes("Ing. Perfil Ficticio 01") && t.includes("CIP N.° SIM-CIP-0001") && t.includes("Datos ficticios de demostración"));
 check("Detalle: HR y PU observado en el checklist", t.includes("Declaración Jurada Municipal (HR y PU)") && t.includes("no incluye la ampliación"));
 check("Comprador no ve el botón de solicitar si ya hay solicitud", !t.includes("Solicitar inspección técnica\n"));
 await foto("05-detalle-pachacutec");
@@ -150,7 +150,7 @@ const [guardar] = await page.$$("xpath/.//button[contains(., 'Guardar informe')]
 await guardar.click();
 await page.waitForFunction(() => document.body.innerText.includes("Informe emitido. El indicador A"));
 t = await texto();
-check("Informe emitido firmado por la cuenta del especialista", t.includes("Ing. Carlos Alberto Mendoza Quispe") && t.includes("Riesgo físico detectado"));
+check("Informe emitido firmado por la cuenta del especialista", t.includes("Ing. Perfil Ficticio 01") && t.includes("Riesgo físico detectado"));
 check("I2: el indicador A sigue en Verde", t.includes("Documental: Verde"));
 await foto("09-especialista-santiago");
 await ir("/casos?riesgoFisicoDetectado=true");

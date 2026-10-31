@@ -5,6 +5,7 @@ export const ETIQUETA_ORIGEN: Record<OrigenEvaluacion, string> = {
   EDICION: "Edición del expediente",
   PLANO_ADJUNTO: "Plano incorporado o adjuntado",
   PARTIDA_TRANSCRITA: "Partida transcrita incorporada",
+  PARTIDA_SIMULADA: "Partida simulada incorporada",
   CARGA_INICIAL: "Carga inicial",
 };
 

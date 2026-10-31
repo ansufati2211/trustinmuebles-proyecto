@@ -44,6 +44,13 @@ class InspeccionTest extends BaseApiTest {
                 .contentType(MediaType.APPLICATION_JSON).content(json.writeValueAsString(cuerpo)));
     }
 
+    /** El gestor asigna a especialista-01: sin asignación nadie emite. */
+    void asignar(String codigo) throws Exception {
+        mvc.perform(put("/api/v1/casos/" + codigo + "/inspeccion/asignacion").header("Authorization", gestor())
+                .contentType(MediaType.APPLICATION_JSON).content("{\"especialistaCodigo\":\"especialista-01\"}"))
+                .andExpect(status().isOk());
+    }
+
     void limpiar(String codigo) {
         jdbc.update("delete from evaluacion_tecnica where expediente_id = "
                 + "(select e.id from expediente e join caso_lote c on c.id = e.caso_id where c.codigo = ?)", codigo);
@@ -66,6 +73,7 @@ class InspeccionTest extends BaseApiTest {
                     .andExpect(jsonPath("$.estado").value("SOLICITADA"));
             solicitar(SUBTANJALLA, comprador()).andExpect(status().isConflict());
 
+            asignar(SUBTANJALLA);
             emitir(SUBTANJALLA, especialista(), informe("EMITIDO")).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacionTecnica.estado").value("EMITIDO"))
                     .andExpect(jsonPath("$.evaluacionTecnica.resultado").value("CON_OBSERVACIONES"))
@@ -94,6 +102,7 @@ class InspeccionTest extends BaseApiTest {
     void validaElInforme() throws Exception {
         try {
             solicitar(LOS_AQUIJES, comprador()).andExpect(status().isCreated());
+            asignar(LOS_AQUIJES);
             // v0.6 (M8): el nombre y la colegiatura ya no se validan en el cuerpo; los pone el servidor desde la cuenta.
             for (String campo : new String[] {"resultado", "fechaInspeccion", "verifSanitarias", "conclusiones"}) {
                 ObjectNode i = informe("EMITIDO");

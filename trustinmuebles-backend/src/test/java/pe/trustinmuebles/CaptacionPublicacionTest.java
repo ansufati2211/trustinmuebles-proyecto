@@ -21,10 +21,12 @@ import tools.jackson.databind.node.ObjectNode;
  */
 class CaptacionPublicacionTest extends BaseApiTest {
     static final String BORRADOR = "88888888";
+    static final String SIMULADA = "SIM-88888888";
 
     /** Partida transcrita mínima, sin datos personales, del propietario indicado. */
     ObjectNode partida(String numero, String propietario) {
         ObjectNode p = json.createObjectNode();
+        p.put("origen", "TRANSCRITA_CONOCE_AQUI");
         p.put("numero", numero);
         p.put("denominacion", "Mz. H Lote 2 · Hab. Urb. Los Sauces · Ica");
         p.put("contexto", "Ica, Ica");
@@ -82,17 +84,25 @@ class CaptacionPublicacionTest extends BaseApiTest {
     // ------------------------------------------------------------------ captación
 
     @Test
-    @DisplayName("Etapa 1: el revisor indica el propietario; el caso nace en BORRADOR y sin autorización")
+    @DisplayName("Etapa 1: con cualquiera de los dos orígenes, el caso nace en BORRADOR, sin autorización y con su propietario")
     void naceEnBorrador() throws Exception {
-        try {
-            registrar(partida(BORRADOR, "propietario-02")).andExpect(status().isCreated())
-                    .andExpect(jsonPath("$.publicacion.estado").value("BORRADOR"))
-                    .andExpect(jsonPath("$.publicacion.propietarioCodigo").value("propietario-02"))
-                    .andExpect(jsonPath("$.publicacion.autorizada").value(false))
-                    .andExpect(jsonPath("$.publicacion.autorizacionFecha").value(nullValue()));
-        } finally {
-            borrar(BORRADOR);
+        ObjectNode simulada = partida(SIMULADA, "propietario-02");
+        simulada.put("origen", "SIMULADA_DEMOSTRACION");
+        for (ObjectNode cuerpo : List.of(partida(BORRADOR, "propietario-02"), simulada)) {
+            try {
+                registrar(cuerpo).andExpect(status().isCreated())
+                        .andExpect(jsonPath("$.publicacion.estado").value("BORRADOR"))
+                        .andExpect(jsonPath("$.publicacion.propietarioCodigo").value("propietario-02"))
+                        .andExpect(jsonPath("$.publicacion.autorizada").value(false))
+                        .andExpect(jsonPath("$.publicacion.autorizacionFecha").value(nullValue()));
+                publicar(cuerpo.get("numero").asString(), gestor()).andExpect(status().isUnprocessableEntity());
+                mvc.perform(get("/api/v1/casos/" + cuerpo.get("numero").asString()).header("Authorization", comprador()))
+                        .andExpect(status().isNotFound());
+            } finally {
+                borrar(cuerpo.get("numero").asString());
+            }
         }
+        assertThat(codigos(gestor())).doesNotContain(BORRADOR, SIMULADA);
     }
 
     @Test

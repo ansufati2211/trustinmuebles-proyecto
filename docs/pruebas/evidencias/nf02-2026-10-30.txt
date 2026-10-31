@@ -1,0 +1,31 @@
+== REQ-NF02: listado + apertura de expediente (SIM-11048217) — 2026-10-30T18:17:18.264Z ==
+API: http://127.0.0.1:8080/api/v1
+Equipo: Windows_NT 10.0.26200 · 11th Gen Intel(R) Core(TM) i7-1165G7 @ 2.80GHz · 8 núcleos · 11.7 GiB de RAM
+Node.js v22.16.0
+Meta del equipo: al menos 19 de 20 ejecuciones en 2000 ms o menos (no es un umbral de ISO/IEC 25010).
+
+Ejecución;ms
+1;31.1
+2;25.9
+3;42.2
+4;54.3
+5;26.4
+6;24.1
+7;25.3
+8;24.2
+9;23.9
+10;24.4
+11;24.1
+12;25.5
+13;26.4
+14;26.4
+15;25.2
+16;23.9
+17;24.3
+18;22.5
+19;23.1
+20;22.0
+
+Mínimo 22.0 ms · mediana 25.2 ms · máximo 54.3 ms
+Ejecuciones en 2000 ms o menos: 20 de 20
+Resultado: CUMPLE la meta

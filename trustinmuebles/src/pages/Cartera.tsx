@@ -111,12 +111,6 @@ export default function Cartera() {
   return (
     <div className="flex w-full flex-col">
       <section className="relative isolate overflow-hidden bg-foreground">
-        <img
-          src="https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?auto=format&fit=crop&w=2000&q=80"
-          alt=""
-          aria-hidden="true"
-          className="absolute inset-0 -z-20 h-full w-full object-cover"
-        />
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground via-foreground/90 to-foreground/55" aria-hidden="true" />
         <div className="animate-glow pointer-events-none absolute -left-20 -top-24 -z-10 h-[340px] w-[480px] rounded-full bg-primary/30 blur-[100px]" aria-hidden="true" />
         <div
@@ -233,7 +227,7 @@ export default function Cartera() {
                           <IndicadorB estado={i.estado} tamano="sm" conPrefijo={false} />
                           {i.asignada
                             ? <Badge tono="marca" icono={UserCheck} tamano="sm">{i.especialistaAsignadoCodigo}</Badge>
-                            : <Badge tono="gris" icono={UserCheck} tamano="sm">Sin asignar</Badge>}
+                            : <Badge tono="gris" icono={UserCheck} tamano="sm">Pendiente de asignación por el gestor</Badge>}
                         </div>
                       </li>
                     ))}

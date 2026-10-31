@@ -537,28 +537,34 @@ export default function Expediente() {
               </Card>
             </div>
 
-            {transcrita && (
+            {d.fuente && (
               <Card className="rounded-[2rem] border-border shadow-tarjeta">
                 <CardContent className="space-y-4 p-6 sm:p-8">
                   <TituloSeccion icono={Info}>Fuente</TituloSeccion>
-                  <p className="text-sm leading-relaxed text-tinta-2">
-                    Transcrita de {d.fuente ?? "una consulta pública"}{d.fechaConsulta ? `, consultada el ${fecha(d.fechaConsulta)}` : ""}.
-                    No incluye nombres, DNI ni domicilios de personas naturales. Para la copia literal certificada o los
-                    planos del título archivado, solicítalos en SUNARP (tienen costo).
-                  </p>
-                  <div className="space-y-2">
-                    <Button variant="outline" className="w-full" onClick={() => abrirExterno(CONOCE_AQUI)}>
-                      Ver en Conoce Aquí <ExternalLink aria-hidden="true" />
-                    </Button>
-                    <Button variant="outline" className="w-full" onClick={() => abrirExterno(VISOR_BGR)}>
-                      Ver el plano en el Visor BGR <ExternalLink aria-hidden="true" />
-                    </Button>
-                  </div>
+                  {transcrita ? (
+                    <>
+                      <p className="text-sm leading-relaxed text-tinta-2">
+                        Transcrita de {d.fuente}{d.fechaConsulta ? `, consultada el ${fecha(d.fechaConsulta)}` : ""}.
+                        No incluye nombres, DNI ni domicilios de personas naturales. Para la copia literal certificada o los
+                        planos del título archivado, solicítalos en SUNARP (tienen costo).
+                      </p>
+                      <div className="space-y-2">
+                        <Button variant="outline" className="w-full" onClick={() => abrirExterno(CONOCE_AQUI)}>
+                          Ver en Conoce Aquí <ExternalLink aria-hidden="true" />
+                        </Button>
+                        <Button variant="outline" className="w-full" onClick={() => abrirExterno(VISOR_BGR)}>
+                          Ver el plano en el Visor BGR <ExternalLink aria-hidden="true" />
+                        </Button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="text-sm leading-relaxed text-tinta-2">{d.fuente}: no corresponde a una partida real.</p>
+                  )}
                   {esRevisor && (
                     <div className="border-t border-border pt-5">
                       {!confirmando ? (
                         <Button variant="ghost" className="text-sem-rojo-tinta hover:bg-danger/10 hover:text-sem-rojo-tinta" onClick={() => setConfirmando(true)}>
-                          <Trash2 aria-hidden="true" /> Eliminar partida transcrita
+                          <Trash2 aria-hidden="true" /> {transcrita ? "Eliminar partida transcrita" : "Eliminar partida simulada"}
                         </Button>
                       ) : (
                         <div role="alertdialog" aria-labelledby="eliminar-titulo" className="anim-enter rounded-2xl border border-danger/30 bg-danger/10 p-4">

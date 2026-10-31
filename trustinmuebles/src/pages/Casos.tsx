@@ -59,7 +59,7 @@ export default function Casos() {
     <div className="flex w-full flex-col">
       <section className="relative isolate overflow-hidden bg-foreground">
         <img
-          src="https://images.unsplash.com/photo-1560518883-ce09059eeffa?auto=format&fit=crop&w=2000&q=80"
+          src="/img/maqueta-casa-llaves.jpg"
           alt=""
           aria-hidden="true"
           className="absolute inset-0 -z-20 h-full w-full scale-105 object-cover"

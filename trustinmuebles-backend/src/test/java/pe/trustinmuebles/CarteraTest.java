@@ -90,7 +90,7 @@ class CarteraTest extends BaseApiTest {
         mvc.perform(get("/api/v1/cartera/panel")).andExpect(status().isUnauthorized());
         contactar(PARCONA, "", motivo).andExpect(status().isUnauthorized());
         assertThat(jdbc.queryForObject("select count(*) from evaluacion_tecnica where especialista_asignado_codigo "
-                + "is not null", Integer.class)).isZero();
+                + "is not null", Integer.class)).as("solo la inspección en curso de la carga").isEqualTo(1);
     }
 
     // ------------------------------------------------------------------ contacto
@@ -204,17 +204,34 @@ class CarteraTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Sin asignación se conserva el comportamiento anterior: cualquier especialista autorizado emite")
-    void sinAsignacionCualquieraEmite() throws Exception {
+    @DisplayName("Sin asignación nadie registra avance ni emite: 409 y la inspección sigue solicitada")
+    void sinAsignacionNadieEmite() throws Exception {
         try {
             mvc.perform(post("/api/v1/casos/" + SANTIAGO + "/inspeccion/solicitud").header("Authorization", comprador()))
                     .andExpect(status().isCreated());
-            emitir(SANTIAGO, especialista(2), informe("EMITIDO")).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.evaluacionTecnica.especialistaAsignadoCodigo").value(nullValue()))
-                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Arq. Perfil Ficticio 02"));
+            for (int n : new int[] {1, 2}) {
+                for (String estado : new String[] {"EN_INSPECCION", "EMITIDO"}) {
+                    emitir(SANTIAGO, especialista(n), informe(estado)).andExpect(status().isConflict())
+                            .andExpect(jsonPath("$.detail").value("El gestor debe asignar un especialista"));
+                }
+            }
+            JsonNode t = leerComo(SANTIAGO, revisor()).get("evaluacionTecnica");
+            assertThat(t.get("estado").asString()).isEqualTo("SOLICITADA");
+            assertThat(t.get("profesional").isNull()).isTrue();
         } finally {
             limpiarInspeccion(SANTIAGO);
         }
+    }
+
+    @Test
+    @DisplayName("Carga: Pachacútec en curso con especialista-01 asignado; San José de los Molinos solicitada y sin asignar")
+    void cargaConAsignacion() throws Exception {
+        assertThat(leerComo(PACHACUTEC, gestor()).get("evaluacionTecnica").get("especialistaAsignadoCodigo").asString())
+                .isEqualTo("especialista-01");
+        JsonNode molinos = leerComo(MOLINOS, gestor()).get("evaluacionTecnica");
+        assertThat(molinos.get("estado").asString()).isEqualTo("SOLICITADA");
+        assertThat(molinos.get("especialistaAsignadoCodigo").isNull()).isTrue();
+        emitir(PACHACUTEC, especialista(2), informe("EN_INSPECCION")).andExpect(status().isForbidden());
     }
 
     // ------------------------------------------------------------------ panel
@@ -253,11 +270,11 @@ class CarteraTest extends BaseApiTest {
             assertThat(p.get("casosConFaltantes")).hasSize(conFaltantes);
             assertThat(p.get("casosConFaltantes").toString()).contains(SUBTANJALLA, LOS_AQUIJES);
 
-            // Inspecciones de la carga: San José de los Molinos solicitada y Pachacútec en curso, sin asignar.
+            // Inspecciones de la carga: San José de los Molinos solicitada y sin asignar; Pachacútec en curso y asignada.
             assertThat(p.get("inspecciones").toString()).contains(MOLINOS, PACHACUTEC);
             assertThat(p.get("inspecciones")).hasSize(2);
-            assertThat(p.get("inspeccionesAsignadas").asInt()).isZero();
-            assertThat(p.get("inspeccionesSinAsignar").asInt()).isEqualTo(2);
+            assertThat(p.get("inspeccionesAsignadas").asInt()).isEqualTo(1);
+            assertThat(p.get("inspeccionesSinAsignar").asInt()).isEqualTo(1);
 
             assertThat(p.get("contactosPendientes")).hasSize(jdbc.queryForObject(
                     "select count(*) from solicitud_contacto where estado = 'PENDIENTE'", Integer.class));

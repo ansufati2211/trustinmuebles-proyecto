@@ -69,14 +69,15 @@ public class InspeccionService {
 
     /**
      * M8: el especialista registra el avance o el informe. El nombre, la especialidad y la colegiatura salen de su
-     * cuenta, nunca del cuerpo de la petición. Exige que el expediente tenga una solicitud.
+     * cuenta, nunca del cuerpo de la petición. Exige una solicitud con un especialista asignado por el gestor, y que sea él.
      */
     public EvaluacionTecnicaDto registrar(Long expedienteId, InformeDatos d, Long especialistaId,
             String especialistaCodigo) {
         EvaluacionTecnica e = repo.findByExpedienteId(expedienteId).orElseThrow(
                 () -> new ConflictoException("Este expediente no tiene una solicitud de inspección técnica"));
-        // v0.7: con asignación, solo el especialista asignado emite; sin ella se conserva el comportamiento anterior.
-        if (e.getEspecialistaAsignadoCodigo() != null && !e.getEspecialistaAsignadoCodigo().equals(especialistaCodigo)) {
+        String asignado = e.getEspecialistaAsignadoCodigo();
+        if (asignado == null) throw new ConflictoException("El gestor debe asignar un especialista");
+        if (!asignado.equals(especialistaCodigo)) {
             throw new AccessDeniedException("Esta inspección está asignada a otro especialista");
         }
         PerfilProfesional perfil = identidad.perfilProfesional(especialistaId).orElseThrow(
@@ -106,7 +107,7 @@ public class InspeccionService {
     /**
      * Carga de contenido: guarda un informe de demostración sin pasar por el endpoint. El profesional es la cuenta de
      * especialista indicada y la fecha de solicitud queda cuatro días antes de la inspección, para que el informe no
-     * quede incompleto.
+     * quede incompleto. Una inspección en curso queda asignada a esa cuenta, que es la única que podrá terminarla.
      */
     public EvaluacionTecnicaDto cargarDemostracion(Long expedienteId, InformeDatos d, String especialistaCodigo,
             String solicitanteCodigo) {
@@ -116,6 +117,7 @@ public class InspeccionService {
         e.setExpedienteId(expedienteId);
         e.setSolicitanteCodigo(solicitanteCodigo);
         if (d.fechaInspeccion() != null) e.setFechaSolicitud(d.fechaInspeccion().minusDays(4));
+        if (d.estado() == EstadoTecnico.EN_INSPECCION) e.setEspecialistaAsignadoCodigo(especialistaCodigo);
         return guardar(e, d, perfil);
     }
 

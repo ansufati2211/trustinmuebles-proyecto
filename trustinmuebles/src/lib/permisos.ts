@@ -13,12 +13,11 @@ export const puedeSolicitarInspeccion = (rol: Rol | undefined, estado: EstadoTec
   veBotonSolicitar(rol) && estado === "NO_SOLICITADA";
 
 /**
- * Solo el especialista llena el informe, y solo si hay una solicitud. Si el gestor asignó la inspección (v0.7), solo el
- * especialista asignado; sin asignación, cualquiera.
+ * Solo el especialista llena el informe, y solo si hay una solicitud y el gestor se la asignó. Sin asignación, nadie.
  */
 export const puedeEmitirInforme = (rol: Rol | undefined, estado: EstadoTecnico, asignado?: string | null,
   cuenta?: string | null) =>
-  rol === "ESPECIALISTA" && estado !== "NO_SOLICITADA" && (!asignado || asignado === cuenta);
+  rol === "ESPECIALISTA" && estado !== "NO_SOLICITADA" && !!asignado && asignado === cuenta;
 
 /** Solo el revisor edita la partida, los planos y el checklist. */
 export const puedeEditarExpediente = (rol: Rol | undefined) => rol === "REVISOR";

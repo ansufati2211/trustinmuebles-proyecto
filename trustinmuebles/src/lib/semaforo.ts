@@ -117,6 +117,6 @@ export const PROCEDIMIENTO_INSPECCION: { titulo: string; texto: string }[] = [
   { titulo: "Verificación de los planos (4 especialidades)", texto: "Compara los planos arquitectónico, de estructuras, eléctrico y sanitario con lo construido." },
   { titulo: "Inspección física presencial", texto: "Verificación visual e instrumental en el inmueble: muros y columnas, fisuras, humedad y filtraciones, cableado, tomacorrientes, llave diferencial y pozo a tierra." },
   { titulo: "Observaciones, deficiencias y riesgos", texto: "Registra lo que se encontró en la obra y no figuraba en los planos." },
-  { titulo: "Informe técnico", texto: "El profesional colegiado (CIP o CAP) deja constancia de lo verificado, con su número de colegiatura." },
+  { titulo: "Informe técnico", texto: "El especialista de la inmobiliaria deja constancia de lo verificado. Los perfiles y números de colegiatura de esta demostración son ficticios." },
   { titulo: "Alcance y estudios adicionales", texto: "Indica qué conclusiones quedan sustentadas por la inspección y qué requiere ensayos, por ejemplo una diamantina, un estudio de suelos o una medición de aislamiento eléctrico." },
 ];

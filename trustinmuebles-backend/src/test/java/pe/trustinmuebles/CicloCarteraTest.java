@@ -33,6 +33,7 @@ class CicloCarteraTest extends BaseApiTest {
 
     ObjectNode expediente() {
         ObjectNode p = json.createObjectNode();
+        p.put("origen", "TRANSCRITA_CONOCE_AQUI");
         p.put("numero", CASO);
         p.put("denominacion", "Mz. P Lote 9 · Hab. Urb. Los Sauces · Ica");
         p.put("contexto", "Ica, Ica");

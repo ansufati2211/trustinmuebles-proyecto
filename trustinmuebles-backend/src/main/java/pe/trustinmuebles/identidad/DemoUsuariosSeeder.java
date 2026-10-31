@@ -43,9 +43,9 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     static final String ESPECIALISTA_02_COLEGIATURA = "SIM-CAP-0002";
 
     /** Datos profesionales del especialista de la demostración. Son ficticios y la interfaz los rotula así. */
-    static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
+    static final String ESPECIALISTA_NOMBRE = "Ing. Perfil Ficticio 01";
     static final String ESPECIALISTA_ESPECIALIDAD = "Ingeniero Civil";
-    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
+    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° SIM-CIP-0001";
 
     static final String FUNCION_GESTOR = "Asesor comercial";
 

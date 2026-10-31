@@ -16,6 +16,8 @@ export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
 /** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
 export type Origen = "SINTETICO" | "TRANSCRITA";
+/** Origen que el revisor elige al captar una partida (ETP-1). */
+export type OrigenCaptacion = "TRANSCRITA_CONOCE_AQUI" | "SIMULADA_DEMOSTRACION";
 export type Completitud = "COMPLETA" | "INCOMPLETA" | "DESCONOCIDA";
 export type EstadoItem = "PENDIENTE" | "REVISADO" | "OBSERVADO";
 export type TipoActo =
@@ -67,7 +69,7 @@ export interface EvaluacionTecnica {
   solicitanteCodigo: string | null;
   riesgoFisicoDetectado: boolean;
   servicio: ServicioInspeccion | null;
-  /** v0.7: especialista asignado por el gestor. Si existe, solo él emite el informe. */
+  /** v0.7: especialista asignado por el gestor. Solo él emite el informe; sin asignación, nadie. */
   especialistaAsignadoCodigo?: string | null;
 }
 
@@ -109,7 +111,7 @@ export interface DetalleCaso {
 }
 
 /** Qué provocó un recálculo del indicador A (lista cerrada del backend). */
-export type OrigenEvaluacion = "EDICION" | "PLANO_ADJUNTO" | "PARTIDA_TRANSCRITA" | "CARGA_INICIAL";
+export type OrigenEvaluacion = "EDICION" | "PLANO_ADJUNTO" | "PARTIDA_TRANSCRITA" | "PARTIDA_SIMULADA" | "CARGA_INICIAL";
 
 /** Una fila del historial de evaluaciones (GET /casos/{codigo}/historial). Solo lectura. */
 export interface EntradaHistorial {

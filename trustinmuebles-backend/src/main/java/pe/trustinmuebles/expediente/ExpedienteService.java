@@ -94,7 +94,7 @@ class ExpedienteService {
      */
     DetalleCaso actualizar(String codigo, ActualizarExpedienteRequest req) {
         Expediente e = buscar(codigo);
-        if (!e.getCaso().isSintetico()) verificarDatosPersonales(req.datos(), e.getCaso().getDenominacion(), null);
+        if (e.getCaso().esCaptado()) verificarDatosPersonales(req.datos(), e.getCaso().getDenominacion(), null);
         if (!req.versionEsperada().equals(e.getVersion())) {
             throw new ConflictoException("El expediente cambió mientras lo editaba. Recargue e intente de nuevo.");
         }
@@ -112,9 +112,14 @@ class ExpedienteService {
      * único que puede levantar un embargo, un bloqueo o una demanda); si solo cambian los planos, se adjuntó un plano.
      */
     static OrigenEvaluacion origenDeLaEdicion(String asientosAntes, String planosAntes, Expediente e) {
-        if (!asientosAntes.equals(firmaAsientos(e))) return OrigenEvaluacion.PARTIDA_TRANSCRITA;
+        if (!asientosAntes.equals(firmaAsientos(e))) return origenDeLaPartida(e.getCaso());
         if (!planosAntes.equals(firmaPlanos(e))) return OrigenEvaluacion.PLANO_ADJUNTO;
         return OrigenEvaluacion.EDICION;
+    }
+
+    /** Una partida simulada captada no se rotula como transcrita en el historial. */
+    private static OrigenEvaluacion origenDeLaPartida(CasoLote c) {
+        return c.esCaptado() && c.isSintetico() ? OrigenEvaluacion.PARTIDA_SIMULADA : OrigenEvaluacion.PARTIDA_TRANSCRITA;
     }
 
     private static String firmaAsientos(Expediente e) {
@@ -288,13 +293,19 @@ class ExpedienteService {
             "Pendiente", "Semáforo informativo");
 
     /**
-     * Registra una partida transcrita de una consulta pública. El número no puede llevar el prefijo SIM- y no se
-     * aceptan datos personales reconocibles. Todo ocurre en una sola transacción.
+     * Capta una partida: transcrita de una consulta pública (sin el prefijo SIM-) o simulada para la demostración (con
+     * él). En ambos casos se rechazan los datos personales reconocibles. Todo ocurre en una sola transacción.
      */
     DetalleCaso registrar(RegistrarPartidaRequest req) {
         if (!Boolean.TRUE.equals(req.confirmaSinDatosPersonales())) {
             throw new IllegalArgumentException(
                     "confirmaSinDatosPersonales: debes confirmar que la transcripción no contiene datos de personas naturales");
+        }
+        boolean simulada = req.origen() == OrigenCaptacion.SIMULADA_DEMOSTRACION;
+        if (simulada != req.numero().startsWith(PREFIJO_SIMULADO)) {
+            throw new IllegalArgumentException(simulada
+                    ? "numero: una partida simulada debe llevar el prefijo SIM-"
+                    : "numero: el prefijo SIM- se reserva a las partidas simuladas");
         }
         if (casos.existsByCodigo(req.numero())) {
             throw new ConflictoException("La partida " + req.numero() + " ya está registrada");
@@ -309,11 +320,12 @@ class ExpedienteService {
         caso.setCodigo(req.numero());
         caso.setDenominacion(req.denominacion().trim());
         caso.setContexto(req.contexto().trim());
-        caso.setSintetico(false);
-        caso.setOrigen(CasoLote.Origen.TRANSCRITA);
-        caso.setFuente(FUENTE_CONOCE_AQUI);
+        caso.setSintetico(simulada);
+        caso.setOrigen(simulada ? CasoLote.Origen.SINTETICO : CasoLote.Origen.TRANSCRITA);
+        caso.setFuente(simulada ? FUENTE_SIMULADA : FUENTE_CONOCE_AQUI);
         caso.setFechaConsulta(req.fechaConsulta());
         caso.setDistrito(distritoDe(req.contexto()));
+        caso.setPrecioReferencial(req.precioReferencial());
         caso.setSinDatosPersonales(true);
         caso.setResponsableId(UsuarioActual.actual().id());
         // Etapa 1 (captación): el caso nace en borrador y sin autorización; solo el propietario puede otorgarla.
@@ -326,13 +338,15 @@ class ExpedienteService {
         int orden = 0;
         for (String nombre : CHECKLIST_TRANSCRITA) checklist.agregar(e.getId(), nombre, EstadoItem.PENDIENTE, orden++);
         glosario.asociar(e.getId(), TERMINOS_TRANSCRITA);
-        recalcular(e, OrigenEvaluacion.PARTIDA_TRANSCRITA);
+        recalcular(e, origenDeLaPartida(caso));
         return aDetalle(e);
     }
 
     static final String FUENTE_CONOCE_AQUI = "Conoce Aquí – SUNARP";
+    static final String FUENTE_SIMULADA = "Partida simulada para demostración";
+    static final String PREFIJO_SIMULADO = "SIM-";
 
-    /** El distrito de una partida transcrita es la primera parte del contexto («Parcona, Ica» → «Parcona»). */
+    /** El distrito de una partida captada es la primera parte del contexto («Parcona, Ica» → «Parcona»). */
     static String distritoDe(String contexto) {
         String d = contexto.split(",")[0].trim();
         return d.isEmpty() ? null : d;
@@ -350,12 +364,12 @@ class ExpedienteService {
                 c.getPrecioReferencial() == null ? null : PRECIO_NOTA);
     }
 
-    /** Elimina una partida transcrita (por ejemplo, ante el pedido de un titular). Las ficticias no se borran. */
+    /** Elimina una partida captada (por ejemplo, ante el pedido de un titular). Los casos de demostración no se borran. */
     void eliminar(String codigo) {
         Expediente e = buscar(codigo);
         CasoLote caso = e.getCaso();
-        if (caso.isSintetico()) {
-            throw new ConflictoException("Solo se pueden eliminar partidas transcritas");
+        if (!caso.esCaptado()) {
+            throw new ConflictoException("Solo se pueden eliminar partidas captadas");
         }
         List<String> archivos = new java.util.ArrayList<>();
         if (e.getDocumentoArchivoId() != null) archivos.add(e.getDocumentoArchivoId());
@@ -567,7 +581,7 @@ class ExpedienteService {
     // ------------------------------------------------------ captación y publicación
 
     /**
-     * Etapa 1: el propietario autoriza la evaluación y publicación de su propio caso (I13). Es su única escritura. Si
+     * Etapa 2: el propietario autoriza la publicación de su propio caso (I13). Es su única escritura. Si
      * ya estaba autorizado se conserva la fecha original. No recalcula ni cambia el color del indicador A (I8).
      */
     PublicacionDto autorizar(String codigo) {

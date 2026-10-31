@@ -1,9 +1,7 @@
-# Construye y publica las imágenes en GitHub Container Registry (ghcr.io) en cada push a main.
+# Construye y publica las imágenes en GitHub Container Registry (ghcr.io) solo cuando se lanza a mano.
 name: Imágenes Docker
 
 on:
-  push:
-    branches: [main]
   workflow_dispatch:
 
 permissions:

@@ -60,7 +60,7 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
     puedeAutorizar(usuario, p) && (
       <Button key="aut" className="rounded-xl" disabled={enviando}
         onClick={() => ejecutar(() => api(ruta("autorizacion"), { method: "PUT" }), "Autorización registrada.")}>
-        Autorizar evaluación
+        Autorizar publicación
       </Button>
     ),
     puedeRetirarAutorizacion(usuario, p) && (
