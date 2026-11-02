@@ -472,3 +472,19 @@ asignar, y el panel de cartera no reflejaba quién la llevaba.
 asignar. V10 hace lo mismo en bases existentes. Otra inspección en curso sin asignar de una base existente queda esperando al
 gestor.
 **Consecuencia:** un informe de demostración ya emitido no tiene asignación: no se puede modificar (409) ni reasignar (409).
+
+## D52. v0.8: priorización por esfuerzo solo en el panel del gestor (matiza D41)
+
+> Numeración: el pedido de la v0.8 la llamaba D50, pero D50 y D51 ya estaban usadas por la v0.7; las decisiones de la v0.8
+> van de D52 a D55.
+
+**Qué:** `GET /cartera/panel` (solo GESTOR) agrega el conteo de casos por tipo de alerta (código y nombre de cada regla, más
+«información insuficiente» para los casos grises), el conteo por esfuerzo de regularización (BAJO, MEDIO, ALTO y sin pasos) y la
+lista «por regularizar» (código, denominación, color de A, tipos de alerta y esfuerzo), ordenada por esfuerzo y luego por código.
+`GET /casos` acepta el filtro `tipoAlerta`, combinable con los demás, en el catálogo (el comprador solo ve publicados) y en Cartera.
+**Por qué:** feedback docente del 31/10/2026: la inmobiliaria debe ver su cartera por tipo de problema y cuáles casos son más
+viables o tomarán más tiempo.
+**Límite:** D41 decía «sin rankings». Se mantiene para el comprador: el orden por esfuerzo solo existe en el panel del gestor, sirve
+para organizar la subsanación y lleva el aviso «Priorización interna de la inmobiliaria; no es una recomendación de compra». El
+esfuerzo es un criterio del equipo (borrador pendiente de revisión especializada), no un plazo ni un costo, y no cambia A ni B.
+

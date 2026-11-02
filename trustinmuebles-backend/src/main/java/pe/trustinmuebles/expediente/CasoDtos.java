@@ -35,7 +35,9 @@ final class CasoDtos {
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             long pendientes, String origen, String fuente, LocalDate fechaConsulta,
             EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
-            PredioDto predio, EstadoPublicacion estadoPublicacion) {}
+            PredioDto predio, EstadoPublicacion estadoPublicacion,
+            /* v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
+            List<String> tiposAlerta) {}
 
     /**
      * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se

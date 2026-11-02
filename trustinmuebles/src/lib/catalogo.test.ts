@@ -40,6 +40,15 @@ describe("filtros del catálogo", () => {
     expect(hayFiltros({ ...FILTROS_VACIOS, indicadorA: "VERDE" })).toBe(true);
   });
 
+  it("v0.8: el tipo de alerta va al servidor, se combina y se valida al leer la URL", () => {
+    const f = { ...FILTROS_VACIOS, indicadorA: "AMARILLO" as const, tipoAlerta: "RV-02" };
+    expect(rutaCatalogo(f)).toBe("/casos?estado=AMARILLO&tipoAlerta=RV-02");
+    expect(filtrosDesdeURL(filtrosAURL(f))).toEqual(f);
+    expect(filtrosDesdeURL(new URLSearchParams("tipoAlerta=informacion_insuficiente")).tipoAlerta).toBe("INFORMACION_INSUFICIENTE");
+    expect(filtrosDesdeURL(new URLSearchParams("tipoAlerta=DROP")).tipoAlerta).toBeUndefined();
+    expect(hayFiltros({ ...FILTROS_VACIOS, tipoAlerta: "RP-01" })).toBe(true);
+  });
+
   it("el contador dice cuántos inmuebles hay en singular y plural", () => {
     expect(textoResultados(0)).toBe("Ningún inmueble");
     expect(textoResultados(1)).toBe("1 inmueble");

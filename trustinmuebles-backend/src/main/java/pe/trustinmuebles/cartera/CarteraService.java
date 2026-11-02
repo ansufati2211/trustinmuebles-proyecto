@@ -3,7 +3,9 @@ package pe.trustinmuebles.cartera;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.EnumMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import org.springframework.security.access.AccessDeniedException;
@@ -15,7 +17,11 @@ import pe.trustinmuebles.clasificacion.EstadoSemaforo;
 import pe.trustinmuebles.clasificacion.EvaluacionDto;
 import pe.trustinmuebles.expediente.CarteraCasos;
 import pe.trustinmuebles.expediente.CarteraCasos.CasoCartera;
+import pe.trustinmuebles.clasificacion.TipoAlerta;
+import pe.trustinmuebles.expediente.Esfuerzo;
 import pe.trustinmuebles.expediente.EstadoPublicacion;
+import pe.trustinmuebles.expediente.RutaRegularizacion;
+import pe.trustinmuebles.expediente.RutasRegularizacion;
 import pe.trustinmuebles.identidad.Rol;
 import pe.trustinmuebles.identidad.UsuarioActual;
 import pe.trustinmuebles.inspeccion.EstadoTecnico;
@@ -35,13 +41,15 @@ class CarteraService {
     private final CarteraCasos casos;
     private final ClasificacionService clasificacion;
     private final InspeccionService inspeccion;
+    private final RutasRegularizacion rutas;
 
     CarteraService(SolicitudContactoRepository contactos, CarteraCasos casos, ClasificacionService clasificacion,
-            InspeccionService inspeccion) {
+            InspeccionService inspeccion, RutasRegularizacion rutas) {
         this.contactos = contactos;
         this.casos = casos;
         this.clasificacion = clasificacion;
         this.inspeccion = inspeccion;
+        this.rutas = rutas;
     }
 
     /**
@@ -86,7 +94,13 @@ class CarteraService {
                 .stream().map(ContactoDto::de).toList();
     }
 
-    /** Panel de solo lectura del gestor. Cuenta lo que hay; no ordena ni califica casos. */
+    /** Clave del conteo por esfuerzo para los casos sin pasos de regularización. */
+    static final String SIN_PASOS = "SIN_PASOS";
+
+    /**
+     * Panel de solo lectura del gestor. Cuenta lo que hay. v0.8 (D52, matiza D41): la lista «por regularizar» se ordena
+     * por esfuerzo y código solo para organizar la subsanación; no califica casos para el comprador.
+     */
     @Transactional(readOnly = true)
     PanelCartera panel() {
         exigir(Rol.GESTOR, "Solo el gestor consulta el panel de cartera");
@@ -97,7 +111,21 @@ class CarteraService {
         for (EstadoPublicacion e : EstadoPublicacion.values()) porPublicacion.put(e, 0L);
         List<CasoConFaltantes> conFaltantes = new ArrayList<>();
         List<InspeccionEnCurso> enCurso = new ArrayList<>();
+        Map<String, Long> porTipo = new LinkedHashMap<>();
+        List<TipoAlerta> tipos = clasificacion.tiposDeAlerta();
+        for (TipoAlerta t : tipos) porTipo.put(t.codigo(), 0L);
+        Map<String, Long> porEsfuerzo = new LinkedHashMap<>();
+        for (Esfuerzo e : Esfuerzo.values()) porEsfuerzo.put(e.name(), 0L);
+        porEsfuerzo.put(SIN_PASOS, 0L);
+        List<CasoPorRegularizar> porRegularizar = new ArrayList<>();
         for (CasoCartera c : todos) {
+            RutaRegularizacion ruta = rutas.calcular(c.expedienteId());
+            for (String t : ruta.tiposAlerta()) porTipo.merge(t, 1L, Long::sum);
+            porEsfuerzo.merge(ruta.esfuerzo() == null ? SIN_PASOS : ruta.esfuerzo().name(), 1L, Long::sum);
+            if (ruta.esfuerzo() != null) {
+                porRegularizar.add(new CasoPorRegularizar(c.codigo(), c.denominacion(), ruta.estado(),
+                        ruta.tiposAlerta(), ruta.esfuerzo()));
+            }
             porPublicacion.merge(c.estadoPublicacion(), 1L, Long::sum);
             EvaluacionDto ev = clasificacion.obtener(c.expedienteId()).orElse(null);
             if (ev != null) {
@@ -115,8 +143,11 @@ class CarteraService {
         long asignadas = enCurso.stream().filter(InspeccionEnCurso::asignada).count();
         List<ContactoDto> pendientes = contactos.findByEstadoOrderByIdAsc(EstadoContacto.PENDIENTE).stream()
                 .map(ContactoDto::de).toList();
+        porRegularizar.sort(Comparator.comparing(CasoPorRegularizar::esfuerzo).thenComparing(CasoPorRegularizar::codigo));
+        List<ConteoTipoAlerta> conteoTipos = tipos.stream()
+                .map(t -> new ConteoTipoAlerta(t.codigo(), t.nombre(), porTipo.getOrDefault(t.codigo(), 0L))).toList();
         return new PanelCartera(todos.size(), porColor, porPublicacion, conFaltantes, enCurso, asignadas,
-                enCurso.size() - asignadas, pendientes);
+                enCurso.size() - asignadas, pendientes, conteoTipos, porEsfuerzo, porRegularizar, CarteraDtos.AVISO_PRIORIZACION);
     }
 
     private static UsuarioActual exigir(Rol rol, String mensaje) {

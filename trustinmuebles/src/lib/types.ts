@@ -39,7 +39,12 @@ export interface ResumenCaso {
   pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
   resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean; predio: Predio;
   estadoPublicacion: EstadoPublicacion;
+  /** v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
+  tiposAlerta?: string[];
 }
+
+/** v0.8: un tipo de alerta (GET /casos/tipos-alerta): código y nombre de la regla, o información insuficiente. */
+export interface TipoAlerta { codigo: string; nombre: string }
 
 /** Captación y publicación (v0.7). El comprador recibe propietarioCodigo en null (I11). */
 export interface Publicacion {
@@ -157,6 +162,11 @@ export interface PanelCartera {
   porEstadoPublicacion: Partial<Record<EstadoPublicacion, number>>; casosConFaltantes: CasoConFaltantes[];
   inspecciones: InspeccionEnCurso[]; inspeccionesAsignadas: number; inspeccionesSinAsignar: number;
   contactosPendientes: Contacto[];
+  /** v0.8 (D52): conteos por tipo de alerta y por esfuerzo, y la lista para organizar la subsanación. */
+  porTipoAlerta?: { codigo: string; nombre: string; casos: number }[];
+  porEsfuerzo?: Partial<Record<Esfuerzo | "SIN_PASOS", number>>;
+  porRegularizar?: { codigo: string; denominacion: string; color: EstadoSemaforo | null; tiposAlerta: string[]; esfuerzo: Esfuerzo }[];
+  avisoPriorizacion?: string;
 }
 
 export interface AsientoPeticion {

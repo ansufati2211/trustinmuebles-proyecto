@@ -45,10 +45,26 @@ export function totalesDelPanel(p: Partial<PanelCartera> | null | undefined): To
   return { total, porColor, sinEvaluar: Math.max(0, total - evaluados), porPublicacion };
 }
 
-/** Filtros de la lista del panel. Vacío significa «todos». Se combinan con «y». */
-export interface FiltroCartera { color: "" | EstadoSemaforo; publicacion: "" | EstadoPublicacion; q: string }
+/**
+ * Filtros de la lista del panel. Vacío significa «todos». Se combinan con «y». v0.8: el tipo de alerta se filtra en el
+ * servidor (rutaCartera).
+ */
+export interface FiltroCartera {
+  color: "" | EstadoSemaforo; publicacion: "" | EstadoPublicacion; q: string; tipoAlerta?: string;
+}
 
-export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "" };
+export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "", tipoAlerta: "" };
+
+/** Ruta de la lista del gestor: con tipo de alerta, el servidor ya devuelve solo esos casos. */
+export const rutaCartera = (f: FiltroCartera) =>
+  f.tipoAlerta ? `/casos?tipoAlerta=${encodeURIComponent(f.tipoAlerta)}` : "/casos";
+
+/** Nombre de un tipo de alerta para mostrar: «RV-02 · Hipoteca vigente». */
+export const nombreTipoAlerta = (codigo: string, tipos: { codigo: string; nombre: string }[] | null | undefined) => {
+  const t = tipos?.find((x) => x.codigo === codigo);
+  if (codigo === "INFORMACION_INSUFICIENTE") return t?.nombre ?? "Información insuficiente";
+  return t ? `${codigo} · ${t.nombre}` : codigo;
+};
 
 /** Filtra en el navegador la lista del gestor (ya la entregó el servidor completa). */
 export function filtrarCartera(casos: ResumenCaso[] | null | undefined, f: FiltroCartera): ResumenCaso[] {

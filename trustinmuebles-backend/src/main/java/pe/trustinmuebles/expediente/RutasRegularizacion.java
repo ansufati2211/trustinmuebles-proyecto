@@ -28,7 +28,7 @@ import tools.jackson.databind.ObjectMapper;
 @Transactional(readOnly = true)
 public class RutasRegularizacion {
     /** Tipo de alerta de un caso gris: falta información o la condición no está contemplada. */
-    public static final String INFORMACION_INSUFICIENTE = "INFORMACION_INSUFICIENTE";
+    public static final String INFORMACION_INSUFICIENTE = ClasificacionService.INFORMACION_INSUFICIENTE;
     static final String SIN_PASOS = "Sin alertas en los campos evaluados: no hay pasos de regularización";
     static final String PLAZO_NO_CONSTA = "No consta en la partida: solicitar al propietario o al acreedor";
     static final String NO_CONSTA = "No consta";

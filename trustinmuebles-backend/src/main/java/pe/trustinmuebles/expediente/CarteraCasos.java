@@ -13,8 +13,8 @@ import org.springframework.transaction.annotation.Transactional;
 @Transactional(readOnly = true)
 public class CarteraCasos {
     /** Un caso visto desde la cartera. El propietario va por su código de cuenta (I11). */
-    public record CasoCartera(Long expedienteId, String codigo, EstadoPublicacion estadoPublicacion,
-            String propietarioCodigo) {}
+    public record CasoCartera(Long expedienteId, String codigo, String denominacion,
+            EstadoPublicacion estadoPublicacion, String propietarioCodigo) {}
 
     private final ExpedienteRepository expedientes;
 
@@ -31,7 +31,7 @@ public class CarteraCasos {
     }
 
     private static CasoCartera de(Expediente e) {
-        return new CasoCartera(e.getId(), e.getCaso().getCodigo(), e.getCaso().getEstadoPublicacion(),
-                e.getCaso().getPropietarioCodigo());
+        return new CasoCartera(e.getId(), e.getCaso().getCodigo(), e.getCaso().getDenominacion(),
+                e.getCaso().getEstadoPublicacion(), e.getCaso().getPropietarioCodigo());
     }
 }

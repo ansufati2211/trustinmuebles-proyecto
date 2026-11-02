@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import tools.jackson.databind.JsonNode;
 import pe.trustinmuebles.clasificacion.EstadoSemaforo;
+import pe.trustinmuebles.expediente.Esfuerzo;
 import pe.trustinmuebles.expediente.EstadoPublicacion;
 import pe.trustinmuebles.inspeccion.EstadoTecnico;
 
@@ -53,12 +54,25 @@ final class CarteraDtos {
 
     record InspeccionEnCurso(String codigo, EstadoTecnico estado, String especialistaAsignadoCodigo, boolean asignada) {}
 
+    /** v0.8: cuántos casos tienen un tipo de alerta (código y nombre de la regla, o información insuficiente). */
+    record ConteoTipoAlerta(String codigo, String nombre, long casos) {}
+
+    /** v0.8: un caso con pasos de regularización, para organizar la subsanación (no es un ranking de compra). */
+    record CasoPorRegularizar(String codigo, String denominacion, EstadoSemaforo color, List<String> tiposAlerta,
+            Esfuerzo esfuerzo) {}
+
+    static final String AVISO_PRIORIZACION =
+            "Priorización interna de la inmobiliaria; no es una recomendación de compra";
+
     /**
      * Panel de cartera del gestor (solo lectura). Totales por color del indicador A y por estado de publicación, casos con
-     * faltantes, inspecciones solicitadas o en curso y contactos pendientes. Sin rankings.
+     * faltantes, inspecciones solicitadas o en curso y contactos pendientes. v0.8 (D52): conteo por tipo de alerta y por
+     * esfuerzo (BAJO, MEDIO, ALTO, SIN_PASOS) y la lista «por regularizar», ordenada por esfuerzo y código solo para
+     * organizar la subsanación.
      */
     record PanelCartera(int totalCasos, Map<EstadoSemaforo, Long> porColor,
             Map<EstadoPublicacion, Long> porEstadoPublicacion, List<CasoConFaltantes> casosConFaltantes,
             List<InspeccionEnCurso> inspecciones, long inspeccionesAsignadas, long inspeccionesSinAsignar,
-            List<ContactoDto> contactosPendientes) {}
+            List<ContactoDto> contactosPendientes, List<ConteoTipoAlerta> porTipoAlerta, Map<String, Long> porEsfuerzo,
+            List<CasoPorRegularizar> porRegularizar, String avisoPriorizacion) {}
 }

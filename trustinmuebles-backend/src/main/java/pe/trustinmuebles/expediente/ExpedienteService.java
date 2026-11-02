@@ -77,6 +77,14 @@ class ExpedienteService {
      * el riesgo físico se derivan de otros módulos; así la regla vive en un solo lugar y tiene prueba.
      */
     @Transactional(readOnly = true)
+    List<ResumenCaso> listar(String tipoInmueble, String estado, String estadoTecnico, Boolean riesgoFisicoDetectado,
+            String tipoAlerta) {
+        java.util.Set<String> tipos = new java.util.HashSet<>();
+        clasificacion.tiposDeAlerta().forEach(t -> tipos.add(t.codigo()));
+        return listar(FiltroCatalogo.de(tipoInmueble, estado, estadoTecnico, riesgoFisicoDetectado, tipoAlerta, tipos));
+    }
+
+    @Transactional(readOnly = true)
     List<ResumenCaso> listar(FiltroCatalogo filtro) {
         UsuarioActual u = UsuarioActual.actual();
         return expedientes.findAllByOrderByCasoCodigoAsc().stream().filter(e -> visible(e.getCaso(), u)).map(e -> {
@@ -86,8 +94,13 @@ class ExpedienteService {
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
                     e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
-                    e.getCaso().getEstadoPublicacion());
+                    e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev));
         }).filter(filtro::acepta).toList();
+    }
+
+    @Transactional(readOnly = true)
+    List<pe.trustinmuebles.clasificacion.TipoAlerta> tiposDeAlerta() {
+        return clasificacion.tiposDeAlerta();
     }
 
     @Transactional(readOnly = true)

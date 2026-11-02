@@ -12,7 +12,13 @@ export interface Filtros {
   indicadorA: "" | EstadoSemaforo;
   indicadorB: FiltroB;
   q: string;
+  /** v0.8: código de una regla (RV-02…) o INFORMACION_INSUFICIENTE. Se filtra en el servidor. */
+  tipoAlerta?: string;
 }
+
+/** Un tipo de alerta válido en la URL: RP-xx, RV-xx o INFORMACION_INSUFICIENTE. */
+export const esTipoAlerta = (v: string | null): v is string =>
+  v !== null && /^(R[PV]-\d{2}|INFORMACION_INSUFICIENTE)$/.test(v);
 
 export const FILTROS_VACIOS: Filtros = { tipo: "", indicadorA: "", indicadorB: "", q: "" };
 
@@ -43,11 +49,13 @@ const valido = <T extends string>(v: string | null, opciones: { valor: T }[]): T
 export function filtrosDesdeURL(p: URLSearchParams): Filtros {
   const riesgo = p.get("riesgoFisicoDetectado") === "true";
   const tecnico = p.get("estadoTecnico") === "EMITIDO" ? "INFORME_EMITIDO" : p.get("estadoTecnico");
+  const tipoAlerta = p.get("tipoAlerta")?.toUpperCase() ?? null;
   return {
     tipo: valido(p.get("tipoInmueble"), OPCIONES_TIPO),
     indicadorA: valido(p.get("estado"), OPCIONES_A),
     indicadorB: riesgo ? "RIESGO" : valido(tecnico, OPCIONES_B),
     q: (p.get("q") ?? "").slice(0, 40),
+    ...(esTipoAlerta(tipoAlerta) ? { tipoAlerta } : {}),
   };
 }
 
@@ -58,6 +66,7 @@ function parametrosServidor(f: Filtros): URLSearchParams {
   if (f.indicadorA) p.set("estado", f.indicadorA);
   if (f.indicadorB === "RIESGO") p.set("riesgoFisicoDetectado", "true");
   else if (f.indicadorB) p.set("estadoTecnico", f.indicadorB);
+  if (f.tipoAlerta) p.set("tipoAlerta", f.tipoAlerta);
   return p;
 }
 
@@ -74,7 +83,7 @@ export function rutaCatalogo(f: Filtros): string {
   return p ? `/casos?${p}` : "/casos";
 }
 
-export const hayFiltros = (f: Filtros) => !!(f.tipo || f.indicadorA || f.indicadorB || f.q.trim());
+export const hayFiltros = (f: Filtros) => !!(f.tipo || f.indicadorA || f.indicadorB || f.tipoAlerta || f.q.trim());
 
 /** Texto del contador: «1 inmueble», «4 inmuebles», «Ningún inmueble». */
 export const textoResultados = (n: number) => (n === 0 ? "Ningún inmueble" : n === 1 ? "1 inmueble" : `${n} inmuebles`);

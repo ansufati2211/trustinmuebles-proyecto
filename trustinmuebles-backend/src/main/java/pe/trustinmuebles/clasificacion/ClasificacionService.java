@@ -95,6 +95,21 @@ public class ClasificacionService {
                 h.getCuentaCodigo())).toList();
     }
 
+    /**
+     * v0.8: tipos de alerta de la versión de reglas activa (código y título), en el orden de reglas.json, más «información
+     * insuficiente» (casos grises). Solo lectura; no toca el motor.
+     */
+    @Transactional(readOnly = true)
+    public List<TipoAlerta> tiposDeAlerta() {
+        List<TipoAlerta> tipos = new java.util.ArrayList<>(reglas.findByVersionOrderById(versionActiva).stream()
+                .map(r -> new TipoAlerta(r.getCodigo(), r.getTitulo())).toList());
+        tipos.add(new TipoAlerta(INFORMACION_INSUFICIENTE, EstadoSemaforo.GRIS.etiqueta()));
+        return List.copyOf(tipos);
+    }
+
+    /** Tipo de alerta de un caso gris (faltan datos o la condición no está contemplada). */
+    public static final String INFORMACION_INSUFICIENTE = "INFORMACION_INSUFICIENTE";
+
     /** Cuenta que figura en los recálculos de la carga de contenido, que no hace ninguna persona. */
     public static final String CUENTA_SISTEMA = "sistema";
 
