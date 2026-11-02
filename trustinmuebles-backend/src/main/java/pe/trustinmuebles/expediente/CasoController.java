@@ -80,6 +80,12 @@ class CasoController {
                 .body(c.datos());
     }
 
+    /** v0.8: ruta de regularización orientativa, de solo lectura. Misma visibilidad que el detalle. */
+    @GetMapping("/{codigo}/ruta-regularizacion")
+    RutaRegularizacion ruta(@PathVariable String codigo) {
+        return servicio.ruta(codigo);
+    }
+
     /** Historial de evaluaciones del indicador A, solo lectura (I12). No existe ruta para editarlo ni borrarlo. */
     @GetMapping("/{codigo}/historial")
     List<HistorialEvaluacionDto> historial(@PathVariable String codigo) {

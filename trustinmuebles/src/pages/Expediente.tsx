@@ -10,6 +10,7 @@ import { EditorExpediente } from "@/components/EditorExpediente";
 import { PanelPlanos } from "@/components/PanelPlanos";
 import { PanelEvaluacionTecnica } from "@/components/PanelEvaluacionTecnica";
 import { HistorialEvaluaciones } from "@/components/HistorialEvaluaciones";
+import { RutaRegularizacion } from "@/components/RutaRegularizacion";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { SolicitudContacto } from "@/components/SolicitudContacto";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
@@ -443,6 +444,8 @@ export default function Expediente() {
                 </Card>
               )}
             </div>
+
+            <RutaRegularizacion key={`ruta-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} />
 
             <div id="ex-partida" className="scroll-mt-28 space-y-8">
               <Card className="rounded-[2rem] border-border shadow-tarjeta">

@@ -174,3 +174,19 @@ export interface PeticionExpediente {
   linderos: string | null; antecedenteDominial: string | null; asientos: AsientoPeticion[];
   tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[]; versionEsperada: number;
 }
+
+/** v0.8: esfuerzo de regularización (criterio del equipo, borrador). No es un plazo ni un costo. */
+export type Esfuerzo = "BAJO" | "MEDIO" | "ALTO";
+
+/** Un paso de la ruta de regularización: uno por motivo de la evaluación vigente. */
+export interface ItemRuta {
+  tipo: "ALERTA" | "FALTANTE" | "CONDICION"; clave: string; referencia: string | null; titulo: string; pasos: string[];
+  gestiona: string; documentoRequerido: string; esfuerzo: Esfuerzo; esfuerzoEtiqueta: string; nota: string | null;
+}
+
+/** GET /casos/{codigo}/ruta-regularizacion (v0.8). Orientativa y de solo lectura. */
+export interface RutaRegularizacion {
+  codigo: string; estado: EstadoSemaforo | null; esfuerzo: Esfuerzo | null; esfuerzoEtiqueta: string | null;
+  items: ItemRuta[]; tiposAlerta: string[]; mensaje: string | null; aviso: string; plazoGeneral: string;
+  estadoRevision: string; versionContenido: string;
+}

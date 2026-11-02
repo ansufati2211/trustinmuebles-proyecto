@@ -54,10 +54,12 @@ class ExpedienteService {
     private final InspeccionService inspeccion;
     private final AuthService identidad;
     private final DocumentosPdf documentosPdf;
+    private final RutasRegularizacion rutas;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
-            InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf) {
+            InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf,
+            RutasRegularizacion rutas) {
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -67,6 +69,7 @@ class ExpedienteService {
         this.inspeccion = inspeccion;
         this.identidad = identidad;
         this.documentosPdf = documentosPdf;
+        this.rutas = rutas;
     }
 
     /**
@@ -150,6 +153,15 @@ class ExpedienteService {
     /** Recalcula con la cuenta autenticada como autora; el historial guarda su código (I12). */
     private void recalcular(Expediente e, OrigenEvaluacion origen) {
         clasificacion.recalcular(e.getId(), e.getVersion(), entrada(e), origen, UsuarioActual.actual().codigoCuenta());
+    }
+
+    /**
+     * v0.8: ruta de regularización con la misma visibilidad que el detalle (el comprador solo ve casos publicados; en
+     * otro caso, 404). Solo lectura: no recalcula ni agrega historial.
+     */
+    @Transactional(readOnly = true)
+    RutaRegularizacion ruta(String codigo) {
+        return rutas.calcular(buscarVisible(codigo));
     }
 
     /**
