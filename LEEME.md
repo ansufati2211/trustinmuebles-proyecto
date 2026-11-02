@@ -1,4 +1,4 @@
-# Trustinmuebles — MVP académico de orientación documental (v0.7.0)
+# Trustinmuebles — MVP académico de orientación documental (v0.8.0)
 
 > **Modelo de negocio implementado, comprobado contra el código y las pruebas:**
 > [docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md). Este LEEME usa sus mismos identificadores
@@ -10,7 +10,9 @@ públicas, que SUNARP no ofrece). Muestra **partidas registrales simuladas** de 
 parecen a una copia literal pero son ficticios, explica sus términos y señala qué información falta. **No certifica
 saneamiento, no recomienda comprar, no consulta fuentes oficiales en línea y no reemplaza a un abogado o notario.**
 
-**Versión:** `0.7.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`).
+**Versión:** `0.8.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`). La v0.8.0
+incorpora el feedback docente del 31/10/2026 y las decisiones del equipo del 02/11/2026 (ver «Novedades de la v0.8.0»). Es la
+versión que usará el estudio: debe congelarse con el tag `v0.8.0` antes del piloto.
 
 **Organización de referencia del caso:** LedCons, sin acta ni acuerdo formal acreditado. Los datos del sistema no provienen de
 esa organización.
@@ -78,6 +80,23 @@ etapa) está en la sección 4 del modelo de negocio.
   de una lista cerrada (I11).
 - El historial de evaluaciones es de solo adición (I12) y el propietario solo autoriza sus propios casos (I13).
 - La autorización la valida el servidor (I4); la interfaz solo oculta lo que el rol no puede hacer.
+- v0.8: el semáforo de gestión es interno (solo gestor y revisor), no cambia A ni B, no se muestra al comprador, al propietario
+  ni al especialista y no bloquea la publicación (I15).
+- v0.8: un plano solo queda «presentado» u «observado» con su PDF (subido o la lámina generada de los casos de demostración).
+
+### Novedades de la v0.8.0
+
+| Origen | Qué cambia | Dónde |
+|---|---|---|
+| Feedback c | Un plano presentado exige su PDF (422 si no); subirlo a un plano no presentado lo presenta. PDF de hasta 25 MB, optimizado si pasa de 5 MB, máximo guardado 10 MB (413 si no baja), con evidencia de quién lo subió, cuándo, tamaños y huella SHA-256 | Panel de planos, editor, `DocumentosPdf`, V12 |
+| Feedback b | Ruta de regularización por caso (pasos, quién gestiona, documento, esfuerzo) y plazo o vencimiento del gravamen si consta | Sección «Ruta de regularización», `rutas.json`, V13 |
+| Feedback a | Panel del gestor por tipo de alerta y por esfuerzo, lista «Por regularizar» y filtro por tipo de alerta | `#/cartera`, `#/casos`, `GET /cartera/panel` |
+| Decisión 2 | Semáforo de gestión interno con decisión de captación (lista cerrada, historial de solo adición) | Panel «Gestión inmobiliaria (interno)», `gestion.json`, V14 |
+| Interfaz | Resaltado del color de A en tarjetas, listas y cabecera (borde, fondo tenue, ícono y texto) | `lib/resaltado.ts`, `index.css` |
+| Diagnóstico | El 409 por base de datos deja la causa raíz en el log del servidor (sin cambiar la respuesta) | `ManejadorErrores` |
+
+Los criterios de esfuerzo y los estados de gestión son un borrador del equipo, pendiente de revisión especializada; no son
+plazos ni costos. Decisiones D52 a D55 en `docs/decisiones.md`.
 
 ### Cómo se genera valor (hipótesis no validadas)
 
@@ -231,18 +250,24 @@ debe aprobar.
 ## Pruebas
 
 ```powershell
-cd trustinmuebles-backend; .\mvnw.cmd test     # 149 pruebas del backend
-cd trustinmuebles; npx pnpm@9 test              # 66 pruebas del frontend
+cd trustinmuebles-backend; .\mvnw.cmd test     # 186 pruebas del backend
+cd trustinmuebles; npx pnpm@9 test              # 82 pruebas del frontend
 cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
 ```
 
 En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. Las pruebas del backend no necesitan `APP_SEED_PASSWORD`: usan la
 contraseña de `src/test/resources/application-test.properties` y una base en memoria.
 
-**Última ejecución real (30 de octubre de 2026, rama `mejoras-v0.7`):** backend 149 ejecutadas, 149 aprobadas, 0 fallos, 0
-errores, 0 omitidas; frontend 11 archivos, 66 aprobadas; build correcto, con aviso de tamaño del JS principal. Las pruebas del
-frontend son de funciones puras (permisos, navegación, filtros, totales del panel, historial y contacto), más una que renderiza el
-pie: no prueban el dibujado de las demás pantallas.
+**Última ejecución real (2 de noviembre de 2026, rama `feedback-docente-v0.8`):** backend 186 ejecutadas, 186 aprobadas, 0
+fallos, 0 errores, 0 omitidas (30 clases); frontend 15 archivos, 82 aprobadas; build correcto, con aviso de tamaño del JS
+principal. Las pruebas del frontend son de funciones puras (permisos, navegación, filtros, totales del panel, historial,
+contacto, subida de PDF, ruta, gestión y resaltado), más una que renderiza el pie: no prueban el dibujado de las demás pantallas.
+Las pruebas de PDF generan los archivos en la propia prueba y usan límites pequeños de `application-test.properties`.
+
+**Recorrido de navegador de la v0.8:** 20 de 20 pasos correctos con los 5 roles en Chrome, el 2 de noviembre de 2026, sobre
+una base nueva fuera del repositorio. Script en `docs/pruebas/recorrido-v08.mjs`, capturas en `docs/pruebas/capturas-v08/` y
+tabla en `docs/pruebas/RESULTADO-recorrido-v08.md`. El recorrido de la v0.7 (`recorrido-v07.mjs`) marca planos como presentados
+sin PDF, que la v0.8 rechaza: queda como registro histórico.
 
 **Recorrido de navegador de la v0.7:** 15 de 15 pasos correctos con los 5 roles en Chrome, el 30 de octubre de 2026. Script en
 `docs/pruebas/recorrido-v07.mjs`, capturas en `docs/pruebas/capturas-v07/` y tabla en `docs/pruebas/RESULTADO-recorrido-v07.md`.
@@ -303,6 +328,17 @@ Datos sintéticos». Cada resultado de A muestra «No certifica saneamiento ni r
   - Panel «Cartera» (`#/cartera`) con totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable
     (ETP-8).
   - Texto fijo de la etapa 9 en el detalle (ETP-9).
+- **v0.8, feedback docente y decisiones del equipo:**
+  - Un plano solo queda presentado u observado con su PDF; la subida valida el archivo (400 si no es PDF, está cifrado o dañado),
+    lo optimiza si pasa de 5 MB y lo rechaza (413) si supera 25 MB de entrada o 10 MB guardado. Cada documento dice su origen
+    («Subido por…», «Generado por el sistema…» o «Falta el archivo») y se puede descargar.
+  - Ruta de regularización en el detalle, con el plazo del gravamen si consta y el aviso «Orientativo: no es asesoría legal ni
+    recomendación de compra».
+  - Panel del gestor por tipo de alerta, por esfuerzo y por estado de gestión, con la lista «Por regularizar» y la matriz tipo de
+    alerta × estado de gestión; filtro por tipo de alerta en el catálogo y en Cartera.
+  - Panel «Gestión inmobiliaria (interno)» y decisión de captación (solo gestor), con confirmación al publicar si la última
+    decisión es no captar por ahora.
+  - Tarjetas, lista de Cartera, Mis inmuebles y cabecera del detalle resaltadas por el color de A, siempre con ícono y texto.
 
 El detalle por pantalla está en `docs/funcionalidades.md`.
 

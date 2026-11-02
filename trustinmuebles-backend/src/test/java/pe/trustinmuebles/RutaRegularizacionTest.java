@@ -34,7 +34,7 @@ class RutaRegularizacionTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP23: Parcona (verde) no tiene pasos y lo dice; el aviso orientativo siempre acompaña la ruta")
+    @DisplayName("CP21: Parcona (verde) no tiene pasos y lo dice; el aviso orientativo siempre acompaña la ruta")
     void parconaSinPasos() throws Exception {
         JsonNode r = ruta(PARCONA, comprador());
         assertThat(r.get("items")).isEmpty();
@@ -47,7 +47,7 @@ class RutaRegularizacionTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP23: La Tinguiña da hipoteca (acreedor, MEDIO) y planos (propietario, BAJO): esfuerzo MEDIO")
+    @DisplayName("CP21: La Tinguiña da hipoteca (acreedor, MEDIO) y planos (propietario, BAJO): esfuerzo MEDIO")
     void tinguinaMedio() throws Exception {
         JsonNode r = ruta(TINGUINA, comprador());
         assertThat(claves(r)).containsExactlyInAnyOrder("RV-02", "RV-04", "RV-04");
@@ -68,7 +68,7 @@ class RutaRegularizacionTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP23: Pueblo Nuevo, con embargo vigente, requiere un proceso judicial: esfuerzo ALTO")
+    @DisplayName("CP21: Pueblo Nuevo, con embargo vigente, requiere un proceso judicial: esfuerzo ALTO")
     void puebloNuevoAlto() throws Exception {
         JsonNode r = ruta(PUEBLO_NUEVO, comprador());
         assertThat(claves(r)).contains("RP-01");

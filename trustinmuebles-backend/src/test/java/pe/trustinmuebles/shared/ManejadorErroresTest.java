@@ -16,7 +16,7 @@ import org.springframework.http.ProblemDetail;
 class ManejadorErroresTest {
 
     @Test
-    @DisplayName("La respuesta al cliente no cambia y no expone la causa; el log del servidor tiene la cadena completa")
+    @DisplayName("CP25: la respuesta al cliente no cambia y no expone la causa; el log del servidor tiene la cadena completa")
     void integridadRegistraLaCausaRaiz(CapturedOutput salida) {
         var causa = new SQLIntegrityConstraintViolationException("Unique index violation: PUBLIC.UK_SECRETO_INTERNO");
         var e = new DataIntegrityViolationException("could not execute statement",

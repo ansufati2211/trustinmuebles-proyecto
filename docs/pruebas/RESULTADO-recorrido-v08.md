@@ -2,7 +2,7 @@
 
 Fecha: 2026-11-02. Commit: `aa8e175`. Chrome sin ventana, base H2 nueva fuera del repositorio, 20 de 20 pasos correctos.
 Script: `docs/pruebas/recorrido-v08.mjs`. Capturas: `docs/pruebas/capturas-v08/` (más `16b-panel-gestion.png`, `18b-tarjetas-celular.png` y `18c-cartera-chips.png`).
-Los PDF de prueba los genera el script en una carpeta temporal (uno de unos 5,6 MB para la optimización); no quedan en el repositorio.
+Los PDF de prueba los genera el script en una carpeta temporal (uno de unos 5,4 MB para la optimización); no quedan en el repositorio.
 
 | Paso | Cuenta | Esperado | Obtenido | Resultado | Captura |
 |---|---|---|---|---|---|

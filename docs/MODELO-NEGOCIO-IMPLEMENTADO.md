@@ -1,4 +1,4 @@
-# Modelo de negocio implementado — Trustinmuebles v0.7.0
+# Modelo de negocio implementado — Trustinmuebles v0.8.0
 
 Este documento describe lo que el **código y las pruebas** hacen hoy. Cuando la documentación anterior dice otra cosa, manda
 el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No verificado**.
@@ -7,14 +7,14 @@ el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No veri
 
 | Campo | Valor |
 |---|---|
-| Versión | `0.7.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`) |
-| Fecha de esta revisión | 30 de octubre de 2026, sobre la rama `mejoras-v0.7`, creada desde `main` en `9b155a5` |
-| Pruebas del backend | `./mvnw test`: **149 ejecutadas, 149 aprobadas**, 0 fallos, 0 errores, 0 omitidas; `BUILD SUCCESS` |
-| Pruebas del frontend | `npx pnpm@9 test`: **11 archivos, 66 pruebas, 66 aprobadas** |
+| Versión | `0.8.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`). Es la versión del estudio: congelarla con el tag `v0.8.0` antes del piloto |
+| Fecha de esta revisión | 2 de noviembre de 2026, sobre la rama `feedback-docente-v0.8`, creada desde `main` en `dc6b00a` (feedback docente del 31/10 y decisiones del equipo del 02/11) |
+| Pruebas del backend | `./mvnw test`: **186 ejecutadas, 186 aprobadas**, 0 fallos, 0 errores, 0 omitidas (30 clases); `BUILD SUCCESS` |
+| Pruebas del frontend | `npx pnpm@9 test`: **15 archivos, 82 pruebas, 82 aprobadas** |
 | Compilación del frontend | `npx pnpm@9 build`: correcta (`tsc --noEmit` y `vite build`), con aviso de tamaño del JS principal |
 | Organización de referencia del caso | LedCons, sin acta ni acuerdo formal acreditado |
 | Alcance | MVP académico con **datos simulados**, para **una sola inmobiliaria de Ica** |
-| Verificación en navegador | Recorrido de 15 pasos con los 5 roles en Chrome: **15 de 15 correctos** el 30 de octubre de 2026 (`docs/pruebas/RESULTADO-recorrido-v07.md`). No cubre lectores de pantalla ni otros navegadores |
+| Verificación en navegador | Recorrido de 20 pasos con los 5 roles en Chrome: **20 de 20 correctos** el 2 de noviembre de 2026 (`docs/pruebas/RESULTADO-recorrido-v08.md`), sobre una base nueva fuera del repositorio. No cubre lectores de pantalla ni otros navegadores |
 | Rendimiento (NF02) | **20 de 20** en 2 s o menos; mediana 25,2 ms, máximo 54,3 ms. Solo la API |
 
 Las pruebas del backend son de integración (MockMvc con H2 en memoria) y unitarias; las del frontend son de funciones puras
@@ -68,6 +68,16 @@ inmobiliaria coordina la visita» (`PanelEvaluacionTecnica.tsx`). El código no 
 | ACT-07 | SUNARP (Conoce Aquí, Visor BGR) | Externo, fuente consultada **a mano** | El revisor consulta Conoce Aquí y pega el texto; el comprador o el revisor abren el Visor BGR | El sistema no consulta ni lee SUNARP: solo abre enlaces | `lib/fuentes.ts`, D20. Sin conexión en el backend |
 | ACT-08 | Municipalidad | Externo, fuente consultada **a mano** | Emite la declaración jurada (HR y PU) que aporta el propietario; el revisor marca el ítem del checklist | El sistema no consulta a la Municipalidad | Ítem «Declaración Jurada Municipal (HR y PU)»; `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos` |
 
+**Cambios de la v0.8 por actor:**
+- **Revisor (ACT-02):** sube el PDF de cada plano (también si estaba no presentado: al subirlo queda presentado); ya no puede
+  marcar un plano presentado u observado sin archivo (422). Registra acreedor (persona jurídica o «no consta») y plazo del
+  gravamen en el rubro D. Ve el semáforo de gestión y el historial de decisiones, pero no registra decisiones (403).
+- **Gestor (ACT-03):** ve el panel por tipo de alerta, por esfuerzo y por estado de gestión; registra la decisión de captación
+  (lista cerrada, sin texto libre) y, si la última es «no captar por ahora», confirma antes de publicar (no lo bloquea).
+- **Comprador, propietario y especialista (ACT-01, ACT-05, ACT-04):** ven la ruta de regularización con la visibilidad del
+  detalle; no reciben el semáforo de gestión (el campo no existe en sus respuestas) y reciben 403 en los endpoints de decisión
+  (I15). `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`.
+
 ## 4. Flujo de vida del inmueble
 
 Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con los 5 roles (`docs/pruebas/RESULTADO-recorrido-v07.md`).
@@ -86,6 +96,19 @@ Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con los 5 roles (`docs/pruebas
 
 **ETP-1 dejó de ser parcial:** la captación admite los dos orígenes y el precio referencial. La entrega de documentos del
 propietario sigue ocurriendo fuera del sistema y no se registra en él.
+
+**Cambios de la v0.8 en el flujo:**
+- **ETP-1 (captación):** al registrar, los planos solo pueden quedar no presentados o «no aplica»: un plano presentado exige su
+  PDF y aún no hay archivos (422). El gestor puede registrar la **decisión de captación** con el semáforo de gestión del caso
+  (`POST /casos/{c}/decision-captacion`, D54); la decisión no cambia A ni B ni bloquea publicar (I15).
+  `DocumentosApiTest.presentadoSinArchivoDa422`, `GestionInmobiliariaTest`. Recorrido v0.8, pasos 1 y 16.
+- **ETP-4 (subsanación):** la **ruta de regularización** (`GET /casos/{c}/ruta-regularizacion`) dice, por cada motivo de la
+  evaluación, qué pasos siguen, quién los gestiona, qué documento se necesita y su esfuerzo (D55). El revisor presenta un plano
+  subiendo su PDF (validado y, si pasa de 5 MB, optimizado; D53); cada subida deja una fila `PLANO_ADJUNTO` en el historial.
+  `RutaRegularizacionTest`, `DocumentosApiTest.subirAPlanoNoPresentado`. Recorrido v0.8, pasos 2, 3, 8 y 14.
+- **ETP-8 (seguimiento):** el panel cuenta los casos por tipo de alerta, por esfuerzo y por estado de gestión, con la matriz
+  tipo de alerta × estado de gestión y la lista «Por regularizar» ordenada por esfuerzo y código, solo para organizar la
+  subsanación (D52). `PanelTiposAlertaTest`, `GestionInmobiliariaTest.conteosDelPanel`. Recorrido v0.8, paso 15.
 
 ## 5. Servicios
 
@@ -111,6 +134,16 @@ faltantes → gris; alerta prioritaria → rojo; alerta de revisión → amarill
 
 Los gravámenes cancelados y la copropiedad no generan alerta (`MotorClasificacionTest.canceladoYCopropiedadNoAlertan`). En
 un lote los planos no aplican (`MotorPlanosTest.loteSinPlanos`).
+
+### Servicios internos de la v0.8 (no cambian A ni B)
+
+| | Ruta de regularización | Semáforo de gestión |
+|---|---|---|
+| Quién lo ve | Los mismos que ven el detalle (el comprador, solo en casos publicados) | Solo gestor y revisor (I15) |
+| Qué dice | Un ítem por motivo de A (alerta, dato faltante o condición no contemplada): pasos, quién gestiona (propietario, acreedor, revisor, juzgado, municipalidad o notaría), documento requerido, esfuerzo BAJO, MEDIO o ALTO y nota; en una hipoteca, acreedor y plazo si constan | VIABLE, VIABLE_CON_CONDICIONES, REQUIERE_REGULARIZACION o COMPLETAR_INFORMACION, con etiqueta, explicación y sugerencia |
+| Cómo se calcula | `RutasRegularizacion`, de solo lectura, desde la evaluación vigente y `contenido/v0.4/rutas.json`. Esfuerzo del caso = el máximo de sus ítems | `SemaforoGestion`: faltantes o condición no contemplada → completar información; si no, ALTO → requiere regularización; MEDIO → viable con condiciones; si no, viable (`gestion.json`) |
+| Límite | «Orientativo: no es asesoría legal ni recomendación de compra». Sin plazos ni costos: «el plazo depende del trámite; consultar con abogado o notario» | «Uso interno de la inmobiliaria; no se muestra al comprador ni es una recomendación de compra». Contorno sin relleno y otro ícono, para no confundirlo con A |
+| Criterio | Borrador del equipo, pendiente de revisión especializada: BAJO solo documentos del propietario; MEDIO un tercero sin proceso judicial; ALTO un proceso judicial o administrativo | El mismo borrador |
 
 ## 6. Reglas de negocio
 
@@ -177,6 +210,14 @@ con Docker.
 - **Partidas transcritas:** el navegador reemplaza nombres de personas naturales por «Persona natural N» (`lib/disociar.ts`,
   heurística) y el servidor rechaza DNI, estado civil y domicilio (`ProteccionDatos`; `RegistrarPartidaTest.entradasInvalidas`).
 - **Historial:** guarda códigos de cuenta, no nombres (V7).
+- **v0.8, evidencia de archivos (V12):** de cada PDF subido se guarda solo el archivo final (optimizado o no), cifrado, con su
+  tamaño original y final, si se optimizó, la huella SHA-256 del archivo guardado, la cuenta que lo subió y la fecha. Las láminas
+  y copias generadas por el sistema no llevan cuenta y se rotulan «Generado por el sistema a partir de la transcripción, no es un
+  documento oficial».
+- **v0.8, acreedor del gravamen (V13):** solo una persona jurídica (banco, caja, S.A., S.A.C., …) o «no consta»; un nombre de
+  persona natural da 400 (`ProteccionDatos.verificarAcreedor`, `GravamenTest.soloPersonasJuridicasEnElRubroD`).
+- **v0.8, decisión de captación (V14):** solo códigos de cuenta, fecha, una decisión y un motivo de listas cerradas; cualquier
+  otro campo (por ejemplo, un comentario) da 400. Historial de solo adición.
 - **Datos del especialista que usa hoy la semilla** (`DemoUsuariosSeeder`). **Los perfiles de especialista son ficticios y no
   firman informes reales:**
 
@@ -202,16 +243,30 @@ Ninguna de estas hipótesis se ha validado con una inmobiliaria. No hay cifras d
 **Validación propuesta:** un piloto con 3 a 5 inmobiliarias de Ica para comprobar si la propuesta de valor les sirve y si
 pagarían por ella. **No se ha realizado.**
 
+**Propuesta de valor para la inmobiliaria (v0.8, hipótesis):** además de ordenar la información para el comprador, el sistema le
+muestra a la inmobiliaria su cartera por tipo de problema («de 11 casos, 1 con embargo, 1 con hipoteca…»), qué casos son más
+viables o requerirán más gestión (esfuerzo y semáforo de gestión) y qué falta para regularizar cada uno (ruta), y deja
+constancia de su decisión de captación. Sigue siendo una hipótesis: no hay cifras ni validación con una inmobiliaria.
+
 ## 11. Arquitectura resumida
 
 - **Backend:** Java 21, Spring Boot 4.0.8, Spring Modulith 2.0.8, Spring Security con JWT (HS256), Flyway, H2 en archivo en
   modo PostgreSQL (`./data/h2/`), PDFBox para los PDF, Swagger en `/swagger-ui.html`.
 - **Módulos** (9; `ModularityTests`): `identidad`, `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`,
   `orientacion`, `almacenamiento` y `shared`.
-- **Migraciones:** `V1__esquema` a `V11__historial_partida_simulada`. V6 captación y publicación, V7 historial, V8 contacto y
+- **Migraciones:** `V1__esquema` a `V14__decision_captacion`. V6 captación y publicación, V7 historial, V8 contacto y
   asignación, V9 perfil ficticio de `especialista-01`, V10 asignación de la inspección en curso de la demostración, V11 origen
-  `PARTIDA_SIMULADA` en el historial.
-- **Contenido:** casos, reglas y glosario en JSON versionado; versión activa `v0.4` (`app.reglas.version`).
+  `PARTIDA_SIMULADA` en el historial; v0.8: V12 evidencia de documentos, V13 acreedor y plazo del gravamen, V14 decisiones de
+  captación.
+- **Contenido:** casos, reglas, glosario y, desde la v0.8, rutas de regularización (`rutas.json`) y estados de gestión
+  (`gestion.json`) en JSON versionado; versión activa `v0.4` (`app.reglas.version`). Las reglas (`reglas.json`) y el motor no
+  cambiaron.
+- **Servicios nuevos de la v0.8:** `almacenamiento.DocumentosPdf` (validación y optimización con PDFBox y `javax.imageio`, sin
+  dependencias nuevas), `expediente.RutasRegularizacion` y `expediente.SemaforoGestion` (API pública de solo lectura que usa la
+  cartera), y en `cartera` la decisión de captación. `ModularityTests` sigue en verde.
+- **Propiedades nuevas:** `app.archivos.max-entrada-mb=25`, `app.archivos.umbral-optimizacion-mb=5`,
+  `app.archivos.max-almacenado-mb=10`; `spring.servlet.multipart.max-file-size=25MB`, `max-request-size=26MB` y
+  `server.tomcat.max-swallow-size=30MB`.
 - **Interfaz:** React 19, Vite 8, Tailwind 4, React Router 8 con rutas `#/…`. El servidor de desarrollo reenvía `/api` al
   backend.
 - **Ejecución local:** el backend escucha solo en `127.0.0.1:8080` y la interfaz en `localhost:5173`.
@@ -244,6 +299,24 @@ informes emitidos los firma `especialista-01`, pero eso no es una asignación.
 | `SIM-11104029` | Ica | propietario-02 | Amarillo | RV-03, RV-06 | Emitido, favorable | Publicado | No (firma `especialista-01`) |
 
 Solo Santiago es un lote; las otras nueve son viviendas (D23). Los casos 1 a 4 son los del instrumento del estudio (D22).
+
+**Ruta y semáforo de gestión de los casos de demostración (v0.8; obtenidos de la base de pruebas):**
+
+| Partida | A | Tipos de alerta | Pasos de la ruta (esfuerzo) | Esfuerzo | Gestión (interno) |
+|---|---|---|---|---|---|
+| `SIM-11048217` Parcona | Verde | — | Sin pasos | — | Viable |
+| `SIM-11052690` La Tinguiña | Amarillo | RV-02, RV-04 | Hipoteca (medio), 2 planos de instalaciones (bajo) | Medio | Viable con condiciones |
+| `SIM-11061555` Subtanjalla | Gris | RP-02, RV-04, información insuficiente | Demanda (alto), 2 planos (bajo), titularidad, completitud y planos base (bajo) | Alto | Completar información |
+| `SIM-11070419` Los Aquijes | Gris | RV-04, información insuficiente | 2 planos (bajo), titularidad, completitud y planos base (bajo) | Bajo | Completar información |
+| `SIM-11075836` Pueblo Nuevo | Rojo | RP-01 | Embargo (alto) | Alto | Requiere regularización |
+| `SIM-11081204` Santiago | Verde | — | Sin pasos | — | Viable |
+| `SIM-11087751` Salas | Amarillo | RV-03 | Carga técnica o servidumbre (medio) | Medio | Viable con condiciones |
+| `SIM-11093320` San José de los Molinos | Rojo | RP-03 | Bloqueo (alto) | Alto | Requiere regularización |
+| `SIM-11098467` Pachacútec | Amarillo | RV-05 | Diferencia de área: ampliación o licencia (alto) | Alto | Requiere regularización |
+| `SIM-11104029` Ica | Amarillo | RV-03, RV-06 | Servidumbre (medio), plano observado (bajo) | Medio | Viable con condiciones |
+
+Pachacútec es amarillo en A pero «requiere regularización» en gestión: una ampliación no declarada pide un trámite municipal
+(esfuerzo alto). Los dos indicadores responden preguntas distintas y ninguno cambia al otro.
 
 ## 13. Lo que NO incluye y hoja de ruta
 
@@ -297,6 +370,12 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 | ETP-6 | `CarteraService` (contacto), `SolicitudContacto.tsx`, `Cartera.tsx` | `CarteraTest.contactoSoloPublicado`, `motivoCerrado`; Vitest `contacto.test.ts` | Implementado |
 | ETP-7 | `InspeccionService`, `PanelEvaluacionTecnica.tsx`, `InformeTecnicoPdf` | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite` | Implementado |
 | ETP-8 | `CarteraService.panel`, `Cartera.tsx` | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Implementado |
+| v0.8 PDF de planos | `DocumentosPdf`, `AlmacenamientoService.guardarDocumento`, `ExpedienteService.asociarDocumentoPlano`, `PanelPlanos.tsx`, `DocumentoPdf.tsx`, V12 | `DocumentosApiTest`, `DocumentosPdfTest`; Vitest `archivos.test.ts` | Implementado |
+| v0.8 Ruta y gravamen | `RutasRegularizacion`, `rutas.json`, `Asiento.acreedor`/`plazoOVencimiento`, `RutaRegularizacion.tsx`, V13 | `RutaRegularizacionTest`, `GravamenTest`; Vitest `ruta.test.ts` | Implementado |
+| v0.8 Panel por tipo de alerta | `CarteraService.panel`, `FiltroCatalogo.tipoAlerta`, `ClasificacionService.tiposDeAlerta`, `PanelRegularizacion.tsx` | `PanelTiposAlertaTest`; Vitest `catalogo.test.ts`, `cartera.test.ts` | Implementado |
+| v0.8 Semáforo de gestión | `SemaforoGestion`, `gestion.json`, `CarteraService.registrarDecision`, `PanelGestion.tsx`, V14 | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Implementado |
+| v0.8 Resaltado de A | `lib/resaltado.ts`, `EtiquetaResaltado.tsx`, tokens de `index.css` | Vitest `resaltado.test.ts`; recorrido v0.8, paso 18 | Implementado |
+| v0.8 Diagnóstico del 409 | `ManejadorErrores.causaRaiz` | `ManejadorErroresTest` | Implementado |
 | ETP-9 | Texto fijo en `Expediente.tsx` | — | Fuera del sistema |
 | RN-01 | Prefijo `SIM-`, `CasoLote.sintetico` | `CasosApiTest.contenidoCargado` | Parcial (desvío D20) |
 | RN-02 | `MotorClasificacion` (faltantes) | `MotorClasificacionTest.desconocidoNoEsAusencia` | Implementado |
@@ -327,7 +406,8 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 ## 16. Correspondencia con el informe
 
 Relaciona los identificadores del informe del curso con los de este documento. Las pruebas son automáticas salvo «Paso n», que es un
-paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 correctos el 30 de octubre de 2026).
+paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 correctos el 30 de octubre de 2026). Las filas de
+la v0.8 citan «Paso v08-n» del recorrido v0.8 (`docs/pruebas/RESULTADO-recorrido-v08.md`, 20 de 20 el 2 de noviembre de 2026).
 
 ### 16.1 Requisitos funcionales
 
@@ -336,7 +416,7 @@ paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 d
 | RF01 | Acceso: autenticar y autorizar cinco roles en el servidor | Transversal | `SeguridadTest`, `CuentasDemoTest`, `CarteraTest.permisosPorRol` | Pasos 2, 3, 4 y 11 | Implementado |
 | RF02 | Captación: crear expediente en borrador vinculado al propietario por código | ETP-1 | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.prefijoSegunElOrigen` | Paso 1 | Implementado |
 | RF03 | Autorización: otorgar o retirar autorización solo sobre casos propios | ETP-2 | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Pasos 5 y 14 | Implementado |
-| RF04 | Expediente: mantener partida transcrita, planos y checklist | ETP-1, ETP-4 | `CasosApiTest.guardarPersiste`, `checklistSoloRevisor`; `PlanosApiTest` | Paso 7 | Implementado |
+| RF04 | Expediente: mantener partida transcrita, planos y checklist. **v0.8:** un plano presentado u observado exige su PDF real (o la lámina generada de la demostración), con validación, límites y evidencia del archivo | ETP-1, ETP-4 | `CasosApiTest.guardarPersiste`, `checklistSoloRevisor`; `PlanosApiTest`; `DocumentosApiTest` | Paso 7; pasos v08-1 a v08-3 | Implementado |
 | RF05 | Indicador A: calcular color, motivos y faltantes por reglas | ETP-3 | `MotorClasificacionTest`, `MotorPlanosTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Pasos 1, 6 y 7 | Implementado. Reglas pendientes de revisión especializada |
 | RF06 | Historial: registrar recálculos de A por adición | ETP-3, ETP-4 | `HistorialEvaluacionTest.cadaRecalculoAgregaUnaFila`, `historialInmutable` | Pasos 6 y 7 | Implementado |
 | RF07 | Publicación: el gestor publica o retira y el comprador ve publicados | ETP-5 | `CaptacionPublicacionTest.soloElGestorPublica`, `sinAutorizacionNoSePublica`, `visibilidadPorRol` | Pasos 2, 4, 8 y 14 | Implementado |
@@ -344,7 +424,10 @@ paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 d
 | RF09 | Contacto: el comprador solicita con motivo cerrado; el gestor atiende | ETP-6 | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado` | Pasos 9 y 10 | Implementado |
 | RF10 | Inspección B: solicitar, asignar y registrar informe de seis pasos | ETP-7 | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite` | Pasos 9 a 12 | Implementado |
 | RF11 | Propietario: consultar casos propios sin editar | ETP-2 | `CaptacionPublicacionTest.propietarioVeSoloLoSuyo`, `propietarioSoloLectura` | Pasos 3 y 5 | Implementado |
-| RF12 | Cartera: el gestor consulta estados, contactos e inspecciones | ETP-8 | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Paso 13 | Implementado |
+| RF12 | Cartera: el gestor consulta estados, contactos e inspecciones. **v0.8:** también por tipo de alerta, esfuerzo y estado de gestión, con la lista «Por regularizar» | ETP-8 | `CarteraTest.panelCoherente`, `PanelTiposAlertaTest`; Vitest `cartera.test.ts` | Paso 13; paso v08-15 | Implementado |
+| RF13 | Ruta de regularización por caso, con el plazo del gravamen si consta | ETP-4 | `RutaRegularizacionTest`, `GravamenTest`; Vitest `ruta.test.ts` | Pasos v08-8 y v08-14 | Implementado. Criterios en borrador |
+| RF14 | Cartera por tipo de alerta y esfuerzo, con filtro por tipo de alerta en el catálogo y en Cartera | ETP-6, ETP-8 | `PanelTiposAlertaTest`; Vitest `catalogo.test.ts`, `cartera.test.ts` | Pasos v08-15 y v08-17 | Implementado |
+| RF15 | Semáforo de gestión interno y decisión de captación con historial | ETP-1, ETP-8 | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Pasos v08-12, v08-14, v08-16 y v08-18 | Implementado |
 
 ### 16.2 Reglas de negocio
 
@@ -362,6 +445,11 @@ paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 d
 | RN10 | RN-10 | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto` | Probado |
 | RN11 | RN-04 | `MotorClasificacionTest.grisConservaAlertas` | Probado |
 | RN12 | Fuera de alcance | — | Fuera de alcance |
+| RN13 | v0.8: un plano solo queda presentado u observado con su PDF | `DocumentosApiTest.presentadoSinArchivoDa422`, `subirAPlanoNoPresentado` | Probado |
+| RN14 | v0.8: PDF de hasta 25 MB, optimizado sobre 5 MB, máximo guardado 10 MB; si no baja, 413 | `DocumentosApiTest.optimiza`, `rechazaPorTamano`; `DocumentosPdfTest` | Probado |
+| RN15 | v0.8: la ruta de regularización es orientativa, de solo lectura y no cambia A | `RutaRegularizacionTest.soloLectura`, `GravamenTest.guardarYLeerSinCambiarElColor` | Probado |
+| RN16 | v0.8: la priorización por esfuerzo solo existe en el panel del gestor (D52) | `PanelTiposAlertaTest.soloGestor`, `porRegularizarOrdenada` | Probado |
+| RN17 | v0.8: el semáforo de gestión es interno y no bloquea publicar (I15) | `GestionInmobiliariaTest` | Probado |
 
 ### 16.3 Casos de uso de negocio
 
@@ -372,6 +460,8 @@ paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 d
 | CUN03 | ETP-6 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.contactoSobreRojo` | Pasos 9 y 10 | Implementado |
 | CUN04 | ETP-7 | `CicloCarteraTest.cicloCompleto`, `InspeccionTest.flujoCompleto` | Pasos 10 a 12 | Implementado |
 | CUN05 | ETP-8 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.panelCoherente` | Paso 13 | Implementado |
+| CUN06 | ETP-4, ETP-8: priorizar y regularizar la cartera con la ruta y el panel por tipo de alerta | `RutaRegularizacionTest`, `PanelTiposAlertaTest`, `DocumentosApiTest` | Pasos v08-2, v08-3, v08-8, v08-14 y v08-15 | Implementado |
+| CUN07 | ETP-1, ETP-5: decidir la captación con el semáforo de gestión y publicar con confirmación | `GestionInmobiliariaTest.decisionNoCambiaAniB`, `decisionNoBloqueaPublicar` | Paso v08-16 | Implementado |
 
 ### 16.4 Casos de prueba
 
@@ -398,3 +488,11 @@ la numeración del informe. CP-05b (reglas con tabla especializada) sigue sin ap
 | CP15 | Separación de demostración, estudio y operación | Sin prueba | — | **Pendiente:** los materiales del estudio están fuera del repositorio, pero no se comprobó la separación |
 | CP16 | Inspección presencial real | Fuera del software | — | **Pendiente:** no se ha realizado |
 | CP17 | Textos, motivos, faltantes y distinción A/B | Vitest `limitesLegales.test.tsx`; `CatalogoYServiciosTest.verdeSignificaSinAlertas` | Pasos 6, 12 y 15 | Aprobado técnicamente. Contenido pendiente de revisión especializada |
+| CP18 | Plano presentado sin PDF: 422; subir el PDF a un plano no presentado lo presenta y agrega historial | `DocumentosApiTest.presentadoSinArchivoDa422`, `subirAPlanoNoPresentado` | Pasos v08-1 y v08-2 | Aprobado |
+| CP19 | Archivo que no es PDF, cifrado o dañado: 400; entrada sobre el límite o PDF que no baja del máximo: 413 | `DocumentosApiTest.validacion`, `rechazaPorTamano`; `DocumentosPdfTest.rechazos`, `noReducible` | Paso v08-3 (aviso previo); el 413 solo en prueba automática | Aprobado |
+| CP20 | Optimización con las mismas páginas; descarga con la misma huella; origen del documento; I9 | `DocumentosApiTest.optimiza`, `descargaYOrigen`, `pdfNoLevantaUnRojo`; `DocumentosPdfTest.optimizaImagenes` | Pasos v08-3 y v08-10 | Aprobado |
+| CP21 | Ruta de regularización de los casos semilla, de solo lectura y con la visibilidad del detalle | `RutaRegularizacionTest` | Pasos v08-8 y v08-14 | Aprobado. Criterios en borrador |
+| CP22 | Acreedor y plazo del gravamen: guardar, leer, «No consta» y sin cambio de color | `GravamenTest` | Paso v08-14 | Aprobado |
+| CP23 | Panel por tipo de alerta y esfuerzo, filtro por tipo de alerta y 403 a otros roles | `PanelTiposAlertaTest` | Pasos v08-15 y v08-17 | Aprobado |
+| CP24 | Semáforo de gestión: visibilidad, decisión de solo adición, sin cambio de A o B y sin bloquear publicar | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Pasos v08-12, v08-14, v08-16 y v08-18 | Aprobado |
+| CP25 | Resaltado de A (nunca solo color) y causa raíz del 409 en el log sin cambiar la respuesta | Vitest `resaltado.test.ts`; `ManejadorErroresTest` | Paso v08-18 (el log del 409 no se recorre) | Aprobado |

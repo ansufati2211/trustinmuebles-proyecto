@@ -1,6 +1,11 @@
 # Funcionalidades de Trustinmuebles
 
-> Versión v0.7.0 «Ciclo de cartera»: roles GESTOR y PROPIETARIO, captación con propietario, autorización, publicación,
+> Versión v0.8.0 «Feedback docente»: el plano presentado exige su PDF (con límite de tamaño y optimización automática), ruta de
+> regularización con el plazo del gravamen, panel del gestor por tipo de alerta y esfuerzo, semáforo de gestión interno con
+> decisión de captación y resaltado del color de A (sección 5 ter). Recorrido de 20 pasos en Chrome con los 5 roles
+> ([resultado](pruebas/RESULTADO-recorrido-v08.md)).
+>
+> v0.7.0 «Ciclo de cartera»: roles GESTOR y PROPIETARIO, captación con propietario, autorización, publicación,
 > historial de evaluaciones, contacto del comprador, asignación del especialista y panel de cartera (sección 5 bis). Las vistas
 > de la interfaz se recorrieron en Chrome con los 5 roles ([resultado](pruebas/RESULTADO-recorrido-v07.md)).
 >
@@ -8,7 +13,7 @@
 > del comprador con costo referencial (M5), informe firmado desde la cuenta del especialista (M8), ítem HR y PU en el checklist
 > (M9) y filtros del catálogo en el servidor (M13). Sobre la v0.5.1.
 
-Qué hace el programa hoy (versión v0.7.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
+Qué hace el programa hoy (versión v0.8.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
 técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
 
 Trustinmuebles es el sistema de transparencia precompra de **una inmobiliaria de Ica** para su cartera de lotes y viviendas.
@@ -39,6 +44,9 @@ reemplaza asesoría legal.**
 | Asignación de inspecciones | Asignar un especialista a una inspección solicitada o en curso; sin asignación nadie registra avance ni emite | Gestor |
 | Panel de cartera (`#/cartera`) | Totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable | Gestor |
 | Mis inmuebles (`#/mis-inmuebles`) | Sus casos con indicadores, motivos, faltantes, publicación y autorización | Propietario |
+| Ruta de regularización (v0.8) | Pasos por motivo, quién gestiona, documento, esfuerzo y plazo del gravamen; orientativa | Todos los que ven el detalle |
+| Cartera por tipo de alerta (v0.8) | Conteos por tipo de alerta, esfuerzo y estado de gestión; lista «Por regularizar»; filtro por tipo de alerta | Panel: gestor. Filtro: todos |
+| Gestión inmobiliaria (interno, v0.8) | Semáforo de gestión, decisión de captación e historial de decisiones | Ver: gestor y revisor. Decidir: gestor |
 
 ## 1. Acceso y roles
 
@@ -179,8 +187,10 @@ reemplaza asesoría legal.**
   error claro.
 
 ### Subir un PDF propio
-- Solo PDF, hasta 5 MB. Se verifica que sea un PDF real. Desde ese momento el sistema deja de regenerar el documento. El archivo
-  se guarda cifrado. No se deben subir documentos con datos reales de personas o predios.
+- Solo PDF, hasta 25 MB (v0.8). Se verifica que sea un PDF real que se pueda abrir (no cifrado ni dañado). Si pesa más de 5 MB,
+  la pantalla avisa «Se optimizará automáticamente» y el servidor reduce sus imágenes; después muestra «Optimizado: X MB → Y MB».
+  Lo guardado no puede pasar de 10 MB. Desde ese momento el sistema deja de regenerar el documento. El archivo se guarda cifrado,
+  con quién lo subió, cuándo, su tamaño y su huella. No se deben subir documentos con datos reales de personas o predios.
 
 ### Registrar una partida (`#/casos/nueva`)
 1. Datos de la partida: **origen** (obligatorio), precio referencial en soles (opcional), número, denominación, distrito, fecha de
@@ -224,6 +234,34 @@ reemplaza asesoría legal.**
   asignación, bandeja de contactos pendientes con «Marcar atendida» y lista de casos filtrable por color, publicación y texto.
 - **Siguiente paso:** el detalle muestra para todos «Siguiente paso: verificación jurídica con abogado o notario, fuera del
   sistema». No es una función del sistema.
+
+## 5 ter. Feedback docente y decisiones del equipo (v0.8)
+
+- **Plano con su archivo:** en el editor y al registrar, «Presentado» y «Observado» solo se pueden elegir si el plano ya tiene su
+  PDF (o ya estaba presentado, como las láminas de los casos de demostración). En el panel de planos, el revisor sube el PDF de un
+  plano no presentado con «Subir PDF (queda presentado)». Cada plano dice su origen: «Subido por revisor-01 el …, 1,2 MB»,
+  «Generado por el sistema a partir de la transcripción, no es un documento oficial» o «Falta el archivo», con «Descargar».
+- **Ruta de regularización** (en el detalle, después del semáforo): un paso por motivo, ordenado de mayor a menor esfuerzo, con
+  quién gestiona, el documento requerido, el esfuerzo con texto y el aviso «Orientativo: no es asesoría legal ni recomendación de
+  compra». En una hipoteca muestra el acreedor y «Plazo o vencimiento: …» o «No consta en la partida: solicitar al propietario o al
+  acreedor». En un caso verde: «Sin alertas en los campos evaluados: no hay pasos de regularización».
+- **Acreedor y plazo:** en los asientos del rubro D, del editor y del registro, hay dos campos opcionales: acreedor (persona
+  jurídica o «no consta») y plazo o vencimiento. No cambian el semáforo.
+- **Cartera del gestor:** tarjetas «Casos por tipo de alerta» (un clic filtra la lista) y «Esfuerzo de regularización», bloque
+  «Gestión inmobiliaria (interno)» con el conteo por estado y la matriz tipo de alerta × estado de gestión, y tabla «Por
+  regularizar» con enlace a la ruta de cada caso. Aviso: «Priorización interna de la inmobiliaria; no es una recomendación de
+  compra». La lista de casos agrega filtros por estado de gestión y por tipo de alerta, y cada tarjeta muestra el color de A, el
+  estado de gestión y el esfuerzo.
+- **Catálogo:** filtro «Tipo de alerta del indicador A» (en la URL como `tipoAlerta`), para todos los roles; el comprador solo ve
+  publicados.
+- **Gestión inmobiliaria (interno)** (en el detalle, solo gestor y revisor): estado de gestión con ícono propio, etiqueta,
+  explicación y sugerencia; tipos de alerta del caso; resumen de la ruta; formulario de decisión de captación (solo gestor, con
+  decisión y motivo de listas cerradas) e historial de decisiones. Si la última decisión es «no captar por ahora», «Publicar» pide
+  confirmación: «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?». El comprador, el propietario y el
+  especialista no lo ven.
+- **Resaltado de A:** las tarjetas del catálogo y de Cartera, Mis inmuebles y la cabecera del detalle llevan un borde izquierdo y un
+  fondo tenue del color de A, con la etiqueta «Indicador A: …» e ícono. Nunca solo color. El semáforo de gestión usa contorno
+  discontinuo sin relleno para no confundirse con A.
 
 ## 6. Contenido incluido
 

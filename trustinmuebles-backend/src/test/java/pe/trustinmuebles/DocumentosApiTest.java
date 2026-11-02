@@ -183,7 +183,7 @@ class DocumentosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP21: un PDF que no baja del máximo almacenado, o que supera la entrada, da 413 con el tamaño")
+    @DisplayName("CP19: un PDF que no baja del máximo almacenado, o que supera la entrada, da 413 con el tamaño")
     void rechazaPorTamano() throws Exception {
         String ruta = "/api/v1/casos/" + PARCONA + "/planos/ESTRUCTURAS/documento";
         mvc.perform(multipart(ruta).file(archivo(PdfDePrueba.conRelleno(1_400_000))).header("Authorization", revisor()))
@@ -200,7 +200,7 @@ class DocumentosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP22: la descarga devuelve exactamente el archivo guardado (misma huella SHA-256) y el detalle dice su origen")
+    @DisplayName("CP20: la descarga devuelve exactamente el archivo guardado (misma huella SHA-256) y el detalle dice su origen")
     void descargaYOrigen() throws Exception {
         try {
             registrar(vivienda(CAPTADA));

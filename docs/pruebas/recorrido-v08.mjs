@@ -32,7 +32,7 @@ const PARTIDA = "C00001\nCompraventa a favor de Inmobiliaria Demo Sur S.A.C. (10
 // ---------------------------------------------------------------- PDF generados por el script (sin archivos en el repo)
 /**
  * Un PDF real de una página con una imagen RGB sin comprimir (degradado con ruido leve, como un plano escaneado). Con
- * 1700 × 1100 px pesa unos 5,6 MB: supera el umbral de 5 MB y el servidor lo optimiza.
+ * 1700 × 1100 px pesa unos 5,4 MB: supera el umbral de 5 MB y el servidor lo optimiza.
  */
 function pdfConImagen(ancho, alto) {
   const px = Buffer.alloc(ancho * alto * 3);
@@ -562,7 +562,7 @@ const salida = `# Resultado del recorrido de la v0.8
 
 Fecha: ${new Date().toISOString().slice(0, 10)}. Commit: \`${commit}\`. Chrome sin ventana, base H2 nueva fuera del repositorio, ${pasos.length - fallas} de ${pasos.length} pasos correctos.
 Script: \`docs/pruebas/recorrido-v08.mjs\`. Capturas: \`docs/pruebas/capturas-v08/\` (más \`16b-panel-gestion.png\`, \`18b-tarjetas-celular.png\` y \`18c-cartera-chips.png\`).
-Los PDF de prueba los genera el script en una carpeta temporal (uno de unos 5,6 MB para la optimización); no quedan en el repositorio.
+Los PDF de prueba los genera el script en una carpeta temporal (uno de unos 5,4 MB para la optimización); no quedan en el repositorio.
 
 | Paso | Cuenta | Esperado | Obtenido | Resultado | Captura |
 |---|---|---|---|---|---|

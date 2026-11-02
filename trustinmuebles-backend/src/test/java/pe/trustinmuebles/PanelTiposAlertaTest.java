@@ -36,7 +36,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP25: los conteos por tipo de alerta y por esfuerzo coinciden con los 10 casos semilla")
+    @DisplayName("CP23: los conteos por tipo de alerta y por esfuerzo coinciden con los 10 casos semilla")
     void conteosDeLaSemilla() throws Exception {
         Map<String, Long> tipos = new HashMap<>();
         Map<String, Long> esfuerzos = new HashMap<>();
@@ -66,7 +66,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP25: «por regularizar» lista solo casos con pasos, ordenados por esfuerzo y luego por código")
+    @DisplayName("CP23: «por regularizar» lista solo casos con pasos, ordenados por esfuerzo y luego por código")
     void porRegularizarOrdenada() throws Exception {
         JsonNode lista = panel().get("porRegularizar");
         List<String> orden = List.of("BAJO", "MEDIO", "ALTO");
@@ -87,7 +87,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP25: el filtro tipoAlerta devuelve los casos correctos, se combina con el color y valida el valor")
+    @DisplayName("CP23: el filtro tipoAlerta devuelve los casos correctos, se combina con el color y valida el valor")
     void filtroPorTipoDeAlerta() throws Exception {
         String revisor = revisor();
         List<String> esperados = new ArrayList<>();

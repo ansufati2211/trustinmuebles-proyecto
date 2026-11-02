@@ -34,7 +34,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("I15: comprador, propietario y especialista no reciben el campo gestion; gestor y revisor sí")
+    @DisplayName("CP24, I15: comprador, propietario y especialista no reciben el campo gestion; gestor y revisor sí")
     void soloGestorYRevisorVenElCampo() throws Exception {
         for (String cuenta : new String[] {"comprador-01", "propietario-01", "especialista-01"}) {
             String t = token(cuenta);
@@ -60,7 +60,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("I15: solo el gestor registra decisiones; comprador, propietario y especialista reciben 403 en ambos endpoints")
+    @DisplayName("CP24, I15: solo el gestor registra decisiones; comprador, propietario y especialista reciben 403 en ambos endpoints")
     void permisosDeDecision() throws Exception {
         String cuerpo = "{\"decision\":\"CAPTAR\",\"motivo\":\"DOCUMENTACION_COMPLETA\"}";
         for (String cuenta : new String[] {"comprador-01", "propietario-01", "especialista-01", "revisor-01"}) {
@@ -76,7 +76,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Sin texto libre: solo decision y motivo de las listas cerradas (400 si no)")
+    @DisplayName("CP24: sin texto libre: solo decision y motivo de las listas cerradas (400 si no)")
     void soloListasCerradas() throws Exception {
         String g = gestor();
         decidir(ICA, g, "{\"decision\":\"CAPTAR\",\"motivo\":\"OTRO_MOTIVO_COMERCIAL\",\"comentario\":\"el dueño es amigo\"}")
@@ -87,7 +87,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("I15: registrar una decisión no cambia A, B ni el historial de A, y el historial de decisiones es de solo adición")
+    @DisplayName("CP24, I15: registrar una decisión no cambia A, B ni el historial de A, y el historial de decisiones es de solo adición")
     void decisionNoCambiaAniB() throws Exception {
         String g = gestor();
         JsonNode antes = leerComo(PUEBLO_NUEVO, g);
@@ -124,7 +124,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Publicar funciona con cualquier decisión si hay autorización, también con NO_CAPTAR_POR_AHORA")
+    @DisplayName("CP24: publicar funciona con cualquier decisión si hay autorización, también con NO_CAPTAR_POR_AHORA")
     void decisionNoBloqueaPublicar() throws Exception {
         String g = gestor();
         decidir(ICA, g, "{\"decision\":\"NO_CAPTAR_POR_AHORA\",\"motivo\":\"OTRO_MOTIVO_COMERCIAL\"}")
@@ -136,7 +136,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Los conteos por estado de gestión y la matriz tipo de alerta × estado coinciden con los casos semilla")
+    @DisplayName("CP24: los conteos por estado de gestión y la matriz tipo de alerta × estado coinciden con los casos semilla")
     void conteosDelPanel() throws Exception {
         Map<String, Long> porEstado = new HashMap<>();
         Map<String, Long> celdas = new HashMap<>();

@@ -27,7 +27,7 @@ class GravamenTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP24: sin datos, la ruta de la hipoteca dice «No consta» y pide solicitarlos al propietario o al acreedor")
+    @DisplayName("CP22: sin datos, la ruta de la hipoteca dice «No consta» y pide solicitarlos al propietario o al acreedor")
     void vacioNoConsta() throws Exception {
         JsonNode g = itemHipoteca(TINGUINA).get("gravamen");
         assertThat(g.get("acreedor").asString()).isEqualTo("No consta");
@@ -36,7 +36,7 @@ class GravamenTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("CP24: guardar y leer acreedor y plazo; editarlos no cambia el color ni las reglas aplicadas")
+    @DisplayName("CP22: guardar y leer acreedor y plazo; editarlos no cambia el color ni las reglas aplicadas")
     void guardarYLeerSinCambiarElColor() throws Exception {
         JsonNode original = leer(TINGUINA);
         try {
