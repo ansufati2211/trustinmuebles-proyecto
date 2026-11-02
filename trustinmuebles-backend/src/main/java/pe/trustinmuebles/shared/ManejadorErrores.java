@@ -10,6 +10,22 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 @RestControllerAdvice
 public class ManejadorErrores {
+    private static final org.slf4j.Logger LOG = org.slf4j.LoggerFactory.getLogger(ManejadorErrores.class);
+
+    /**
+     * v0.8 (B7): deja en el log del servidor la cadena completa de causas (clase y mensaje de cada «Caused by») de un
+     * error de base de datos traducido a 409. El cliente sigue recibiendo el mismo mensaje genérico: la causa no se expone.
+     */
+    static String causaRaiz(Throwable e) {
+        StringBuilder sb = new StringBuilder(e.getClass().getName()).append(": ").append(e.getMessage());
+        java.util.Set<Throwable> vistas = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
+        vistas.add(e);
+        for (Throwable c = e.getCause(); c != null && vistas.add(c); c = c.getCause()) {
+            sb.append(System.lineSeparator()).append("Caused by: ").append(c.getClass().getName()).append(": ")
+                    .append(c.getMessage());
+        }
+        return sb.toString();
+    }
 
     @ExceptionHandler(NoEncontradoException.class)
     ProblemDetail noEncontrado(NoEncontradoException e) {
@@ -23,6 +39,7 @@ public class ManejadorErrores {
 
     @ExceptionHandler({ConflictoException.class, org.springframework.dao.OptimisticLockingFailureException.class})
     ProblemDetail conflicto(RuntimeException e) {
+        if (!(e instanceof ConflictoException)) LOG.warn("409 por concurrencia en la base de datos:\n{}", causaRaiz(e));
         String detalle = e instanceof ConflictoException ? e.getMessage()
                 : "El expediente cambió mientras lo editaba. Recargue e intente de nuevo.";
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, detalle);
@@ -40,6 +57,7 @@ public class ManejadorErrores {
 
     @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
     ProblemDetail integridad(org.springframework.dao.DataIntegrityViolationException e) {
+        LOG.warn("409 por integridad de datos:\n{}", causaRaiz(e), e);
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Los datos enviados no son válidos o ya existen");
     }
 
