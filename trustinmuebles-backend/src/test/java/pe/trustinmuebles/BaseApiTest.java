@@ -105,7 +105,7 @@ public abstract class BaseApiTest {
             n.put("referencia", a.get("referencia").asString());
             n.put("tipoActo", a.get("tipoActo").asString());
             for (String campo : new String[] {"estado", "fechaInscripcion", "tituloNumero", "fechaPresentacion", "texto",
-                    "canceloNumero", "titulares"}) {
+                    "canceloNumero", "titulares", "acreedor", "plazoOVencimiento"}) {
                 if (a.hasNonNull(campo)) n.put(campo, a.get(campo).asString());
             }
         }

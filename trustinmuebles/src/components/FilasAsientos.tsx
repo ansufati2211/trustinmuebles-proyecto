@@ -7,6 +7,8 @@ import type { AsientoPeticion, EstadoAnotacion, TipoActo } from "@/lib/types";
 export interface Fila {
   referencia: string; tipoActo: TipoActo; estado: "VIGENTE" | "DESCONOCIDO"; fechaInscripcion: string;
   tituloNumero: string; fechaPresentacion: string; texto: string; canceloNumero: string; titulares: string;
+  /** v0.8: solo en el rubro D (opcionales). */
+  acreedor?: string; plazoOVencimiento?: string;
 }
 
 export const campo = "w-full h-11 px-3 rounded-xl border border-border bg-white text-sm font-medium focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary";
@@ -42,6 +44,8 @@ export function filasAPeticion(filas: Fila[]): AsientoPeticion[] {
       texto: f.texto.trim() || null,
       canceloNumero: rubro === "E" ? f.canceloNumero.trim() || null : null,
       titulares: rubro === "C" ? f.titulares.trim() || null : null,
+      acreedor: rubro === "D" ? f.acreedor?.trim() || null : null,
+      plazoOVencimiento: rubro === "D" ? f.plazoOVencimiento?.trim() || null : null,
     };
   });
 }
@@ -107,6 +111,22 @@ export function FilasAsientos({ filas, setFilas }: { filas: Fila[]; setFilas: (f
                         </select>
                       </div>
                     )
+                  )}
+                  {rubro === "D" && (
+                    <div className="grid sm:grid-cols-2 gap-3">
+                      <div>
+                        <label htmlFor={`as-acr-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Acreedor (opcional)</label>
+                        <input id={`as-acr-${i}`} className={campo} maxLength={120} placeholder="Persona jurídica o «no consta»"
+                          value={f.acreedor ?? ""} onChange={(e) => cambiarFila(i, { acreedor: e.target.value })} />
+                        <p className="mt-1 text-xs text-tinta-2">Solo personas jurídicas (por ejemplo, un banco o una caja) o «no consta».</p>
+                      </div>
+                      <div>
+                        <label htmlFor={`as-plazo-${i}`} className="block text-xs font-bold text-tinta-2 mb-1">Plazo o vencimiento (si consta)</label>
+                        <input id={`as-plazo-${i}`} className={campo} maxLength={120} placeholder="Por ejemplo, vence el 15/03/2031"
+                          value={f.plazoOVencimiento ?? ""} onChange={(e) => cambiarFila(i, { plazoOVencimiento: e.target.value })} />
+                        <p className="mt-1 text-xs text-tinta-2">No interviene en el semáforo.</p>
+                      </div>
+                    </div>
                   )}
                   {rubro === "E" && (
                     <div>

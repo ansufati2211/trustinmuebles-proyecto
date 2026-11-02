@@ -64,6 +64,11 @@ export function RutaRegularizacion({ codigo }: { codigo: string }) {
                 <ol className="mt-3 list-decimal space-y-1 pl-5 text-sm text-foreground">
                   {it.pasos.map((p) => <li key={p}>{p}</li>)}
                 </ol>
+                {it.gravamen && (
+                  <p className="mt-3 rounded-xl border border-border bg-card p-3 text-sm font-semibold text-foreground">
+                    Acreedor: {it.gravamen.acreedor}. {it.gravamen.plazo}.
+                  </p>
+                )}
                 <dl className="mt-3 grid gap-2 text-xs sm:grid-cols-2">
                   <div><dt className="font-bold text-tinta-2">Gestiona</dt><dd className="font-semibold text-foreground">{gestiona(it.gestiona)}</dd></div>
                   <div><dt className="font-bold text-tinta-2">Documento requerido</dt><dd className="font-semibold text-foreground">{it.documentoRequerido}</dd></div>

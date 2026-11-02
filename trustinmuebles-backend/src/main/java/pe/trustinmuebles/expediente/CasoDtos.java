@@ -53,7 +53,7 @@ final class CasoDtos {
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
-            String texto, String canceloNumero, String titulares) {}
+            String texto, String canceloNumero, String titulares, String acreedor, String plazoOVencimiento) {}
 
     /** Un plano del expediente técnico. {@code coincideArea} solo se calcula en el plano arquitectónico. */
     record PlanoDto(Especialidad especialidad, String especialidadEtiqueta, EstadoPlano estado, BigDecimal areaConstruida,
@@ -110,7 +110,10 @@ final class CasoDtos {
             LocalDate fechaPresentacion,
             @Size(max = 1500) String texto,
             @Pattern(regexp = "D[0-9]{5}", message = "debe ser el número de un asiento D, por ejemplo D00001") String canceloNumero,
-            @Size(max = 500) String titulares) {}
+            @Size(max = 500) String titulares,
+            /* v0.8: solo en el rubro D; opcionales y fuera del cálculo del color. */
+            @Size(max = 120) String acreedor,
+            @Size(max = 120) String plazoOVencimiento) {}
 
     /** Un plano del expediente técnico, tal como lo registra el revisor. */
     record PlanoRequest(
@@ -143,7 +146,7 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList(),
+                            a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
                     tipoPredio, areaConstruidaInscrita, planosDatos(planos));
         }
     }
@@ -184,7 +187,7 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList(),
+                            a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
                     tipoPredio, areaConstruidaInscrita, planosDatos(planos));
         }
     }
@@ -230,5 +233,14 @@ final class CasoDtos {
             SistemaConstructivo sistemaConstructivo, String observacion) {}
 
     record AsientoDatos(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
-            String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {}
+            String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares,
+            String acreedor, String plazoOVencimiento) {
+
+        /** Sin acreedor ni plazo (contenido anterior a la v0.8). */
+        AsientoDatos(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
+                String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {
+            this(referencia, tipoActo, estado, fechaInscripcion, tituloNumero, fechaPresentacion, texto, canceloNumero,
+                    titulares, null, null);
+        }
+    }
 }

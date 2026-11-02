@@ -94,6 +94,8 @@ export interface Asiento {
   referencia: string; rubro: string; tipoActo: TipoActo; tipoActoEtiqueta: string; estado: EstadoAnotacion | null;
   fechaInscripcion: string | null; tituloNumero: string | null; fechaPresentacion: string | null; texto: string | null;
   canceloNumero: string | null; titulares: string | null;
+  /** v0.8: solo en el rubro D. Persona jurídica o «no consta»; plazo si consta. No intervienen en el color. */
+  acreedor?: string | null; plazoOVencimiento?: string | null;
 }
 
 export interface Expediente {
@@ -160,7 +162,7 @@ export interface PanelCartera {
 export interface AsientoPeticion {
   referencia: string; tipoActo: TipoActo; estado: EstadoAnotacion | null; fechaInscripcion: string | null;
   tituloNumero: string | null; fechaPresentacion: string | null; texto: string | null; canceloNumero: string | null;
-  titulares: string | null;
+  titulares: string | null; acreedor?: string | null; plazoOVencimiento?: string | null;
 }
 
 export interface PlanoPeticion {
@@ -182,6 +184,8 @@ export type Esfuerzo = "BAJO" | "MEDIO" | "ALTO";
 export interface ItemRuta {
   tipo: "ALERTA" | "FALTANTE" | "CONDICION"; clave: string; referencia: string | null; titulo: string; pasos: string[];
   gestiona: string; documentoRequerido: string; esfuerzo: Esfuerzo; esfuerzoEtiqueta: string; nota: string | null;
+  /** v0.8 (B3): solo en una hipoteca. plazo es el texto listo para mostrar. */
+  gravamen?: { acreedor: string; plazoOVencimiento: string | null; plazo: string } | null;
 }
 
 /** GET /casos/{codigo}/ruta-regularizacion (v0.8). Orientativa y de solo lectura. */

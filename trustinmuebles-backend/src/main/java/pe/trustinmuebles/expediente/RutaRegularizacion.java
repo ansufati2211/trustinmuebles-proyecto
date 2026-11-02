@@ -14,7 +14,14 @@ public record RutaRegularizacion(String codigo, EstadoSemaforo estado, Esfuerzo 
 
     /** tipo: ALERTA, FALTANTE o CONDICION. clave: código de la regla (RP-01…) o del faltante (TITULARIDAD…). */
     public record Item(String tipo, String clave, String referencia, String titulo, List<String> pasos,
-            String gestiona, String documentoRequerido, Esfuerzo esfuerzo, String esfuerzoEtiqueta, String nota) {}
+            String gestiona, String documentoRequerido, Esfuerzo esfuerzo, String esfuerzoEtiqueta, String nota,
+            Gravamen gravamen) {}
+
+    /**
+     * v0.8 (B3): datos de una hipoteca que constan en su asiento D. {@code plazo} es el texto que se muestra: «Plazo o
+     * vencimiento: …» o «No consta en la partida: solicitar al propietario o al acreedor». No intervienen en el color.
+     */
+    public record Gravamen(String acreedor, String plazoOVencimiento, String plazo) {}
 
     public boolean sinPasos() {
         return items.isEmpty();

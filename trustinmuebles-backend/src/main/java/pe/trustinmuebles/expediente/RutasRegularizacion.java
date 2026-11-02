@@ -15,6 +15,7 @@ import pe.trustinmuebles.clasificacion.ClasificacionService;
 import pe.trustinmuebles.clasificacion.EstadoSemaforo;
 import pe.trustinmuebles.clasificacion.EvaluacionDto;
 import pe.trustinmuebles.clasificacion.ResultadoClasificacion;
+import pe.trustinmuebles.clasificacion.TipoActo;
 import pe.trustinmuebles.shared.NoEncontradoException;
 import tools.jackson.databind.ObjectMapper;
 
@@ -29,6 +30,8 @@ public class RutasRegularizacion {
     /** Tipo de alerta de un caso gris: falta información o la condición no está contemplada. */
     public static final String INFORMACION_INSUFICIENTE = "INFORMACION_INSUFICIENTE";
     static final String SIN_PASOS = "Sin alertas en los campos evaluados: no hay pasos de regularización";
+    static final String PLAZO_NO_CONSTA = "No consta en la partida: solicitar al propietario o al acreedor";
+    static final String NO_CONSTA = "No consta";
 
     private final ExpedienteRepository expedientes;
     private final ClasificacionService clasificacion;
@@ -63,15 +66,15 @@ public class RutasRegularizacion {
         List<RutaRegularizacion.Item> items = new ArrayList<>();
         for (ResultadoClasificacion.Alerta a : lista(ev.alertas())) {
             ContenidoRutas.Paso p = contenido.reglas().get(a.regla());
-            if (p != null) items.add(item("ALERTA", a.regla(), a.referencia(), p));
+            if (p != null) items.add(item("ALERTA", a.regla(), a.referencia(), p, gravamen(e, a.referencia())));
         }
         for (String f : lista(ev.faltantes())) {
             Map.Entry<String, ContenidoRutas.Paso> p = faltante(f);
-            if (p != null) items.add(item("FALTANTE", p.getKey(), referenciaDe(f, p.getValue()), p.getValue()));
+            if (p != null) items.add(item("FALTANTE", p.getKey(), referenciaDe(f, p.getValue()), p.getValue(), null));
         }
         if (lista(ev.motivos()).stream().anyMatch(m -> "CONDICION".equals(m.tipo()))) {
             ContenidoRutas.Paso p = contenido.faltantes().get("CONDICION_NO_CONTEMPLADA");
-            if (p != null) items.add(item("CONDICION", "CONDICION_NO_CONTEMPLADA", null, p));
+            if (p != null) items.add(item("CONDICION", "CONDICION_NO_CONTEMPLADA", null, p, null));
         }
         Esfuerzo esfuerzo = items.stream().map(RutaRegularizacion.Item::esfuerzo)
                 .max(Comparator.naturalOrder()).orElse(null);
@@ -102,9 +105,21 @@ public class RutasRegularizacion {
         return p.esPrefijo() ? texto.substring(p.textoFaltante().length()).trim() : null;
     }
 
-    private static RutaRegularizacion.Item item(String tipo, String clave, String referencia, ContenidoRutas.Paso p) {
+    private static RutaRegularizacion.Item item(String tipo, String clave, String referencia, ContenidoRutas.Paso p,
+            RutaRegularizacion.Gravamen gravamen) {
         return new RutaRegularizacion.Item(tipo, clave, referencia, p.titulo(), List.copyOf(p.pasos()), p.gestiona(),
-                p.documentoRequerido(), p.esfuerzo(), p.esfuerzo().etiqueta(), p.nota());
+                p.documentoRequerido(), p.esfuerzo(), p.esfuerzo().etiqueta(), p.nota(), gravamen);
+    }
+
+    /** B3: acreedor y plazo de una hipoteca, tal como constan en su asiento D; null si el asiento no es una hipoteca. */
+    static RutaRegularizacion.Gravamen gravamen(Expediente e, String referencia) {
+        return e.getAsientos().stream()
+                .filter(a -> a.getReferencia().equals(referencia) && a.getTipoActo() == TipoActo.HIPOTECA)
+                .findFirst()
+                .map(a -> new RutaRegularizacion.Gravamen(a.getAcreedor() == null ? NO_CONSTA : a.getAcreedor(),
+                        a.getPlazoOVencimiento(), a.getPlazoOVencimiento() == null ? PLAZO_NO_CONSTA
+                                : "Plazo o vencimiento: " + a.getPlazoOVencimiento()))
+                .orElse(null);
     }
 
     private static <T> List<T> lista(List<T> l) {

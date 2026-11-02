@@ -415,7 +415,8 @@ class ExpedienteService {
 
     private static void verificarDatosPersonales(DatosExpediente d, String denominacion, String contexto) {
         java.util.stream.Stream<String> asientos = d.asientos().stream()
-                .flatMap(a -> java.util.stream.Stream.of(a.texto(), a.titulares(), a.tituloNumero()));
+                .flatMap(a -> java.util.stream.Stream.of(a.texto(), a.titulares(), a.tituloNumero(), a.acreedor(),
+                        a.plazoOVencimiento()));
         ProteccionDatos.verificar(java.util.stream.Stream.concat(asientos,
                 java.util.stream.Stream.of(d.nota(), d.ubicacion(), d.linderos(), d.antecedenteDominial(),
                         d.condicionRepresentada(), denominacion, contexto)));
@@ -461,6 +462,7 @@ class ExpedienteService {
     /** Aplica los datos al expediente. Devuelve los archivos que quedaron sin uso y hay que borrar tras guardar. */
     private List<String> aplicar(Expediente e, DatosExpediente d, boolean exigirArchivo) {
         NormalizadorAsientos.Resultado n = NormalizadorAsientos.normalizar(d.asientos());
+        n.asientos().forEach(a -> ProteccionDatos.verificarAcreedor(a.acreedor()));
 
         e.setCondicionRepresentada(d.condicionRepresentada().trim());
         e.setTitularidad(n.titularidad());
@@ -568,6 +570,8 @@ class ExpedienteService {
             a.setTexto(d.texto());
             a.setCanceloNumero(d.canceloNumero());
             a.setTitulares(d.titulares());
+            a.setAcreedor(d.acreedor());
+            a.setPlazoOVencimiento(d.plazoOVencimiento());
             a.setOrden(orden++);
         }
     }
@@ -705,7 +709,7 @@ class ExpedienteService {
                 e.getAsientos().stream().map(a -> new AsientoDto(a.getReferencia(), String.valueOf(a.rubro()),
                         a.getTipoActo(), a.getTipoActo().etiqueta(), a.getEstado(), a.getFechaInscripcion(),
                         a.getTituloNumero(), a.getFechaPresentacion(), a.getTexto(), a.getCanceloNumero(),
-                        a.getTitulares())).toList(),
+                        a.getTitulares(), a.getAcreedor(), a.getPlazoOVencimiento())).toList(),
                 e.getTipoPredio(), e.getAreaConstruidaInscrita(),
                 e.getPlanos().stream().map(p -> new PlanoDto(p.getEspecialidad(), p.getEspecialidad().etiqueta(),
                         p.getEstado(), p.getAreaConstruida(), p.getSistemaConstructivo(),

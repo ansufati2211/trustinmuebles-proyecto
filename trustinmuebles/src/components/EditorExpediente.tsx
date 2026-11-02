@@ -73,6 +73,8 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
       texto: a.texto ?? "",
       canceloNumero: a.canceloNumero ?? "",
       titulares: a.titulares ?? "",
+      acreedor: a.acreedor ?? "",
+      plazoOVencimiento: a.plazoOVencimiento ?? "",
     })),
   });
 

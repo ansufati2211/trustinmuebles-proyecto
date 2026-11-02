@@ -76,7 +76,9 @@ final class NormalizadorAsientos {
             }
             salida.add(new AsientoDatos(a.referencia(), a.tipoActo(), estado, a.fechaInscripcion(),
                     vacioANull(a.tituloNumero()), a.fechaPresentacion(), vacioANull(a.texto()),
-                    vacioANull(a.canceloNumero()), rubro == 'C' ? a.titulares().trim() : null));
+                    vacioANull(a.canceloNumero()), rubro == 'C' ? a.titulares().trim() : null,
+                    gravamen(rubro, "acreedor", a.referencia(), a.acreedor()),
+                    gravamen(rubro, "plazoOVencimiento", a.referencia(), a.plazoOVencimiento())));
         }
         salida.sort(Comparator.comparing(AsientoDatos::referencia));
 
@@ -87,6 +89,15 @@ final class NormalizadorAsientos {
 
     private static boolean esVacio(String s) {
         return s == null || s.isBlank();
+    }
+
+    /** v0.8: acreedor y plazo solo existen en el rubro D; en otro rubro dan 400. */
+    private static String gravamen(char rubro, String campo, String referencia, String valor) {
+        String v = vacioANull(valor);
+        if (v != null && rubro != 'D') {
+            throw new IllegalArgumentException(campo + ": solo se indica en un asiento del rubro D (" + referencia + ")");
+        }
+        return v;
     }
 
     private static String vacioANull(String s) {
