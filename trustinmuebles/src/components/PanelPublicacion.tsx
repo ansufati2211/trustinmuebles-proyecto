@@ -8,7 +8,6 @@ import { ETIQUETA_PUBLICACION } from "@/lib/cartera";
 import { esPropietarioDe, puedeAutorizar, puedePublicar, puedeRetirarAutorizacion, puedeRetirarPublicacion } from "@/lib/permisos";
 import { fecha } from "@/lib/semaforo";
 import { confirmacionAlPublicar } from "@/lib/gestion";
-import { useApi } from "@/lib/useApi";
 import type { DecisionCaptacion, DetalleCaso, EstadoPublicacion, Publicacion } from "@/lib/types";
 
 const ESTILO: Record<EstadoPublicacion, { tono: TonoBadge; Icono: LucideIcon }> = {
@@ -43,8 +42,6 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
   const [error, setError] = useState<string | null>(null);
   const [aviso, setAviso] = useState<string | null>(null);
   const p = publicacion;
-  // v0.8 (I15): la decisión de captación no bloquea publicar; si es «no captar por ahora», se pide confirmación.
-  const decisiones = useApi<DecisionCaptacion[]>(rol === "GESTOR" ? `/casos/${codigo}/decisiones-captacion` : null);
 
   const ejecutar = async (accion: () => Promise<unknown>, exito: string) => {
     setError(null); setAviso(null); setEnviando(true);
@@ -75,8 +72,12 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
     ),
     puedePublicar(rol, p) && (
       <Button key="pub" className="rounded-xl" disabled={enviando}
-        onClick={() => {
-          const confirmar = confirmacionAlPublicar(decisiones.data);
+        onClick={async () => {
+          // v0.8 (I15): la decisión de captación no bloquea publicar; si la última es «no captar por ahora», se pide
+          // confirmación. Se consulta al pulsar, para no usar una lista anterior a una decisión recién registrada.
+          let decisiones: DecisionCaptacion[] = [];
+          try { decisiones = await api<DecisionCaptacion[]>(ruta("decisiones-captacion")); } catch { /* sin decisiones */ }
+          const confirmar = confirmacionAlPublicar(decisiones);
           if (confirmar && !window.confirm(confirmar)) return;
           ejecutar(() => post(ruta("publicacion")), "Caso publicado.");
         }}>
