@@ -12,6 +12,8 @@ import { PanelEvaluacionTecnica } from "@/components/PanelEvaluacionTecnica";
 import { HistorialEvaluaciones } from "@/components/HistorialEvaluaciones";
 import { RutaRegularizacion } from "@/components/RutaRegularizacion";
 import { PanelGestion } from "@/components/PanelGestion";
+import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
+import { resaltadoA } from "@/lib/resaltado";
 import { puedeVerGestion } from "@/lib/gestion";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { SolicitudContacto } from "@/components/SolicitudContacto";
@@ -337,8 +339,10 @@ export default function Expediente() {
                 </dl>
               </div>
 
-              <div className="space-y-3 rounded-3xl bg-card p-5 shadow-tarjeta">
+              <div data-resaltado={ev?.estado ?? "SIN_EVALUAR"} className="overflow-hidden rounded-3xl bg-card shadow-tarjeta">
+                <div className={`space-y-3 p-5 ${resaltadoA(ev?.estado).contenedor}`}>
                 <p className="text-xs font-bold uppercase tracking-wider text-tinta-2">Indicadores del inmueble</p>
+                <EtiquetaResaltado estado={ev?.estado} className="text-sm" />
                 <div className="flex flex-col items-start gap-2">
                   <IndicadorA estado={ev?.estado} conResumen />
                   <IndicadorB estado={d.evaluacionTecnica.estado} resultado={d.evaluacionTecnica.resultado} />
@@ -347,6 +351,7 @@ export default function Expediente() {
                   <Info className="size-4 shrink-0" aria-hidden="true" />
                   El indicador B es independiente y no cambia el color del indicador A.
                 </p>
+                </div>
               </div>
             </div>
           </div>

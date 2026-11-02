@@ -20,6 +20,42 @@
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
+
+  /* Tokens que usan los componentes (restituidos en la v0.8: el rediseño los había quitado de este archivo). */
+  --color-superficie: var(--superficie);
+  --color-tinta-2: var(--tinta-2);
+  --color-sem-verde: var(--sem-verde);
+  --color-sem-verde-suave: var(--sem-verde-suave);
+  --color-sem-verde-tinta: var(--sem-verde-tinta);
+  --color-sem-amarillo: var(--sem-amarillo);
+  --color-sem-amarillo-suave: var(--sem-amarillo-suave);
+  --color-sem-amarillo-tinta: var(--sem-amarillo-tinta);
+  --color-sem-rojo: var(--sem-rojo);
+  --color-sem-rojo-suave: var(--sem-rojo-suave);
+  --color-sem-rojo-tinta: var(--sem-rojo-tinta);
+  --color-sem-gris: var(--sem-gris);
+  --color-sem-gris-suave: var(--sem-gris-suave);
+  --color-sem-gris-tinta: var(--sem-gris-tinta);
+  --color-info-suave: var(--info-suave);
+  --color-info-tinta: var(--info-tinta);
+
+  /* v0.8 (B6): resaltado del color de A en tarjetas, listas y cabecera. Borde, fondo tenue (7 %) y texto por estado. */
+  --color-resaltado-verde-borde: var(--resaltado-verde-borde);
+  --color-resaltado-verde-fondo: var(--resaltado-verde-fondo);
+  --color-resaltado-verde-texto: var(--resaltado-verde-texto);
+  --color-resaltado-amarillo-borde: var(--resaltado-amarillo-borde);
+  --color-resaltado-amarillo-fondo: var(--resaltado-amarillo-fondo);
+  --color-resaltado-amarillo-texto: var(--resaltado-amarillo-texto);
+  --color-resaltado-rojo-borde: var(--resaltado-rojo-borde);
+  --color-resaltado-rojo-fondo: var(--resaltado-rojo-fondo);
+  --color-resaltado-rojo-texto: var(--resaltado-rojo-texto);
+  --color-resaltado-gris-borde: var(--resaltado-gris-borde);
+  --color-resaltado-gris-fondo: var(--resaltado-gris-fondo);
+  --color-resaltado-gris-texto: var(--resaltado-gris-texto);
+
+  --shadow-tarjeta: 0 1px 2px rgb(23 48 42 / 0.05), 0 4px 16px -6px rgb(23 48 42 / 0.10);
+  --shadow-elevada: 0 2px 4px rgb(23 48 42 / 0.06), 0 18px 40px -16px rgb(23 48 42 / 0.28);
+  --ease-expo: cubic-bezier(0.16, 1, 0.3, 1);
   --font-sans: 'Inter', ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
@@ -39,6 +75,33 @@
   --warning: #F59E0B;
   --danger: #EF4444;
   --radius: 1rem;
+
+  --superficie: #F5F8F6;
+  --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */
+  --sem-verde: #22A05A;    --sem-verde-suave: #DFF5E7;    --sem-verde-tinta: #14532D;
+  --sem-amarillo: #E0A21B; --sem-amarillo-suave: #FDF1D2; --sem-amarillo-tinta: #713F12;
+  --sem-rojo: #D33A2C;     --sem-rojo-suave: #FCE4E1;     --sem-rojo-tinta: #8F1D14;
+  --sem-gris: #8A9690;     --sem-gris-suave: #E9EDEB;     --sem-gris-tinta: #36423C;
+  --info-suave: #E3EEF8;   --info-tinta: #1C4A73;
+
+  /* Resaltado de A (claro). Borde con contraste de 3:1 o más sobre blanco; texto con contraste AA (más de 7:1) sobre el
+     fondo tenue. El color nunca va solo: siempre lo acompañan un ícono y la etiqueta del estado. */
+  --resaltado-verde-borde: #1F8A4D;    --resaltado-verde-fondo: rgb(34 160 90 / 0.07);    --resaltado-verde-texto: #14532D;
+  --resaltado-amarillo-borde: #B7791F; --resaltado-amarillo-fondo: rgb(224 162 27 / 0.08); --resaltado-amarillo-texto: #713F12;
+  --resaltado-rojo-borde: #C0362A;     --resaltado-rojo-fondo: rgb(211 58 44 / 0.07);     --resaltado-rojo-texto: #8F1D14;
+  --resaltado-gris-borde: #6B7771;     --resaltado-gris-fondo: rgb(138 150 144 / 0.08);   --resaltado-gris-texto: #36423C;
+}
+
+/* Resaltado de A (oscuro): se activa con un tema oscuro explícito; la interfaz actual es clara. */
+:root[data-theme="dark"], .dark {
+  --resaltado-verde-borde: #4ADE80;    --resaltado-verde-fondo: rgb(74 222 128 / 0.08);   --resaltado-verde-texto: #BBF7D0;
+  --resaltado-amarillo-borde: #FACC15; --resaltado-amarillo-fondo: rgb(250 204 21 / 0.08); --resaltado-amarillo-texto: #FEF08A;
+  --resaltado-rojo-borde: #F87171;     --resaltado-rojo-fondo: rgb(248 113 113 / 0.08);  --resaltado-rojo-texto: #FECACA;
+  --resaltado-gris-borde: #A8B3AD;     --resaltado-gris-fondo: rgb(168 179 173 / 0.08);  --resaltado-gris-texto: #E2E8E5;
+}
+
+.cifras {
+  font-variant-numeric: tabular-nums;
 }
 
 html, body, #root {

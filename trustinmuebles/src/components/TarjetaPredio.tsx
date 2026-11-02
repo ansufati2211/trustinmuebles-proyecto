@@ -5,6 +5,8 @@ import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, soles } from "@/lib/formato";
 import { InsigniaPublicacion } from "@/components/PanelPublicacion";
 import { ChipGestion } from "@/components/PanelGestion";
+import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
+import { resaltadoA } from "@/lib/resaltado";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
 import type { ResumenCaso } from "@/lib/types";
 
@@ -12,9 +14,13 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
   const p = c.predio;
   const enlace = `/casos/${c.codigo}`;
   const sinPendientes = c.pendientes === 0;
+  const resaltado = resaltadoA(c.estado);
 
   return (
-    <article className="group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border bg-card shadow-tarjeta transition-all duration-500 ease-expo hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-elevada">
+    <article
+      data-resaltado={c.estado ?? "SIN_EVALUAR"}
+      className={`group relative flex h-full flex-col overflow-hidden rounded-[1.75rem] border border-border shadow-tarjeta transition-all duration-500 ease-expo hover:-translate-y-1.5 hover:border-primary/40 hover:shadow-elevada ${resaltado.contenedor}`}
+    >
       <Link to={enlace} tabIndex={-1} aria-hidden="true" className="relative block aspect-[16/10] overflow-hidden bg-muted">
         <PredioImagen
           codigo={c.codigo}
@@ -49,6 +55,7 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
       </Link>
 
       <div className="flex flex-1 flex-col gap-4 p-5">
+        <EtiquetaResaltado estado={c.estado} />
         <div>
           <h2 className="line-clamp-2 text-lg font-extrabold leading-snug tracking-tight text-foreground">
             <Link
