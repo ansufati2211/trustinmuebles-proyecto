@@ -94,6 +94,10 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/contactos").hasRole("COMPRADOR")
                         .requestMatchers("/api/v1/contactos", "/api/v1/contactos/**").hasRole("GESTOR")
                         .requestMatchers("/api/v1/cartera/**").hasRole("GESTOR")
+                        // v0.8 (I15): decisión de captación, interna de la inmobiliaria.
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/decision-captacion").hasRole("GESTOR")
+                        .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/decisiones-captacion")
+                        .hasAnyRole("GESTOR", "REVISOR")
                         // Historial de evaluaciones: solo lectura y nunca para el comprador.
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/historial")
                                 .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO")

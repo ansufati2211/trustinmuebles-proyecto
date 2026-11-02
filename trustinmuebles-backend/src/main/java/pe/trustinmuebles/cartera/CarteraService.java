@@ -19,6 +19,8 @@ import pe.trustinmuebles.expediente.CarteraCasos;
 import pe.trustinmuebles.expediente.CarteraCasos.CasoCartera;
 import pe.trustinmuebles.clasificacion.TipoAlerta;
 import pe.trustinmuebles.expediente.Esfuerzo;
+import pe.trustinmuebles.expediente.EstadoGestion;
+import pe.trustinmuebles.expediente.SemaforoGestion;
 import pe.trustinmuebles.expediente.EstadoPublicacion;
 import pe.trustinmuebles.expediente.RutaRegularizacion;
 import pe.trustinmuebles.expediente.RutasRegularizacion;
@@ -42,14 +44,42 @@ class CarteraService {
     private final ClasificacionService clasificacion;
     private final InspeccionService inspeccion;
     private final RutasRegularizacion rutas;
+    private final DecisionCaptacionRepository decisiones;
 
     CarteraService(SolicitudContactoRepository contactos, CarteraCasos casos, ClasificacionService clasificacion,
-            InspeccionService inspeccion, RutasRegularizacion rutas) {
+            InspeccionService inspeccion, RutasRegularizacion rutas, DecisionCaptacionRepository decisiones) {
         this.contactos = contactos;
         this.casos = casos;
         this.clasificacion = clasificacion;
         this.inspeccion = inspeccion;
         this.rutas = rutas;
+        this.decisiones = decisiones;
+    }
+
+    /**
+     * v0.8 (D54): el gestor registra una decisión de captación. Se agrega una fila (historial de solo adición) con la
+     * cuenta de la sesión y la fecha. No toca la clasificación ni la inspección (I15) ni bloquea publicar.
+     */
+    DecisionDto registrarDecision(String codigo, RegistrarDecisionRequest req) {
+        UsuarioActual u = exigir(Rol.GESTOR, "Solo el gestor registra la decisión de captación");
+        CasoCartera c = casos.buscar(codigo).orElseThrow(() -> new NoEncontradoException("Caso", codigo));
+        DecisionCaptacion d = new DecisionCaptacion();
+        d.setExpedienteId(c.expedienteId());
+        d.setCasoCodigo(c.codigo());
+        d.setDecision(req.decision());
+        d.setMotivo(req.motivo());
+        d.setCuentaCodigo(u.codigoCuenta());
+        d.setRegistradaEn(ahora());
+        return DecisionDto.de(decisiones.save(d));
+    }
+
+    /** v0.8: historial de decisiones de un caso, del más antiguo al más reciente. Solo GESTOR y REVISOR (I15). */
+    @Transactional(readOnly = true)
+    List<DecisionDto> decisiones(String codigo) {
+        Rol rol = UsuarioActual.actual().rol();
+        if (!SemaforoGestion.puedeVer(rol)) throw new AccessDeniedException("Solo el gestor y el revisor ven las decisiones");
+        CasoCartera c = casos.buscar(codigo).orElseThrow(() -> new NoEncontradoException("Caso", codigo));
+        return decisiones.findByCasoCodigoOrderByIdAsc(c.codigo()).stream().map(DecisionDto::de).toList();
     }
 
     /**
@@ -94,6 +124,9 @@ class CarteraService {
                 .stream().map(ContactoDto::de).toList();
     }
 
+    static final String AVISO_GESTION =
+            "Uso interno de la inmobiliaria; no se muestra al comprador ni es una recomendación de compra";
+
     /** Clave del conteo por esfuerzo para los casos sin pasos de regularización. */
     static final String SIN_PASOS = "SIN_PASOS";
 
@@ -118,13 +151,26 @@ class CarteraService {
         for (Esfuerzo e : Esfuerzo.values()) porEsfuerzo.put(e.name(), 0L);
         porEsfuerzo.put(SIN_PASOS, 0L);
         List<CasoPorRegularizar> porRegularizar = new ArrayList<>();
+        Map<EstadoGestion, Long> porGestion = new EnumMap<>(EstadoGestion.class);
+        for (EstadoGestion g : EstadoGestion.values()) porGestion.put(g, 0L);
+        Map<String, Map<EstadoGestion, Long>> matriz = new LinkedHashMap<>();
+        for (TipoAlerta t : tipos) {
+            Map<EstadoGestion, Long> fila = new EnumMap<>(EstadoGestion.class);
+            for (EstadoGestion g : EstadoGestion.values()) fila.put(g, 0L);
+            matriz.put(t.codigo(), fila);
+        }
         for (CasoCartera c : todos) {
             RutaRegularizacion ruta = rutas.calcular(c.expedienteId());
+            EstadoGestion estadoGestion = SemaforoGestion.estadoDe(ruta);
+            porGestion.merge(estadoGestion, 1L, Long::sum);
+            for (String t : ruta.tiposAlerta()) {
+                matriz.computeIfAbsent(t, k -> new EnumMap<>(EstadoGestion.class)).merge(estadoGestion, 1L, Long::sum);
+            }
             for (String t : ruta.tiposAlerta()) porTipo.merge(t, 1L, Long::sum);
             porEsfuerzo.merge(ruta.esfuerzo() == null ? SIN_PASOS : ruta.esfuerzo().name(), 1L, Long::sum);
             if (ruta.esfuerzo() != null) {
                 porRegularizar.add(new CasoPorRegularizar(c.codigo(), c.denominacion(), ruta.estado(),
-                        ruta.tiposAlerta(), ruta.esfuerzo()));
+                        ruta.tiposAlerta(), ruta.esfuerzo(), estadoGestion));
             }
             porPublicacion.merge(c.estadoPublicacion(), 1L, Long::sum);
             EvaluacionDto ev = clasificacion.obtener(c.expedienteId()).orElse(null);
@@ -146,8 +192,11 @@ class CarteraService {
         porRegularizar.sort(Comparator.comparing(CasoPorRegularizar::esfuerzo).thenComparing(CasoPorRegularizar::codigo));
         List<ConteoTipoAlerta> conteoTipos = tipos.stream()
                 .map(t -> new ConteoTipoAlerta(t.codigo(), t.nombre(), porTipo.getOrDefault(t.codigo(), 0L))).toList();
+        List<FilaMatrizGestion> filas = tipos.stream()
+                .map(t -> new FilaMatrizGestion(t.codigo(), t.nombre(), matriz.get(t.codigo()))).toList();
         return new PanelCartera(todos.size(), porColor, porPublicacion, conFaltantes, enCurso, asignadas,
-                enCurso.size() - asignadas, pendientes, conteoTipos, porEsfuerzo, porRegularizar, CarteraDtos.AVISO_PRIORIZACION);
+                enCurso.size() - asignadas, pendientes, conteoTipos, porEsfuerzo, porRegularizar,
+                CarteraDtos.AVISO_PRIORIZACION, porGestion, filas, AVISO_GESTION);
     }
 
     private static UsuarioActual exigir(Rol rol, String mensaje) {

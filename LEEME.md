@@ -269,6 +269,7 @@ pie: no prueban el dibujado de las demás pantallas.
 | I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` | Probado |
 | I13 | El propietario solo autoriza sus casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura` | Probado |
 | I14 | No se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `CicloCarteraTest` | Probado |
+| I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (v0.8, D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
 
 **I7:** el pie activo (`components/layout/Footer.tsx`, usado por `AppShell.tsx`) muestra los textos de `lib/limitesLegales.ts`: no
 certifica saneamiento, no recomienda comprar, no reemplaza asesoría legal, datos y especialistas simulados, y verificación

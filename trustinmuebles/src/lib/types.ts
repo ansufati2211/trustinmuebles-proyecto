@@ -41,6 +41,8 @@ export interface ResumenCaso {
   estadoPublicacion: EstadoPublicacion;
   /** v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
   tiposAlerta?: string[];
+  /** v0.8 (I15): solo para gestor y revisor; para los demás el campo no viene. */
+  gestion?: GestionInmobiliaria;
 }
 
 /** v0.8: un tipo de alerta (GET /casos/tipos-alerta): código y nombre de la regla, o información insuficiente. */
@@ -131,6 +133,8 @@ export interface DetalleCaso {
   fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
   predio: Predio; publicacion: Publicacion;
+  /** v0.8 (I15): solo para gestor y revisor. */
+  gestion?: GestionInmobiliaria;
 }
 
 /** Qué provocó un recálculo del indicador A (lista cerrada del backend). */
@@ -165,8 +169,15 @@ export interface PanelCartera {
   /** v0.8 (D52): conteos por tipo de alerta y por esfuerzo, y la lista para organizar la subsanación. */
   porTipoAlerta?: { codigo: string; nombre: string; casos: number }[];
   porEsfuerzo?: Partial<Record<Esfuerzo | "SIN_PASOS", number>>;
-  porRegularizar?: { codigo: string; denominacion: string; color: EstadoSemaforo | null; tiposAlerta: string[]; esfuerzo: Esfuerzo }[];
+  porRegularizar?: {
+    codigo: string; denominacion: string; color: EstadoSemaforo | null; tiposAlerta: string[]; esfuerzo: Esfuerzo;
+    estadoGestion?: EstadoGestion;
+  }[];
   avisoPriorizacion?: string;
+  /** v0.8 (D54): conteo por estado de gestión y matriz tipo de alerta × estado de gestión. */
+  porEstadoGestion?: Partial<Record<EstadoGestion, number>>;
+  matrizGestion?: { codigo: string; nombre: string; porEstadoGestion: Partial<Record<EstadoGestion, number>> }[];
+  avisoGestion?: string;
 }
 
 export interface AsientoPeticion {
@@ -203,4 +214,22 @@ export interface RutaRegularizacion {
   codigo: string; estado: EstadoSemaforo | null; esfuerzo: Esfuerzo | null; esfuerzoEtiqueta: string | null;
   items: ItemRuta[]; tiposAlerta: string[]; mensaje: string | null; aviso: string; plazoGeneral: string;
   estadoRevision: string; versionContenido: string;
+}
+
+/** v0.8 (I15): semáforo de gestión, interno de la inmobiliaria. Solo llega al gestor y al revisor. */
+export type EstadoGestion = "VIABLE" | "VIABLE_CON_CONDICIONES" | "REQUIERE_REGULARIZACION" | "COMPLETAR_INFORMACION";
+
+export interface GestionInmobiliaria {
+  estado: EstadoGestion; etiqueta: string; explicacion: string; sugerencia: string; esfuerzo: Esfuerzo | null; aviso: string;
+}
+
+export type DecisionCaptacionTipo = "CAPTAR" | "CAPTAR_CON_CONDICIONES" | "NO_CAPTAR_POR_AHORA";
+export type MotivoDecision =
+  | "DOCUMENTACION_COMPLETA" | "REGULARIZACION_EN_CURSO" | "CARGA_VIGENTE" | "PROCESO_JUDICIAL"
+  | "INFORMACION_INSUFICIENTE" | "OTRO_MOTIVO_COMERCIAL";
+
+/** Una decisión de captación (historial de solo adición). Sin texto libre (I11). */
+export interface DecisionCaptacion {
+  id: number; casoCodigo: string; decision: DecisionCaptacionTipo; decisionEtiqueta: string; motivo: MotivoDecision;
+  motivoEtiqueta: string; cuentaCodigo: string; registradaEn: string;
 }

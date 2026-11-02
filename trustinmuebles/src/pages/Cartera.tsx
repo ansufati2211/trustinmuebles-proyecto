@@ -22,6 +22,7 @@ import {
 import { etiquetaMotivo } from "@/lib/contacto";
 import { fechaHora } from "@/lib/historial";
 import { ESTADOS } from "@/lib/semaforo";
+import { ESTADOS_GESTION, GESTION } from "@/lib/gestion";
 import { useApi } from "@/lib/useApi";
 import type { Contacto, PanelCartera, ResumenCaso, TipoAlerta } from "@/lib/types";
 
@@ -108,7 +109,7 @@ export default function Cartera() {
   const t = totalesDelPanel(panel.data);
   const p = panel.data;
   const visibles = filtrarCartera(casos.data, filtro);
-  const hayFiltro = !!(filtro.color || filtro.publicacion || filtro.tipoAlerta || filtro.q.trim());
+  const hayFiltro = !!(filtro.color || filtro.publicacion || filtro.tipoAlerta || filtro.gestion || filtro.q.trim());
   const opcionesTipo = (tiposAlerta.data ?? []).map((x) => ({ valor: x.codigo, etiqueta: nombreTipoAlerta(x.codigo, tiposAlerta.data) }));
   const elegirTipo = (codigo: string) => {
     setFiltro({ ...FILTRO_CARTERA_VACIO, tipoAlerta: codigo });
@@ -258,7 +259,7 @@ export default function Cartera() {
             aria-label="Filtrar los casos de la cartera"
             className="relative z-30 space-y-4 rounded-[2rem] border border-border bg-card p-5 shadow-tarjeta sm:p-6"
           >
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <div>
                 <label htmlFor="c-q" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-tinta-2">Buscar por partida, distrito o nombre</label>
                 <div className="relative">
@@ -297,6 +298,13 @@ export default function Cartera() {
                 opciones={OPCIONES_PUBLICACION}
                 textoTodos="Todos los estados"
                 alCambiar={(v) => setFiltro({ ...filtro, publicacion: v as FiltroCartera["publicacion"] })}
+              />
+              <Desplegable
+                etiqueta="Gestión (interno)"
+                valor={filtro.gestion ?? ""}
+                opciones={ESTADOS_GESTION.map((g) => ({ valor: g, etiqueta: GESTION[g].etiqueta }))}
+                textoTodos="Todos los estados"
+                alCambiar={(v) => setFiltro({ ...filtro, gestion: v as FiltroCartera["gestion"] })}
               />
               <Desplegable
                 etiqueta="Tipo de alerta"

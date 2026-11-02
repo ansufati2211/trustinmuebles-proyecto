@@ -148,6 +148,7 @@ RN-01 a RN-08 vienen de `docs/trazabilidad.md`; RN-09 y RN-10, de `docs/notas-in
 | I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` | Probado |
 | I13 | El propietario solo autoriza sus propios casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` | Probado |
 | I14 | Nada se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `MigracionV6Test.conservaLosDiezCasos`, `CicloCarteraTest.cicloCompleto`; restricción `ck_caso_publicado_autorizado` (V6) | Probado |
+| I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (v0.8, D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
 
 **Sin prueba automática:** el texto del login de I7. I6 está probada solo como propiedad de configuración, no sobre el despliegue
 con Docker.
@@ -321,6 +322,7 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 | I12 | `HistorialEvaluacion` (`@Immutable`) | `HistorialEvaluacionTest.historialInmutable` | Probado |
 | I13 | `ExpedienteService.casoDelPropietario` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario` | Probado |
 | I14 | `ExpedienteService.publicar`, restricción V6 | `CaptacionPublicacionTest.sinAutorizacionNoSePublica` | Probado |
+| I15 | `SemaforoGestion.puedeVer`, `ExpedienteService.gestionPara`, `CarteraService.registrarDecision`, `SecurityConfig` | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `decisionNoCambiaAniB` | Probado |
 
 ## 16. Correspondencia con el informe
 

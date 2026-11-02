@@ -1,4 +1,4 @@
-import type { EstadoPublicacion, EstadoSemaforo, PanelCartera, ResumenCaso } from "./types";
+import type { EstadoGestion, EstadoPublicacion, EstadoSemaforo, PanelCartera, ResumenCaso } from "./types";
 
 export const COLORES: EstadoSemaforo[] = ["VERDE", "AMARILLO", "ROJO", "GRIS"];
 export const ESTADOS_PUBLICACION: EstadoPublicacion[] = ["BORRADOR", "PUBLICADO", "RETIRADO"];
@@ -51,9 +51,11 @@ export function totalesDelPanel(p: Partial<PanelCartera> | null | undefined): To
  */
 export interface FiltroCartera {
   color: "" | EstadoSemaforo; publicacion: "" | EstadoPublicacion; q: string; tipoAlerta?: string;
+  /** v0.8 (I15): estado de gestión, solo en la cartera del gestor. */
+  gestion?: "" | EstadoGestion;
 }
 
-export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "", tipoAlerta: "" };
+export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "", tipoAlerta: "", gestion: "" };
 
 /** Ruta de la lista del gestor: con tipo de alerta, el servidor ya devuelve solo esos casos. */
 export const rutaCartera = (f: FiltroCartera) =>
@@ -71,6 +73,7 @@ export function filtrarCartera(casos: ResumenCaso[] | null | undefined, f: Filtr
   const q = f.q.trim().toLowerCase();
   return (casos ?? []).filter((c) =>
     (!f.color || c.estado === f.color)
+    && (!f.gestion || c.gestion?.estado === f.gestion)
     && (!f.publicacion || c.estadoPublicacion === f.publicacion)
     && (!q || c.codigo.toLowerCase().includes(q) || c.denominacion.toLowerCase().includes(q)
       || (c.predio?.distrito ?? "").toLowerCase().includes(q)));

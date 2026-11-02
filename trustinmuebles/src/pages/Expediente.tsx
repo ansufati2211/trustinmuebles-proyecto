@@ -11,6 +11,8 @@ import { PanelPlanos } from "@/components/PanelPlanos";
 import { PanelEvaluacionTecnica } from "@/components/PanelEvaluacionTecnica";
 import { HistorialEvaluaciones } from "@/components/HistorialEvaluaciones";
 import { RutaRegularizacion } from "@/components/RutaRegularizacion";
+import { PanelGestion } from "@/components/PanelGestion";
+import { puedeVerGestion } from "@/lib/gestion";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { SolicitudContacto } from "@/components/SolicitudContacto";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
@@ -444,6 +446,11 @@ export default function Expediente() {
                 </Card>
               )}
             </div>
+
+            {d.gestion && puedeVerGestion(usuario?.rol) && (
+              <PanelGestion key={`gestion-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} gestion={d.gestion}
+                esGestor={usuario?.rol === "GESTOR"} />
+            )}
 
             <RutaRegularizacion key={`ruta-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} />
 

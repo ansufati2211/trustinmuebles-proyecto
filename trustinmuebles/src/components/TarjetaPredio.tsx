@@ -4,6 +4,8 @@ import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, soles } from "@/lib/formato";
 import { InsigniaPublicacion } from "@/components/PanelPublicacion";
+import { ChipGestion } from "@/components/PanelGestion";
+import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
 import type { ResumenCaso } from "@/lib/types";
 
 export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; conPublicacion?: boolean }) {
@@ -77,6 +79,12 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
           <IndicadorA estado={c.estado} tamano="sm" />
           <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
           {conPublicacion && c.estadoPublicacion && <InsigniaPublicacion estado={c.estadoPublicacion} tamano="sm" />}
+          {c.gestion && (
+            <div className="flex flex-wrap gap-1.5">
+              <ChipGestion estado={c.gestion.estado} />
+              <ChipEsfuerzo esfuerzo={c.gestion.esfuerzo} />
+            </div>
+          )}
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">

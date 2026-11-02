@@ -1,5 +1,6 @@
 package pe.trustinmuebles.expediente;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -37,7 +38,9 @@ final class CasoDtos {
             EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
             PredioDto predio, EstadoPublicacion estadoPublicacion,
             /* v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
-            List<String> tiposAlerta) {}
+            List<String> tiposAlerta,
+            /* v0.8 (I15): semáforo de gestión; solo para GESTOR y REVISOR. Para los demás no viene en la respuesta. */
+            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion) {}
 
     /**
      * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se
@@ -91,7 +94,9 @@ final class CasoDtos {
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
             String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
             EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
-            PredioDto predio, PublicacionDto publicacion) {}
+            PredioDto predio, PublicacionDto publicacion,
+            /* v0.8 (I15): solo para GESTOR y REVISOR; para los demás roles el campo no viene en la respuesta. */
+            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion) {}
 
     /** Respuesta de una subida (v0.8): huella del archivo guardado, tamaño recibido y guardado, y si se optimizó. */
     record DocumentoDto(String codigo, String sha256, long tamanoOriginalBytes, long tamanoBytes, boolean optimizado) {

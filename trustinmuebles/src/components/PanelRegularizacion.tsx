@@ -1,5 +1,7 @@
 import { Link } from "react-router";
-import { Gauge, Info, ListChecks, Tags } from "lucide-react";
+import { Gauge, Grid3x3, Info, ListChecks, Lock, Tags } from "lucide-react";
+import { ChipGestion } from "@/components/PanelGestion";
+import { AVISO_GESTION, ESTADOS_GESTION, GESTION } from "@/lib/gestion";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { IndicadorA } from "@/components/base/Indicadores";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
@@ -62,6 +64,43 @@ export function PanelRegularizacion({ panel, alElegirTipo }: { panel: PanelCarte
         </section>
       </div>
 
+      <section aria-labelledby="titulo-gestion-panel" className={`${tarjeta} space-y-4 border-2 border-dashed`}>
+        <TituloSeccion icono={Lock} id="titulo-gestion-panel" descripcion={panel.avisoGestion ?? AVISO_GESTION}>
+          Gestión inmobiliaria (interno)
+        </TituloSeccion>
+        <ul className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          {ESTADOS_GESTION.map((g) => (
+            <li key={g} className="flex flex-col items-start gap-2 rounded-2xl border border-border bg-superficie p-4">
+              <ChipGestion estado={g} />
+              <span className="cifras text-3xl font-black text-foreground">{panel.porEstadoGestion?.[g] ?? 0}</span>
+            </li>
+          ))}
+        </ul>
+        {(panel.matrizGestion ?? []).length > 0 && (
+          <div className="overflow-x-auto">
+            <table className="w-full min-w-[620px] text-left text-sm">
+              <caption className="mb-2 flex items-center gap-2 text-left text-sm font-bold text-foreground">
+                <Grid3x3 className="size-4 text-primary" aria-hidden="true" /> Tipo de alerta × estado de gestión
+              </caption>
+              <thead className="text-xs text-tinta-2">
+                <tr>
+                  <th scope="col" className="py-2 pr-3">Tipo de alerta</th>
+                  {ESTADOS_GESTION.map((g) => <th key={g} scope="col" className="py-2 pr-3">{GESTION[g].etiqueta}</th>)}
+                </tr>
+              </thead>
+              <tbody>
+                {(panel.matrizGestion ?? []).map((f) => (
+                  <tr key={f.codigo} className="border-t border-border">
+                    <th scope="row" className="py-2 pr-3 font-semibold text-foreground">{nombreTipoAlerta(f.codigo, tipos)}</th>
+                    {ESTADOS_GESTION.map((g) => <td key={g} className="cifras py-2 pr-3">{f.porEstadoGestion?.[g] ?? 0}</td>)}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </section>
+
       <section aria-labelledby="titulo-por-regularizar" className={`${tarjeta} space-y-4`}>
         <TituloSeccion icono={ListChecks} id="titulo-por-regularizar" descripcion="Ordenados por esfuerzo y luego por código, para organizar la subsanación.">
           Por regularizar
@@ -79,7 +118,8 @@ export function PanelRegularizacion({ panel, alElegirTipo }: { panel: PanelCarte
                   <th scope="col" className="py-2 pr-3">Caso</th>
                   <th scope="col" className="py-2 pr-3">Indicador A</th>
                   <th scope="col" className="py-2 pr-3">Tipos de alerta</th>
-                  <th scope="col" className="py-2">Esfuerzo</th>
+                  <th scope="col" className="py-2 pr-3">Esfuerzo</th>
+                  <th scope="col" className="py-2">Gestión</th>
                 </tr>
               </thead>
               <tbody>
@@ -91,7 +131,8 @@ export function PanelRegularizacion({ panel, alElegirTipo }: { panel: PanelCarte
                     </td>
                     <td className="py-3 pr-3">{c.color && <IndicadorA estado={c.color} tamano="sm" conPrefijo={false} />}</td>
                     <td className="py-3 pr-3 text-xs text-foreground">{c.tiposAlerta.map((t) => nombreTipoAlerta(t, tipos)).join(" · ")}</td>
-                    <td className="py-3"><ChipEsfuerzo esfuerzo={c.esfuerzo} /></td>
+                    <td className="py-3 pr-3"><ChipEsfuerzo esfuerzo={c.esfuerzo} /></td>
+                    <td className="py-3">{c.estadoGestion && <ChipGestion estado={c.estadoGestion} />}</td>
                   </tr>
                 ))}
               </tbody>

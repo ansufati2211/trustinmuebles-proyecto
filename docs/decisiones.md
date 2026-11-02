@@ -488,3 +488,23 @@ viables o tomarán más tiempo.
 para organizar la subsanación y lleva el aviso «Priorización interna de la inmobiliaria; no es una recomendación de compra». El
 esfuerzo es un criterio del equipo (borrador pendiente de revisión especializada), no un plazo ni un costo, y no cambia A ni B.
 
+## D54. v0.8: semáforo de gestión interno y decisión de captación (I15)
+
+> Pedida como D52 en el plan de la v0.8; se renumeró porque D50 y D51 ya existían (ver D52).
+
+**Qué:** un cuarto indicador, solo para la inmobiliaria, con cuatro estados derivados de la ruta de regularización
+(`contenido/v0.4/gestion.json`, borrador del equipo): COMPLETAR_INFORMACION si hay datos faltantes o una condición no
+contemplada; si no, REQUIERE_REGULARIZACION si algún paso es de esfuerzo ALTO; VIABLE_CON_CONDICIONES si el máximo es MEDIO;
+VIABLE si no hay pasos o solo hay pasos BAJO. Cada estado lleva etiqueta, explicación y una sugerencia, sin plazos ni costos.
+Viaja en el detalle y en `GET /casos` (campo `gestion`) solo para GESTOR y REVISOR; para los demás roles el campo no existe en
+la respuesta. El panel del gestor agrega el conteo por estado y la matriz «tipo de alerta × estado de gestión».
+**Decisión de captación:** `POST /casos/{c}/decision-captacion` (solo GESTOR) con `decision` (CAPTAR, CAPTAR_CON_CONDICIONES,
+NO_CAPTAR_POR_AHORA) y `motivo` de lista cerrada, sin texto libre (400 si llega otro campo). Historial de solo adición
+(migración V14): cuenta y fecha; no hay rutas para editar ni borrar. `GET /casos/{c}/decisiones-captacion` solo GESTOR y REVISOR.
+**Precedencia:** como en A, primero la falta de información: un caso gris con una alerta judicial conocida queda en COMPLETAR_INFORMACION
+y su ruta conserva el paso judicial.
+**Límites (I15):** no cambia A ni B ni agrega filas al historial de A; no bloquea publicar (si la última decisión es no captar por
+ahora, la interfaz pide confirmación «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?»); se muestra con
+otro ícono y con contorno sin relleno para no confundirlo con el color de A, y siempre con el aviso «Uso interno de la inmobiliaria;
+no se muestra al comprador ni es una recomendación de compra».
+

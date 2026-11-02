@@ -1,0 +1,28 @@
+{
+  "version": "v0.4",
+  "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
+  "aviso": "Uso interno de la inmobiliaria; no se muestra al comprador ni es una recomendación de compra",
+  "criterio": "Se deriva de la ruta de regularización: primero los datos faltantes, luego el mayor esfuerzo de sus pasos.",
+  "estados": {
+    "VIABLE": {
+      "etiqueta": "Viable",
+      "explicacion": "Sin pasos de regularización, o solo pasos que dependen de documentos que aporta el propietario.",
+      "sugerencia": "Se puede avanzar con la captación y pedir al propietario los documentos pendientes."
+    },
+    "VIABLE_CON_CONDICIONES": {
+      "etiqueta": "Viable con condiciones",
+      "explicacion": "Algún paso requiere a un tercero sin proceso judicial (por ejemplo, el levantamiento de una hipoteca por el acreedor).",
+      "sugerencia": "Acordar con el propietario cómo y cuándo se gestionará el paso con el tercero antes de publicar."
+    },
+    "REQUIERE_REGULARIZACION": {
+      "etiqueta": "Requiere regularización",
+      "explicacion": "Algún paso requiere un proceso judicial o administrativo (embargo, demanda, bloqueo o ampliación no declarada).",
+      "sugerencia": "Evaluar con el propietario si conviene regularizar antes de captar; el plazo depende del trámite: consultar con abogado o notario."
+    },
+    "COMPLETAR_INFORMACION": {
+      "etiqueta": "Completar información",
+      "explicacion": "Faltan datos mínimos o la condición del predio no está contemplada: no se puede estimar el esfuerzo completo. Las alertas conocidas se conservan.",
+      "sugerencia": "Pedir al propietario la copia literal completa y los documentos que faltan antes de decidir."
+    }
+  }
+}

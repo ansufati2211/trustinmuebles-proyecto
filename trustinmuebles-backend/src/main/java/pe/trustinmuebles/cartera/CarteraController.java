@@ -34,6 +34,21 @@ class CarteraController {
         return servicio.atender(id);
     }
 
+    /**
+     * v0.8: solo GESTOR. Cuerpo: {@code {"decision": "NO_CAPTAR_POR_AHORA", "motivo": "PROCESO_JUDICIAL"}}, sin texto libre.
+     * Agrega una fila al historial de decisiones; no cambia A ni B ni bloquea la publicación (I15).
+     */
+    @PostMapping("/casos/{codigo}/decision-captacion")
+    ResponseEntity<DecisionDto> registrarDecision(@PathVariable String codigo, @RequestBody JsonNode cuerpo) {
+        return ResponseEntity.status(201).body(servicio.registrarDecision(codigo, RegistrarDecisionRequest.de(cuerpo)));
+    }
+
+    /** v0.8: solo GESTOR y REVISOR. Historial de decisiones de captación, de solo lectura. */
+    @GetMapping("/casos/{codigo}/decisiones-captacion")
+    List<DecisionDto> decisiones(@PathVariable String codigo) {
+        return servicio.decisiones(codigo);
+    }
+
     /** Solo GESTOR: panel de cartera de solo lectura. */
     @GetMapping("/cartera/panel")
     PanelCartera panel() {

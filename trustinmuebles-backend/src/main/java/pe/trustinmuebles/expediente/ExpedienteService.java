@@ -55,11 +55,12 @@ class ExpedienteService {
     private final AuthService identidad;
     private final DocumentosPdf documentosPdf;
     private final RutasRegularizacion rutas;
+    private final SemaforoGestion gestion;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
             InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf,
-            RutasRegularizacion rutas) {
+            RutasRegularizacion rutas, SemaforoGestion gestion) {
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -70,6 +71,7 @@ class ExpedienteService {
         this.identidad = identidad;
         this.documentosPdf = documentosPdf;
         this.rutas = rutas;
+        this.gestion = gestion;
     }
 
     /**
@@ -94,7 +96,7 @@ class ExpedienteService {
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
                     e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
-                    e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev));
+                    e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev), gestionPara(e, u));
         }).filter(filtro::acepta).toList();
     }
 
@@ -733,7 +735,13 @@ class ExpedienteService {
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
                 c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
-                glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()));
+                glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()),
+                gestionPara(e, UsuarioActual.actual()));
+    }
+
+    /** I15: el semáforo de gestión solo se calcula y se envía al gestor y al revisor; para los demás, null (se omite). */
+    private GestionInmobiliaria gestionPara(Expediente e, UsuarioActual u) {
+        return SemaforoGestion.puedeVer(u.rol()) ? gestion.de(rutas.calcular(e)) : null;
     }
 
     /** Origen del PDF del caso (v0.8): generado por el sistema a partir de la transcripción o subido por una cuenta. */
