@@ -58,12 +58,32 @@ final class CasoDtos {
     /** Un plano del expediente técnico. {@code coincideArea} solo se calcula en el plano arquitectónico. */
     record PlanoDto(Especialidad especialidad, String especialidadEtiqueta, EstadoPlano estado, BigDecimal areaConstruida,
             SistemaConstructivo sistemaConstructivo, String sistemaConstructivoEtiqueta, String observacion,
-            boolean tieneDocumentoPropio, Boolean coincideArea) {}
+            boolean tieneDocumentoPropio, DocumentoInfoDto documento, Boolean coincideArea) {}
+
+    /**
+     * v0.8: de dónde sale el PDF de un plano o del caso. origen: SUBIDO (con su evidencia), GENERADO (lámina o copia
+     * que arma el sistema a partir de la transcripción; no es un documento oficial) o FALTA (no hay archivo).
+     */
+    record DocumentoInfoDto(String origen, String subidoPor, java.time.Instant subidoEn, Long tamanoBytes,
+            Long tamanoOriginalBytes, boolean optimizado, String sha256) {
+        static DocumentoInfoDto generado() {
+            return new DocumentoInfoDto("GENERADO", null, null, null, null, false, null);
+        }
+
+        static DocumentoInfoDto falta() {
+            return new DocumentoInfoDto("FALTA", null, null, null, null, false, null);
+        }
+
+        static DocumentoInfoDto subido(pe.trustinmuebles.almacenamiento.MetadatosArchivo m) {
+            return new DocumentoInfoDto("SUBIDO", m.subidoPor(), m.creadoEn(), m.tamano(), m.tamanoOriginal(),
+                    m.optimizado(), m.sha256());
+        }
+    }
 
     record ExpedienteDto(Long version, String condicionRepresentada, String titularidad, Completitud completitud,
             LocalDate fechaReferencial, String nota, String zonaRegistral, String oficinaRegistral, String ubicacion,
             BigDecimal areaM2, String linderos, String antecedenteDominial, boolean tieneDocumento,
-            boolean documentoGenerado, List<AsientoDto> asientos, TipoPredio tipoPredio,
+            boolean documentoGenerado, DocumentoInfoDto documento, List<AsientoDto> asientos, TipoPredio tipoPredio,
             BigDecimal areaConstruidaInscrita, List<PlanoDto> planos) {}
 
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
@@ -71,7 +91,12 @@ final class CasoDtos {
             EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
             PredioDto predio, PublicacionDto publicacion) {}
 
-    record DocumentoDto(String codigo, String sha256) {}
+    /** Respuesta de una subida (v0.8): huella del archivo guardado, tamaño recibido y guardado, y si se optimizó. */
+    record DocumentoDto(String codigo, String sha256, long tamanoOriginalBytes, long tamanoBytes, boolean optimizado) {
+        static DocumentoDto de(String codigo, String sha256, pe.trustinmuebles.almacenamiento.PdfPreparado pdf) {
+            return new DocumentoDto(codigo, sha256, pdf.tamanoOriginal(), pdf.datos().length, pdf.optimizado());
+        }
+    }
 
     // ----------------------------------------------------------------- peticiones
 

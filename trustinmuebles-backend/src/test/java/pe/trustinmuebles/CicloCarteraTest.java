@@ -49,8 +49,9 @@ class CicloCarteraTest extends BaseApiTest {
         p.put("tipoPredio", "VIVIENDA");
         p.put("areaConstruidaInscrita", 120.00);
         ArrayNode planos = p.putArray("planos");
-        planos.addObject().put("especialidad", "ARQUITECTURA").put("estado", "PRESENTADO").put("areaConstruida", 120.00);
-        planos.addObject().put("especialidad", "ESTRUCTURAS").put("estado", "PRESENTADO");
+        // v0.8: los planos se presentan al subir su PDF, después del registro.
+        planos.addObject().put("especialidad", "ARQUITECTURA").put("estado", "NO_PRESENTADO");
+        planos.addObject().put("especialidad", "ESTRUCTURAS").put("estado", "NO_PRESENTADO");
         planos.addObject().put("especialidad", "ELECTRICAS").put("estado", "NO_PRESENTADO");
         planos.addObject().put("especialidad", "SANITARIAS").put("estado", "NO_PRESENTADO");
         p.put("confirmaSinDatosPersonales", true);
@@ -107,10 +108,17 @@ class CicloCarteraTest extends BaseApiTest {
                 .content(this.json.writeValueAsString(expediente()))).andExpect(status().isCreated())
                 .andExpect(jsonPath("$.publicacion.estado").value("BORRADOR"))
                 .andExpect(jsonPath("$.publicacion.autorizada").value(false))
+                .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"));
+        // v0.8: arquitectura y estructuras se presentan subiendo su PDF; el propietario no puede subirlos.
+        subirPlano(CASO, "ARQUITECTURA", p2).andExpect(status().isForbidden());
+        subirPlano(CASO, "ARQUITECTURA", revisor).andExpect(status().isCreated());
+        subirPlano(CASO, "ESTRUCTURAS", revisor).andExpect(status().isCreated())
+                .andExpect(jsonPath("$.optimizado").value(false));
+        mvc.perform(get("/api/v1/casos/" + CASO).header("Authorization", revisor))
                 .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
                 .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")));
         JsonNode colorInicial = evaluacion();
-        assertThat(filasHistorial()).isEqualTo(1);
+        assertThat(filasHistorial()).isEqualTo(3);
 
         mvc.perform(get("/api/v1/casos/" + CASO).header("Authorization", comprador)).andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/casos/" + CASO).header("Authorization", p1)).andExpect(status().isNotFound());
@@ -126,7 +134,7 @@ class CicloCarteraTest extends BaseApiTest {
                 .andExpect(status().isOk()).andExpect(jsonPath("$.autorizada").value(true));
         // I13: su única escritura es la autorización.
         actualizarExpediente(CASO, p2, peticion(leerComo(CASO, p2))).andExpect(status().isForbidden());
-        var pdf = new MockMultipartFile("documento", "x.pdf", "application/pdf", "%PDF-1.4\n%ciclo\n".getBytes());
+        var pdf = new MockMultipartFile("documento", "x.pdf", "application/pdf", PdfDePrueba.simple("Ciclo de cartera"));
         mvc.perform(multipart("/api/v1/casos/" + CASO + "/documento").file(pdf).header("Authorization", p2))
                 .andExpect(status().isForbidden());
 
@@ -199,29 +207,34 @@ class CicloCarteraTest extends BaseApiTest {
                 .andExpect(status().isOk());
         assertThat(evaluacion()).isEqualTo(colorInicial);
 
-        // 9. El REVISOR subsana: incorpora los planos faltantes y adjunta el PDF de uno.
+        // 9. El REVISOR subsana: v0.8, marcar presentado sin archivo da 422; incorpora los planos faltantes con su PDF.
         ObjectNode subsanacion = peticion(leerComo(CASO, revisor));
         for (var plano : (ArrayNode) subsanacion.get("planos")) ((ObjectNode) plano).put("estado", "PRESENTADO");
-        actualizarExpediente(CASO, revisor, subsanacion).andExpect(status().isOk())
+        actualizarExpediente(CASO, revisor, subsanacion).andExpect(status().isUnprocessableEntity())
+                .andExpect(jsonPath("$.detail", containsString("Sube el PDF del plano antes de marcarlo como presentado")));
+        mvc.perform(multipart("/api/v1/casos/" + CASO + "/planos/SANITARIAS/documento").file(pdf)
+                .header("Authorization", revisor)).andExpect(status().isCreated());
+        mvc.perform(multipart("/api/v1/casos/" + CASO + "/planos/ELECTRICAS/documento").file(pdf)
+                .header("Authorization", revisor)).andExpect(status().isCreated());
+        mvc.perform(get("/api/v1/casos/" + CASO).header("Authorization", revisor))
                 .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
                 // I1: verde significa exactamente esto.
                 .andExpect(jsonPath("$.evaluacion.etiqueta").value("Sin alertas en los campos evaluados"))
                 .andExpect(jsonPath("$.evaluacion.limite", containsString("No certifica saneamiento")));
-        mvc.perform(multipart("/api/v1/casos/" + CASO + "/planos/ELECTRICAS/documento").file(pdf)
-                .header("Authorization", revisor)).andExpect(status().isCreated());
-        assertThat(evaluacion().get("estado").asString()).isEqualTo("VERDE");
 
         // 10. El historial registra cada recálculo, con su origen y la cuenta que actuó.
         JsonNode historial = this.json.readTree(mvc.perform(get("/api/v1/casos/" + CASO + "/historial")
                 .header("Authorization", p2)).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        assertThat(historial).hasSize(3);
+        assertThat(historial).hasSize(5);
         assertThat(historial.get(0).get("origen").asString()).isEqualTo("PARTIDA_TRANSCRITA");
-        assertThat(historial.get(0).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
-        assertThat(historial.get(1).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
-        assertThat(historial.get(1).get("estadoAnterior").asString()).isEqualTo("AMARILLO");
-        assertThat(historial.get(1).get("estadoNuevo").asString()).isEqualTo("VERDE");
+        assertThat(historial.get(0).get("estadoNuevo").asString()).isEqualTo("GRIS");
         assertThat(historial.get(2).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
-        assertThat(historial.get(2).get("estadoNuevo").asString()).isEqualTo("VERDE");
+        assertThat(historial.get(2).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
+        assertThat(historial.get(3).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
+        assertThat(historial.get(3).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
+        assertThat(historial.get(4).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
+        assertThat(historial.get(4).get("estadoAnterior").asString()).isEqualTo("AMARILLO");
+        assertThat(historial.get(4).get("estadoNuevo").asString()).isEqualTo("VERDE");
         historial.forEach(h -> assertThat(h.get("cuentaCodigo").asString()).isEqualTo("revisor-01"));
 
         // 12. Accesos prohibidos al historial y rutas de edición inexistentes (I12).
@@ -231,7 +244,7 @@ class CicloCarteraTest extends BaseApiTest {
                 .andExpect(status().isNotFound());
         mvc.perform(delete("/api/v1/casos/" + CASO + "/historial").header("Authorization", revisor))
                 .andExpect(status().is4xxClientError());
-        assertThat(filasHistorial()).isEqualTo(3);
+        assertThat(filasHistorial()).isEqualTo(5);
 
         // Panel del gestor: el caso nuevo, verde y publicado, sin contactos pendientes ni inspecciones en curso suyas.
         mvc.perform(get("/api/v1/cartera/panel").header("Authorization", comprador)).andExpect(status().isForbidden());

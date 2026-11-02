@@ -73,21 +73,26 @@ class EdicionPartidaCaptadaTest extends BaseApiTest {
         return json.readTree(r).findValuesAsString("origen");
     }
 
-    /** Presentar los planos recalcula; una segunda edición, sin tocar planos ni asientos, queda como EDICION. */
+    /**
+     * Presentar los planos recalcula; una segunda edición, sin tocar planos ni asientos, queda como EDICION. v0.8: cada
+     * plano se presenta al subir su PDF (marcarlo presentado sin archivo da 422), así que hay una fila por plano.
+     */
     void editarDosVeces(String codigo, String origenRegistro) throws Exception {
         ObjectNode p = peticion(leerComo(codigo, revisor()));
         marcarPlano(p, "ARQUITECTURA", "PRESENTADO");
-        marcarPlano(p, "ESTRUCTURAS", "PRESENTADO");
-        actualizarExpediente(codigo, revisor(), p).andExpect(status().isOk())
+        actualizarExpediente(codigo, revisor(), p).andExpect(status().isUnprocessableEntity());
+        subirPlano(codigo, "ARQUITECTURA", revisor()).andExpect(status().isCreated());
+        subirPlano(codigo, "ESTRUCTURAS", revisor()).andExpect(status().isCreated());
+        mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", revisor()))
                 .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
                 .andExpect(jsonPath("$.expediente.completitud").value("COMPLETA"));
-        assertThat(origenes(codigo)).containsExactly(origenRegistro, "PLANO_ADJUNTO");
+        assertThat(origenes(codigo)).containsExactly(origenRegistro, "PLANO_ADJUNTO", "PLANO_ADJUNTO");
 
         ObjectNode segunda = peticion(leerComo(codigo, revisor()));
         segunda.put("nota", "Extracto revisado.");
         actualizarExpediente(codigo, revisor(), segunda).andExpect(status().isOk())
                 .andExpect(jsonPath("$.expediente.nota").value("Extracto revisado."));
-        assertThat(origenes(codigo)).containsExactly(origenRegistro, "PLANO_ADJUNTO", "EDICION");
+        assertThat(origenes(codigo)).containsExactly(origenRegistro, "PLANO_ADJUNTO", "PLANO_ADJUNTO", "EDICION");
     }
 
     @Test

@@ -72,3 +72,16 @@ export async function abrirPdf(path: string) {
   window.open(url, "_blank", "noopener");
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
+
+/** Descarga un PDF protegido con el nombre indicado (v0.8: botón «Descargar» de cada documento). */
+export async function descargarPdf(path: string, nombre: string) {
+  const res = await request(path);
+  const url = URL.createObjectURL(await res.blob());
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = nombre;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60_000);
+}

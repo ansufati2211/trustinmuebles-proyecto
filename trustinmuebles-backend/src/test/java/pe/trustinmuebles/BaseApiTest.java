@@ -138,6 +138,18 @@ public abstract class BaseApiTest {
         return n;
     }
 
+    /** v0.8: un PDF real de una página para subir como documento o plano (los planos presentados exigen su archivo). */
+    protected static org.springframework.mock.web.MockMultipartFile pdf(String texto) {
+        return new org.springframework.mock.web.MockMultipartFile("documento", "prueba.pdf", "application/pdf",
+                PdfDePrueba.simple(texto));
+    }
+
+    /** v0.8: sube el PDF de un plano; si estaba no presentado, queda presentado y se recalcula (PLANO_ADJUNTO). */
+    protected ResultActions subirPlano(String codigo, String especialidad, String authorization) throws Exception {
+        return mvc.perform(multipart("/api/v1/casos/" + codigo + "/planos/" + especialidad + "/documento")
+                .file(pdf("Plano " + especialidad + " de prueba")).header("Authorization", authorization));
+    }
+
     /** Devuelve el caso a su contenido original usando la versión actual. */
     protected void restaurar(String codigo, JsonNode original) throws Exception {
         ObjectNode p = peticion(original);

@@ -104,16 +104,17 @@ class PlanosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("El revisor sube el PDF real de un plano: reemplaza la lámina. El comprador no puede; un falso PDF da 422")
+    @DisplayName("El revisor sube el PDF real de un plano: reemplaza la lámina. El comprador no puede; un falso PDF da 400 (v0.8)")
     void subirPlano() throws Exception {
-        byte[] real = "%PDF-1.4\n%plano real de prueba\n".getBytes();
+        byte[] real = PdfDePrueba.simple("Plano real de prueba");
         var archivo = new MockMultipartFile("documento", "plano.pdf", "application/pdf", real);
         mvc.perform(multipart("/api/v1/casos/" + PARCONA + "/planos/ESTRUCTURAS/documento").file(archivo)
                 .header("Authorization", comprador())).andExpect(status().isForbidden());
         var falso = new MockMultipartFile("documento", "plano.pdf", "application/pdf", "no es pdf".getBytes());
         mvc.perform(multipart("/api/v1/casos/" + PARCONA + "/planos/ESTRUCTURAS/documento").file(falso)
-                .header("Authorization", revisor())).andExpect(status().isUnprocessableEntity());
-        mvc.perform(multipart("/api/v1/casos/" + TINGUINA + "/planos/ELECTRICAS/documento").file(archivo)
+                .header("Authorization", revisor())).andExpect(status().isBadRequest());
+        // v0.8: un lote no lleva planos de edificación (antes: un plano no presentado rechazaba la subida).
+        mvc.perform(multipart("/api/v1/casos/" + SANTIAGO + "/planos/ELECTRICAS/documento").file(archivo)
                 .header("Authorization", revisor())).andExpect(status().isUnprocessableEntity());
 
         mvc.perform(multipart("/api/v1/casos/" + PARCONA + "/planos/ESTRUCTURAS/documento").file(archivo)
@@ -123,19 +124,17 @@ class PlanosApiTest extends BaseApiTest {
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
         assertThat(servido).isEqualTo(real);
         mvc.perform(get("/api/v1/casos/" + PARCONA).header("Authorization", comprador()))
-                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].tieneDocumentoPropio", contains(true)));
-        // Dejar el caso como estaba: un plano no presentado pierde su archivo, y volver a presentarlo da la lámina.
-        JsonNode actual = leer(PARCONA);
-        ObjectNode p = peticion(actual);
-        for (var plano : (ArrayNode) p.get("planos")) {
-            if (plano.get("especialidad").asString().equals("ESTRUCTURAS")) ((ObjectNode) plano).put("estado", "NO_PRESENTADO");
-        }
-        actualizarExpediente(PARCONA, revisor(), p).andExpect(status().isOk());
-        for (var plano : (ArrayNode) p.get("planos")) {
-            if (plano.get("especialidad").asString().equals("ESTRUCTURAS")) ((ObjectNode) plano).put("estado", "PRESENTADO");
-        }
-        p.put("versionEsperada", leer(PARCONA).get("expediente").get("version").asLong());
-        actualizarExpediente(PARCONA, revisor(), p).andExpect(status().isOk())
-                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].tieneDocumentoPropio", contains(false)));
+                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].tieneDocumentoPropio", contains(true)))
+                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].documento.origen", contains("SUBIDO")));
+        // Dejar el caso como estaba. v0.8: ya no se puede «volver a presentar» un plano sin archivo por la API, así que
+        // la prueba quita el archivo directamente y el plano vuelve a mostrar la lámina generada.
+        String archivoId = jdbc.queryForObject("select p.archivo_id from plano_tecnico p join expediente e on e.id = "
+                + "p.expediente_id join caso_lote c on c.id = e.caso_id where c.codigo = ? and p.especialidad = "
+                + "'ESTRUCTURAS'", String.class, PARCONA);
+        jdbc.update("update plano_tecnico set archivo_id = null where archivo_id = ?", archivoId);
+        jdbc.update("delete from archivo where id = ?", archivoId);
+        mvc.perform(get("/api/v1/casos/" + PARCONA).header("Authorization", comprador()))
+                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].tieneDocumentoPropio", contains(false)))
+                .andExpect(jsonPath("$.expediente.planos[?(@.especialidad=='ESTRUCTURAS')].documento.origen", contains("GENERADO")));
     }
 }

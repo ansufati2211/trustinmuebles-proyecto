@@ -43,9 +43,20 @@ public class ManejadorErrores {
         return ProblemDetail.forStatusAndDetail(HttpStatus.CONFLICT, "Los datos enviados no son válidos o ya existen");
     }
 
+    /** Límite de entrada de un archivo (v0.8: app.archivos.max-entrada-mb, 25 MB por defecto). */
+    @org.springframework.beans.factory.annotation.Value("${app.archivos.max-entrada-mb:25}")
+    private double maxEntradaMb;
+
     @ExceptionHandler(org.springframework.web.multipart.MaxUploadSizeExceededException.class)
     ProblemDetail demasiadoGrande(org.springframework.web.multipart.MaxUploadSizeExceededException e) {
-        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, "El archivo supera el tamaño máximo (5 MB)");
+        String mb = maxEntradaMb == Math.rint(maxEntradaMb) ? String.valueOf((long) maxEntradaMb)
+                : String.valueOf(maxEntradaMb).replace('.', ',');
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, "El archivo supera " + mb + " MB");
+    }
+
+    @ExceptionHandler(ArchivoDemasiadoGrandeException.class)
+    ProblemDetail archivoGrande(ArchivoDemasiadoGrandeException e) {
+        return ProblemDetail.forStatusAndDetail(HttpStatus.CONTENT_TOO_LARGE, e.getMessage());
     }
 
     @ExceptionHandler(IllegalArgumentException.class)

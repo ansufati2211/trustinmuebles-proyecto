@@ -54,6 +54,22 @@ export interface Plano {
   especialidad: Especialidad; especialidadEtiqueta: string; estado: EstadoPlano; areaConstruida: number | null;
   sistemaConstructivo: SistemaConstructivo | null; sistemaConstructivoEtiqueta: string | null;
   observacion: string | null; tieneDocumentoPropio: boolean; coincideArea: boolean | null;
+  /** v0.8: origen del PDF del plano; null si el plano no está presentado ni observado. */
+  documento?: DocumentoInfo | null;
+}
+
+/**
+ * v0.8: de dónde sale un PDF. SUBIDO lleva su evidencia (cuenta, fecha, tamaño, huella); GENERADO es la lámina o copia
+ * que arma el sistema (no es un documento oficial); FALTA, que no hay archivo.
+ */
+export interface DocumentoInfo {
+  origen: "SUBIDO" | "GENERADO" | "FALTA"; subidoPor: string | null; subidoEn: string | null;
+  tamanoBytes: number | null; tamanoOriginalBytes: number | null; optimizado: boolean; sha256: string | null;
+}
+
+/** Respuesta de una subida (v0.8). */
+export interface DocumentoSubido {
+  codigo: string; sha256: string; tamanoOriginalBytes: number; tamanoBytes: number; optimizado: boolean;
 }
 
 /** Indicador B: lo que se sabe de la verificación física. Independiente del semáforo documental. */
@@ -84,7 +100,7 @@ export interface Expediente {
   version: number; condicionRepresentada: string; titularidad: string; completitud: Completitud;
   fechaReferencial: string; nota: string | null; zonaRegistral: string | null; oficinaRegistral: string | null;
   ubicacion: string | null; areaM2: number | null; linderos: string | null; antecedenteDominial: string | null;
-  tieneDocumento: boolean; documentoGenerado: boolean; asientos: Asiento[];
+  tieneDocumento: boolean; documentoGenerado: boolean; documento?: DocumentoInfo | null; asientos: Asiento[];
   tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: Plano[];
 }
 

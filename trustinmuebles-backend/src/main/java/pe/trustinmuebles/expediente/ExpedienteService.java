@@ -12,6 +12,8 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import pe.trustinmuebles.almacenamiento.AlmacenamientoService;
 import pe.trustinmuebles.almacenamiento.ArchivoContenido;
+import pe.trustinmuebles.almacenamiento.DocumentosPdf;
+import pe.trustinmuebles.almacenamiento.PdfPreparado;
 import pe.trustinmuebles.checklist.ChecklistService;
 import pe.trustinmuebles.checklist.ItemChecklistDto;
 import pe.trustinmuebles.clasificacion.ClasificacionService;
@@ -51,10 +53,11 @@ class ExpedienteService {
     private final AlmacenamientoService almacenamiento;
     private final InspeccionService inspeccion;
     private final AuthService identidad;
+    private final DocumentosPdf documentosPdf;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
-            InspeccionService inspeccion, AuthService identidad) {
+            InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf) {
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -63,6 +66,7 @@ class ExpedienteService {
         this.almacenamiento = almacenamiento;
         this.inspeccion = inspeccion;
         this.identidad = identidad;
+        this.documentosPdf = documentosPdf;
     }
 
     /**
@@ -100,7 +104,7 @@ class ExpedienteService {
         }
         String asientosAntes = firmaAsientos(e);
         String planosAntes = firmaPlanos(e);
-        List<String> archivosViejos = aplicar(e, req.datos());
+        List<String> archivosViejos = aplicar(e, req.datos(), true);
         expedientes.saveAndFlush(e);
         archivosViejos.forEach(almacenamiento::eliminar);
         recalcular(e, origenDeLaEdicion(asientosAntes, planosAntes, e));
@@ -160,12 +164,19 @@ class ExpedienteService {
         return clasificacion.historial(buscarVisible(codigo).getId());
     }
 
-    /** Crea el expediente de un caso nuevo (carga de contenido). La evaluación la calcula quien llama. */
+    /**
+     * Crea el expediente de un caso de la carga de contenido. Sus planos presentados se muestran con la lámina generada,
+     * así que no se exige archivo. La evaluación la calcula quien llama.
+     */
     Expediente crear(CasoLote caso, DatosExpediente datos) {
+        return crear(caso, datos, false);
+    }
+
+    private Expediente crear(CasoLote caso, DatosExpediente datos, boolean exigirArchivo) {
         Expediente e = new Expediente();
         e.setCaso(caso);
         e.setDocumentoGenerado(true);
-        aplicar(e, datos);
+        aplicar(e, datos, exigirArchivo);
         return expedientes.saveAndFlush(e);
     }
 
@@ -244,6 +255,8 @@ class ExpedienteService {
         }
         String nombre = codigo + "-" + especialidad.name().toLowerCase() + ".pdf";
         if (p.getArchivoId() != null) return new DocumentoPlano(almacenamiento.leer(p.getArchivoId()).datos(), nombre);
+        // v0.8: solo los casos de la carga de contenido tienen lámina generada; a una partida captada le falta el archivo.
+        if (e.getCaso().esCaptado()) throw new NoEncontradoException("Archivo del plano", especialidad.etiqueta());
         // El área que se dibuja es la del plano arquitectónico; si no la trae, la inscrita en la partida.
         java.math.BigDecimal areaConstruida = e.getPlanos().stream()
                 .filter(x -> x.getEspecialidad() == Especialidad.ARQUITECTURA).map(PlanoTecnico::getAreaConstruida)
@@ -256,30 +269,37 @@ class ExpedienteService {
         return new DocumentoPlano(lamina, nombre);
     }
 
-    /** El revisor sube el PDF real de un plano. No se mezcla con el del expediente ni cambia su versión. */
+    /**
+     * El revisor sube el PDF real de un plano (v0.8: también si estaba no presentado; al subirlo queda presentado). El
+     * archivo se valida y, si pesa más del umbral, se optimiza (decisión 4). No se mezcla con el del expediente.
+     */
     DocumentoDto asociarDocumentoPlano(String codigo, Especialidad especialidad, MultipartFile archivo) {
         Expediente e = buscar(codigo);
+        if (e.getTipoPredio() != TipoPredio.VIVIENDA) {
+            throw new ReglaNegocioException("Los planos de edificación no aplican a este predio");
+        }
         PlanoTecnico p = planoDe(e, especialidad);
-        if (p == null || (p.getEstado() != EstadoPlano.PRESENTADO && p.getEstado() != EstadoPlano.OBSERVADO)) {
-            throw new ReglaNegocioException("Primero marca el plano como presentado u observado y guarda");
+        if (p != null && p.getEstado() == EstadoPlano.NO_APLICA) {
+            throw new ReglaNegocioException("Este plano está marcado como «no aplica»");
         }
-        byte[] datos;
-        try {
-            datos = archivo.getBytes();
-        } catch (java.io.IOException ex) {
-            throw new java.io.UncheckedIOException(ex);
+        PdfPreparado pdf = documentosPdf.preparar(archivo);
+        if (p == null) {
+            p = new PlanoTecnico();
+            p.setExpediente(e);
+            p.setEspecialidad(especialidad);
+            e.getPlanos().add(p);
         }
-        if (!esPdf(datos)) throw new ReglaNegocioException("El archivo debe ser un PDF válido");
+        if (p.getEstado() != EstadoPlano.OBSERVADO) p.setEstado(EstadoPlano.PRESENTADO);
         String viejo = p.getArchivoId();
-        var guardado = almacenamiento.guardar(codigo + "-" + especialidad.name().toLowerCase() + ".pdf",
-                "application/pdf", datos, false);
+        var guardado = almacenamiento.guardarDocumento(codigo + "-" + especialidad.name().toLowerCase() + ".pdf", pdf,
+                UsuarioActual.actual().codigoCuenta());
         p.setArchivoId(guardado.id());
         expedientes.saveAndFlush(e);
         if (viejo != null) almacenamiento.eliminar(viejo);
         // F2: adjuntar el PDF de un plano deja constancia en el historial. El motor no lee el archivo, solo el estado
-        // del plano, así que el color no puede cambiar por esto (I9).
+        // del plano, así que el contenido del PDF no puede cambiar el color (I9).
         recalcular(e, OrigenEvaluacion.PLANO_ADJUNTO);
-        return new DocumentoDto(codigo, guardado.sha256());
+        return DocumentoDto.de(codigo, guardado.sha256(), pdf);
     }
 
     private static PlanoTecnico planoDe(Expediente e, Especialidad especialidad) {
@@ -334,7 +354,7 @@ class ExpedienteService {
         caso.setEstadoPublicacion(EstadoPublicacion.BORRADOR);
         casos.save(caso);
 
-        Expediente e = crear(caso, req.datos());
+        Expediente e = crear(caso, req.datos(), true);
         int orden = 0;
         for (String nombre : CHECKLIST_TRANSCRITA) checklist.agregar(e.getId(), nombre, EstadoItem.PENDIENTE, orden++);
         glosario.asociar(e.getId(), TERMINOS_TRANSCRITA);
@@ -398,15 +418,9 @@ class ExpedienteService {
     /** El revisor sube su propio PDF: desde ahora el sistema deja de regenerarlo. */
     DocumentoDto asociarDocumento(String codigo, MultipartFile archivo) {
         Expediente e = buscar(codigo);
-        byte[] datos;
-        try {
-            datos = archivo.getBytes();
-        } catch (java.io.IOException ex) {
-            throw new java.io.UncheckedIOException(ex);
-        }
-        if (!esPdf(datos)) throw new ReglaNegocioException("El archivo debe ser un PDF válido");
+        PdfPreparado pdf = documentosPdf.preparar(archivo);
         String viejo = e.getDocumentoArchivoId();
-        var guardado = almacenamiento.guardar(codigo + ".pdf", "application/pdf", datos, false);
+        var guardado = almacenamiento.guardarDocumento(codigo + ".pdf", pdf, UsuarioActual.actual().codigoCuenta());
         e.setDocumentoArchivoId(guardado.id());
         e.setDocumentoGenerado(false);
         e.setActualizadoEn(Instant.now().truncatedTo(ChronoUnit.MILLIS));
@@ -416,7 +430,7 @@ class ExpedienteService {
         if (viejo != null) almacenamiento.eliminar(viejo);
         // Un PDF no es una partida transcrita: el motor no lo lee, así que no puede levantar un rojo (I9).
         recalcular(e, OrigenEvaluacion.EDICION);
-        return new DocumentoDto(codigo, guardado.sha256());
+        return DocumentoDto.de(codigo, guardado.sha256(), pdf);
     }
 
     @Transactional(readOnly = true)
@@ -433,7 +447,7 @@ class ExpedienteService {
     // ------------------------------------------------------------------ interno
 
     /** Aplica los datos al expediente. Devuelve los archivos que quedaron sin uso y hay que borrar tras guardar. */
-    private List<String> aplicar(Expediente e, DatosExpediente d) {
+    private List<String> aplicar(Expediente e, DatosExpediente d, boolean exigirArchivo) {
         NormalizadorAsientos.Resultado n = NormalizadorAsientos.normalizar(d.asientos());
 
         e.setCondicionRepresentada(d.condicionRepresentada().trim());
@@ -450,7 +464,7 @@ class ExpedienteService {
         e.setActualizadoEn(Instant.now().truncatedTo(ChronoUnit.MILLIS));
         reconciliar(e, n.asientos());
         List<String> sobrantes = new java.util.ArrayList<>();
-        if (d.tipoPredio() != null) aplicarBloqueTecnico(e, d, sobrantes);
+        if (d.tipoPredio() != null) aplicarBloqueTecnico(e, d, sobrantes, exigirArchivo);
 
         if (!e.isDocumentoGenerado()) return sobrantes;
         String viejo = e.getDocumentoArchivoId();
@@ -461,8 +475,15 @@ class ExpedienteService {
         return sobrantes;
     }
 
-    /** Tipo de predio, área construida inscrita y planos. Solo se toca si la petición trae el tipo de predio. */
-    private static void aplicarBloqueTecnico(Expediente e, DatosExpediente d, List<String> sobrantes) {
+    static final String SIN_ARCHIVO = "Sube el PDF del plano antes de marcarlo como presentado";
+
+    /**
+     * Tipo de predio, área construida inscrita y planos. Solo se toca si la petición trae el tipo de predio. v0.8: con
+     * {@code exigirArchivo}, un plano solo pasa a presentado u observado si ya tiene su PDF (feedback c); los planos que
+     * ya lo estaban conservan su estado (las láminas generadas de los casos de demostración).
+     */
+    private static void aplicarBloqueTecnico(Expediente e, DatosExpediente d, List<String> sobrantes,
+            boolean exigirArchivo) {
         e.setTipoPredio(d.tipoPredio());
         e.setAreaConstruidaInscrita(d.tipoPredio() == TipoPredio.VIVIENDA ? d.areaConstruidaInscrita() : null);
         List<PlanoDatos> nuevos = d.planos() == null ? List.of() : d.planos();
@@ -495,6 +516,10 @@ class ExpedienteService {
                 e.getPlanos().add(t);
             }
             boolean hay = p.estado() == EstadoPlano.PRESENTADO || p.estado() == EstadoPlano.OBSERVADO;
+            boolean habia = t.getEstado() == EstadoPlano.PRESENTADO || t.getEstado() == EstadoPlano.OBSERVADO;
+            if (exigirArchivo && hay && t.getArchivoId() == null && (t.getId() == null || !habia)) {
+                throw new ReglaNegocioException(SIN_ARCHIVO + " (" + p.especialidad().etiqueta() + ")");
+            }
             t.setEstado(p.estado());
             t.setAreaConstruida(hay ? p.areaConstruida() : null);
             t.setSistemaConstructivo(hay ? p.sistemaConstructivo() : null);
@@ -664,7 +689,7 @@ class ExpedienteService {
         ExpedienteDto exp = new ExpedienteDto(e.getVersion(), e.getCondicionRepresentada(), e.getTitularidad(),
                 e.getCompletitud(), e.getFechaReferencial(), e.getNota(), e.getZonaRegistral(),
                 e.getOficinaRegistral(), e.getUbicacion(), e.getAreaM2(), e.getLinderos(), e.getAntecedenteDominial(),
-                e.getDocumentoArchivoId() != null, e.isDocumentoGenerado(),
+                e.getDocumentoArchivoId() != null, e.isDocumentoGenerado(), documentoDelCaso(e),
                 e.getAsientos().stream().map(a -> new AsientoDto(a.getReferencia(), String.valueOf(a.rubro()),
                         a.getTipoActo(), a.getTipoActo().etiqueta(), a.getEstado(), a.getFechaInscripcion(),
                         a.getTituloNumero(), a.getFechaPresentacion(), a.getTexto(), a.getCanceloNumero(),
@@ -673,13 +698,31 @@ class ExpedienteService {
                 e.getPlanos().stream().map(p -> new PlanoDto(p.getEspecialidad(), p.getEspecialidad().etiqueta(),
                         p.getEstado(), p.getAreaConstruida(), p.getSistemaConstructivo(),
                         p.getSistemaConstructivo() == null ? null : p.getSistemaConstructivo().etiqueta(),
-                        p.getObservacion(), p.getArchivoId() != null,
+                        p.getObservacion(), p.getArchivoId() != null, documentoDelPlano(e, p),
                         p.getEspecialidad() == Especialidad.ARQUITECTURA
                                 ? coincide(p.getAreaConstruida(), e.getAreaConstruidaInscrita()) : null)).toList());
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
                 c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
                 glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()));
+    }
+
+    /** Origen del PDF del caso (v0.8): generado por el sistema a partir de la transcripción o subido por una cuenta. */
+    private DocumentoInfoDto documentoDelCaso(Expediente e) {
+        if (e.getDocumentoArchivoId() == null) return DocumentoInfoDto.falta();
+        if (e.isDocumentoGenerado()) return DocumentoInfoDto.generado();
+        return almacenamiento.metadatos(e.getDocumentoArchivoId()).map(DocumentoInfoDto::subido)
+                .orElse(DocumentoInfoDto.falta());
+    }
+
+    /** Origen del PDF de un plano: subido, lámina generada (solo casos de demostración) o falta el archivo. */
+    private DocumentoInfoDto documentoDelPlano(Expediente e, PlanoTecnico p) {
+        if (p.getEstado() != EstadoPlano.PRESENTADO && p.getEstado() != EstadoPlano.OBSERVADO) return null;
+        if (p.getArchivoId() != null) {
+            return almacenamiento.metadatos(p.getArchivoId()).map(DocumentoInfoDto::subido)
+                    .orElse(DocumentoInfoDto.falta());
+        }
+        return e.getCaso().esCaptado() ? DocumentoInfoDto.falta() : DocumentoInfoDto.generado();
     }
 
     /** ¿El área del plano coincide con la inscrita (diferencia de hasta 1 %)? Null si falta alguno de los dos datos. */

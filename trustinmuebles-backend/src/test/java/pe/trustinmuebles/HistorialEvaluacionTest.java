@@ -45,7 +45,10 @@ class HistorialEvaluacionTest extends BaseApiTest {
                 Integer.class, codigo);
     }
 
-    /** Vivienda transcrita con arquitectura y estructuras, sin II.EE. ni II.SS.: las reglas la dejan en AMARILLO (RV-04). */
+    /**
+     * Vivienda transcrita sin planos presentados. v0.8: los planos se presentan al subir su PDF; con arquitectura y
+     * estructuras, sin II.EE. ni II.SS., las reglas la dejan en AMARILLO (RV-04).
+     */
     ObjectNode vivienda(String numero) {
         ObjectNode p = json.createObjectNode();
         p.put("origen", "TRANSCRITA_CONOCE_AQUI");
@@ -64,8 +67,8 @@ class HistorialEvaluacionTest extends BaseApiTest {
         p.put("tipoPredio", "VIVIENDA");
         p.put("areaConstruidaInscrita", 90.00);
         ArrayNode planos = p.putArray("planos");
-        planos.addObject().put("especialidad", "ARQUITECTURA").put("estado", "PRESENTADO").put("areaConstruida", 90.00);
-        planos.addObject().put("especialidad", "ESTRUCTURAS").put("estado", "PRESENTADO");
+        planos.addObject().put("especialidad", "ARQUITECTURA").put("estado", "NO_PRESENTADO");
+        planos.addObject().put("especialidad", "ESTRUCTURAS").put("estado", "NO_PRESENTADO");
         planos.addObject().put("especialidad", "ELECTRICAS").put("estado", "NO_PRESENTADO");
         planos.addObject().put("especialidad", "SANITARIAS").put("estado", "NO_PRESENTADO");
         p.put("confirmaSinDatosPersonales", true);
@@ -82,10 +85,12 @@ class HistorialEvaluacionTest extends BaseApiTest {
         mvc.perform(delete("/api/v1/casos/" + codigo).header("Authorization", revisor()));
     }
 
-    static void presentar(ObjectNode peticion, String especialidad) {
-        for (var plano : (ArrayNode) peticion.get("planos")) {
-            if (plano.get("especialidad").asString().equals(especialidad)) ((ObjectNode) plano).put("estado", "PRESENTADO");
-        }
+    /** Registra la vivienda y presenta arquitectura y estructuras subiendo sus PDF: queda en AMARILLO (RV-04). */
+    void registrarConPlanosBase(ObjectNode cuerpo) throws Exception {
+        String numero = cuerpo.get("numero").asString();
+        registrar(cuerpo).andExpect(status().isCreated()).andExpect(jsonPath("$.evaluacion.estado").value("GRIS"));
+        subirPlano(numero, "ARQUITECTURA", revisor()).andExpect(status().isCreated());
+        subirPlano(numero, "ESTRUCTURAS", revisor()).andExpect(status().isCreated());
     }
 
     // ------------------------------------------------------------------ carga inicial
@@ -148,29 +153,31 @@ class HistorialEvaluacionTest extends BaseApiTest {
     @DisplayName("Subsanación: el plano faltante lleva el amarillo a verde porque lo dicen las reglas, y queda en el historial")
     void planoFaltanteLlevaAVerde() throws Exception {
         try {
-            registrar(vivienda(VIVIENDA)).andExpect(status().isCreated())
+            registrarConPlanosBase(vivienda(VIVIENDA));
+            mvc.perform(get("/api/v1/casos/" + VIVIENDA).header("Authorization", revisor()))
                     .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")));
-            ObjectNode p = peticion(leerComo(VIVIENDA, revisor()));
-            presentar(p, "ELECTRICAS");
-            actualizarExpediente(VIVIENDA, revisor(), p).andExpect(status().isOk())
+            subirPlano(VIVIENDA, "ELECTRICAS", revisor()).andExpect(status().isCreated());
+            mvc.perform(get("/api/v1/casos/" + VIVIENDA).header("Authorization", revisor()))
                     .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")));
-            p = peticion(leerComo(VIVIENDA, revisor()));
-            presentar(p, "SANITARIAS");
-            actualizarExpediente(VIVIENDA, revisor(), p).andExpect(status().isOk())
+            subirPlano(VIVIENDA, "SANITARIAS", revisor()).andExpect(status().isCreated());
+            mvc.perform(get("/api/v1/casos/" + VIVIENDA).header("Authorization", revisor()))
                     .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
                     .andExpect(jsonPath("$.evaluacion.etiqueta").value("Sin alertas en los campos evaluados"));
 
+            // v0.8: registro (GRIS sin planos), dos planos base, II.EE. y II.SS.: cinco filas.
             JsonNode h = filas(VIVIENDA);
-            assertThat(h).hasSize(3);
+            assertThat(h).hasSize(5);
             assertThat(h.get(0).get("origen").asString()).isEqualTo("PARTIDA_TRANSCRITA");
-            assertThat(h.get(0).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
-            assertThat(h.get(1).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
-            assertThat(h.get(1).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
+            assertThat(h.get(0).get("estadoNuevo").asString()).isEqualTo("GRIS");
             assertThat(h.get(2).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
-            assertThat(h.get(2).get("estadoAnterior").asString()).isEqualTo("AMARILLO");
-            assertThat(h.get(2).get("estadoNuevo").asString()).isEqualTo("VERDE");
+            assertThat(h.get(2).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
+            assertThat(h.get(3).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
+            assertThat(h.get(3).get("estadoNuevo").asString()).isEqualTo("AMARILLO");
+            assertThat(h.get(4).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
+            assertThat(h.get(4).get("estadoAnterior").asString()).isEqualTo("AMARILLO");
+            assertThat(h.get(4).get("estadoNuevo").asString()).isEqualTo("VERDE");
         } finally {
             borrar(VIVIENDA);
         }
@@ -181,10 +188,9 @@ class HistorialEvaluacionTest extends BaseApiTest {
     void planosNoBastanSiHayOtraAlerta() throws Exception {
         JsonNode original = leer(TINGUINA);
         try {
-            ObjectNode p = peticion(original);
-            presentar(p, "ELECTRICAS");
-            presentar(p, "SANITARIAS");
-            actualizarExpediente(TINGUINA, revisor(), p).andExpect(status().isOk())
+            subirPlano(TINGUINA, "ELECTRICAS", revisor()).andExpect(status().isCreated());
+            subirPlano(TINGUINA, "SANITARIAS", revisor()).andExpect(status().isCreated());
+            mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", revisor()))
                     .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-02")));
         } finally {
@@ -198,16 +204,19 @@ class HistorialEvaluacionTest extends BaseApiTest {
     void pdfNoLevantaElEmbargo() throws Exception {
         try {
             ObjectNode p = vivienda(EMBARGADA);
-            presentar(p, "ELECTRICAS");
-            presentar(p, "SANITARIAS");
             ObjectNode d = ((ArrayNode) p.get("asientos")).addObject();
             d.put("referencia", "D00001");
             d.put("tipoActo", "EMBARGO");
             d.put("estado", "VIGENTE");
             d.put("texto", "Embargo en forma de inscripción por mandato judicial.");
-            registrar(p).andExpect(status().isCreated()).andExpect(jsonPath("$.evaluacion.estado").value("ROJO"));
+            // v0.8: los cuatro planos se presentan subiendo su PDF; con todos, el embargo deja el caso en ROJO.
+            registrarConPlanosBase(p);
+            subirPlano(EMBARGADA, "ELECTRICAS", revisor()).andExpect(status().isCreated());
+            subirPlano(EMBARGADA, "SANITARIAS", revisor()).andExpect(status().isCreated());
+            assertThat(leerComo(EMBARGADA, revisor()).get("evaluacion").get("estado").asString()).isEqualTo("ROJO");
+            int base = contar(EMBARGADA);
 
-            var pdf = new MockMultipartFile("documento", "x.pdf", "application/pdf", "%PDF-1.4\n%prueba\n".getBytes());
+            var pdf = pdf("Documento de prueba");
             mvc.perform(multipart("/api/v1/casos/" + EMBARGADA + "/documento").file(pdf).header("Authorization", revisor()))
                     .andExpect(status().isCreated());
             mvc.perform(multipart("/api/v1/casos/" + EMBARGADA + "/planos/ARQUITECTURA/documento").file(pdf)
@@ -217,17 +226,17 @@ class HistorialEvaluacionTest extends BaseApiTest {
             assertThat(ev.get("reglasAplicadas").toString()).contains("RP-01");
 
             JsonNode h = filas(EMBARGADA);
-            assertThat(h).hasSize(3);
-            assertThat(h.get(1).get("origen").asString()).isEqualTo("EDICION");
-            assertThat(h.get(2).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
-            for (JsonNode f : h) assertThat(f.get("estadoNuevo").asString()).isEqualTo("ROJO");
+            assertThat(h).hasSize(base + 2);
+            assertThat(h.get(base).get("origen").asString()).isEqualTo("EDICION");
+            assertThat(h.get(base + 1).get("origen").asString()).isEqualTo("PLANO_ADJUNTO");
+            for (int i = base - 1; i < h.size(); i++) assertThat(h.get(i).get("estadoNuevo").asString()).isEqualTo("ROJO");
 
             // Solo la partida transcrita nueva (el asiento E que cancela el embargo) puede levantarlo, y el motor recalcula.
             ObjectNode cancelacion = peticion(leerComo(EMBARGADA, revisor()));
             agregarAsiento(cancelacion, "E00001", "CANCELACION", null, "Se cancela el embargo.", "D00001");
             actualizarExpediente(EMBARGADA, revisor(), cancelacion).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"));
-            JsonNode ultima = filas(EMBARGADA).get(3);
+            JsonNode ultima = filas(EMBARGADA).get(base + 2);
             assertThat(ultima.get("origen").asString()).isEqualTo("PARTIDA_TRANSCRITA");
             assertThat(ultima.get("estadoAnterior").asString()).isEqualTo("ROJO");
         } finally {

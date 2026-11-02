@@ -27,6 +27,16 @@ class ArchivoAlmacenado {
     /** Solo los archivos públicos (imágenes, planos) se sirven sin autenticación. */
     private boolean publico;
 
+    /** v0.8: tamaño del archivo que se recibió, antes de optimizarlo. Igual a {@code tamano} si no se optimizó. */
+    @Column(name = "tamano_original")
+    private Long tamanoOriginal;
+
+    private boolean optimizado;
+
+    /** v0.8: cuenta que subió el archivo; null si lo generó el sistema. */
+    @Column(name = "subido_por", length = 40)
+    private String subidoPor;
+
     @Column(name = "creado_en", nullable = false)
     private Instant creadoEn = Instant.now();
 }

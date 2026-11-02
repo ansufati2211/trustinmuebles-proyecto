@@ -7,7 +7,9 @@ import { Desplegable } from "@/components/base/Desplegable";
 import { Mensaje } from "@/components/base/Mensaje";
 import { SelectorFecha } from "@/components/base/SelectorFecha";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
-import { api, put, subirArchivo } from "@/lib/api";
+import { api, put } from "@/lib/api";
+import { LIMITES_PDF } from "@/lib/archivos";
+import { OrigenDocumento, SubirPdf } from "@/components/DocumentoPdf";
 import { ESTADOS, ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
 import { FilasAsientos, filasAPeticion, type Fila } from "@/components/FilasAsientos";
 import { BloqueTecnico, tecnicoAPeticion, tecnicoDesde } from "@/components/BloqueTecnico";
@@ -16,29 +18,8 @@ import type { Completitud, DetalleCaso, PeticionExpediente } from "@/lib/types";
 const OPCIONES_COMPLETITUD = (Object.keys(ETIQUETA_COMPLETITUD) as Completitud[]).map((c) => ({ valor: c, etiqueta: ETIQUETA_COMPLETITUD[c] }));
 
 function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuardar: (d: DetalleCaso) => void }) {
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [mensaje, setMensaje] = useState<string | null>(null);
-  const [subiendo, setSubiendo] = useState(false);
-
-  const subir = async () => {
-    if (!archivo) return;
-    setError(null);
-    setMensaje(null);
-    setSubiendo(true);
-    try {
-      await subirArchivo(`/casos/${detalle.codigo}/documento`, "documento", archivo);
-      alGuardar(await api<DetalleCaso>(`/casos/${detalle.codigo}`));
-      setMensaje("Documento asociado.");
-      setArchivo(null);
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo asociar el documento");
-    } finally {
-      setSubiendo(false);
-    }
-  };
-
   const generado = detalle.expediente.documentoGenerado;
+  const ruta = `/casos/${detalle.codigo}/documento`;
   return (
     <div className="mt-8 space-y-4 rounded-3xl border border-border bg-superficie p-5 sm:p-6">
       <div className="flex items-start gap-3.5">
@@ -51,25 +32,20 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
             {generado
               ? "El sistema genera la copia literal a partir de la partida y la regenera al guardar. Si subes un PDF propio, deja de regenerarse."
               : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
-            {" "}Solo PDF, hasta 5 MB. No subas documentos con datos reales de personas o predios.
+            {" "}Solo PDF, hasta {LIMITES_PDF.entradaMb} MB; si pesa más de {LIMITES_PDF.umbralMb} MB se optimiza
+            automáticamente y lo guardado no puede pasar de {LIMITES_PDF.almacenadoMb} MB. No subas documentos con datos
+            reales de personas o predios.
           </p>
         </div>
       </div>
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border-2 border-dashed border-border bg-card p-4">
-        <label htmlFor="ed-pdf" className="sr-only">Archivo PDF</label>
-        <input
-          id="ed-pdf"
-          type="file"
-          accept="application/pdf"
-          onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
-          className="min-w-0 flex-1 text-sm text-tinta-2 file:mr-3 file:cursor-pointer file:rounded-xl file:border-0 file:bg-secondary file:px-4 file:py-2.5 file:text-sm file:font-bold file:text-secondary-foreground file:transition-colors hover:file:bg-primary hover:file:text-white"
-        />
-        <Button type="button" variant="outline" disabled={!archivo || subiendo} onClick={subir}>
-          {subiendo ? "Subiendo…" : "Asociar PDF"}
-        </Button>
-      </div>
-      {error && <Mensaje tono="error">{error}</Mensaje>}
-      {mensaje && <Mensaje tono="ok">{mensaje}</Mensaje>}
+      <OrigenDocumento info={detalle.expediente.documento} ruta={ruta} nombre={`${detalle.codigo}.pdf`} />
+      <SubirPdf
+        id="ed-pdf"
+        ruta={ruta}
+        etiqueta="Archivo PDF"
+        textoBoton="Asociar PDF"
+        alSubir={async () => alGuardar(await api<DetalleCaso>(`/casos/${detalle.codigo}`))}
+      />
     </div>
   );
 }
@@ -219,7 +195,7 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
             {(p) => <textarea {...p} rows={2} maxLength={500} className={claseAreaTexto} value={nota} onChange={(e) => setNota(e.target.value)} />}
           </Campo>
 
-          <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} />
+          <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} planosGuardados={x.planos} />
           <FilasAsientos filas={filas} setFilas={setFilas} />
 
           {errores.length > 0 && (

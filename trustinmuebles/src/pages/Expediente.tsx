@@ -21,6 +21,7 @@ import { m2, soles } from "@/lib/formato";
 import { puedeVerHistorial } from "@/lib/permisos";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
+import { OrigenDocumento } from "@/components/DocumentoPdf";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
 import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD, ITEM, RUBROS, fecha } from "@/lib/semaforo";
@@ -595,6 +596,7 @@ export default function Expediente() {
                           : "Copia literal generada a partir de la partida. Es referencial y no tiene valor legal.")
                         : "PDF subido por el revisor. No tiene valor legal."}
                     </p>
+                    <OrigenDocumento info={x.documento} ruta={`/casos/${d.codigo}/documento`} nombre={`${d.codigo}.pdf`} />
                     <Button variant="outline" className="w-full" onClick={verPdf}>
                       Abrir documento <ExternalLink aria-hidden="true" />
                     </Button>
