@@ -472,3 +472,86 @@ asignar, y el panel de cartera no reflejaba quién la llevaba.
 asignar. V10 hace lo mismo en bases existentes. Otra inspección en curso sin asignar de una base existente queda esperando al
 gestor.
 **Consecuencia:** un informe de demostración ya emitido no tiene asignación: no se puede modificar (409) ni reasignar (409).
+
+## D52. v0.8: priorización por esfuerzo solo en el panel del gestor (matiza D41)
+
+> Numeración: el pedido de la v0.8 la llamaba D50, pero D50 y D51 ya estaban usadas por la v0.7; las decisiones de la v0.8
+> van de D52 a D55.
+
+**Qué:** `GET /cartera/panel` (solo GESTOR) agrega el conteo de casos por tipo de alerta (código y nombre de cada regla, más
+«información insuficiente» para los casos grises), el conteo por esfuerzo de regularización (BAJO, MEDIO, ALTO y sin pasos) y la
+lista «por regularizar» (código, denominación, color de A, tipos de alerta y esfuerzo), ordenada por esfuerzo y luego por código.
+`GET /casos` acepta el filtro `tipoAlerta`, combinable con los demás, en el catálogo (el comprador solo ve publicados) y en Cartera.
+**Por qué:** feedback docente del 31/10/2026: la inmobiliaria debe ver su cartera por tipo de problema y cuáles casos son más
+viables o tomarán más tiempo.
+**Límite:** D41 decía «sin rankings». Se mantiene para el comprador: el orden por esfuerzo solo existe en el panel del gestor, sirve
+para organizar la subsanación y lleva el aviso «Priorización interna de la inmobiliaria; no es una recomendación de compra». El
+esfuerzo es un criterio del equipo (borrador pendiente de revisión especializada), no un plazo ni un costo, y no cambia A ni B.
+
+## D54. v0.8: semáforo de gestión interno y decisión de captación (I15)
+
+> Pedida como D52 en el plan de la v0.8; se renumeró porque D50 y D51 ya existían (ver D52).
+
+**Qué:** un cuarto indicador, solo para la inmobiliaria, con cuatro estados derivados de la ruta de regularización
+(`contenido/v0.4/gestion.json`, borrador del equipo): COMPLETAR_INFORMACION si hay datos faltantes o una condición no
+contemplada; si no, REQUIERE_REGULARIZACION si algún paso es de esfuerzo ALTO; VIABLE_CON_CONDICIONES si el máximo es MEDIO;
+VIABLE si no hay pasos o solo hay pasos BAJO. Cada estado lleva etiqueta, explicación y una sugerencia, sin plazos ni costos.
+Viaja en el detalle y en `GET /casos` (campo `gestion`) solo para GESTOR y REVISOR; para los demás roles el campo no existe en
+la respuesta. El panel del gestor agrega el conteo por estado y la matriz «tipo de alerta × estado de gestión».
+**Decisión de captación:** `POST /casos/{c}/decision-captacion` (solo GESTOR) con `decision` (CAPTAR, CAPTAR_CON_CONDICIONES,
+NO_CAPTAR_POR_AHORA) y `motivo` de lista cerrada, sin texto libre (400 si llega otro campo). Historial de solo adición
+(migración V14): cuenta y fecha; no hay rutas para editar ni borrar. `GET /casos/{c}/decisiones-captacion` solo GESTOR y REVISOR.
+**Precedencia:** como en A, primero la falta de información: un caso gris con una alerta judicial conocida queda en COMPLETAR_INFORMACION
+y su ruta conserva el paso judicial.
+**Límites (I15):** no cambia A ni B ni agrega filas al historial de A; no bloquea publicar (si la última decisión es no captar por
+ahora, la interfaz pide confirmación «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?»); se muestra con
+otro ícono y con contorno sin relleno para no confundirlo con el color de A, y siempre con el aviso «Uso interno de la inmobiliaria;
+no se muestra al comprador ni es una recomendación de compra».
+
+## D53. v0.8: el plano presentado exige su PDF; límites y optimización de los PDF
+
+> Pedida como D51 en el plan de la v0.8 (ver la nota de D52).
+
+**Qué:** un plano solo queda «presentado» u «observado» si tiene un PDF: el subido o, en los diez casos de demostración, la lámina
+generada que ya tenían al cargarse. `PUT /casos/{c}/expediente` y `POST /casos` que lo intenten sin archivo dan 422 «Sube el PDF
+del plano antes de marcarlo como presentado». `POST /casos/{c}/planos/{esp}/documento` acepta un plano no presentado y lo deja
+presentado (recálculo `PLANO_ADJUNTO`). Un plano ya presentado sin archivo (por ejemplo, de una base anterior) conserva su estado
+y la interfaz dice «Falta el archivo»; en una partida captada no se genera lámina para él (404).
+**Archivos (decisión 4 del equipo):** cabecera `%PDF`, tipo `application/pdf` y que PDFBox lo abra (400 si no, si está cifrado o
+dañado). Entrada de hasta 25 MB (413 «El archivo supera 25 MB»); sobre 5 MB se re-codifican como JPEG (calidad 0,75, lado mayor
+de hasta 2000 px) las imágenes grandes y se guarda con compresión de objetos; si el resultado no abre con las mismas páginas o no
+es menor, se conserva el original; si lo guardado supera 10 MB, 413 «El PDF pesa X MB incluso optimizado; el máximo es 10 MB.
+Reduce su resolución o divídelo». Se guarda solo el archivo final con su evidencia (V12). Las láminas y copias que genera el
+sistema no se optimizan. Límites en `app.archivos.*`; las pruebas usan límites pequeños.
+**Pruebas cambiadas:** las que marcaban planos presentados sin archivo o subían un «PDF» de pocos bytes que PDFBox no abre se
+reemplazaron por equivalentes que suben un PDF real generado en la prueba; un archivo que no es PDF pasó de 422 a 400 (ver
+`docs/REPORTE-feedback-v0.8.md`).
+
+## D55. v0.8: ruta de regularización y criterios de esfuerzo (borrador)
+
+> Pedida como D53 en el plan de la v0.8 (ver la nota de D52).
+
+**Qué:** `contenido/v0.4/rutas.json` asocia a cada regla (RP-01 a RP-03, RV-01 a RV-06) y a cada faltante que da gris (condición
+representada, titularidad, completitud, estado de una anotación, plano de arquitectura o de estructuras, y condición no
+contemplada) un título, pasos breves, quién gestiona, el documento requerido, el esfuerzo y una nota. `GET
+/casos/{c}/ruta-regularizacion` devuelve un ítem por motivo de la evaluación vigente y el esfuerzo del caso (el máximo), con la
+visibilidad del detalle. No recalcula ni agrega historial.
+**Criterio de esfuerzo (borrador del equipo, pendiente de revisión especializada):** BAJO, solo documentos que aporta el
+propietario; MEDIO, un tercero sin proceso judicial (hipoteca, servidumbre, otro acto que hay que leer); ALTO, un proceso judicial
+o administrativo (embargo, demanda o medida cautelar, bloqueo, ampliación no declarada o licencia). No hay plazos legales ni
+costos: «el plazo depende del trámite; consultar con abogado o notario».
+**Gravamen (feedback b):** el asiento D admite acreedor (solo persona jurídica o «no consta») y plazo o vencimiento (V13); la ruta
+de una hipoteca muestra «Plazo o vencimiento: …» o «No consta en la partida: solicitar al propietario o al acreedor». Ninguno de los
+dos interviene en el color.
+**Metodología:** la ruta forma parte de la condición asistida de la v0.8.0 (la ve el comprador); el semáforo de gestión no.
+
+## D56. v0.8 (interfaz): resaltado del color de A y tokens restituidos
+
+**Qué:** las tarjetas del catálogo y de Cartera, Mis inmuebles y la cabecera del detalle llevan un borde izquierdo de 4 px, un
+fondo tenue (7 a 8 %) y una etiqueta con ícono y texto del estado de A (`lib/resaltado.ts`, con prueba). El semáforo de gestión
+usa contorno discontinuo sin relleno y otros íconos.
+**Hallazgo:** `index.css` no definía los tokens `sem-*`, `tinta-2`, `superficie`, `info-*`, `shadow-tarjeta`, `shadow-elevada` ni
+`ease-expo` que usan los componentes (se perdieron en el rediseño `567cbfc`), así que esos colores no se generaban. Se restituyeron
+con los valores de la v0.6 (`31d9e6a`) junto con los tokens del resaltado, con variantes oscuras que solo se activan con un tema
+oscuro explícito.
+

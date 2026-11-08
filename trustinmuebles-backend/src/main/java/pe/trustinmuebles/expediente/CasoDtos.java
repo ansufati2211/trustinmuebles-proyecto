@@ -1,5 +1,6 @@
 package pe.trustinmuebles.expediente;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.Digits;
@@ -35,7 +36,11 @@ final class CasoDtos {
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             long pendientes, String origen, String fuente, LocalDate fechaConsulta,
             EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
-            PredioDto predio, EstadoPublicacion estadoPublicacion) {}
+            PredioDto predio, EstadoPublicacion estadoPublicacion,
+            /* v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
+            List<String> tiposAlerta,
+            /* v0.8 (I15): semáforo de gestión; solo para GESTOR y REVISOR. Para los demás no viene en la respuesta. */
+            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion) {}
 
     /**
      * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se
@@ -53,25 +58,52 @@ final class CasoDtos {
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
-            String texto, String canceloNumero, String titulares) {}
+            String texto, String canceloNumero, String titulares, String acreedor, String plazoOVencimiento) {}
 
     /** Un plano del expediente técnico. {@code coincideArea} solo se calcula en el plano arquitectónico. */
     record PlanoDto(Especialidad especialidad, String especialidadEtiqueta, EstadoPlano estado, BigDecimal areaConstruida,
             SistemaConstructivo sistemaConstructivo, String sistemaConstructivoEtiqueta, String observacion,
-            boolean tieneDocumentoPropio, Boolean coincideArea) {}
+            boolean tieneDocumentoPropio, DocumentoInfoDto documento, Boolean coincideArea) {}
+
+    /**
+     * v0.8: de dónde sale el PDF de un plano o del caso. origen: SUBIDO (con su evidencia), GENERADO (lámina o copia
+     * que arma el sistema a partir de la transcripción; no es un documento oficial) o FALTA (no hay archivo).
+     */
+    record DocumentoInfoDto(String origen, String subidoPor, java.time.Instant subidoEn, Long tamanoBytes,
+            Long tamanoOriginalBytes, boolean optimizado, String sha256) {
+        static DocumentoInfoDto generado() {
+            return new DocumentoInfoDto("GENERADO", null, null, null, null, false, null);
+        }
+
+        static DocumentoInfoDto falta() {
+            return new DocumentoInfoDto("FALTA", null, null, null, null, false, null);
+        }
+
+        static DocumentoInfoDto subido(pe.trustinmuebles.almacenamiento.MetadatosArchivo m) {
+            return new DocumentoInfoDto("SUBIDO", m.subidoPor(), m.creadoEn(), m.tamano(), m.tamanoOriginal(),
+                    m.optimizado(), m.sha256());
+        }
+    }
 
     record ExpedienteDto(Long version, String condicionRepresentada, String titularidad, Completitud completitud,
             LocalDate fechaReferencial, String nota, String zonaRegistral, String oficinaRegistral, String ubicacion,
             BigDecimal areaM2, String linderos, String antecedenteDominial, boolean tieneDocumento,
-            boolean documentoGenerado, List<AsientoDto> asientos, TipoPredio tipoPredio,
+            boolean documentoGenerado, DocumentoInfoDto documento, List<AsientoDto> asientos, TipoPredio tipoPredio,
             BigDecimal areaConstruidaInscrita, List<PlanoDto> planos) {}
 
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
             String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
             EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
-            PredioDto predio, PublicacionDto publicacion) {}
+            PredioDto predio, PublicacionDto publicacion,
+            /* v0.8 (I15): solo para GESTOR y REVISOR; para los demás roles el campo no viene en la respuesta. */
+            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion) {}
 
-    record DocumentoDto(String codigo, String sha256) {}
+    /** Respuesta de una subida (v0.8): huella del archivo guardado, tamaño recibido y guardado, y si se optimizó. */
+    record DocumentoDto(String codigo, String sha256, long tamanoOriginalBytes, long tamanoBytes, boolean optimizado) {
+        static DocumentoDto de(String codigo, String sha256, pe.trustinmuebles.almacenamiento.PdfPreparado pdf) {
+            return new DocumentoDto(codigo, sha256, pdf.tamanoOriginal(), pdf.datos().length, pdf.optimizado());
+        }
+    }
 
     // ----------------------------------------------------------------- peticiones
 
@@ -85,7 +117,10 @@ final class CasoDtos {
             LocalDate fechaPresentacion,
             @Size(max = 1500) String texto,
             @Pattern(regexp = "D[0-9]{5}", message = "debe ser el número de un asiento D, por ejemplo D00001") String canceloNumero,
-            @Size(max = 500) String titulares) {}
+            @Size(max = 500) String titulares,
+            /* v0.8: solo en el rubro D; opcionales y fuera del cálculo del color. */
+            @Size(max = 120) String acreedor,
+            @Size(max = 120) String plazoOVencimiento) {}
 
     /** Un plano del expediente técnico, tal como lo registra el revisor. */
     record PlanoRequest(
@@ -118,7 +153,7 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList(),
+                            a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
                     tipoPredio, areaConstruidaInscrita, planosDatos(planos));
         }
     }
@@ -159,7 +194,7 @@ final class CasoDtos {
                     oficinaRegistral, ubicacion, areaM2, linderos, antecedenteDominial,
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
-                            a.canceloNumero(), a.titulares())).toList(),
+                            a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
                     tipoPredio, areaConstruidaInscrita, planosDatos(planos));
         }
     }
@@ -205,5 +240,14 @@ final class CasoDtos {
             SistemaConstructivo sistemaConstructivo, String observacion) {}
 
     record AsientoDatos(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
-            String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {}
+            String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares,
+            String acreedor, String plazoOVencimiento) {
+
+        /** Sin acreedor ni plazo (contenido anterior a la v0.8). */
+        AsientoDatos(String referencia, TipoActo tipoActo, EstadoAnotacion estado, LocalDate fechaInscripcion,
+                String tituloNumero, LocalDate fechaPresentacion, String texto, String canceloNumero, String titulares) {
+            this(referencia, tipoActo, estado, fechaInscripcion, tituloNumero, fechaPresentacion, texto, canceloNumero,
+                    titulares, null, null);
+        }
+    }
 }

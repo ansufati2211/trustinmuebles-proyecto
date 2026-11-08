@@ -1,6 +1,7 @@
 import { campo } from "@/components/FilasAsientos";
+import { puedeMarcarPresentado } from "@/lib/archivos";
 import { ESPECIALIDADES, ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_PLANO, ETIQUETA_PREDIO, ETIQUETA_SISTEMA, QUE_VALIDA } from "@/lib/semaforo";
-import type { Especialidad, EstadoPlano, Expediente, PlanoPeticion, SistemaConstructivo, TipoPredio } from "@/lib/types";
+import type { Especialidad, EstadoPlano, Expediente, Plano, PlanoPeticion, SistemaConstructivo, TipoPredio } from "@/lib/types";
 
 /** Un plano del formulario. El estado es documental: dice si el plano está, no si la obra está bien. */
 export interface PlanoFila { estado: EstadoPlano; area: string; sistema: SistemaConstructivo | ""; observacion: string }
@@ -46,8 +47,14 @@ export function tecnicoAPeticion(t: Tecnico): { tipoPredio: TipoPredio; areaCons
   };
 }
 
-/** Tipo de predio, área construida inscrita y los 4 planos. Lo usan el editor y el registro de partidas. */
-export function BloqueTecnico({ tecnico, setTecnico }: { tecnico: Tecnico; setTecnico: (t: Tecnico) => void }) {
+/**
+ * Tipo de predio, área construida inscrita y los 4 planos. Lo usan el editor y el registro de partidas. v0.8:
+ * «Presentado» y «Observado» solo se pueden elegir si el plano ya tiene su PDF (o ya estaba presentado); al registrar
+ * una partida aún no hay archivos, así que los planos se presentan después, subiendo su PDF.
+ */
+export function BloqueTecnico({ tecnico, setTecnico, planosGuardados = [] }: {
+  tecnico: Tecnico; setTecnico: (t: Tecnico) => void; planosGuardados?: Plano[];
+}) {
   const cambiar = (e: Especialidad, parcial: Partial<PlanoFila>) =>
     setTecnico({ ...tecnico, planos: { ...tecnico.planos, [e]: { ...tecnico.planos[e], ...parcial } } });
 
@@ -76,6 +83,7 @@ export function BloqueTecnico({ tecnico, setTecnico }: { tecnico: Tecnico; setTe
       {tecnico.tipoPredio === "VIVIENDA" && ESPECIALIDADES.map((e) => {
         const f = tecnico.planos[e];
         const hay = f.estado === "PRESENTADO" || f.estado === "OBSERVADO";
+        const conArchivo = puedeMarcarPresentado(planosGuardados.find((p) => p.especialidad === e));
         return (
           <div key={e} className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
             <p className="text-sm font-bold text-foreground">{ETIQUETA_ESPECIALIDAD[e]}</p>
@@ -85,8 +93,17 @@ export function BloqueTecnico({ tecnico, setTecnico }: { tecnico: Tecnico; setTe
                 <label htmlFor={`bt-estado-${e}`} className="block text-xs font-bold text-muted-foreground mb-1">Estado</label>
                 <select id={`bt-estado-${e}`} className={campo} value={f.estado}
                   onChange={(ev) => cambiar(e, { estado: ev.target.value as EstadoPlano })}>
-                  {(["PRESENTADO", "OBSERVADO", "NO_PRESENTADO"] as EstadoPlano[]).map((s) => <option key={s} value={s}>{ETIQUETA_ESTADO_PLANO[s]}</option>)}
+                  {(["PRESENTADO", "OBSERVADO", "NO_PRESENTADO"] as EstadoPlano[]).map((s) => (
+                    <option key={s} value={s} disabled={s !== "NO_PRESENTADO" && !conArchivo}>
+                      {ETIQUETA_ESTADO_PLANO[s]}{s !== "NO_PRESENTADO" && !conArchivo ? " (sube el PDF primero)" : ""}
+                    </option>
+                  ))}
                 </select>
+                {!conArchivo && (
+                  <p className="mt-1 text-xs text-muted-foreground">
+                    Para marcarlo presentado, sube su PDF en «Expediente técnico de planos» (falta el archivo).
+                  </p>
+                )}
               </div>
               {hay && e === "ARQUITECTURA" && (
                 <div>

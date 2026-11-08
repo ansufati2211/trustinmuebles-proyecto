@@ -297,11 +297,10 @@ class CasosApiTest extends BaseApiTest {
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")))
                     .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")));
 
-            ObjectNode completo = peticion(leer(TINGUINA));
-            for (var plano : (tools.jackson.databind.node.ArrayNode) completo.get("planos")) {
-                if (plano.get("estado").asString().equals("NO_PRESENTADO")) ((ObjectNode) plano).put("estado", "PRESENTADO");
-            }
-            actualizarExpediente(TINGUINA, revisor(), completo).andExpect(status().isOk())
+            // v0.8: un plano pasa a presentado al subir su PDF (antes se marcaba presentado sin archivo).
+            subirPlano(TINGUINA, "ELECTRICAS", revisor()).andExpect(status().isCreated());
+            subirPlano(TINGUINA, "SANITARIAS", revisor()).andExpect(status().isCreated());
+            mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", revisor()))
                     .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
                     .andExpect(jsonPath("$.evaluacion.alertas", hasSize(0)));
         } finally {
@@ -458,17 +457,17 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Documento: el revisor sube un PDF propio y deja de regenerarse; un falso PDF se rechaza")
+    @DisplayName("Documento: el revisor sube un PDF propio y deja de regenerarse; un falso PDF se rechaza con 400 (v0.8)")
     void subirDocumento() throws Exception {
         String revisor = revisor();
         var falso = new MockMultipartFile("documento", "x.pdf", "application/pdf", "esto no es un pdf".getBytes());
         mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(falso).header("Authorization", revisor))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isBadRequest());
         var svg = new MockMultipartFile("documento", "x.svg", "image/svg+xml", "<svg onload=alert(1)/>".getBytes());
         mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(svg).header("Authorization", revisor))
-                .andExpect(status().isUnprocessableEntity());
+                .andExpect(status().isBadRequest());
         var bueno = new MockMultipartFile("documento", "demo.pdf", "application/pdf",
-                "%PDF-1.4\n%simulado de prueba\n".getBytes());
+                PdfDePrueba.simple("Documento simulado de prueba"));
         mvc.perform(multipart("/api/v1/casos/" + LOS_AQUIJES + "/documento").file(bueno).header("Authorization", revisor))
                 .andExpect(status().isCreated()).andExpect(jsonPath("$.codigo").value(LOS_AQUIJES))
                 .andExpect(jsonPath("$.sha256", hasLength(64)));

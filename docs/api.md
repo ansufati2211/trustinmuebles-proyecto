@@ -14,17 +14,21 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 |---|---|---|---|
 | Iniciar sesión | `POST /auth/login` | Público | 200, 400, 401, 429 |
 | Usuario actual | `GET /auth/me` | Sesión | 200, 401 |
-| Catálogo, con filtros opcionales | `GET /casos?tipoInmueble=&estado=&estadoTecnico=&riesgoFisicoDetectado=` | Sesión | 200, 400, 401 |
+| Catálogo, con filtros opcionales | `GET /casos?tipoInmueble=&estado=&estadoTecnico=&riesgoFisicoDetectado=&tipoAlerta=` | Sesión | 200, 400, 401 |
+| Tipos de alerta para el filtro (v0.8) | `GET /casos/tipos-alerta` | Sesión | 200, 401 |
 | Abrir un caso (por su partida simulada) | `GET /casos/{codigo}` | Sesión | 200, 401, 404 |
 | Actualizar la partida y recalcular | `PUT /casos/{codigo}/expediente` | REVISOR | 200, 400, 401, 403, 404, 409 |
 | Cambiar un ítem del checklist | `PATCH /casos/{codigo}/checklist/{itemId}` | REVISOR | 200, 400, 401, 403, 404 |
-| Asociar un PDF propio al caso | `POST /casos/{codigo}/documento` (multipart, campo `documento`) | REVISOR | 201, 401, 403, 404, 413, 422 |
+| Asociar un PDF propio al caso | `POST /casos/{codigo}/documento` (multipart, campo `documento`) | REVISOR | 201, 400, 401, 403, 404, 413 |
 | Ver el PDF del caso | `GET /casos/{codigo}/documento` | Sesión | 200, 401, 404 |
 | Solicitar la inspección técnica | `POST /casos/{codigo}/inspeccion/solicitud` | **COMPRADOR** | 201, 401, 403, 404, 409 |
 | Registrar el avance o el informe técnico | `PUT /casos/{codigo}/inspeccion` | ESPECIALISTA | 200, 400, 401, 403, 404, 409, 422 |
 | Ver el informe técnico en PDF | `GET /casos/{codigo}/inspeccion/documento` | Sesión | 200, 401, 404 |
 | Ver la lámina o el PDF de un plano | `GET /casos/{codigo}/planos/{especialidad}/documento` | Sesión | 200, 401, 404 |
-| Subir el PDF real de un plano | `POST /casos/{codigo}/planos/{especialidad}/documento` | REVISOR | 201, 401, 403, 404, 413, 422 |
+| Subir el PDF real de un plano (v0.8: también a un plano no presentado, que queda presentado) | `POST /casos/{codigo}/planos/{especialidad}/documento` | REVISOR | 201, 400, 401, 403, 404, 413, 422 |
+| Ruta de regularización (v0.8) | `GET /casos/{codigo}/ruta-regularizacion` | Sesión, con la visibilidad del detalle | 200, 401, 404 |
+| Registrar la decisión de captación (v0.8) | `POST /casos/{codigo}/decision-captacion` (`{"decision","motivo"}`) | **GESTOR** | 201, 400, 401, 403, 404 |
+| Historial de decisiones de captación (v0.8) | `GET /casos/{codigo}/decisiones-captacion` | **GESTOR**, **REVISOR** | 200, 401, 403, 404 |
 | Captar una partida transcrita o simulada | `POST /casos` | REVISOR | 201, 400, 401, 403, 409 |
 | Eliminar una partida captada | `DELETE /casos/{codigo}` | REVISOR | 204, 401, 403, 404, 409 |
 | Glosario cerrado | `GET /glosario` | Sesión | 200, 401 |
@@ -36,7 +40,7 @@ Todas las rutas empiezan por `/api/v1`. Salvo el login, exigen `Authorization: B
 | Solicitar contacto (v0.7) | `POST /casos/{codigo}/contactos` (`{"motivo"}`) | **COMPRADOR** | 201, 400, 401, 403, 404, 409 |
 | Listar contactos (v0.7) | `GET /contactos?estado=PENDIENTE\|ATENDIDA` | **GESTOR** | 200, 401, 403 |
 | Marcar un contacto atendido (v0.7) | `PUT /contactos/{id}/atencion` | **GESTOR** | 200, 401, 403, 404, 409 |
-| Panel de cartera (v0.7) | `GET /cartera/panel` | **GESTOR** | 200, 401, 403 |
+| Panel de cartera (v0.7; v0.8 con tipos de alerta, esfuerzo y gestión) | `GET /cartera/panel` | **GESTOR** | 200, 401, 403 |
 | Historial de evaluaciones del indicador A (v0.7) | `GET /casos/{codigo}/historial` | REVISOR, GESTOR, ESPECIALISTA, PROPIETARIO del caso | 200, 401, 403 (comprador), 404 |
 
 **Visibilidad (v0.7):** el COMPRADOR solo ve casos `PUBLICADO` y el PROPIETARIO solo los suyos (listado, detalle, PDF y
@@ -222,9 +226,10 @@ Las respuestas de error usan `application/problem+json` con el campo `detail`.
 | 401 | Sin token, token vencido o de otro emisor, credenciales incorrectas |
 | 403 | El rol no permite la operación (por ejemplo, un revisor o un especialista que solicita la inspección) |
 | 404 | Caso, ítem o documento inexistente. Un ítem de otro caso también da 404 |
-| 409 | La versión del expediente cambió, la inspección ya fue solicitada o no hay solicitud para registrar el informe |
-| 413 | El archivo supera 5 MB |
-| 422 | El archivo no es un PDF válido, o la cuenta del especialista no tiene datos profesionales para firmar |
+| 400 (v0.8) | El archivo no es un PDF (cabecera, tipo `application/pdf`), está cifrado o dañado; `tipoAlerta` desconocido; acreedor que no es persona jurídica ni «no consta»; decisión o motivo fuera de la lista o con otros campos |
+| 409 | La versión del expediente cambió, la inspección ya fue solicitada o no hay solicitud para registrar el informe. v0.8: si viene de la base de datos, el servidor registra la causa raíz en su log; la respuesta no cambia |
+| 413 | v0.8: «El archivo supera 25 MB» o «El PDF pesa X MB incluso optimizado; el máximo es 10 MB. Reduce su resolución o divídelo» |
+| 422 | La cuenta del especialista no tiene datos profesionales para firmar. v0.8: «Sube el PDF del plano antes de marcarlo como presentado» (plano presentado u observado sin archivo, al editar o al registrar) o el plano no aplica al predio |
 | 429 | Demasiados intentos de login |
 
 ## Captación de partidas (solo REVISOR)
@@ -340,3 +345,60 @@ asignación y 403 a cualquier otro especialista.
 ```
 
 Los totales de este ejemplo son los del contenido de demostración recién cargado (`CarteraTest.panelCoherente`).
+
+## Novedades de la v0.8
+
+### Documentos PDF
+
+`POST /casos/{c}/documento` y `POST /casos/{c}/planos/{esp}/documento` validan y, si pasa de 5 MB, optimizan el PDF. Respuesta:
+
+```json
+{ "codigo": "SIM-99000404", "sha256": "…", "tamanoOriginalBytes": 5610250, "tamanoBytes": 391884, "optimizado": true }
+```
+
+El detalle agrega `expediente.documento` y `expediente.planos[].documento` (nulo si el plano no está presentado ni observado):
+`{ "origen": "SUBIDO" | "GENERADO" | "FALTA", "subidoPor", "subidoEn", "tamanoBytes", "tamanoOriginalBytes", "optimizado", "sha256" }`.
+Límites en `app.archivos.max-entrada-mb` (25), `app.archivos.umbral-optimizacion-mb` (5) y `app.archivos.max-almacenado-mb` (10).
+
+### Asientos del rubro D
+
+`AsientoRequest` y el detalle agregan `acreedor` (solo persona jurídica o «no consta») y `plazoOVencimiento`. En otro rubro dan
+400. No intervienen en el color.
+
+### Ruta de regularización
+
+`GET /casos/{c}/ruta-regularizacion`:
+
+```json
+{ "codigo": "SIM-11052690", "estado": "AMARILLO", "esfuerzo": "MEDIO", "esfuerzoEtiqueta": "Medio: requiere a un tercero, sin proceso judicial",
+  "items": [ { "tipo": "ALERTA", "clave": "RV-02", "referencia": "D00001", "titulo": "Levantar la hipoteca vigente",
+               "pasos": [ "…" ], "gestiona": "acreedor", "documentoRequerido": "…", "esfuerzo": "MEDIO", "nota": "…",
+               "gravamen": { "acreedor": "No consta", "plazoOVencimiento": null,
+                             "plazo": "No consta en la partida: solicitar al propietario o al acreedor" } } ],
+  "tiposAlerta": [ "RV-02", "RV-04" ], "mensaje": null,
+  "aviso": "Orientativo: no es asesoría legal ni recomendación de compra",
+  "plazoGeneral": "El plazo depende del trámite; consultar con abogado o notario.",
+  "estadoRevision": "borrador del equipo, pendiente de revisión especializada", "versionContenido": "v0.4" }
+```
+
+En un caso verde, `items` está vacío y `mensaje` dice «Sin alertas en los campos evaluados: no hay pasos de regularización».
+
+### Filtro por tipo de alerta y panel
+
+`GET /casos?tipoAlerta=RV-02` (o `INFORMACION_INSUFICIENTE`) se combina con los demás filtros; cada resumen trae `tiposAlerta`.
+`GET /cartera/panel` agrega `porTipoAlerta` (`codigo`, `nombre`, `casos`), `porEsfuerzo` (`BAJO`, `MEDIO`, `ALTO`, `SIN_PASOS`),
+`porRegularizar` (`codigo`, `denominacion`, `color`, `tiposAlerta`, `esfuerzo`, `estadoGestion`; orden por esfuerzo y código),
+`porEstadoGestion`, `matrizGestion` (`codigo`, `nombre`, `porEstadoGestion`) y los avisos `avisoPriorizacion` y `avisoGestion`.
+
+### Semáforo de gestión y decisión de captación (I15)
+
+Solo para GESTOR y REVISOR, el detalle y cada resumen de `GET /casos` traen `gestion`:
+`{ "estado": "REQUIERE_REGULARIZACION", "etiqueta", "explicacion", "sugerencia", "esfuerzo", "aviso" }`. Para los demás roles el
+campo no existe en la respuesta.
+
+`POST /casos/{c}/decision-captacion` (GESTOR) con `{"decision": "NO_CAPTAR_POR_AHORA", "motivo": "PROCESO_JUDICIAL"}`.
+Decisiones: `CAPTAR`, `CAPTAR_CON_CONDICIONES`, `NO_CAPTAR_POR_AHORA`. Motivos: `DOCUMENTACION_COMPLETA`, `REGULARIZACION_EN_CURSO`,
+`CARGA_VIGENTE`, `PROCESO_JUDICIAL`, `INFORMACION_INSUFICIENTE`, `OTRO_MOTIVO_COMERCIAL`. Otro campo da 400. Respuesta 201:
+`{ "id", "casoCodigo", "decision", "decisionEtiqueta", "motivo", "motivoEtiqueta", "cuentaCodigo", "registradaEn" }`. No cambia A ni
+B ni bloquea publicar. `GET /casos/{c}/decisiones-captacion` (GESTOR, REVISOR) devuelve el historial, del más antiguo al más
+reciente; no hay rutas para editarlo ni borrarlo.

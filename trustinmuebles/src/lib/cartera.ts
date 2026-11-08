@@ -1,4 +1,4 @@
-import type { EstadoPublicacion, EstadoSemaforo, PanelCartera, ResumenCaso } from "./types";
+import type { EstadoGestion, EstadoPublicacion, EstadoSemaforo, PanelCartera, ResumenCaso } from "./types";
 
 export const COLORES: EstadoSemaforo[] = ["VERDE", "AMARILLO", "ROJO", "GRIS"];
 export const ESTADOS_PUBLICACION: EstadoPublicacion[] = ["BORRADOR", "PUBLICADO", "RETIRADO"];
@@ -45,16 +45,35 @@ export function totalesDelPanel(p: Partial<PanelCartera> | null | undefined): To
   return { total, porColor, sinEvaluar: Math.max(0, total - evaluados), porPublicacion };
 }
 
-/** Filtros de la lista del panel. Vacío significa «todos». Se combinan con «y». */
-export interface FiltroCartera { color: "" | EstadoSemaforo; publicacion: "" | EstadoPublicacion; q: string }
+/**
+ * Filtros de la lista del panel. Vacío significa «todos». Se combinan con «y». v0.8: el tipo de alerta se filtra en el
+ * servidor (rutaCartera).
+ */
+export interface FiltroCartera {
+  color: "" | EstadoSemaforo; publicacion: "" | EstadoPublicacion; q: string; tipoAlerta?: string;
+  /** v0.8 (I15): estado de gestión, solo en la cartera del gestor. */
+  gestion?: "" | EstadoGestion;
+}
 
-export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "" };
+export const FILTRO_CARTERA_VACIO: FiltroCartera = { color: "", publicacion: "", q: "", tipoAlerta: "", gestion: "" };
+
+/** Ruta de la lista del gestor: con tipo de alerta, el servidor ya devuelve solo esos casos. */
+export const rutaCartera = (f: FiltroCartera) =>
+  f.tipoAlerta ? `/casos?tipoAlerta=${encodeURIComponent(f.tipoAlerta)}` : "/casos";
+
+/** Nombre de un tipo de alerta para mostrar: «RV-02 · Hipoteca vigente». */
+export const nombreTipoAlerta = (codigo: string, tipos: { codigo: string; nombre: string }[] | null | undefined) => {
+  const t = tipos?.find((x) => x.codigo === codigo);
+  if (codigo === "INFORMACION_INSUFICIENTE") return t?.nombre ?? "Información insuficiente";
+  return t ? `${codigo} · ${t.nombre}` : codigo;
+};
 
 /** Filtra en el navegador la lista del gestor (ya la entregó el servidor completa). */
 export function filtrarCartera(casos: ResumenCaso[] | null | undefined, f: FiltroCartera): ResumenCaso[] {
   const q = f.q.trim().toLowerCase();
   return (casos ?? []).filter((c) =>
     (!f.color || c.estado === f.color)
+    && (!f.gestion || c.gestion?.estado === f.gestion)
     && (!f.publicacion || c.estadoPublicacion === f.publicacion)
     && (!q || c.codigo.toLowerCase().includes(q) || c.denominacion.toLowerCase().includes(q)
       || (c.predio?.distrito ?? "").toLowerCase().includes(q)));

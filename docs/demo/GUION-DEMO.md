@@ -1,6 +1,8 @@
-# Guion de la demo: recorrido de 15 pasos con SIM-99000404
+# Guion de la demo (v0.8.0): recorrido de 15 pasos con SIM-99000404 y 6 pasos de la v0.8
 
-Sigue el orden de [recorrido-v07.mjs](../pruebas/recorrido-v07.mjs). Para esta presentación, este guion reemplaza a
+Los pasos 1 a 15 siguen el orden de [recorrido-v07.mjs](../pruebas/recorrido-v07.mjs), con el paso 7 ajustado a la v0.8 (el plano
+se presenta subiendo su PDF). Los pasos 16 a 21 muestran lo nuevo de la v0.8 y siguen [recorrido-v08.mjs](../pruebas/recorrido-v08.mjs)
+(20 de 20 pasos correctos el 2 de noviembre de 2026). Para esta presentación, este guion reemplaza a
 [partida-demo.md](partida-demo.md), que quedó desactualizado: usa el número sin `SIM-`, un perímetro de 52.00 ml y dice que el
 precio no se puede ingresar.
 
@@ -22,7 +24,11 @@ precio no se puede ingresar.
    $env:MAVEN_OPTS = '-Djavax.net.ssl.trustStoreType=Windows-ROOT'
    ```
 
-4. Abre `http://localhost:5173` en Chrome y deja abierta la carpeta `docs/pruebas/capturas-v07/` para el plan B.
+4. Abre `http://localhost:5173` en Chrome y deja abiertas las carpetas `docs/pruebas/capturas-v07/` y `docs/pruebas/capturas-v08/`
+   para el plan B.
+5. **v0.8:** genera los PDF de la demo con `node scripts/generar-pdf-demo.mjs`. Imprime dónde quedaron `plano-chico.pdf` y
+   `plano-escaneado-grande.pdf` (unos 5,4 MB). Son ficticios y no quedan en el repositorio. Un plano ya no se puede marcar
+   «Presentado» sin su PDF.
 
 **Cambiar de cuenta.** Pulsa el icono «Cerrar sesión», arriba a la derecha, y ve a `http://localhost:5173/#/login`. Toca la tarjeta
 de la cuenta, escribe la contraseña y pulsa **Ingresar al sistema**.
@@ -167,18 +173,20 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
   cancelación está inscrita».
 - **Plan B:** `06-revisor-a-e-historial.png`. Amplía los motivos y el historial.
 
-### Paso 7. El revisor subsana
+### Paso 7. El revisor subsana subiendo los PDF de los planos
 
 - **Cuenta:** `revisor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, tarjeta **Editar partida**, al final de la página
+- **Pantalla:** `#/casos/SIM-99000404`, sección **Expediente técnico de planos (2D)**
 - **Botones:**
-  1. **Plano arquitectónico**: Estado `Presentado`.
-  2. **Plano de estructuras**: Estado `Presentado`.
-  3. Deja los dos planos de instalaciones en `No presentado` y **Guardar y recalcular**.
-- **Debe verse:** «Guardado. El estado se recalculó con las reglas…», el indicador en amarillo, con las dos alertas de instalaciones, y
-  una entrada nueva, «Plano incorporado o adjuntado», de Gris a Amarillo. La entrada anterior se conserva.
-- **Frase:** «El color no se elige: lo recalculan las reglas. Pasó de gris a amarillo porque ya se puede evaluar, y aún faltan los planos
-  de instalaciones. El historial solo agrega, nunca borra».
+  1. En **Editar partida**, muestra que en **Plano arquitectónico** las opciones `Presentado` y `Observado` dicen «(sube el PDF
+     primero)» y no se pueden elegir.
+  2. En la tarjeta **Arquitectura** del panel de planos, elige `plano-chico.pdf` y pulsa **Subir PDF (queda presentado)**.
+  3. Repite con la tarjeta **Estructuras**.
+- **Debe verse:** «Archivo guardado.», cada tarjeta en **Presentado** con «Subido por revisor-01 el …» y **Descargar**, el indicador en
+  amarillo con las dos alertas de instalaciones y dos entradas nuevas «Plano incorporado o adjuntado» (la segunda, de Gris a Amarillo).
+  La entrada anterior se conserva.
+- **Frase:** «Un plano ya no aparece como presentado sin su archivo: lo que se ve tiene respaldo. El color no se elige: lo recalculan
+  las reglas. Pasó de gris a amarillo porque ya se puede evaluar, y aún faltan los planos de instalaciones».
 - **Plan B:** edita SIM-11104029. En **Plano de estructuras**, cambia Estado de `Observado` a `Presentado` y pulsa **Guardar y
   recalcular**. Debe verse el mensaje «Guardado…», una entrada nueva en el historial y el indicador en amarillo por la carga técnica
   vigente (D00001): corregir un plano no levanta esa carga. Después sigue con la captura `07-subsanacion.png`.
@@ -279,6 +287,78 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 - **Frase:** «Esto es una orientación, no una certificación. La verificación jurídica con abogado o notario sigue fuera del sistema».
 - **Plan B:** `15-pie-y-login.png`. Muestra solo el login. Para el pie, usa el final de `13-panel-cartera.png`.
 
+## Pasos de la v0.8
+
+Hazlos después del paso 13 (antes de retirar la autorización). No edites La Tinguiña: solo se mira.
+
+### Paso 16. Subir un PDF pesado: límite y optimización
+
+- **Cuenta:** `revisor-01`
+- **Pantalla:** `#/casos/SIM-99000404`, tarjeta **Instalaciones eléctricas (II.EE.)**
+- **Botones:** elige `plano-escaneado-grande.pdf` y pulsa **Subir PDF (queda presentado)**.
+- **Debe verse:** antes de subir, «Se optimizará automáticamente: pesa 5,4 MB y el máximo guardado es 10 MB.»; después, «Optimizado:
+  5,4 MB → 0,1 MB» y el origen «Subido por revisor-01 …, 0,1 MB (optimizado desde 5,4 MB)».
+- **Frase:** «Se aceptan hasta 25 MB. Si el PDF pesa más de 5 MB, el sistema reduce sus imágenes y guarda solo el resultado, con su
+  huella; si aun así pasa de 10 MB, lo rechaza con un mensaje claro. Más de 25 MB ni siquiera se envía».
+- **Plan B:** `03-pdf-grande-optimizado.png` y, para el rechazo sin archivo, `02-plano-sin-pdf-y-subida.png`.
+
+### Paso 17. La ruta de regularización
+
+- **Cuenta:** `comprador-01`
+- **Pantalla:** `#/casos/SIM-11075836` y luego `#/casos/SIM-11052690`, sección **Ruta de regularización**
+- **Botón:** ninguno.
+- **Debe verse:** en Pueblo Nuevo, «Levantar el embargo vigente», **Gestiona: Juzgado** y **Esfuerzo alto**; en La Tinguiña, la
+  hipoteca con **Esfuerzo medio**, «Acreedor: No consta. No consta en la partida: solicitar al propietario o al acreedor.» y los dos
+  planos de instalaciones con esfuerzo bajo. Arriba, «Orientativo: no es asesoría legal ni recomendación de compra».
+- **Frase:** «Para cada alerta, el sistema dice qué haría falta, quién lo gestiona y qué documento se necesita. No damos plazos ni
+  costos: dependen del trámite y se consultan con un abogado o notario».
+- **Plan B:** `14-ruta-regularizacion.png`.
+
+### Paso 18. La cartera por tipo de problema
+
+- **Cuenta:** `gestor-01`
+- **Pantalla:** menú **Cartera** (`#/cartera`)
+- **Botón:** en **Casos por tipo de alerta**, pulsa **RP-01 · Embargo vigente**.
+- **Debe verse:** las tarjetas «Casos por tipo de alerta», «Esfuerzo de regularización» y «Gestión inmobiliaria (interno)» con la matriz,
+  la tabla «Por regularizar» y el aviso «Priorización interna de la inmobiliaria; no es una recomendación de compra». Al pulsar el tipo,
+  la lista de casos queda filtrada.
+- **Frase:** «Es lo que pidió el docente: de toda la cartera, cuántos tienen hipoteca, cuántos embargo, cuáles son más viables y
+  cuáles tomarán más gestión. Es para organizar el trabajo de la inmobiliaria, no para recomendar una compra».
+- **Plan B:** `15-panel-cartera.png`.
+
+### Paso 19. El semáforo de gestión y la decisión de captación
+
+- **Cuenta:** `gestor-01`, luego `comprador-01`
+- **Pantalla:** `#/casos/SIM-11075836`, sección **Gestión inmobiliaria (interno)**
+- **Botones:**
+  1. **Decisión** `No captar por ahora`, **Motivo** `Proceso judicial` y **Registrar decisión**.
+  2. En **Publicación y autorización**, **Retirar** y luego **Publicar**: acepta la confirmación.
+  3. Con `comprador-01`, abre el mismo caso.
+- **Debe verse:** «Gestión: Requiere regularización» con contorno discontinuo, la decisión en el historial con `gestor-01` y la fecha, el
+  indicador A todavía en rojo, la confirmación «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?» y el caso
+  publicado. El comprador no ve el panel de gestión.
+- **Frase:** «El semáforo de gestión es interno: ayuda a decidir si captar, pero no cambia los indicadores, no se le muestra al
+  comprador y no impide publicar».
+- **Plan B:** `16-decision-captacion.png` y `16b-panel-gestion.png`.
+
+### Paso 20. Filtrar el catálogo por tipo de alerta
+
+- **Cuenta:** `comprador-01`
+- **Pantalla:** `#/casos`, botón **Filtros**
+- **Botón:** **Tipo de alerta del indicador A** → `RV-02 · Hipoteca vigente`.
+- **Debe verse:** solo La Tinguiña y el chip «Alerta · RV-02 · Hipoteca vigente».
+- **Frase:** «El comprador también puede filtrar por el tipo de alerta del semáforo documental».
+- **Plan B:** `17-filtro-tipo-alerta.png`.
+
+### Paso 21. El color de A, resaltado y siempre con texto
+
+- **Cuenta:** `comprador-01`
+- **Pantalla:** `#/casos`; si se puede, con el ancho de un celular (herramientas de Chrome, 390 px)
+- **Botón:** ninguno.
+- **Debe verse:** cada tarjeta con un borde izquierdo y un fondo tenue de su color y la etiqueta «Indicador A: …» con ícono.
+- **Frase:** «El color ayuda a ubicar los casos de un vistazo, pero nunca va solo: siempre lo acompaña un texto».
+- **Plan B:** `18-tarjetas-resaltadas.png` y `18b-tarjetas-celular.png`.
+
 ## Si algo falla en vivo
 
 | Síntoma | Qué hacer |
@@ -288,8 +368,14 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 | Aparece «Avisos de la lectura» | Pegaste el texto incompleto. Vuelve a copiar el bloque y pulsa **Leer asientos** |
 | «No se registró la partida» | Revisa origen, número con `SIM-` y propietario. Si persiste, usa el plan B del paso 1 |
 | La aplicación no responde | Continúa todo el recorrido con las capturas |
+| «Sube el PDF del plano antes de marcarlo como presentado» | Es la regla de la v0.8: sube el PDF desde la tarjeta del plano |
+| «El PDF pesa X MB incluso optimizado…» o «El archivo supera 25 MB» | Usa `plano-escaneado-grande.pdf` de `scripts/generar-pdf-demo.mjs` o el plan B del paso 16 |
+| No aparece la confirmación al publicar | Recarga el caso y vuelve a pulsar **Publicar**; si no, plan B del paso 19 |
 
 ## Verificación del guion
+
+**v0.8:** los pasos 7 (nueva versión) y 16 a 21 se comprobaron con `recorrido-v08.mjs` el 2 de noviembre de 2026 (20 de 20, base nueva
+fuera del repositorio). No se ensayaron a mano frente a la pantalla.
 
 Ensayado el 31 de octubre de 2026 sobre el commit `8ba1600`, con Chrome automatizado y una base nueva fuera del repositorio. Usó el texto
 y los datos de este guion. Los 15 pasos dieron el resultado esperado. En el paso 1, el script leyó la pantalla antes de terminar la

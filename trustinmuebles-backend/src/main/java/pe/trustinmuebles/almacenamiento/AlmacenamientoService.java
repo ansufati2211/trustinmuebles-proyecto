@@ -53,6 +53,16 @@ public class AlmacenamientoService {
     }
 
     public ArchivoGuardado guardar(String nombre, String contentType, byte[] datos, boolean publico) {
+        return guardar(nombre, contentType, datos, publico, datos.length, false, null);
+    }
+
+    /** v0.8: guarda un PDF ya preparado por {@link DocumentosPdf} con la evidencia de quién lo subió. */
+    public ArchivoGuardado guardarDocumento(String nombre, PdfPreparado pdf, String subidoPor) {
+        return guardar(nombre, "application/pdf", pdf.datos(), false, pdf.tamanoOriginal(), pdf.optimizado(), subidoPor);
+    }
+
+    private ArchivoGuardado guardar(String nombre, String contentType, byte[] datos, boolean publico,
+            long tamanoOriginal, boolean optimizado, String subidoPor) {
         if (datos.length == 0) {
             throw new ReglaNegocioException("El archivo está vacío");
         }
@@ -70,6 +80,9 @@ public class AlmacenamientoService {
         a.setTamano(datos.length);
         a.setSha256(Hashing.sha256(datos));
         a.setPublico(publico);
+        a.setTamanoOriginal(tamanoOriginal);
+        a.setOptimizado(optimizado);
+        a.setSubidoPor(subidoPor);
         try {
             Files.write(raiz.resolve(a.getId() + ".bin"), cifrado.cifrar(datos));
         } catch (IOException e) {
@@ -89,6 +102,13 @@ public class AlmacenamientoService {
             }
             repo.delete(a);
         });
+    }
+
+    @Transactional(readOnly = true)
+    public java.util.Optional<MetadatosArchivo> metadatos(String id) {
+        return id == null ? java.util.Optional.empty() : repo.findById(id).map(a -> new MetadatosArchivo(a.getId(),
+                a.getTamano(), a.getTamanoOriginal() == null ? a.getTamano() : a.getTamanoOriginal(), a.isOptimizado(),
+                a.getSha256(), a.getSubidoPor(), a.getCreadoEn()));
     }
 
     @Transactional(readOnly = true)

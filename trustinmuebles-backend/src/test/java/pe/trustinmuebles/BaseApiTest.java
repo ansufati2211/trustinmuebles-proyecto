@@ -105,7 +105,7 @@ public abstract class BaseApiTest {
             n.put("referencia", a.get("referencia").asString());
             n.put("tipoActo", a.get("tipoActo").asString());
             for (String campo : new String[] {"estado", "fechaInscripcion", "tituloNumero", "fechaPresentacion", "texto",
-                    "canceloNumero", "titulares"}) {
+                    "canceloNumero", "titulares", "acreedor", "plazoOVencimiento"}) {
                 if (a.hasNonNull(campo)) n.put(campo, a.get(campo).asString());
             }
         }
@@ -136,6 +136,18 @@ public abstract class BaseApiTest {
         if (texto != null) n.put("texto", texto);
         if (canceloNumero != null) n.put("canceloNumero", canceloNumero);
         return n;
+    }
+
+    /** v0.8: un PDF real de una página para subir como documento o plano (los planos presentados exigen su archivo). */
+    protected static org.springframework.mock.web.MockMultipartFile pdf(String texto) {
+        return new org.springframework.mock.web.MockMultipartFile("documento", "prueba.pdf", "application/pdf",
+                PdfDePrueba.simple(texto));
+    }
+
+    /** v0.8: sube el PDF de un plano; si estaba no presentado, queda presentado y se recalcula (PLANO_ADJUNTO). */
+    protected ResultActions subirPlano(String codigo, String especialidad, String authorization) throws Exception {
+        return mvc.perform(multipart("/api/v1/casos/" + codigo + "/planos/" + especialidad + "/documento")
+                .file(pdf("Plano " + especialidad + " de prueba")).header("Authorization", authorization));
     }
 
     /** Devuelve el caso a su contenido original usando la versión actual. */

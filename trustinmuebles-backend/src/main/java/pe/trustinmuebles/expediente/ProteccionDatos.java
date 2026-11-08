@@ -16,6 +16,24 @@ final class ProteccionDatos {
     private static final Pattern ESTADO_CIVIL = Pattern.compile("(?i)estado\\s+civil");
     private static final Pattern DOMICILIO = Pattern.compile("(?i)con\\s+domicilio\\s+(real\\s+)?en\\b(?!\\s*\\[)");
 
+    /** Forma jurídica o tipo de entidad que identifica a una persona jurídica en el nombre de un acreedor. */
+    private static final Pattern PERSONA_JURIDICA = Pattern.compile("(?iu)(\\bs\\.?\\s?a\\.?(\\s?[ac]\\.?)?(?=\\s|$|,|\\))"
+            + "|\\bs\\.?\\s?r\\.?\\s?l\\.?|\\be\\.?\\s?i\\.?\\s?r\\.?\\s?l\\.?|\\bbanco\\b|\\bcaja\\b|\\bcooperativa\\b"
+            + "|\\bfinanciera\\b|\\bedpyme\\b|\\bfondo\\b|\\bmunicipalidad\\b|\\bgobierno\\b|\\bministerio\\b"
+            + "|\\bsociedad\\b|\\bcorporaci[oó]n\\b|\\bempresa\\b|\\basociaci[oó]n\\b|\\bfundaci[oó]n\\b|\\bmivivienda\\b)");
+
+    /**
+     * v0.8: el acreedor de un gravamen solo se registra si es una persona jurídica (por ejemplo, «Banco Demo S.A.») o
+     * como «no consta». Una persona natural no se guarda (I11). Vacío es válido: el campo es opcional.
+     */
+    static void verificarAcreedor(String acreedor) {
+        if (acreedor == null || acreedor.isBlank()) return;
+        String a = acreedor.trim();
+        if (a.equalsIgnoreCase("no consta") || PERSONA_JURIDICA.matcher(a).find()) return;
+        throw new IllegalArgumentException("acreedor: indica una persona jurídica (por ejemplo, «Banco Demo S.A.» o "
+                + "«Caja Municipal …») o «no consta». No se registran personas naturales");
+    }
+
     /** Lanza IllegalArgumentException (400) si algún texto contiene un dato personal reconocible. */
     static void verificar(Stream<String> textos) {
         textos.filter(t -> t != null && !t.isBlank()).forEach(t -> {

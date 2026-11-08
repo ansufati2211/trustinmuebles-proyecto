@@ -2,6 +2,8 @@ import { Link } from "react-router";
 import { ArrowRight, Home, Info } from "lucide-react";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
+import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
+import { resaltadoA } from "@/lib/resaltado";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { useApi } from "@/lib/useApi";
 import type { DetalleCaso, ResumenCaso } from "@/lib/types";
@@ -18,8 +20,12 @@ function InmueblePropio({ codigo }: { codigo: string }) {
   const t = d.evaluacionTecnica;
 
   return (
-    <article className="grid gap-6 rounded-3xl border border-border bg-card p-6 shadow-tarjeta lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)]">
+    <article
+      data-resaltado={ev?.estado ?? "SIN_EVALUAR"}
+      className={`grid gap-6 rounded-3xl border border-border p-6 shadow-tarjeta lg:grid-cols-[minmax(0,1.3fr)_minmax(0,1fr)] ${resaltadoA(ev?.estado).contenedor}`}
+    >
       <div className="space-y-4">
+        <EtiquetaResaltado estado={ev?.estado} />
         <div>
           <p className="cifras text-xs font-bold uppercase tracking-wider text-tinta-2">Partida N.° {d.codigo}</p>
           <h2 className="text-xl font-bold text-foreground">{d.denominacion}</h2>

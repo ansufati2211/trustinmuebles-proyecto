@@ -1,5 +1,25 @@
 import { describe, expect, it } from "vitest";
-import { FILTRO_CARTERA_VACIO, filtrarCartera, totalesDeCasos, totalesDelPanel } from "./cartera";
+import { FILTRO_CARTERA_VACIO, filtrarCartera, nombreTipoAlerta, rutaCartera, totalesDeCasos, totalesDelPanel } from "./cartera";
+
+describe("v0.8: estado de gestión en la cartera", () => {
+  it("filtra por estado de gestión en el navegador", () => {
+    const a = { ...caso("SIM-7", "VERDE", "PUBLICADO"), gestion: { estado: "VIABLE" as const, etiqueta: "Viable", explicacion: "", sugerencia: "", esfuerzo: null, aviso: "" } };
+    const b = { ...caso("SIM-8", "ROJO", "PUBLICADO"), gestion: { estado: "REQUIERE_REGULARIZACION" as const, etiqueta: "", explicacion: "", sugerencia: "", esfuerzo: "ALTO" as const, aviso: "" } };
+    expect(filtrarCartera([a, b], { ...FILTRO_CARTERA_VACIO, gestion: "VIABLE" }).map((c) => c.codigo)).toEqual(["SIM-7"]);
+    expect(filtrarCartera([a, b], FILTRO_CARTERA_VACIO)).toHaveLength(2);
+  });
+});
+
+describe("v0.8: tipo de alerta en la cartera", () => {
+  it("el filtro va al servidor y los nombres se muestran con su código", () => {
+    expect(rutaCartera(FILTRO_CARTERA_VACIO)).toBe("/casos");
+    expect(rutaCartera({ ...FILTRO_CARTERA_VACIO, tipoAlerta: "RV-02" })).toBe("/casos?tipoAlerta=RV-02");
+    const tipos = [{ codigo: "RV-02", nombre: "Hipoteca vigente" }];
+    expect(nombreTipoAlerta("RV-02", tipos)).toBe("RV-02 · Hipoteca vigente");
+    expect(nombreTipoAlerta("INFORMACION_INSUFICIENTE", [])).toBe("Información insuficiente");
+    expect(nombreTipoAlerta("RV-09", tipos)).toBe("RV-09");
+  });
+});
 import type { EstadoPublicacion, EstadoSemaforo, ResumenCaso } from "./types";
 
 const caso = (codigo: string, estado: EstadoSemaforo | null, estadoPublicacion: EstadoPublicacion, distrito = "Ica"): ResumenCaso => ({

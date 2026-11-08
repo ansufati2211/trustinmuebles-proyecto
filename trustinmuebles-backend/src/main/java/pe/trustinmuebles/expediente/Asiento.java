@@ -55,6 +55,14 @@ class Asiento {
     @Column(length = 500)
     private String titulares;
 
+    /** v0.8: solo en asientos D. Acreedor persona jurídica o «no consta» (sin personas naturales). */
+    @Column(length = 120)
+    private String acreedor;
+
+    /** v0.8: solo en asientos D. Plazo o vencimiento del gravamen, si consta en la partida. No interviene en el color. */
+    @Column(name = "plazo_vencimiento", length = 120)
+    private String plazoOVencimiento;
+
     @Column(nullable = false)
     private int orden;
 

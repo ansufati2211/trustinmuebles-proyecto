@@ -7,6 +7,7 @@ import { TarjetaPredio } from "@/components/TarjetaPredio";
 import { Desplegable } from "@/components/base/Desplegable";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { useApi } from "@/lib/useApi";
+import { nombreTipoAlerta } from "@/lib/cartera";
 import { useAuth } from "@/lib/auth";
 import { abrirExterno, CONOCE_AQUI, copiar, normalizarNumero, pareceNumeroDePartida, VISOR_BGR } from "@/lib/fuentes";
 import {
@@ -14,7 +15,7 @@ import {
   textoResultados, type Filtros,
 } from "@/lib/catalogo";
 import { ESTADOS } from "@/lib/semaforo";
-import type { EstadoSemaforo, ResumenCaso } from "@/lib/types";
+import type { EstadoSemaforo, ResumenCaso, TipoAlerta } from "@/lib/types";
 
 const campo =
   "h-14 w-full rounded-2xl border border-border bg-background px-4 text-base font-semibold text-foreground transition-all duration-300 hover:border-primary/40 focus:border-primary focus:bg-card focus:outline-none focus:ring-4 focus:ring-primary/15";
@@ -25,6 +26,8 @@ export default function Casos() {
   const [params, setParams] = useSearchParams();
   const filtros = filtrosDesdeURL(params);
   const { data: casos, loading, error, reload } = useApi<ResumenCaso[]>(rutaCatalogo(filtros));
+  const tiposAlerta = useApi<TipoAlerta[]>("/casos/tipos-alerta");
+  const opcionesTipo = (tiposAlerta.data ?? []).map((x) => ({ valor: x.codigo, etiqueta: nombreTipoAlerta(x.codigo, tiposAlerta.data) }));
   const { usuario } = useAuth();
   const navigate = useNavigate();
   const [copiado, setCopiado] = useState(false);
@@ -54,6 +57,7 @@ export default function Casos() {
   if (filtros.tipo) activos.push({ clave: "tipo", texto: etiquetaDe(OPCIONES_TIPO, filtros.tipo) });
   if (filtros.indicadorA) activos.push({ clave: "indicadorA", texto: `A · ${etiquetaDe(OPCIONES_A, filtros.indicadorA)}` });
   if (filtros.indicadorB) activos.push({ clave: "indicadorB", texto: `B · ${etiquetaDe(OPCIONES_B, filtros.indicadorB)}` });
+  if (filtros.tipoAlerta) activos.push({ clave: "tipoAlerta", texto: `Alerta · ${nombreTipoAlerta(filtros.tipoAlerta, tiposAlerta.data)}` });
 
   return (
     <div className="flex w-full flex-col">
@@ -211,6 +215,13 @@ export default function Casos() {
                 opciones={OPCIONES_B}
                 textoTodos="Todos los estados"
                 alCambiar={(v) => cambiar({ indicadorB: v as Filtros["indicadorB"] })}
+              />
+              <Desplegable
+                etiqueta="Tipo de alerta del indicador A"
+                valor={filtros.tipoAlerta ?? ""}
+                opciones={opcionesTipo}
+                textoTodos="Todos los tipos"
+                alCambiar={(v) => cambiar({ tipoAlerta: v || undefined })}
               />
             </div>
           </div>

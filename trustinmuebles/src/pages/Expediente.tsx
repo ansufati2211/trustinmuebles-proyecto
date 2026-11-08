@@ -10,6 +10,11 @@ import { EditorExpediente } from "@/components/EditorExpediente";
 import { PanelPlanos } from "@/components/PanelPlanos";
 import { PanelEvaluacionTecnica } from "@/components/PanelEvaluacionTecnica";
 import { HistorialEvaluaciones } from "@/components/HistorialEvaluaciones";
+import { RutaRegularizacion } from "@/components/RutaRegularizacion";
+import { PanelGestion } from "@/components/PanelGestion";
+import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
+import { resaltadoA } from "@/lib/resaltado";
+import { puedeVerGestion } from "@/lib/gestion";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { SolicitudContacto } from "@/components/SolicitudContacto";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
@@ -21,6 +26,7 @@ import { m2, soles } from "@/lib/formato";
 import { puedeVerHistorial } from "@/lib/permisos";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
+import { OrigenDocumento } from "@/components/DocumentoPdf";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
 import { ESTADOS, ETIQUETA_ANOTACION, ETIQUETA_COMPLETITUD, ITEM, RUBROS, fecha } from "@/lib/semaforo";
@@ -333,8 +339,10 @@ export default function Expediente() {
                 </dl>
               </div>
 
-              <div className="space-y-3 rounded-3xl bg-card p-5 shadow-tarjeta">
+              <div data-resaltado={ev?.estado ?? "SIN_EVALUAR"} className="overflow-hidden rounded-3xl bg-card shadow-tarjeta">
+                <div className={`space-y-3 p-5 ${resaltadoA(ev?.estado).contenedor}`}>
                 <p className="text-xs font-bold uppercase tracking-wider text-tinta-2">Indicadores del inmueble</p>
+                <EtiquetaResaltado estado={ev?.estado} className="text-sm" />
                 <div className="flex flex-col items-start gap-2">
                   <IndicadorA estado={ev?.estado} conResumen />
                   <IndicadorB estado={d.evaluacionTecnica.estado} resultado={d.evaluacionTecnica.resultado} />
@@ -343,6 +351,7 @@ export default function Expediente() {
                   <Info className="size-4 shrink-0" aria-hidden="true" />
                   El indicador B es independiente y no cambia el color del indicador A.
                 </p>
+                </div>
               </div>
             </div>
           </div>
@@ -442,6 +451,13 @@ export default function Expediente() {
                 </Card>
               )}
             </div>
+
+            {d.gestion && puedeVerGestion(usuario?.rol) && (
+              <PanelGestion key={`gestion-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} gestion={d.gestion}
+                esGestor={usuario?.rol === "GESTOR"} />
+            )}
+
+            <RutaRegularizacion key={`ruta-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} />
 
             <div id="ex-partida" className="scroll-mt-28 space-y-8">
               <Card className="rounded-[2rem] border-border shadow-tarjeta">
@@ -595,6 +611,7 @@ export default function Expediente() {
                           : "Copia literal generada a partir de la partida. Es referencial y no tiene valor legal.")
                         : "PDF subido por el revisor. No tiene valor legal."}
                     </p>
+                    <OrigenDocumento info={x.documento} ruta={`/casos/${d.codigo}/documento`} nombre={`${d.codigo}.pdf`} />
                     <Button variant="outline" className="w-full" onClick={verPdf}>
                       Abrir documento <ExternalLink aria-hidden="true" />
                     </Button>

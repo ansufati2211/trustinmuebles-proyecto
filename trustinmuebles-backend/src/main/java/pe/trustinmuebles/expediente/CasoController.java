@@ -27,13 +27,21 @@ class CasoController {
     /**
      * Catálogo. Filtros opcionales y combinables (M13): tipoInmueble (VIVIENDA_URBANA, LOTE_URBANO), estado
      * (indicador A: VERDE, AMARILLO, ROJO, GRIS), estadoTecnico (indicador B: NO_SOLICITADA, SOLICITADA,
-     * EN_INSPECCION, EMITIDO o su alias INFORME_EMITIDO) y riesgoFisicoDetectado (true o false).
+     * EN_INSPECCION, EMITIDO o su alias INFORME_EMITIDO), riesgoFisicoDetectado (true o false) y, desde la v0.8,
+     * tipoAlerta (código de una regla, por ejemplo RV-02, o INFORMACION_INSUFICIENTE).
      */
     @GetMapping
     List<ResumenCaso> listar(@RequestParam(required = false) String tipoInmueble,
             @RequestParam(required = false) String estado, @RequestParam(required = false) String estadoTecnico,
-            @RequestParam(required = false) Boolean riesgoFisicoDetectado) {
-        return servicio.listar(FiltroCatalogo.de(tipoInmueble, estado, estadoTecnico, riesgoFisicoDetectado));
+            @RequestParam(required = false) Boolean riesgoFisicoDetectado,
+            @RequestParam(required = false) String tipoAlerta) {
+        return servicio.listar(tipoInmueble, estado, estadoTecnico, riesgoFisicoDetectado, tipoAlerta);
+    }
+
+    /** v0.8: tipos de alerta para el filtro (código y nombre de cada regla, más «información insuficiente»). */
+    @GetMapping("/tipos-alerta")
+    List<pe.trustinmuebles.clasificacion.TipoAlerta> tiposAlerta() {
+        return servicio.tiposDeAlerta();
     }
 
     @PostMapping
@@ -78,6 +86,12 @@ class CasoController {
                 .header("Content-Disposition", "inline; filename=\"" + codigo + ".pdf\"")
                 .cacheControl(CacheControl.noStore())
                 .body(c.datos());
+    }
+
+    /** v0.8: ruta de regularización orientativa, de solo lectura. Misma visibilidad que el detalle. */
+    @GetMapping("/{codigo}/ruta-regularizacion")
+    RutaRegularizacion ruta(@PathVariable String codigo) {
+        return servicio.ruta(codigo);
     }
 
     /** Historial de evaluaciones del indicador A, solo lectura (I12). No existe ruta para editarlo ni borrarlo. */

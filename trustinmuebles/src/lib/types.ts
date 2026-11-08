@@ -39,7 +39,14 @@ export interface ResumenCaso {
   pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
   resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean; predio: Predio;
   estadoPublicacion: EstadoPublicacion;
+  /** v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
+  tiposAlerta?: string[];
+  /** v0.8 (I15): solo para gestor y revisor; para los demás el campo no viene. */
+  gestion?: GestionInmobiliaria;
 }
+
+/** v0.8: un tipo de alerta (GET /casos/tipos-alerta): código y nombre de la regla, o información insuficiente. */
+export interface TipoAlerta { codigo: string; nombre: string }
 
 /** Captación y publicación (v0.7). El comprador recibe propietarioCodigo en null (I11). */
 export interface Publicacion {
@@ -54,6 +61,22 @@ export interface Plano {
   especialidad: Especialidad; especialidadEtiqueta: string; estado: EstadoPlano; areaConstruida: number | null;
   sistemaConstructivo: SistemaConstructivo | null; sistemaConstructivoEtiqueta: string | null;
   observacion: string | null; tieneDocumentoPropio: boolean; coincideArea: boolean | null;
+  /** v0.8: origen del PDF del plano; null si el plano no está presentado ni observado. */
+  documento?: DocumentoInfo | null;
+}
+
+/**
+ * v0.8: de dónde sale un PDF. SUBIDO lleva su evidencia (cuenta, fecha, tamaño, huella); GENERADO es la lámina o copia
+ * que arma el sistema (no es un documento oficial); FALTA, que no hay archivo.
+ */
+export interface DocumentoInfo {
+  origen: "SUBIDO" | "GENERADO" | "FALTA"; subidoPor: string | null; subidoEn: string | null;
+  tamanoBytes: number | null; tamanoOriginalBytes: number | null; optimizado: boolean; sha256: string | null;
+}
+
+/** Respuesta de una subida (v0.8). */
+export interface DocumentoSubido {
+  codigo: string; sha256: string; tamanoOriginalBytes: number; tamanoBytes: number; optimizado: boolean;
 }
 
 /** Indicador B: lo que se sabe de la verificación física. Independiente del semáforo documental. */
@@ -78,13 +101,15 @@ export interface Asiento {
   referencia: string; rubro: string; tipoActo: TipoActo; tipoActoEtiqueta: string; estado: EstadoAnotacion | null;
   fechaInscripcion: string | null; tituloNumero: string | null; fechaPresentacion: string | null; texto: string | null;
   canceloNumero: string | null; titulares: string | null;
+  /** v0.8: solo en el rubro D. Persona jurídica o «no consta»; plazo si consta. No intervienen en el color. */
+  acreedor?: string | null; plazoOVencimiento?: string | null;
 }
 
 export interface Expediente {
   version: number; condicionRepresentada: string; titularidad: string; completitud: Completitud;
   fechaReferencial: string; nota: string | null; zonaRegistral: string | null; oficinaRegistral: string | null;
   ubicacion: string | null; areaM2: number | null; linderos: string | null; antecedenteDominial: string | null;
-  tieneDocumento: boolean; documentoGenerado: boolean; asientos: Asiento[];
+  tieneDocumento: boolean; documentoGenerado: boolean; documento?: DocumentoInfo | null; asientos: Asiento[];
   tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: Plano[];
 }
 
@@ -108,6 +133,8 @@ export interface DetalleCaso {
   fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
   predio: Predio; publicacion: Publicacion;
+  /** v0.8 (I15): solo para gestor y revisor. */
+  gestion?: GestionInmobiliaria;
 }
 
 /** Qué provocó un recálculo del indicador A (lista cerrada del backend). */
@@ -139,12 +166,24 @@ export interface PanelCartera {
   porEstadoPublicacion: Partial<Record<EstadoPublicacion, number>>; casosConFaltantes: CasoConFaltantes[];
   inspecciones: InspeccionEnCurso[]; inspeccionesAsignadas: number; inspeccionesSinAsignar: number;
   contactosPendientes: Contacto[];
+  /** v0.8 (D52): conteos por tipo de alerta y por esfuerzo, y la lista para organizar la subsanación. */
+  porTipoAlerta?: { codigo: string; nombre: string; casos: number }[];
+  porEsfuerzo?: Partial<Record<Esfuerzo | "SIN_PASOS", number>>;
+  porRegularizar?: {
+    codigo: string; denominacion: string; color: EstadoSemaforo | null; tiposAlerta: string[]; esfuerzo: Esfuerzo;
+    estadoGestion?: EstadoGestion;
+  }[];
+  avisoPriorizacion?: string;
+  /** v0.8 (D54): conteo por estado de gestión y matriz tipo de alerta × estado de gestión. */
+  porEstadoGestion?: Partial<Record<EstadoGestion, number>>;
+  matrizGestion?: { codigo: string; nombre: string; porEstadoGestion: Partial<Record<EstadoGestion, number>> }[];
+  avisoGestion?: string;
 }
 
 export interface AsientoPeticion {
   referencia: string; tipoActo: TipoActo; estado: EstadoAnotacion | null; fechaInscripcion: string | null;
   tituloNumero: string | null; fechaPresentacion: string | null; texto: string | null; canceloNumero: string | null;
-  titulares: string | null;
+  titulares: string | null; acreedor?: string | null; plazoOVencimiento?: string | null;
 }
 
 export interface PlanoPeticion {
@@ -157,4 +196,40 @@ export interface PeticionExpediente {
   zonaRegistral: string | null; oficinaRegistral: string | null; ubicacion: string | null; areaM2: number | null;
   linderos: string | null; antecedenteDominial: string | null; asientos: AsientoPeticion[];
   tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[]; versionEsperada: number;
+}
+
+/** v0.8: esfuerzo de regularización (criterio del equipo, borrador). No es un plazo ni un costo. */
+export type Esfuerzo = "BAJO" | "MEDIO" | "ALTO";
+
+/** Un paso de la ruta de regularización: uno por motivo de la evaluación vigente. */
+export interface ItemRuta {
+  tipo: "ALERTA" | "FALTANTE" | "CONDICION"; clave: string; referencia: string | null; titulo: string; pasos: string[];
+  gestiona: string; documentoRequerido: string; esfuerzo: Esfuerzo; esfuerzoEtiqueta: string; nota: string | null;
+  /** v0.8 (B3): solo en una hipoteca. plazo es el texto listo para mostrar. */
+  gravamen?: { acreedor: string; plazoOVencimiento: string | null; plazo: string } | null;
+}
+
+/** GET /casos/{codigo}/ruta-regularizacion (v0.8). Orientativa y de solo lectura. */
+export interface RutaRegularizacion {
+  codigo: string; estado: EstadoSemaforo | null; esfuerzo: Esfuerzo | null; esfuerzoEtiqueta: string | null;
+  items: ItemRuta[]; tiposAlerta: string[]; mensaje: string | null; aviso: string; plazoGeneral: string;
+  estadoRevision: string; versionContenido: string;
+}
+
+/** v0.8 (I15): semáforo de gestión, interno de la inmobiliaria. Solo llega al gestor y al revisor. */
+export type EstadoGestion = "VIABLE" | "VIABLE_CON_CONDICIONES" | "REQUIERE_REGULARIZACION" | "COMPLETAR_INFORMACION";
+
+export interface GestionInmobiliaria {
+  estado: EstadoGestion; etiqueta: string; explicacion: string; sugerencia: string; esfuerzo: Esfuerzo | null; aviso: string;
+}
+
+export type DecisionCaptacionTipo = "CAPTAR" | "CAPTAR_CON_CONDICIONES" | "NO_CAPTAR_POR_AHORA";
+export type MotivoDecision =
+  | "DOCUMENTACION_COMPLETA" | "REGULARIZACION_EN_CURSO" | "CARGA_VIGENTE" | "PROCESO_JUDICIAL"
+  | "INFORMACION_INSUFICIENTE" | "OTRO_MOTIVO_COMERCIAL";
+
+/** Una decisión de captación (historial de solo adición). Sin texto libre (I11). */
+export interface DecisionCaptacion {
+  id: number; casoCodigo: string; decision: DecisionCaptacionTipo; decisionEtiqueta: string; motivo: MotivoDecision;
+  motivoEtiqueta: string; cuentaCodigo: string; registradaEn: string;
 }

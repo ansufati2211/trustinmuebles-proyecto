@@ -1,0 +1,205 @@
+{
+  "version": "v0.4",
+  "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
+  "aviso": "Orientativo: no es asesoría legal ni recomendación de compra",
+  "plazoGeneral": "El plazo depende del trámite; consultar con abogado o notario.",
+  "criterioEsfuerzo": {
+    "BAJO": "Solo documentos que aporta el propietario (planos, HR y PU, copia literal).",
+    "MEDIO": "Requiere a un tercero sin proceso judicial (por ejemplo, el levantamiento de la hipoteca por el acreedor y la inscripción de la cancelación).",
+    "ALTO": "Requiere un proceso judicial o administrativo (embargo, demanda o medida cautelar, bloqueo, ampliación no declarada o licencia)."
+  },
+  "reglas": {
+    "RP-01": {
+      "titulo": "Levantar el embargo vigente",
+      "pasos": [
+        "Identificar en la partida el proceso y el juzgado que ordenó el embargo.",
+        "El propietario obtiene la resolución judicial que ordena el levantamiento (por pago, acuerdo o fin del proceso).",
+        "Presentar el parte judicial al Registro para inscribir la cancelación en el rubro E."
+      ],
+      "gestiona": "juzgado",
+      "documentoRequerido": "Parte judicial que ordena el levantamiento del embargo",
+      "esfuerzo": "ALTO",
+      "nota": "Mientras el embargo esté vigente, el semáforo documental lo seguirá mostrando como alerta prioritaria."
+    },
+    "RP-02": {
+      "titulo": "Resolver el proceso judicial o la medida cautelar",
+      "pasos": [
+        "Leer la anotación para identificar el proceso, las partes y el juzgado.",
+        "Consultar con un abogado el estado del proceso.",
+        "Inscribir la resolución que cancela la anotación de demanda o la medida cautelar."
+      ],
+      "gestiona": "juzgado",
+      "documentoRequerido": "Resolución judicial firme y parte para cancelar la anotación",
+      "esfuerzo": "ALTO",
+      "nota": "Un proceso en trámite puede afectar a quien adquiera el predio."
+    },
+    "RP-03": {
+      "titulo": "Esperar o cancelar el bloqueo registral",
+      "pasos": [
+        "Identificar el acto en trámite que originó el bloqueo y la notaría que lo solicitó.",
+        "Confirmar con la notaría si el acto se inscribirá o si se pedirá la cancelación del bloqueo.",
+        "Verificar en una copia literal actualizada que el bloqueo ya no esté vigente."
+      ],
+      "gestiona": "notaría",
+      "documentoRequerido": "Constancia de la notaría y copia literal actualizada",
+      "esfuerzo": "ALTO",
+      "nota": "Mientras dure el bloqueo no pueden inscribirse actos incompatibles."
+    },
+    "RV-01": {
+      "titulo": "Leer y aclarar el otro acto vigente",
+      "pasos": [
+        "El revisor lee el asiento en la copia literal y su título archivado.",
+        "Determinar qué tipo de acto es y quién debe intervenir para cancelarlo, si corresponde."
+      ],
+      "gestiona": "revisor",
+      "documentoRequerido": "Título archivado del asiento",
+      "esfuerzo": "MEDIO",
+      "nota": "Si el acto resulta ser judicial, la ruta pasa a requerir un proceso y el esfuerzo sería alto."
+    },
+    "RV-02": {
+      "titulo": "Levantar la hipoteca vigente",
+      "pasos": [
+        "Confirmar con el propietario el saldo de la deuda garantizada.",
+        "El acreedor otorga el levantamiento (escritura de cancelación) una vez pagada la deuda.",
+        "Inscribir la cancelación de la hipoteca en el Registro (rubro E)."
+      ],
+      "gestiona": "acreedor",
+      "documentoRequerido": "Escritura pública de levantamiento de hipoteca otorgada por el acreedor",
+      "esfuerzo": "MEDIO",
+      "nota": "Una hipoteca no es un defecto por sí misma: puede cancelarse con el precio de la venta si las partes lo acuerdan."
+    },
+    "RV-03": {
+      "titulo": "Revisar el alcance de la carga técnica o servidumbre",
+      "pasos": [
+        "Leer el asiento para conocer a favor de quién está y qué limita.",
+        "Si se puede levantar, obtener el acuerdo del beneficiario o la autorización de la entidad que la impuso.",
+        "Inscribir la cancelación o dejar constancia de la limitación en la publicación."
+      ],
+      "gestiona": "municipalidad",
+      "documentoRequerido": "Documento que constituye la carga o servidumbre y, si se levanta, el que la cancela",
+      "esfuerzo": "MEDIO",
+      "nota": "Muchas servidumbres no se levantan: se informan al comprador."
+    },
+    "RV-04": {
+      "titulo": "Completar el plano de instalaciones",
+      "pasos": [
+        "Pedir al propietario el plano que falta (II.EE. o II.SS.).",
+        "Subir el PDF del plano en el expediente técnico."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF del plano de instalaciones",
+      "esfuerzo": "BAJO",
+      "nota": "Si no existe, una inspección presencial ayuda a suplirlo."
+    },
+    "RV-05": {
+      "titulo": "Regularizar la diferencia de área construida",
+      "pasos": [
+        "Confirmar con el propietario si hubo una ampliación o remodelación.",
+        "Tramitar ante la municipalidad la licencia o regularización de la edificación.",
+        "Inscribir la declaratoria de fábrica actualizada en el Registro."
+      ],
+      "gestiona": "municipalidad",
+      "documentoRequerido": "Licencia o resolución de regularización y declaratoria de fábrica inscrita",
+      "esfuerzo": "ALTO",
+      "nota": "Una ampliación no declarada requiere un trámite administrativo antes de inscribirse."
+    },
+    "RV-06": {
+      "titulo": "Subsanar el plano observado",
+      "pasos": [
+        "Revisar la observación registrada por el revisor.",
+        "Pedir al propietario el plano corregido y subir el nuevo PDF."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF del plano corregido",
+      "esfuerzo": "BAJO",
+      "nota": "Si la observación es de fondo (por ejemplo, sin firma del profesional), puede requerir a un tercero."
+    }
+  },
+  "faltantes": {
+    "CONDICION_REPRESENTADA": {
+      "textoFaltante": "Condición representada",
+      "titulo": "Precisar la condición del predio",
+      "pasos": [
+        "Pedir al propietario la copia literal y la HR y PU del predio.",
+        "El revisor registra la condición representada en el expediente."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "Copia literal de la partida y HR y PU",
+      "esfuerzo": "BAJO",
+      "nota": "Sin la condición del predio el caso no se puede evaluar."
+    },
+    "TITULARIDAD": {
+      "textoFaltante": "Titularidad",
+      "titulo": "Completar la titularidad",
+      "pasos": [
+        "Pedir al propietario la copia literal con el rubro C (títulos de dominio).",
+        "El revisor transcribe el asiento de dominio vigente."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "Copia literal con el rubro C",
+      "esfuerzo": "BAJO",
+      "nota": "La titularidad se toma del último asiento de dominio."
+    },
+    "COMPLETITUD": {
+      "textoFaltante": "Completitud del extracto",
+      "titulo": "Obtener la copia literal completa",
+      "pasos": [
+        "Pedir al propietario la copia literal completa y actualizada de la partida.",
+        "El revisor transcribe los asientos que faltan y marca el extracto como completo."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "Copia literal completa y actualizada",
+      "esfuerzo": "BAJO",
+      "nota": "Con un extracto parcial no se descartan otras alertas."
+    },
+    "ESTADO_ANOTACION": {
+      "textoFaltante": "Estado de la anotación ",
+      "prefijo": true,
+      "titulo": "Aclarar si la anotación sigue vigente",
+      "pasos": [
+        "Revisar en la copia literal actualizada si existe un asiento E que la cancele.",
+        "El revisor registra su estado (vigente o cancelada)."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "Copia literal actualizada",
+      "esfuerzo": "BAJO",
+      "nota": "Un estado desconocido no equivale a una anotación cancelada."
+    },
+    "PLANO_ARQUITECTURA": {
+      "textoFaltante": "Plano arquitectónico",
+      "titulo": "Presentar el plano arquitectónico",
+      "pasos": [
+        "Pedir al propietario el plano arquitectónico.",
+        "Subir el PDF del plano en el expediente técnico."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF del plano arquitectónico",
+      "esfuerzo": "BAJO",
+      "nota": "Una vivienda necesita este plano para evaluarse."
+    },
+    "PLANO_ESTRUCTURAS": {
+      "textoFaltante": "Plano de estructuras",
+      "titulo": "Presentar el plano de estructuras",
+      "pasos": [
+        "Pedir al propietario el plano de estructuras.",
+        "Subir el PDF del plano en el expediente técnico."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF del plano de estructuras",
+      "esfuerzo": "BAJO",
+      "nota": "Una vivienda necesita este plano para evaluarse."
+    },
+    "CONDICION_NO_CONTEMPLADA": {
+      "textoFaltante": null,
+      "titulo": "Revisar una condición no contemplada por las reglas",
+      "pasos": [
+        "El revisor confirma la condición representada con la copia literal.",
+        "Si la condición es correcta, el caso queda fuera del alcance de esta versión de reglas y requiere revisión especializada."
+      ],
+      "gestiona": "revisor",
+      "documentoRequerido": "Copia literal de la partida",
+      "esfuerzo": "MEDIO",
+      "nota": "El semáforo no evalúa condiciones que la versión de reglas no contempla."
+    }
+  }
+}

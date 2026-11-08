@@ -1,13 +1,14 @@
 import { useEffect, useState } from "react";
 import {
-  AlertTriangle, CheckCircle2, CircleHelp, Columns3, DraftingCompass, Droplets, ExternalLink, Eye, Ruler, Upload, Zap,
+  AlertTriangle, CheckCircle2, CircleHelp, Columns3, DraftingCompass, Droplets, ExternalLink, Eye, Ruler, Zap,
   type LucideIcon,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge, type TonoBadge } from "@/components/base/Badge";
 import { Modal } from "@/components/base/Modal";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
-import { abrirPdf, api, pdfComoUrl, subirArchivo } from "@/lib/api";
+import { OrigenDocumento, SubirPdf } from "@/components/DocumentoPdf";
+import { abrirPdf, api, pdfComoUrl } from "@/lib/api";
 import { compararAreas } from "@/lib/areas";
 import { m2 } from "@/lib/formato";
 import { ESPECIALIDADES, ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_PLANO, QUE_VALIDA } from "@/lib/semaforo";
@@ -177,28 +178,13 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
 }) {
   const [visor, setVisor] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [archivo, setArchivo] = useState<File | null>(null);
-  const [subiendo, setSubiendo] = useState(false);
   const estado: EstadoPlano = plano?.estado ?? "NO_PRESENTADO";
   const { tono, Icono: IconoEstado } = ESTADO[estado];
   const Icono = ICONO[especialidad];
   const hay = hayPlano(estado);
   const ruta = `/casos/${codigo}/planos/${especialidad}/documento`;
-
-  const subir = async () => {
-    if (!archivo) return;
-    setError(null);
-    setSubiendo(true);
-    try {
-      await subirArchivo(ruta, "documento", archivo);
-      setArchivo(null);
-      alCambiar();
-    } catch (e) {
-      setError(e instanceof Error ? e.message : "No se pudo subir el plano");
-    } finally {
-      setSubiendo(false);
-    }
-  };
+  // v0.8: «Ver lámina» solo si hay un archivo (subido o lámina generada de un caso de demostración).
+  const conArchivo = hay && plano?.documento?.origen !== "FALTA";
 
   return (
     <li
@@ -232,8 +218,11 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
             {estado === "NO_APLICA" ? "No aplica a este predio." : "No presentado: el expediente aún no tiene este plano."}
           </p>
         )}
-
         {hay && (
+          <OrigenDocumento info={plano?.documento} ruta={ruta} nombre={`${codigo}-${especialidad.toLowerCase()}.pdf`} />
+        )}
+
+        {conArchivo && (
           <div className="mt-auto flex flex-wrap gap-2 pt-1">
             <Button variant="outline" size="sm" onClick={() => setVisor(true)}>
               <Eye aria-hidden="true" /> Ver lámina
@@ -247,25 +236,18 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
             </Button>
           </div>
         )}
-        {hay && esRevisor && (
-          <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-dashed border-border bg-superficie p-3">
-            <label htmlFor={`plano-pdf-${especialidad}`} className="sr-only">PDF del plano {ETIQUETA_ESPECIALIDAD[especialidad]}</label>
-            <input
-              id={`plano-pdf-${especialidad}`}
-              type="file"
-              accept="application/pdf"
-              className="min-w-0 max-w-full flex-1 text-xs file:mr-3 file:cursor-pointer file:rounded-lg file:border-0 file:bg-secondary file:px-3 file:py-1.5 file:text-xs file:font-bold file:text-secondary-foreground"
-              onChange={(e) => setArchivo(e.target.files?.[0] ?? null)}
-            />
-            <Button type="button" variant="outline" size="sm" disabled={!archivo || subiendo} onClick={subir}>
-              <Upload aria-hidden="true" />
-              {subiendo ? "Subiendo…" : plano?.tieneDocumentoPropio ? "Reemplazar PDF" : "Subir PDF real"}
-            </Button>
-          </div>
+        {esRevisor && estado !== "NO_APLICA" && (
+          <SubirPdf
+            id={`plano-pdf-${especialidad}`}
+            ruta={ruta}
+            etiqueta={`PDF del plano ${ETIQUETA_ESPECIALIDAD[especialidad]}`}
+            textoBoton={plano?.tieneDocumentoPropio ? "Reemplazar PDF" : hay ? "Subir PDF real" : "Subir PDF (queda presentado)"}
+            alSubir={alCambiar}
+          />
         )}
         {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
       </div>
-      {hay && <VisorLamina codigo={codigo} especialidad={especialidad} abierto={visor} alCerrar={() => setVisor(false)} />}
+      {conArchivo && <VisorLamina codigo={codigo} especialidad={especialidad} abierto={visor} alCerrar={() => setVisor(false)} />}
     </li>
   );
 }

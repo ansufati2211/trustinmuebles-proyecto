@@ -7,7 +7,8 @@ import { useAuth } from "@/lib/auth";
 import { ETIQUETA_PUBLICACION } from "@/lib/cartera";
 import { esPropietarioDe, puedeAutorizar, puedePublicar, puedeRetirarAutorizacion, puedeRetirarPublicacion } from "@/lib/permisos";
 import { fecha } from "@/lib/semaforo";
-import type { DetalleCaso, EstadoPublicacion, Publicacion } from "@/lib/types";
+import { confirmacionAlPublicar } from "@/lib/gestion";
+import type { DecisionCaptacion, DetalleCaso, EstadoPublicacion, Publicacion } from "@/lib/types";
 
 const ESTILO: Record<EstadoPublicacion, { tono: TonoBadge; Icono: LucideIcon }> = {
   BORRADOR: { tono: "gris", Icono: FileText },
@@ -71,7 +72,15 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
     ),
     puedePublicar(rol, p) && (
       <Button key="pub" className="rounded-xl" disabled={enviando}
-        onClick={() => ejecutar(() => post(ruta("publicacion")), "Caso publicado.")}>
+        onClick={async () => {
+          // v0.8 (I15): la decisión de captación no bloquea publicar; si la última es «no captar por ahora», se pide
+          // confirmación. Se consulta al pulsar, para no usar una lista anterior a una decisión recién registrada.
+          let decisiones: DecisionCaptacion[] = [];
+          try { decisiones = await api<DecisionCaptacion[]>(ruta("decisiones-captacion")); } catch { /* sin decisiones */ }
+          const confirmar = confirmacionAlPublicar(decisiones);
+          if (confirmar && !window.confirm(confirmar)) return;
+          ejecutar(() => post(ruta("publicacion")), "Caso publicado.");
+        }}>
         Publicar
       </Button>
     ),

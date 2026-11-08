@@ -13,16 +13,18 @@ import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { claseCampo } from "@/components/base/Campo";
 import { TarjetaPredio } from "@/components/TarjetaPredio";
 import { InsigniaPublicacion } from "@/components/PanelPublicacion";
+import { PanelRegularizacion } from "@/components/PanelRegularizacion";
 import { put } from "@/lib/api";
 import {
-  COLORES, ESTADOS_PUBLICACION, ETIQUETA_PUBLICACION, FILTRO_CARTERA_VACIO, filtrarCartera, totalesDelPanel,
-  type FiltroCartera,
+  COLORES, ESTADOS_PUBLICACION, ETIQUETA_PUBLICACION, FILTRO_CARTERA_VACIO, filtrarCartera, nombreTipoAlerta, rutaCartera,
+  totalesDelPanel, type FiltroCartera,
 } from "@/lib/cartera";
 import { etiquetaMotivo } from "@/lib/contacto";
 import { fechaHora } from "@/lib/historial";
 import { ESTADOS } from "@/lib/semaforo";
+import { ESTADOS_GESTION, GESTION } from "@/lib/gestion";
 import { useApi } from "@/lib/useApi";
-import type { Contacto, PanelCartera, ResumenCaso } from "@/lib/types";
+import type { Contacto, PanelCartera, ResumenCaso, TipoAlerta } from "@/lib/types";
 
 const tarjeta = "rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta sm:p-7";
 
@@ -101,12 +103,18 @@ function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
 
 export default function Cartera() {
   const panel = useApi<PanelCartera>("/cartera/panel");
-  const casos = useApi<ResumenCaso[]>("/casos");
   const [filtro, setFiltro] = useState<FiltroCartera>(FILTRO_CARTERA_VACIO);
+  const casos = useApi<ResumenCaso[]>(rutaCartera(filtro));
+  const tiposAlerta = useApi<TipoAlerta[]>("/casos/tipos-alerta");
   const t = totalesDelPanel(panel.data);
   const p = panel.data;
   const visibles = filtrarCartera(casos.data, filtro);
-  const hayFiltro = !!(filtro.color || filtro.publicacion || filtro.q.trim());
+  const hayFiltro = !!(filtro.color || filtro.publicacion || filtro.tipoAlerta || filtro.gestion || filtro.q.trim());
+  const opcionesTipo = (tiposAlerta.data ?? []).map((x) => ({ valor: x.codigo, etiqueta: nombreTipoAlerta(x.codigo, tiposAlerta.data) }));
+  const elegirTipo = (codigo: string) => {
+    setFiltro({ ...FILTRO_CARTERA_VACIO, tipoAlerta: codigo });
+    document.getElementById("titulo-lista")?.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
 
   return (
     <div className="flex w-full flex-col">
@@ -235,6 +243,8 @@ export default function Cartera() {
                 )}
               </section>
             </div>
+
+            {p && <PanelRegularizacion panel={p} alElegirTipo={elegirTipo} />}
           </>
         )}
 
@@ -249,7 +259,7 @@ export default function Cartera() {
             aria-label="Filtrar los casos de la cartera"
             className="relative z-30 space-y-4 rounded-[2rem] border border-border bg-card p-5 shadow-tarjeta sm:p-6"
           >
-            <div className="grid gap-4 md:grid-cols-3">
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-5">
               <div>
                 <label htmlFor="c-q" className="mb-1.5 block text-xs font-bold uppercase tracking-wider text-tinta-2">Buscar por partida, distrito o nombre</label>
                 <div className="relative">
@@ -288,6 +298,20 @@ export default function Cartera() {
                 opciones={OPCIONES_PUBLICACION}
                 textoTodos="Todos los estados"
                 alCambiar={(v) => setFiltro({ ...filtro, publicacion: v as FiltroCartera["publicacion"] })}
+              />
+              <Desplegable
+                etiqueta="Gestión (interno)"
+                valor={filtro.gestion ?? ""}
+                opciones={ESTADOS_GESTION.map((g) => ({ valor: g, etiqueta: GESTION[g].etiqueta }))}
+                textoTodos="Todos los estados"
+                alCambiar={(v) => setFiltro({ ...filtro, gestion: v as FiltroCartera["gestion"] })}
+              />
+              <Desplegable
+                etiqueta="Tipo de alerta"
+                valor={filtro.tipoAlerta ?? ""}
+                opciones={opcionesTipo}
+                textoTodos="Todos los tipos"
+                alCambiar={(v) => setFiltro({ ...filtro, tipoAlerta: v })}
               />
             </div>
             <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
