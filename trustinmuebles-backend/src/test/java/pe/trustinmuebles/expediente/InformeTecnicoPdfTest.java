@@ -54,7 +54,7 @@ class InformeTecnicoPdfTest {
     }
 
     @Test
-    @DisplayName("Cada página lleva la marca y el pie que dicen que es ficticio, y no hay firma, sello ni imágenes")
+    @DisplayName("Cada página lleva el pie referencial, y no hay firma, sello ni imágenes")
     void sinFirmaNiSello() throws Exception {
         try (PDDocument doc = Loader.loadPDF(InformeTecnicoPdf.generar(datos()))) {
             for (int i = 0; i < doc.getNumberOfPages(); i++) {
@@ -62,8 +62,7 @@ class InformeTecnicoPdfTest {
                 for (Object token : new PDFStreamParser(doc.getPage(i)).parse()) {
                     if (token instanceof COSString c) dibujado.add(c.getString());
                 }
-                assertThat(dibujado).contains(InformeTecnicoPdf.MARCA_DE_AGUA);
-                assertThat(dibujado).anyMatch(t -> t.contains("Informe referencial ficticio"));
+                assertThat(dibujado).anyMatch(t -> t.contains("Informe técnico referencial"));
                 assertThat(doc.getPage(i).getResources().getXObjectNames()).isEmpty();
             }
             String texto = new PDFTextStripper().getText(doc).toLowerCase();

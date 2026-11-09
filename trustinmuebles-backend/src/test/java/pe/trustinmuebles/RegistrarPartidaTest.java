@@ -200,7 +200,7 @@ class RegistrarPartidaTest extends BaseApiTest {
             byte[] pdf = mvc.perform(get("/api/v1/casos/" + SIMULADA + "/documento").header("Authorization", revisor()))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
             try (PDDocument doc = Loader.loadPDF(pdf)) {
-                assertThat(new PDFTextStripper().getText(doc)).contains("SIMULADA").doesNotContain("Conoce Aquí");
+                assertThat(new PDFTextStripper().getText(doc)).contains("COPIA LITERAL DE PARTIDA REGISTRAL").doesNotContain("Conoce Aquí");
             }
             ObjectNode edicion = peticion(leerComo(SIMULADA, revisor()));
             ((ObjectNode) ((ArrayNode) edicion.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");

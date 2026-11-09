@@ -178,9 +178,9 @@ class CarteraTest extends BaseApiTest {
                     .andExpect(status().isOk());
             emitir(SANTIAGO, especialista(2), informe("EMITIDO")).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacionTecnica.estado").value("EMITIDO"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Arq. Perfil Ficticio 02"))
+                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Arq. Valeria Sofía Paredes Rojas"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesionalEspecialidad").value("Arquitecto"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura", startsWith("SIM-")));
+                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CAP N.° 19432"));
             asignar(SANTIAGO, gestor(), "especialista-01") // emitida ya no se reasigna
                     .andExpect(status().isConflict());
 

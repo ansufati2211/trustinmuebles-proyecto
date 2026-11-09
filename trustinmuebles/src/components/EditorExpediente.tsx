@@ -34,7 +34,7 @@ function AsociarDocumento({ detalle, alGuardar }: { detalle: DetalleCaso; alGuar
               : "Este expediente usa un PDF subido por el revisor y no se regenera al guardar."}
             {" "}Solo PDF, hasta {LIMITES_PDF.entradaMb} MB; si pesa más de {LIMITES_PDF.umbralMb} MB se optimiza
             automáticamente y lo guardado no puede pasar de {LIMITES_PDF.almacenadoMb} MB. No subas documentos con datos
-            reales de personas o predios.
+            personales sensibles.
           </p>
         </div>
       </div>

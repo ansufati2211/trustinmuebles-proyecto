@@ -29,7 +29,7 @@ const PROPIETARIOS_DEMO = ["propietario-01", "propietario-02", "propietario-03"]
 
 const OPCIONES_ORIGEN: { valor: OrigenCaptacion; etiqueta: string }[] = [
   { valor: "TRANSCRITA_CONOCE_AQUI", etiqueta: "Transcrita de Conoce Aquí (SUNARP)" },
-  { valor: "SIMULADA_DEMOSTRACION", etiqueta: "Simulada para demostración" },
+  { valor: "SIMULADA_DEMOSTRACION", etiqueta: "Registro interno de cartera" },
 ];
 
 const hoy = () => new Date().toISOString().slice(0, 10);
@@ -259,7 +259,7 @@ export default function RegistrarPartida() {
               <Campo
                 etiqueta="Número de partida"
                 error={numero !== "" && origen !== "" && !numeroValido
-                  ? (simulada ? "Prefijo SIM- y ocho dígitos (SIM-99000404)." : "Ocho dígitos, con una letra inicial opcional (P07044600), sin SIM-.")
+                  ? (simulada ? "Código interno de ocho dígitos." : "Ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600).")
                   : undefined}
               >
                 {(p) => <input {...p} className={claseCampo} maxLength={12} value={numero} onChange={(e) => setNumero(e.target.value.toUpperCase().replace(/\s/g, ""))} />}
@@ -331,7 +331,7 @@ export default function RegistrarPartida() {
             n={2}
             titulo="Pega el texto de la partida"
             descripcion={simulada
-              ? "Pega los asientos inventados para la demostración (C00001, D00001, E00001…) o escríbelos a mano en el paso 3. También se revisan para que no contengan datos de personas naturales."
+              ? "Pega los asientos del expediente interno (C00001, D00001, E00001…) o escríbelos a mano en el paso 3. También se revisan para que no contengan datos de personas naturales."
               : "Copia los asientos desde Conoce Aquí (C00001, D00001, E00001…). El texto original no se envía: solo se guarda la versión limpia que ves en el paso 4. Si el sitio muestra imágenes, escribe los asientos a mano en el paso 3."}
           >
             <Campo etiqueta="Texto de la partida">

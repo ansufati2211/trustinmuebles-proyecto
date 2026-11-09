@@ -10,7 +10,7 @@ describe("límites legales del pie (I7)", () => {
     expect(texto).toContain("No certifica saneamiento");
     expect(texto).toContain("No recomienda comprar");
     expect(texto).toContain("No reemplaza asesoría legal");
-    expect(texto).toContain("Los datos y los especialistas son simulados");
+    expect(texto).toContain("La información presentada es referencial");
     expect(texto).toContain("La verificación jurídica con abogado o notario se realiza fuera del sistema");
   });
 
@@ -19,10 +19,9 @@ describe("límites legales del pie (I7)", () => {
     for (const limite of LIMITES_LEGALES) expect(html).toContain(limite);
   });
 
-  it("el pie atribuye la inspección a un especialista de la inmobiliaria con perfil ficticio", () => {
+  it("el pie atribuye la inspección a un especialista de la inmobiliaria", () => {
     const html = renderToStaticMarkup(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(html).toContain("especialista de la inmobiliaria");
-    expect(html).toContain("perfiles de la demostración son ficticios");
+    expect(html).toContain("especialista colegiado de la inmobiliaria");
     expect(html).not.toContain("independiente");
   });
 });

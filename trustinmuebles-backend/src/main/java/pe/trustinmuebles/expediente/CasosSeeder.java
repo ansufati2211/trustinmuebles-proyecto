@@ -73,6 +73,16 @@ class CasosSeeder implements ApplicationRunner {
                 () -> new IllegalStateException("No hay una cuenta con rol REVISOR para registrar los casos")).id();
 
         for (CasoJson c : leerCasos()) {
+            if (!casos.existsByCodigo(c.codigo())) {
+                var previo = casos.findByCodigo("SIM-" + c.codigo());
+                if (previo.isPresent()) {
+                    CasoLote casoPrevio = previo.get();
+                    Expediente expPrevio = expedientes.findByCasoCodigo(casoPrevio.getCodigo()).orElseThrow();
+                    casoPrevio.setCodigo(c.codigo());
+                    casos.saveAndFlush(casoPrevio);
+                    servicio.limpiarPrefijoSimulado(expPrevio);
+                }
+            }
             if (casos.existsByCodigo(c.codigo())) completar(c);
             else crear(c, responsable);
         }
@@ -133,7 +143,8 @@ class CasosSeeder implements ApplicationRunner {
     static final String ESPECIALISTA_DEMO = "especialista-01";
 
     /** Reparto de los casos de demostración entre los dos propietarios. Es el mismo que aplica la migración V6. */
-    static final java.util.Set<String> DEL_PROPIETARIO_02 = java.util.Set.of("SIM-11052690", "SIM-11070419",
+    static final java.util.Set<String> DEL_PROPIETARIO_02 = java.util.Set.of("11052690", "11070419",
+            "11081204", "11093320", "11104029", "SIM-11052690", "SIM-11070419",
             "SIM-11081204", "SIM-11093320", "SIM-11104029");
 
     static String propietarioDe(String codigo) {

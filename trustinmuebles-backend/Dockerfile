@@ -17,6 +17,7 @@ USER trustin
 # Dentro del contenedor hay que escuchar en todas las interfaces (no solo 127.0.0.1).
 ENV SERVER_ADDRESS=0.0.0.0 \
     APP_STORAGE_PATH=/app/data/uploads \
+    APP_CORS_ALLOWED_ORIGINS="https://trust.aurorabeauty.site,http://localhost:8085,http://127.0.0.1:8085,http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173" \
     SPRING_DATASOURCE_URL="jdbc:h2:file:/app/data/h2/trustinmuebles;MODE=PostgreSQL;DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;AUTO_SERVER=FALSE" \
     JAVA_OPTS="-XX:MaxRAMPercentage=75"
 

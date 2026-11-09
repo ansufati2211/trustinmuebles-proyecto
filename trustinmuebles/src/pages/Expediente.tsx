@@ -89,7 +89,7 @@ function Glosario({ terminos }: { terminos: Termino[] }) {
               <p className="mb-1 font-extrabold text-foreground">{actual.concepto}</p>
               <p className="leading-relaxed text-foreground">{actual.explicacion}</p>
               <p className="mt-3 text-xs font-semibold text-tinta-2">
-                Glosario {actual.version} · {actual.estadoRevision}
+                Glosario de consulta inmobiliaria ({actual.version})
               </p>
             </div>
           )}
@@ -439,7 +439,7 @@ export default function Expediente() {
                       <div className="text-sm leading-relaxed text-tinta-2">
                         <p className="font-bold text-foreground">{ev.limite}</p>
                         <p className="mt-1">
-                          Criterios {ev.versionReglas} (en revisión especializada). Calculado sobre la versión {ev.expedienteVersion} del expediente.
+                          Reglas de evaluación {ev.versionReglas}. Calculado sobre la versión {ev.expedienteVersion} del expediente.
                         </p>
                       </div>
                     </div>
@@ -579,13 +579,13 @@ export default function Expediente() {
                       </div>
                     </>
                   ) : (
-                    <p className="text-sm leading-relaxed text-tinta-2">{d.fuente}: no corresponde a una partida real.</p>
+                    <p className="text-sm leading-relaxed text-tinta-2">Registro interno de cartera inmobiliaria.</p>
                   )}
                   {esRevisor && (
                     <div className="border-t border-border pt-5">
                       {!confirmando ? (
                         <Button variant="ghost" className="text-sem-rojo-tinta hover:bg-danger/10 hover:text-sem-rojo-tinta" onClick={() => setConfirmando(true)}>
-                          <Trash2 aria-hidden="true" /> {transcrita ? "Eliminar partida transcrita" : "Eliminar partida simulada"}
+                          <Trash2 aria-hidden="true" /> Eliminar partida
                         </Button>
                       ) : (
                         <div role="alertdialog" aria-labelledby="eliminar-titulo" className="anim-enter rounded-2xl border border-danger/30 bg-danger/10 p-4">

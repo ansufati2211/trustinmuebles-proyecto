@@ -1,5 +1,5 @@
 {
-  "codigo": "SIM-11061555",
+  "codigo": "11061555",
   "denominacion": "Mz. C Lote 3 · Hab. Urb. Mirador del Sol · Subtanjalla, Ica",
   "contexto": "Subtanjalla, Ica",
   "distrito": "Subtanjalla",
@@ -14,16 +14,16 @@
     "ubicacion": "Mz. C, Lote 3 de la Habilitación Urbana Mirador del Sol, distrito de Subtanjalla, provincia y departamento de Ica.",
     "areaM2": 250.0,
     "linderos": "Frente: con la Avenida Principal, en 12.50 ml. Derecha: con el Lote 4, en 20.00 ml. Izquierda: con el Lote 2, en 20.00 ml. Fondo: con el Lote 9, en 12.50 ml.",
-    "antecedenteDominial": "El predio proviene de la partida SIM-11044730 (lote matriz de la Habilitación Urbana Mirador del Sol), de la que se independizó.",
+    "antecedenteDominial": "El predio proviene de la partida 11044730 (lote matriz de la Habilitación Urbana Mirador del Sol), de la que se independizó.",
     "asientos": [
       {
         "referencia": "D00001",
         "tipoActo": "ANOTACION_DEMANDA",
         "estado": "VIGENTE",
         "fechaInscripcion": "2023-09-27",
-        "tituloNumero": "SIM-2023-00021804",
+        "tituloNumero": "2023-00021804",
         "fechaPresentacion": "2023-09-20",
-        "texto": "Anotación de demanda sobre nulidad de acto jurídico, interpuesta ante el 1.er Juzgado Civil de Ica en el Expediente SIM-2023-00177-0-1401-JR-CI-01, por mandato contenido en la resolución judicial de fecha 12 de setiembre de 2023.",
+        "texto": "Anotación de demanda sobre nulidad de acto jurídico, interpuesta ante el 1.er Juzgado Civil de Ica en el Expediente 2023-00177-0-1401-JR-CI-01, por mandato contenido en la resolución judicial de fecha 12 de setiembre de 2023.",
         "canceloNumero": null,
         "titulares": null
       }
@@ -50,7 +50,7 @@
     "terminos": [
       "Partida registral",
       "Copia literal",
-      "Documento simulado",
+      "Documento referencial",
       "Extracto parcial",
       "Rubro",
       "Asiento",

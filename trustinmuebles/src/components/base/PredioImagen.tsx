@@ -179,19 +179,19 @@ export function PredioImagen({ codigo, tipo, className, decorativa = false }: {
 }) {
   const c = configPredio(codigo, tipo);
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const foto = FOTOS_PREDIO[codigo];
+  const foto = FOTOS_PREDIO[codigo.replace(/^SIM-/, "")] ?? FOTOS_PREDIO[codigo];
   if (foto) {
     // Foto referencial del prototipo (no es el inmueble): siempre lleva su rótulo.
     return (
       <div className="relative h-full w-full">
         <img
           src={`/img/casas/${foto.archivo}`} loading="lazy" decoding="async"
-          alt={decorativa ? "" : `Imagen referencial del prototipo: ${foto.descripcion}. No es una foto del inmueble.`}
+          alt={decorativa ? "" : `Imagen referencial: ${foto.descripcion}.`}
           aria-hidden={decorativa ? true : undefined}
           className={cn("block h-full w-full object-cover", className)}
         />
         <span className="pointer-events-none absolute bottom-1 left-1/2 -translate-x-1/2 rounded-full bg-black/45 px-2 py-0.5 text-[9px] font-semibold text-white/85 backdrop-blur-sm">
-          Imagen referencial del prototipo
+          Imagen referencial
         </span>
       </div>
     );

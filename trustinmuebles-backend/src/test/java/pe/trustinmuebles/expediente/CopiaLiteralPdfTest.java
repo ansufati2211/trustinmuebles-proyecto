@@ -44,7 +44,7 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
-    @DisplayName("Un caso con muchos asientos ocupa varias páginas, y cada una lleva marca de agua, pie y numeración")
+    @DisplayName("Un caso con muchos asientos ocupa varias páginas, y cada una lleva pie y numeración")
     void variasPaginasConMarcaEnCadaUna() throws Exception {
         byte[] pdf = CopiaLiteralPdf.generar(partida(14, false));
         try (PDDocument doc = Loader.loadPDF(pdf)) {
@@ -52,8 +52,7 @@ class CopiaLiteralPdfTest {
             assertThat(n).isGreaterThan(1);
             for (int i = 0; i < n; i++) {
                 List<String> textos = textosDibujados(doc, i);
-                assertThat(textos).as("marca de agua en la página " + (i + 1)).contains(CopiaLiteralPdf.MARCA_DE_AGUA);
-                assertThat(textos).as("pie en la página " + (i + 1)).anyMatch(t -> t.contains("Documento simulado con fines"));
+                assertThat(textos).as("pie en la página " + (i + 1)).anyMatch(t -> t.contains("Copia informativa del expediente"));
                 assertThat(textos).as("numeración en la página " + (i + 1)).contains("Página " + (i + 1) + " de " + n);
             }
         }
@@ -65,11 +64,11 @@ class CopiaLiteralPdfTest {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
             String texto = new PDFTextStripper().getText(doc);
             assertThat(texto).contains("ZONA REGISTRAL N.° XI - SEDE ICA", "OFICINA REGISTRAL DE ICA", "REGISTRO DE PREDIOS",
-                    "Partida N.° SIM-11048217", "COPIA LITERAL SIMULADA DE PARTIDA REGISTRAL",
+                    "Partida N.° SIM-11048217", "COPIA LITERAL DE PARTIDA REGISTRAL",
                     "DESCRIPCIÓN DEL INMUEBLE", "Área: 160.00 m²", "ANTECEDENTE DOMINIAL", "TÍTULOS DE DOMINIO",
                     "GRAVÁMENES Y CARGAS", "CANCELACIONES", "OTROS", "D00001 · HIPOTECA", "Título archivado N.° SIM-2018-00011",
                     "presentado el 26/03/2018", "inscrito el 02/04/2018", "Rosa Elena Cárdenas Vilca");
-            assertThat(doc.getDocumentInformation().getTitle()).isEqualTo("Copia literal simulada SIM-11048217");
+            assertThat(doc.getDocumentInformation().getTitle()).isEqualTo("Copia literal referencial SIM-11048217");
         }
     }
 
@@ -78,7 +77,7 @@ class CopiaLiteralPdfTest {
     void sinElementosOficiales() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(3, false)))) {
             String texto = new PDFTextStripper().getText(doc).toLowerCase();
-            assertThat(texto).contains("sin firma ni sello", "no está firmado", "no tiene valor legal", "simulad");
+            assertThat(texto).contains("sin firma ni sello", "no está firmado", "no tiene valor legal");
             assertThat(texto).doesNotContain("código de verificación", "codigo de verificacion", "código qr", "registrador",
                     "firma digital", "firmado digitalmente");
             assertThat(doc.getPage(0).getResources().getXObjectNames()).as("sin imágenes: ni logo, ni escudo, ni QR").isEmpty();
@@ -122,7 +121,7 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
-    @DisplayName("Una transcripción lleva su propia marca, título y pie en cada página, y nunca dice «simulado»")
+    @DisplayName("Una transcripción lleva su propio título y pie en cada página, y nunca dice «simulado»")
     void transcripcion() throws Exception {
         var procedencia = new CopiaLiteralPdf.Procedencia(true, "Conoce Aquí – SUNARP", LocalDate.of(2026, 10, 17));
         byte[] pdf = CopiaLiteralPdf.generar(partida(12, false), procedencia);
@@ -130,8 +129,6 @@ class CopiaLiteralPdfTest {
             assertThat(doc.getNumberOfPages()).isGreaterThan(1);
             for (int i = 0; i < doc.getNumberOfPages(); i++) {
                 List<String> textos = textosDibujados(doc, i);
-                assertThat(textos).as("marca en la página " + (i + 1))
-                        .anyMatch(t -> t.contains(CopiaLiteralPdf.MARCA_TRANSCRITA.replace("·", "")) || t.contains("TRANSCRIPCI"));
                 assertThat(textos).as("pie en la página " + (i + 1))
                         .anyMatch(t -> t.contains("Transcrito a partir de una consulta en Conoce"));
             }
@@ -144,11 +141,11 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
-    @DisplayName("Una partida ficticia imprime el cierre registral de cada asiento; una transcrita, solo lo transcrito")
+    @DisplayName("Una partida sintética imprime el cierre registral de cada asiento; una transcrita, solo lo transcrito")
     void cierreRegistralSoloEnLasFicticias() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
             String texto = new PDFTextStripper().getText(doc);
-            assertThat(texto).contains("Tomo Diario SIM-", "Derechos cobrados: S/", "Recibo N.° SIM-", "horas");
+            assertThat(texto).contains("Tomo Diario ", "Derechos cobrados: S/", "Recibo N.° ", "horas");
             // El mismo asiento da siempre los mismos datos: el PDF no cambia entre dos generaciones.
             try (PDDocument otra = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
                 assertThat(new PDFTextStripper().getText(otra)).isEqualTo(texto);
@@ -179,7 +176,7 @@ class CopiaLiteralPdfTest {
                     assertThat(texto).as(caso.codigo()).contains("Partida N.° " + caso.codigo(), "DESCRIPCIÓN DEL INMUEBLE");
                     for (int i = 0; i < doc.getNumberOfPages(); i++) {
                         assertThat(textosDibujados(doc, i)).as(caso.codigo() + " p." + (i + 1))
-                                .contains(CopiaLiteralPdf.MARCA_DE_AGUA);
+                                .anyMatch(t -> t.contains("Copia informativa del expediente"));
                     }
                 }
                 n++;

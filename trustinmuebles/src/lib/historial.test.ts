@@ -43,8 +43,8 @@ describe("línea de tiempo del historial", () => {
     expect(l[1].origen).toBe("Partida transcrita incorporada");
   });
 
-  it("una partida simulada no se rotula como transcrita", () => {
-    expect(formatearEntrada(entrada({ origen: "PARTIDA_SIMULADA" }), 0).origen).toBe("Partida simulada incorporada");
+  it("una partida interna no se rotula como transcrita", () => {
+    expect(formatearEntrada(entrada({ origen: "PARTIDA_SIMULADA" }), 0).origen).toBe("Partida interna incorporada");
   });
 
   it("sin datos o con campos ausentes no inventa nada", () => {

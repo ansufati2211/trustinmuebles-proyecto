@@ -81,7 +81,7 @@ export function RutaRegularizacion({ codigo }: { codigo: string }) {
 
         {data && (
           <p className="text-xs text-tinta-2">
-            {data.plazoGeneral} Criterios de esfuerzo: {data.estadoRevision} (contenido {data.versionContenido}).
+            {data.plazoGeneral}
           </p>
         )}
       </CardContent>

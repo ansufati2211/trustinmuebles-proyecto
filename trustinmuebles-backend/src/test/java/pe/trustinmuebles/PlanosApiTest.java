@@ -94,7 +94,7 @@ class PlanosApiTest extends BaseApiTest {
                 .andExpect(status().isOk()).andExpect(content().contentType("application/pdf"))
                 .andReturn().getResponse().getContentAsByteArray();
         try (PDDocument doc = Loader.loadPDF(pdf)) {
-            assertThat(new PDFTextStripper().getText(doc)).contains("INSTALACIONES ELÉCTRICAS", "FICTICIO");
+            assertThat(new PDFTextStripper().getText(doc)).contains("INSTALACIONES ELÉCTRICAS", "REFERENCIAL");
         }
         mvc.perform(get("/api/v1/casos/" + TINGUINA + "/planos/ELECTRICAS/documento").header("Authorization", comprador()))
                 .andExpect(status().isNotFound());

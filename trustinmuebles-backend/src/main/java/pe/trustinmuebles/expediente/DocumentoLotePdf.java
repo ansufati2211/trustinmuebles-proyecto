@@ -54,7 +54,7 @@ final class DocumentoLotePdf {
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle(seguro(tipo.etiqueta()) + " referencial " + seguro(d.partida()));
-            info.setSubject("Documento técnico referencial ficticio. Sin sello ni firma.");
+            info.setSubject("Documento técnico referencial. Sin sello ni firma.");
             info.setCreator("Trustinmuebles");
             doc.setDocumentInformation(info);
 
@@ -222,7 +222,7 @@ final class DocumentoLotePdf {
         float y = 715f;
         y = seccion(cs, "PREDIO", noConsta(d.ubicacion()), y, normal, negrita);
         y = seccion(cs, "ZONIFICACIÓN Y VÍAS", noConsta(d.resumen()), y, normal, negrita);
-        seccion(cs, "ALCANCE", "Documento referencial del expediente de demostración. No lo emite una municipalidad y no"
+        seccion(cs, "ALCANCE", "Documento referencial del expediente. No lo emite una municipalidad y no"
                 + " reemplaza el certificado de zonificación y vías que se tramita en ella.", y, normal, negrita);
     }
 
@@ -236,7 +236,7 @@ final class DocumentoLotePdf {
         y = seccion(cs, "VALOR REFERENCIAL", "Área del terreno: " + area + ". Valor del terreno: " + valor
                 + ". Valor unitario: " + unitario + ".", y, normal, negrita);
         if (d.resumen() != null) y = seccion(cs, "MÉTODO Y CRITERIOS", d.resumen(), y, normal, negrita);
-        seccion(cs, "ALCANCE", "Valor informativo del expediente de demostración; no es una oferta ni una tasación"
+        seccion(cs, "ALCANCE", "Valor informativo del expediente; no es una oferta ni una tasación"
                 + " oficial, y no interviene en el indicador A.", y, normal, negrita);
     }
 
@@ -305,7 +305,7 @@ final class DocumentoLotePdf {
         texto(cs, seguro("Documento: " + tipo.etiqueta() + " · Partida N.° " + d.partida()), normal, 8f, IZQ + 6f, 99f);
         texto(cs, "Profesional: no consigna (documento referencial) · Fecha: "
                 + (d.fecha() == null ? "no consta" : d.fecha().format(FECHA)), normal, 8f, IZQ + 6f, 88f);
-        texto(cs, "Documento ficticio de un lote tipo. No reemplaza el documento que emite la entidad competente.",
+        texto(cs, "Documento técnico referencial del expediente. No reemplaza el documento que emite la entidad competente.",
                 normal, 7.5f, IZQ + 6f, 77f);
         texto(cs, "HOJA", normal, 7f, DER - 52f, 108f);
         texto(cs, codigo, negrita, 14f, DER - 66f, 86f);

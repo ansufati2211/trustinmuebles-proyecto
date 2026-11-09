@@ -50,7 +50,7 @@ export function PanelRegularizacion({ panel, alElegirTipo }: { panel: PanelCarte
         </section>
 
         <section aria-labelledby="titulo-esfuerzo" className={`${tarjeta} space-y-4`}>
-          <TituloSeccion icono={Gauge} id="titulo-esfuerzo" descripcion="Criterio del equipo, borrador pendiente de revisión especializada. No es un plazo ni un costo.">
+          <TituloSeccion icono={Gauge} id="titulo-esfuerzo" descripcion="Estimación orientativa según el tipo de trámite. No es un plazo ni un costo.">
             Esfuerzo de regularización
           </TituloSeccion>
           <ul className="grid grid-cols-2 gap-3">

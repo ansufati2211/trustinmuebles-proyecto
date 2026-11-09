@@ -1,5 +1,5 @@
 {
-  "codigo": "SIM-11104029",
+  "codigo": "11104029",
   "denominacion": "Mz. M Lote 6 · Hab. Urb. Los Laureles del Sur · Ica",
   "contexto": "Ica, Ica",
   "distrito": "Ica",
@@ -14,14 +14,14 @@
     "ubicacion": "Mz. M, Lote 6 de la Habilitación Urbana Los Laureles del Sur, distrito, provincia y departamento de Ica.",
     "areaM2": 120.0,
     "linderos": "Frente: con la Avenida Los Laureles, en 7.50 ml. Derecha: con el Lote 7, en 16.00 ml. Izquierda: con el Lote 5, en 16.00 ml. Fondo: con el Lote 18, en 7.50 ml.",
-    "antecedenteDominial": "El predio proviene de la partida SIM-11085117 (lote matriz de la Habilitación Urbana Los Laureles del Sur), de la que se independizó.",
+    "antecedenteDominial": "El predio proviene de la partida 11085117 (lote matriz de la Habilitación Urbana Los Laureles del Sur), de la que se independizó.",
     "asientos": [
       {
         "referencia": "C00001",
         "tipoActo": "COMPRAVENTA",
         "estado": null,
         "fechaInscripcion": "2015-09-24",
-        "tituloNumero": "SIM-2015-00049210",
+        "tituloNumero": "2015-00049210",
         "fechaPresentacion": "2015-09-15",
         "texto": "Por escritura pública de fecha 10 de setiembre de 2015, otorgada ante notario público de Ica, Teodoro Hilario Gutiérrez Pecho adquirió en compraventa el predio de Inmobiliaria Los Laureles del Sur S.A.C. Precio: S/ 42,000.00.",
         "canceloNumero": null,
@@ -32,9 +32,9 @@
         "tipoActo": "CARGA_TECNICA",
         "estado": "VIGENTE",
         "fechaInscripcion": "2021-06-30",
-        "tituloNumero": "SIM-2021-00024561",
+        "tituloNumero": "2021-00024561",
         "fechaPresentacion": "2021-06-22",
-        "texto": "Reserva vial: se anota una afectación en uso sobre una franja de 12.40 m² del frente del predio, por el proyecto de ensanche de la Avenida Los Laureles, según Ordenanza Municipal N.° SIM-018-2021 de la Municipalidad Provincial de Ica.",
+        "texto": "Reserva vial: se anota una afectación en uso sobre una franja de 12.40 m² del frente del predio, por el proyecto de ensanche de la Avenida Los Laureles, según Ordenanza Municipal N.° 018-2021 de la Municipalidad Provincial de Ica.",
         "canceloNumero": null,
         "titulares": null
       },
@@ -43,7 +43,7 @@
         "tipoActo": "OTRO",
         "estado": null,
         "fechaInscripcion": "2016-05-18",
-        "tituloNumero": "SIM-2016-00020347",
+        "tituloNumero": "2016-00020347",
         "fechaPresentacion": "2016-05-09",
         "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 78.00 m², según planos y memoria descriptiva presentados.",
         "canceloNumero": null,
@@ -71,7 +71,7 @@
     "terminos": [
       "Partida registral",
       "Copia literal",
-      "Documento simulado",
+      "Documento referencial",
       "Rubro",
       "Asiento",
       "Título archivado",

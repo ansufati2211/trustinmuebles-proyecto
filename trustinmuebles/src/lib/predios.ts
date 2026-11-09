@@ -34,25 +34,26 @@ const caso = (variante: VariantePredio, paleta: keyof typeof PALETAS, extra: Par
   variante, paleta: PALETAS[paleta], cielo: "dia", arbol: null, arbolLado: "der", reja: false, obra: false, ...extra,
 });
 
-/** Una ilustración distinta por cada expediente de la demostración, para que las tarjetas no se vean iguales. */
+/** Una ilustración distinta por cada expediente del catálogo, para que las tarjetas no se vean iguales. */
 export const PREDIOS: Record<string, ConfigPredio> = {
-  "SIM-11048217": caso("casa1", "crema", { arbol: "huarango", reja: true, descripcion: "vivienda moderna de un piso con fachada crema, reja y un huarango" }),
-  "SIM-11052690": caso("casa2", "terracota", { arbol: "palmera", arbolLado: "izq", descripcion: "vivienda moderna de dos pisos con fachada terracota y una palmera" }),
-  "SIM-11061555": caso("casa1", "grafito", { cielo: "tarde", descripcion: "vivienda moderna de un piso con fachada blanca y gris, al atardecer" }),
-  "SIM-11070419": caso("casa1", "ocre", { arbol: "huarango", arbolLado: "izq", descripcion: "vivienda de un piso con fachada ocre y un huarango" }),
-  "SIM-11075836": caso("casa2", "bruma", { reja: true, descripcion: "vivienda de dos pisos con fachada gris azulada y reja" }),
-  "SIM-11081204": caso("lote", "terreno", { arbol: "huarango", arbolLado: "der", descripcion: "lote urbano cercado con hitos en las esquinas y vereda" }),
-  "SIM-11087751": caso("adobe", "adobe", { arbol: "huarango", descripcion: "vivienda tradicional de adobe con puerta de madera y un huarango" }),
-  "SIM-11093320": caso("casa1", "salvia", { cielo: "tarde", arbol: "palmera", descripcion: "vivienda de un piso con fachada verde salvia y una palmera, al atardecer" }),
-  "SIM-11098467": caso("casa2", "crema", { obra: true, descripcion: "vivienda con un segundo piso en construcción" }),
-  "SIM-11104029": caso("casa2", "grafito", { arbol: "palmera", arbolLado: "izq", descripcion: "vivienda moderna de dos pisos con fachada blanca y gris y una palmera" }),
+  "11048217": caso("casa1", "crema", { arbol: "huarango", reja: true, descripcion: "vivienda moderna de un piso con fachada crema, reja y un huarango" }),
+  "11052690": caso("casa2", "terracota", { arbol: "palmera", arbolLado: "izq", descripcion: "vivienda moderna de dos pisos con fachada terracota y una palmera" }),
+  "11061555": caso("casa1", "grafito", { cielo: "tarde", descripcion: "vivienda moderna de un piso con fachada blanca y gris, al atardecer" }),
+  "11070419": caso("casa1", "ocre", { arbol: "huarango", arbolLado: "izq", descripcion: "vivienda de un piso con fachada ocre y un huarango" }),
+  "11075836": caso("casa2", "bruma", { reja: true, descripcion: "vivienda de dos pisos con fachada gris azulada y reja" }),
+  "11081204": caso("lote", "terreno", { arbol: "huarango", arbolLado: "der", descripcion: "lote urbano cercado con hitos en las esquinas y vereda" }),
+  "11087751": caso("adobe", "adobe", { arbol: "huarango", descripcion: "vivienda tradicional de adobe con puerta de madera y un huarango" }),
+  "11093320": caso("casa1", "salvia", { cielo: "tarde", arbol: "palmera", descripcion: "vivienda de un piso con fachada verde salvia y una palmera, al atardecer" }),
+  "11098467": caso("casa2", "crema", { obra: true, descripcion: "vivienda con un segundo piso en construcción" }),
+  "11104029": caso("casa2", "grafito", { arbol: "palmera", arbolLado: "izq", descripcion: "vivienda moderna de dos pisos con fachada blanca y gris y una palmera" }),
 };
 
 /** Ilustración de un expediente. Una partida transcrita (sin dibujo propio) recibe una según su tipo y su número. */
 export function configPredio(codigo: string, tipo: TipoInmueble): ConfigPredio {
-  const fijo = PREDIOS[codigo];
+  const limpio = codigo.replace(/^SIM-/, "");
+  const fijo = PREDIOS[limpio] ?? PREDIOS[codigo];
   if (fijo) return fijo;
-  if (tipo === "LOTE_URBANO") return PREDIOS["SIM-11081204"];
+  if (tipo === "LOTE_URBANO") return PREDIOS["11081204"];
   const claves = ["crema", "terracota", "grafito", "salvia", "ocre", "bruma"] as const;
   const h = Array.from(codigo).reduce((a, c) => (a * 31 + c.charCodeAt(0)) >>> 0, 7);
   const paleta = claves[h % claves.length];
@@ -64,17 +65,21 @@ export const textoAlternativo = (c: ConfigPredio) =>
   `Ilustración referencial: ${c.descripcion}. No es una foto del inmueble.`;
 
 /**
- * Fotos referenciales del prototipo (Unsplash, licencia libre; ver public/img/casas/CREDITOS.md). No son las viviendas de
- * los expedientes: se muestran rotuladas como «Imagen referencial». Los lotes no tienen foto y usan su ilustración.
+ * Fotografías reales de inmuebles y parajes peruanos acordes con la descripción y ubicación de cada expediente
+ * (Wikimedia Commons, licencias libres CC / dominio público; ver public/img/casas/CREDITOS.md).
+ * En la interfaz llevan el rótulo «Imagen referencial».
  */
 export const FOTOS_PREDIO: Record<string, { archivo: string; descripcion: string }> = {
-  "SIM-11048217": { archivo: "casa-1.jpg", descripcion: "fachada de una vivienda moderna de color blanco con cochera" },
-  "SIM-11052690": { archivo: "casa-2.jpg", descripcion: "vivienda de dos pisos con balcones y muchas ventanas" },
-  "SIM-11061555": { archivo: "casa-3.jpg", descripcion: "vivienda moderna con grandes ventanales al atardecer" },
-  "SIM-11070419": { archivo: "casa-4.jpg", descripcion: "vivienda blanca con dos puertas de cochera" },
-  "SIM-11075836": { archivo: "casa-5.jpg", descripcion: "vivienda moderna de revestimiento oscuro junto a una casa tradicional" },
-  "SIM-11087751": { archivo: "casa-6.jpg", descripcion: "vivienda moderna con un amplio jardín frontal" },
-  "SIM-11093320": { archivo: "casa-7.jpg", descripcion: "vivienda de concreto y madera entre árboles" },
-  "SIM-11098467": { archivo: "casa-8.jpg", descripcion: "vivienda blanca con techo rojo" },
-  "SIM-11104029": { archivo: "casa-9.jpg", descripcion: "vivienda marrón en una calle con autos estacionados" },
+  "11048217": { archivo: "casa-1.jpg", descripcion: "vivienda peruana de un piso en buen estado con reja frontal, cochera y árbol en la acera" },
+  "11052690": { archivo: "casa-2.jpg", descripcion: "vivienda en urbanización peruana con fachada de ladrillo caravista, reja y portón de cochera" },
+  "11061555": { archivo: "casa-3.jpg", descripcion: "vivienda en Subtanjalla, Ica, de fachada crema con rejas blancas de seguridad y retiro frontal" },
+  "11070419": { archivo: "casa-4.jpg", descripcion: "vivienda peruana de fachada clara con borde terracota y dos portones de madera de cochera" },
+  "11075836": { archivo: "casa-5.jpg", descripcion: "vivienda urbana peruana de fachada crema y gris con portón de madera y árbol al frente" },
+  "11087751": { archivo: "casa-6.jpg", descripcion: "vivienda de un piso en Ica con humedad por capilaridad en la base del muro frontal y árbol en la acera" },
+  "11093320": { archivo: "casa-7.jpg", descripcion: "vivienda de un piso en Ica con fachada blanca, portón metálico y cerros áridos al fondo" },
+  "11098467": { archivo: "casa-8.jpg", descripcion: "vivienda peruana de un piso pintado con ampliación de segundo piso en ladrillo sin tarrajear" },
+  "11104029": { archivo: "casa-9.jpg", descripcion: "vivienda en urbanización de Ica con fachada blanca, reja de ingreso, portón de madera y huarango" },
+  "11081204": { archivo: "lote-santiago.jpg", descripcion: "lote urbano cercado con muro de ladrillo sobre terreno costero en habilitación urbana peruana" },
+  "11045763": { archivo: "lote-huarmey.jpg", descripcion: "terrenos costeros frente al mar y cerros desérticos en la zona de playa de Huarmey, Áncash" },
+  "80194645": { archivo: "lote-supe.jpg", descripcion: "terreno eriazo arenoso al pie de los cerros y el valle de Supe, Barranca" },
 };

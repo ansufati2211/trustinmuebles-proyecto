@@ -30,9 +30,8 @@ import pe.trustinmuebles.inspeccion.VerificacionCampo;
  * cada página dice que no es un informe real ni tiene valor legal. Solo se genera cuando el informe fue emitido.
  */
 final class InformeTecnicoPdf {
-    static final String MARCA_DE_AGUA = "INFORME REFERENCIAL · FICTICIO · SIN FIRMA NI SELLO";
-    static final String PIE = "Informe referencial ficticio. No está firmado ni sellado por un profesional, no es un informe de "
-            + "inspección real y no tiene valor legal.";
+    static final String MARCA_DE_AGUA = "INFORME TÉCNICO REFERENCIAL · SIN FIRMA NI SELLO";
+    static final String PIE = "Informe técnico referencial. No está firmado ni sellado por un profesional y no tiene valor legal.";
     static final String CIERRE = "[Sin firma: documento referencial]";
 
     /** Un plano del expediente tal como lo muestra el informe. */
@@ -60,7 +59,7 @@ final class InformeTecnicoPdf {
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle("Informe técnico referencial " + limpiar(d.partida(), normal));
-            info.setSubject("Informe referencial ficticio. Sin firma ni sello. Sin valor legal.");
+            info.setSubject("Informe técnico referencial. Sin firma ni sello. Sin valor legal.");
             info.setCreator("Trustinmuebles");
             doc.setDocumentInformation(info);
 
@@ -69,7 +68,6 @@ final class InformeTecnicoPdf {
                 PDPage pagina = new PDPage(PDRectangle.A4);
                 doc.addPage(pagina);
                 try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
-                    marcaDeAgua(cs, negrita);
                     encabezado(cs, d, normal, negrita);
                     float y = PDRectangle.A4.getHeight() - MARGEN - ALTO_ENCABEZADO;
                     for (Linea l : paginas.get(i)) {
@@ -114,7 +112,6 @@ final class InformeTecnicoPdf {
             parrafo(l, "Especialidad: " + t.profesionalEspecialidad(), normal, 10f, 0f, 2f, ancho, false);
         }
         parrafo(l, "Colegiatura: " + valor(t.colegiatura()), normal, 10f, 0f, 2f, ancho, false);
-        parrafo(l, "Datos del profesional ficticios, solo para la demostración.", normal, 9f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección solicitada el: " + fecha(t.fechaSolicitud()), normal, 10f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección presencial realizada el: " + fecha(t.fechaInspeccion()), normal, 10f, 0f, 2f, ancho, false);
 

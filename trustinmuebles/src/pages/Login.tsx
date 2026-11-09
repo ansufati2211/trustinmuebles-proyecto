@@ -2,24 +2,12 @@ import { useEffect, useRef, useState } from "react";
 import type { CSSProperties, FormEvent } from "react";
 import { Link, Navigate, useLocation, useNavigate } from "react-router";
 import {
-  AlertCircle, ArrowLeft, ArrowRight, Check, CheckCircle2, ClipboardCheck, Eye, EyeOff, FileText, HardHat, Home,
-  LayoutDashboard, Loader2, Lock, Search, ShieldCheck, User, type LucideIcon,
+  AlertCircle, ArrowLeft, ArrowRight, CheckCircle2, Eye, EyeOff, FileText, HardHat,
+  Loader2, Lock, ShieldCheck, User,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/layout/Logo";
 import { useAuth } from "@/lib/auth";
-
-type Cuenta = { codigo: string; rol: string; desc: string; Icono: LucideIcon };
-
-const CUENTAS_DEMO: Cuenta[] = [
-  { codigo: "comprador-01", rol: "Comprador", desc: "Consulta e inspección", Icono: Search },
-  { codigo: "revisor-01", rol: "Revisor", desc: "Edición y registro", Icono: ClipboardCheck },
-  { codigo: "especialista-01", rol: "Especialista", desc: "Informe técnico", Icono: HardHat },
-  { codigo: "especialista-02", rol: "Especialista", desc: "Informe técnico", Icono: HardHat },
-  { codigo: "gestor-01", rol: "Gestor", desc: "Cartera y publicación", Icono: LayoutDashboard },
-  { codigo: "propietario-01", rol: "Propietario", desc: "Mis inmuebles", Icono: Home },
-  { codigo: "propietario-02", rol: "Propietario", desc: "Mis inmuebles", Icono: Home },
-];
 
 const IMAGEN_FONDO = "/img/vivienda-fachada-nocturna.jpg";
 
@@ -47,11 +35,9 @@ export default function Login() {
   const [mensaje, setMensaje] = useState("");
   const [enviando, setEnviando] = useState(false);
   const [sacudir, setSacudir] = useState(false);
-  const [destello, setDestello] = useState(0);
-  const [toastVisible, setToastVisible] = useState(false);
 
   const passwordRef = useRef<HTMLInputElement>(null);
-  const temporizadores = useRef<{ toast?: number; shake?: number }>({});
+  const temporizadores = useRef<{ shake?: number }>({});
 
   useEffect(() => {
     if (error) {
@@ -65,22 +51,11 @@ export default function Login() {
   useEffect(() => {
     const ref = temporizadores.current;
     return () => {
-      window.clearTimeout(ref.toast);
       window.clearTimeout(ref.shake);
     };
   }, []);
 
   if (usuario) return <Navigate to={desde} replace />;
-
-  const elegirCuenta = (codigo: string) => {
-    setCodigoCuenta(codigo);
-    setError(null);
-    setDestello((n) => n + 1);
-    setToastVisible(true);
-    window.clearTimeout(temporizadores.current.toast);
-    temporizadores.current.toast = window.setTimeout(() => setToastVisible(false), 3200);
-    passwordRef.current?.focus();
-  };
 
   const fallar = (texto: string) => {
     setError(texto);
@@ -167,7 +142,7 @@ export default function Login() {
                   <div className="mb-1 flex items-center gap-2 font-semibold text-gray-300">
                     <FileText className="size-4 text-emerald-400" aria-hidden="true" /> Indicador A
                   </div>
-                  <p className="font-bold text-white">Partida SIM-11048217</p>
+                  <p className="font-bold text-white">Partida N.° 11048217</p>
                   <p className="mt-0.5 text-gray-400">Hipoteca cancelada · 4 planos</p>
                 </div>
                 <div className="rounded-2xl border border-white/5 bg-black/25 p-3.5">
@@ -175,7 +150,7 @@ export default function Login() {
                     <HardHat className="size-4 text-emerald-400" aria-hidden="true" /> Indicador B
                   </div>
                   <p className="font-bold text-white">Inspección favorable</p>
-                  <p className="mt-0.5 text-gray-400">Especialista de la inmobiliaria · perfil ficticio</p>
+                  <p className="mt-0.5 text-gray-400">Especialista colegiado de la inmobiliaria</p>
                 </div>
               </div>
             </div>
@@ -185,7 +160,7 @@ export default function Login() {
         <div style={retraso(550)} className="anim-fade relative z-10 flex items-center justify-between border-t border-white/10 pt-6 text-xs text-gray-300">
           <div className="flex items-center gap-2">
             <ShieldCheck className="size-4 text-emerald-400" aria-hidden="true" />
-            <span>Entorno académico demostrativo · Datos sintéticos</span>
+            <span>Plataforma de transparencia inmobiliaria · Acceso seguro</span>
           </div>
           <span>Ica, Perú</span>
         </div>
@@ -213,56 +188,13 @@ export default function Login() {
           <div style={retraso(100)} className="anim-enter mb-7">
             <h1 className="mb-2 text-3xl font-black tracking-tight text-foreground sm:text-4xl">Iniciar sesión</h1>
             <p className="text-base leading-relaxed text-tinta-2">
-              Ingresa con el código de cuenta que te asignó el equipo para consultar los expedientes.
+              Ingresa con tu código de cuenta y contraseña para consultar los expedientes.
             </p>
-          </div>
-
-          <div style={retraso(200)} className="anim-enter mb-7 rounded-3xl border border-border bg-superficie p-4 sm:p-5">
-            <div className="mb-3 flex items-start justify-between gap-3">
-              <div>
-                <p className="text-sm font-extrabold text-foreground">Cuentas de demostración</p>
-                <p className="mt-0.5 text-xs text-tinta-2">Toca una para completar el código de cuenta.</p>
-              </div>
-              <span className="cifras rounded-full bg-secondary px-2.5 py-1 text-xs font-bold text-secondary-foreground">{CUENTAS_DEMO.length}</span>
-            </div>
-            <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-              {CUENTAS_DEMO.map((c) => {
-                const activo = codigoCuenta === c.codigo;
-                const Icono = c.Icono;
-                return (
-                  <li key={c.codigo}>
-                    <button
-                      type="button"
-                      aria-pressed={activo}
-                      onClick={() => elegirCuenta(c.codigo)}
-                      className={`group flex w-full items-center gap-3 rounded-2xl border p-2.5 text-left transition-all duration-300 ease-expo focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 active:scale-[0.97] ${
-                        activo
-                          ? "border-primary bg-primary text-white shadow-md shadow-primary/25"
-                          : "border-border bg-card text-foreground hover:-translate-y-0.5 hover:border-primary/50 hover:shadow-tarjeta"
-                      }`}
-                    >
-                      <span
-                        className={`grid size-10 shrink-0 place-items-center rounded-xl transition-colors duration-300 ${
-                          activo ? "bg-white/20 text-white" : "bg-secondary text-primary group-hover:bg-primary group-hover:text-white"
-                        }`}
-                      >
-                        {activo ? <Check className="size-5" aria-hidden="true" /> : <Icono className="size-5" aria-hidden="true" />}
-                      </span>
-                      <span className="min-w-0 flex-1">
-                        <span className="block text-sm font-extrabold leading-tight">{c.rol}</span>
-                        <span className={`block truncate font-mono text-[11px] ${activo ? "text-emerald-100" : "text-tinta-2"}`}>{c.codigo}</span>
-                        <span className={`block text-[11px] leading-tight ${activo ? "text-emerald-50" : "text-tinta-2"}`}>{c.desc}</span>
-                      </span>
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
           </div>
 
           <form onSubmit={enviar}>
             <div className={sacudir ? "anim-shake" : ""}>
-              <div style={retraso(300)} className="anim-enter">
+              <div style={retraso(200)} className="anim-enter">
                 <fieldset disabled={enviando} className="mb-5 min-w-0 space-y-5 transition-opacity duration-300 disabled:opacity-70">
                   <div>
                     <label htmlFor="codigoCuenta" className="mb-2 block text-xs font-bold uppercase tracking-wider text-tinta-2">
@@ -273,11 +205,11 @@ export default function Login() {
                       <input
                         id="codigoCuenta"
                         required
-                        autoComplete="off"
+                        autoComplete="username"
                         autoCapitalize="none"
                         spellCheck={false}
                         maxLength={40}
-                        placeholder="Ej. comprador-01"
+                        placeholder="Ingresa tu código de cuenta"
                         value={codigoCuenta}
                         onChange={(e) => {
                           setCodigoCuenta(e.target.value);
@@ -285,9 +217,6 @@ export default function Login() {
                         }}
                         className={`${claseInput} pl-12 pr-4`}
                       />
-                      {destello > 0 && (
-                        <span key={destello} aria-hidden="true" className="anim-flash pointer-events-none absolute inset-0 rounded-2xl" />
-                      )}
                     </div>
                   </div>
 
@@ -364,23 +293,10 @@ export default function Login() {
             </div>
           </form>
 
-          <p style={retraso(420)} className="anim-fade mt-6 flex items-center justify-center gap-2 text-center text-xs text-tinta-2">
+          <p style={retraso(320)} className="anim-fade mt-6 flex items-center justify-center gap-2 text-center text-xs text-tinta-2">
             <ShieldCheck className="size-4 text-primary" aria-hidden="true" />
-            Entorno académico demostrativo · Datos sintéticos
+            Plataforma de transparencia inmobiliaria · Acceso seguro
           </p>
-        </div>
-      </div>
-
-      <div
-        role="status"
-        aria-live="polite"
-        className={`pointer-events-none fixed bottom-6 left-1/2 z-50 -translate-x-1/2 transition-all duration-500 ease-expo ${
-          toastVisible ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
-        }`}
-      >
-        <div className="flex items-center gap-2.5 rounded-full bg-foreground px-5 py-3 text-sm font-semibold text-white shadow-2xl shadow-black/30">
-          <CheckCircle2 className="size-4 text-emerald-400" aria-hidden="true" />
-          Usuario copiado: ingresa la contraseña
         </div>
       </div>
     </div>

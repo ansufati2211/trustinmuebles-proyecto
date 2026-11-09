@@ -24,21 +24,21 @@ import tools.jackson.databind.node.ObjectNode;
 @AutoConfigureMockMvc
 @ActiveProfiles("test")
 public abstract class BaseApiTest {
-    /** Partida simulada de Parcona: sin alertas, hipoteca cancelada. Debe dar VERDE. */
-    protected static final String PARCONA = "SIM-11048217";
-    /** Partida simulada de La Tinguiña: copropiedad e hipoteca vigente, embargo cancelado. Debe dar AMARILLO. */
-    protected static final String TINGUINA = "SIM-11052690";
-    /** Partida simulada de Subtanjalla: extracto parcial con una anotación de demanda vigente. Debe dar GRIS. */
-    protected static final String SUBTANJALLA = "SIM-11061555";
+    /** Partida de Parcona: sin alertas, hipoteca cancelada. Debe dar VERDE. */
+    protected static final String PARCONA = "11048217";
+    /** Partida de La Tinguiña: copropiedad e hipoteca vigente, embargo cancelado. Debe dar AMARILLO. */
+    protected static final String TINGUINA = "11052690";
+    /** Partida de Subtanjalla: extracto parcial con una anotación de demanda vigente. Debe dar GRIS. */
+    protected static final String SUBTANJALLA = "11061555";
     /** Los Aquijes: sin copia literal ni asientos. Debe dar GRIS. */
-    protected static final String LOS_AQUIJES = "SIM-11070419";
+    protected static final String LOS_AQUIJES = "11070419";
     /** Casos 5 a 10 (v0.4). */
-    protected static final String PUEBLO_NUEVO = "SIM-11075836";
-    protected static final String SANTIAGO = "SIM-11081204";
-    protected static final String SALAS = "SIM-11087751";
-    protected static final String MOLINOS = "SIM-11093320";
-    protected static final String PACHACUTEC = "SIM-11098467";
-    protected static final String ICA = "SIM-11104029";
+    protected static final String PUEBLO_NUEVO = "11075836";
+    protected static final String SANTIAGO = "11081204";
+    protected static final String SALAS = "11087751";
+    protected static final String MOLINOS = "11093320";
+    protected static final String PACHACUTEC = "11098467";
+    protected static final String ICA = "11104029";
     /**
      * v0.9: lotes reales de la II Subasta Pública 2026 de la SBN, de la cuenta propietario-03. Partida por transcribir y
      * sin memoria descriptiva: deben dar GRIS y conservar la alerta de zonificación (RV-07).

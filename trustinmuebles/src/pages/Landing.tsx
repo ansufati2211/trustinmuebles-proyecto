@@ -86,7 +86,7 @@ const CASOS_MUESTRA: {
   codigo: string; titulo: string; distrito: string; tipo: string; estado: EstadoSemaforo; resumen: string;
 }[] = [
   {
-    codigo: "SIM-11048217",
+    codigo: "11048217",
     titulo: "Mz. F Lote 7 · Hab. Urb. Santa Elvira",
     distrito: "Parcona, Ica",
     tipo: "Vivienda · 160 m²",
@@ -94,7 +94,7 @@ const CASOS_MUESTRA: {
     resumen: "Hipoteca cancelada en el asiento E00001. Cuatro planos presentados e informe técnico favorable.",
   },
   {
-    codigo: "SIM-11052690",
+    codigo: "11052690",
     titulo: "Mz. K Lote 12 · Rincón del Sauce",
     distrito: "La Tinguiña, Ica",
     tipo: "Vivienda · 200 m²",
@@ -102,7 +102,7 @@ const CASOS_MUESTRA: {
     resumen: "Hipoteca vigente en el rubro D y faltan los planos de instalaciones eléctricas y sanitarias.",
   },
   {
-    codigo: "SIM-11061555",
+    codigo: "11061555",
     titulo: "Mz. C Lote 3 · Mirador del Sol",
     distrito: "Subtanjalla, Ica",
     tipo: "Lote · 250 m²",
@@ -118,10 +118,10 @@ const PASOS = [
 ];
 
 const FAQS = [
-  { p: "¿Trustinmuebles es una entidad del gobierno?", r: "No. Es una plataforma tecnológica privada (PropTech) desarrollada como un MVP académico para transparentar los documentos de una cartera inmobiliaria en Ica." },
+  { p: "¿Trustinmuebles es una entidad del gobierno?", r: "No. Es una plataforma tecnológica privada (PropTech) diseñada para transparentar los documentos de una cartera inmobiliaria en Ica." },
   { p: "¿El semáforo verde garantiza que la compra es segura?", r: "No. El semáforo verde indica únicamente que no se detectaron alertas en los campos evaluados del expediente. Nunca certifica saneamiento ni reemplaza a un abogado." },
-  { p: "¿Qué pasa cuando hago clic en «Expedientes»?", r: "El sistema te pedirá iniciar sesión con una cuenta autorizada (por ejemplo comprador-01, revisor-01 o especialista-01) para acceder a los 12 expedientes del catálogo." },
-  { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un especialista de la inmobiliaria verifica en campo las 4 especialidades y emite un informe técnico que no altera el color del semáforo documental. Los perfiles de esta demostración son ficticios." },
+  { p: "¿Qué pasa cuando hago clic en «Expedientes»?", r: "El sistema te pedirá iniciar sesión con una cuenta autorizada para acceder a los 12 expedientes del catálogo." },
+  { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un especialista de la inmobiliaria verifica en campo las 4 especialidades y emite un informe técnico que no altera el color del semáforo documental." },
 ];
 
 function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; respuesta: string }) {
@@ -248,7 +248,7 @@ export default function Landing() {
 
               <dl style={retraso(560)} className="anim-enter grid grid-cols-3 gap-4 max-w-md border-t border-gray-200 pt-6">
                 {[
-                  { n: "10", t: "expedientes en el catálogo" },
+                  { n: "12", t: "expedientes en el catálogo" },
                   { n: "4", t: "planos por vivienda" },
                   { n: "6", t: "pasos de inspección" },
                 ].map((d) => (
@@ -278,7 +278,7 @@ export default function Landing() {
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-emerald-300">Indicador B · presencial</p>
-                  <p className="text-sm font-bold">Especialista de la inmobiliaria · perfil ficticio</p>
+                  <p className="text-sm font-bold">Especialista colegiado de la inmobiliaria</p>
                 </div>
               </div>
 
@@ -293,7 +293,7 @@ export default function Landing() {
                 <div className="absolute bottom-0 inset-x-0 p-4 sm:p-6">
                   <div className="bg-black/50 backdrop-blur-xl border border-white/15 rounded-2xl p-4 sm:p-5 text-white">
                     <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
-                      <span className="text-sm font-semibold text-emerald-300">Expediente SIM-11052690</span>
+                      <span className="text-sm font-semibold text-emerald-300">Expediente 11052690</span>
                       <span className="inline-flex items-center gap-1.5 rounded-full bg-warning/25 border border-warning/50 px-3 py-0.5 text-xs font-bold text-amber-200">
                         <ESTADOS.AMARILLO.Icono className="w-3.5 h-3.5" /> Semáforo amarillo
                       </span>
@@ -305,7 +305,7 @@ export default function Landing() {
                       200 m² · Hipoteca vigente en el rubro D · Faltan 2 planos de instalaciones.
                     </p>
                     <Link
-                      to="/casos/SIM-11052690"
+                      to="/casos/11052690"
                       className="group btn-glint mt-4 inline-flex items-center gap-2 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white transition-all duration-300 ease-expo hover:bg-emerald-600 active:scale-[0.97]"
                     >
                       Ver este expediente
@@ -427,7 +427,7 @@ export default function Landing() {
                 <Badge className="bg-white/15 text-emerald-300 mb-5 px-3 py-1 text-xs border-0">Indicador B · presencial · a pedido</Badge>
                 <h3 className="text-2xl lg:text-3xl font-extrabold tracking-tight mb-3">Evaluación técnica en campo</h3>
                 <p className="text-gray-300 mb-7 leading-relaxed">
-                  Un especialista de la inmobiliaria visita el predio y sigue un protocolo estandarizado de 6 pasos. Los perfiles de esta demostración son ficticios.
+                  Un especialista colegiado de la inmobiliaria visita el predio y sigue un protocolo estandarizado de 6 pasos.
                 </p>
                 <ol className="space-y-3.5 text-sm text-gray-200">
                   {PROCEDIMIENTO_INSPECCION.map((p, idx) => (
@@ -456,7 +456,7 @@ export default function Landing() {
                 ¿Qué hay dentro de Expedientes?
               </h2>
               <p className="text-muted-foreground text-lg mt-3">
-                El catálogo reúne 10 lotes y viviendas de distintos distritos de Ica. Estos 3 ejemplos muestran cómo se ve cada estado. Al abrirlos pasarás por el inicio de sesión seguro.
+                El catálogo reúne 12 lotes y viviendas verificados en nuestro portafolio. Estos 3 ejemplos muestran cómo se ve cada estado. Al abrirlos pasarás por el inicio de sesión seguro.
               </p>
             </div>
             <Button
@@ -624,7 +624,7 @@ export default function Landing() {
               Empieza por revisar la partida.
             </h2>
             <p className="text-gray-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-              Ingresa con cualquiera de las 3 cuentas de prueba y explora las partidas, los planos 2D y los informes técnicos.
+              Inicia sesión con tu cuenta asignada y explora las partidas, los planos 2D y los informes técnicos.
             </p>
             <Button
               size="lg"

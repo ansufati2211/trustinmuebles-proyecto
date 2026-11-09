@@ -1,9 +1,9 @@
 {
-  "codigo": "SIM-11093320",
-  "denominacion": "Mz. A Lote 3 · Hab. Urb. Puente Molino · San José de los Molinos, Ica",
-  "contexto": "San José de los Molinos, Ica",
-  "distrito": "San José de los Molinos",
-  "precioReferencial": 110000.00,
+  "codigo": "11075836",
+  "denominacion": "Mz. G Lote 14 · Hab. Urb. Jardines del Pacae · Pueblo Nuevo, Ica",
+  "contexto": "Pueblo Nuevo, Ica",
+  "distrito": "Pueblo Nuevo",
+  "precioReferencial": 165000.00,
   "expediente": {
     "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
     "completitud": "COMPLETA",
@@ -11,30 +11,30 @@
     "nota": null,
     "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
     "oficinaRegistral": "Oficina Registral de Ica",
-    "ubicacion": "Mz. A, Lote 3 de la Habilitación Urbana Puente Molino, distrito de San José de los Molinos, provincia y departamento de Ica.",
-    "areaM2": 200.0,
-    "linderos": "Frente: con la Calle Los Molinos, en 10.00 ml. Derecha: con el Lote 4, en 20.00 ml. Izquierda: con el Lote 2, en 20.00 ml. Fondo: con el Lote 9, en 10.00 ml.",
-    "antecedenteDominial": "El predio proviene de la partida SIM-11071554 (lote matriz de la Habilitación Urbana Puente Molino), de la que se independizó.",
+    "ubicacion": "Mz. G, Lote 14 de la Habilitación Urbana Jardines del Pacae, distrito de Pueblo Nuevo, provincia y departamento de Ica.",
+    "areaM2": 180.0,
+    "linderos": "Frente: con la Calle Los Pacaes, en 10.00 ml. Derecha: con el Lote 15, en 18.00 ml. Izquierda: con el Lote 13, en 18.00 ml. Fondo: con el Lote 2, en 10.00 ml.",
+    "antecedenteDominial": "El predio proviene de la partida 11060912 (lote matriz de la Habilitación Urbana Jardines del Pacae), de la que se independizó.",
     "asientos": [
       {
         "referencia": "C00001",
         "tipoActo": "COMPRAVENTA",
         "estado": null,
-        "fechaInscripcion": "2020-02-07",
-        "tituloNumero": "SIM-2020-00005362",
-        "fechaPresentacion": "2020-01-30",
-        "texto": "Por escritura pública de fecha 27 de enero de 2020, otorgada ante notario público de Ica, Inversiones Puente Molino S.R.L. transfirió en compraventa el predio a favor de Wilder Andrés Matías Quispe. Precio: S/ 36,000.00.",
+        "fechaInscripcion": "2017-06-14",
+        "tituloNumero": "2017-00031542",
+        "fechaPresentacion": "2017-06-06",
+        "texto": "Por escritura pública de fecha 02 de junio de 2017, otorgada ante notario público de Ica, Inmobiliaria Jardines del Pacae S.A.C. transfirió en compraventa el predio a favor de Edgar Wilmer Huamán Cárdenas. Precio: S/ 54,000.00.",
         "canceloNumero": null,
-        "titulares": "Wilder Andrés Matías Quispe (100 %)"
+        "titulares": "Edgar Wilmer Huamán Cárdenas (100 %)"
       },
       {
         "referencia": "D00001",
-        "tipoActo": "BLOQUEO",
+        "tipoActo": "EMBARGO",
         "estado": "VIGENTE",
-        "fechaInscripcion": "2026-09-24",
-        "tituloNumero": "SIM-2026-00039026",
-        "fechaPresentacion": "2026-09-22",
-        "texto": "Bloqueo registral solicitado por el notario público de Ica, por la compraventa en trámite del predio, otorgada por Wilder Andrés Matías Quispe a favor de un tercero. El bloqueo impide la inscripción de actos incompatibles durante su vigencia.",
+        "fechaInscripcion": "2024-03-19",
+        "tituloNumero": "2024-00007318",
+        "fechaPresentacion": "2024-03-12",
+        "texto": "Embargo en forma de inscripción hasta por la suma de S/ 28,500.00 sobre el predio, ordenado por el 3.er Juzgado Civil de Ica en el Expediente 2023-00418-0-1401-JR-CI-03, seguido por Comercial Ferretera Sudamérica S.A.C. sobre obligación de dar suma de dinero.",
         "canceloNumero": null,
         "titulares": null
       },
@@ -42,10 +42,10 @@
         "referencia": "F00001",
         "tipoActo": "OTRO",
         "estado": null,
-        "fechaInscripcion": "2020-10-21",
-        "tituloNumero": "SIM-2020-00041203",
-        "fechaPresentacion": "2020-10-13",
-        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 85.00 m², según planos y memoria descriptiva presentados.",
+        "fechaInscripcion": "2017-11-09",
+        "tituloNumero": "2017-00058760",
+        "fechaPresentacion": "2017-10-30",
+        "texto": "Declaratoria de fábrica de una vivienda de un piso, con un área construida de 110.00 m², según planos y memoria descriptiva presentados.",
         "canceloNumero": null,
         "titulares": null
       }
@@ -56,22 +56,23 @@
         "estado": "REVISADO"
       },
       {
-        "nombre": "Título del bloqueo registral",
-        "estado": "PENDIENTE"
-      },
-      {
-        "nombre": "Estado de la compraventa en trámite",
+        "nombre": "Gravámenes y cargas inscritos",
         "estado": "OBSERVADO"
       },
       {
-        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "nombre": "Título archivado del asiento D00001",
         "estado": "PENDIENTE"
+      },
+      {
+        "nombre": "Declaración Jurada Municipal (HR y PU)",
+        "estado": "OBSERVADO",
+        "observacion": "La HR figura a nombre de un propietario anterior; falta actualizar al contribuyente."
       }
     ],
     "terminos": [
       "Partida registral",
       "Copia literal",
-      "Documento simulado",
+      "Documento referencial",
       "Rubro",
       "Asiento",
       "Título archivado",
@@ -102,15 +103,15 @@
       "Informe técnico",
       "CIP y CAP",
       "Estudios adicionales",
-      "Bloqueo registral"
+      "Embargo"
     ],
     "tipoPredio": "VIVIENDA",
-    "areaConstruidaInscrita": 85.0,
+    "areaConstruidaInscrita": 110.0,
     "planos": [
       {
         "especialidad": "ARQUITECTURA",
         "estado": "PRESENTADO",
-        "areaConstruida": 85.0,
+        "areaConstruida": 110.0,
         "sistemaConstructivo": null,
         "observacion": null
       },
@@ -118,7 +119,7 @@
         "especialidad": "ESTRUCTURAS",
         "estado": "PRESENTADO",
         "areaConstruida": null,
-        "sistemaConstructivo": "ALBANILERIA_CONFINADA",
+        "sistemaConstructivo": "APORTICADO",
         "observacion": null
       },
       {
@@ -136,8 +137,6 @@
         "observacion": null
       }
     ],
-    "informeTecnico": {
-      "estado": "SOLICITADA"
-    }
+    "informeTecnico": null
   }
 }

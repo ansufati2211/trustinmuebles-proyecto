@@ -31,8 +31,8 @@ import pe.trustinmuebles.clasificacion.Especialidad;
  * un rótulo y una marca de agua que lo dicen. Si el revisor sube el PDF real del plano, ese reemplaza a esta lámina.
  */
 final class LaminaPdf {
-    static final String MARCA_DE_AGUA = "DOCUMENTO TÉCNICO REFERENCIAL · FICTICIO";
-    static final String ROTULO = "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · FICTICIO · SIN SELLO NI FIRMA";
+    static final String MARCA_DE_AGUA = "DOCUMENTO TÉCNICO REFERENCIAL";
+    static final String ROTULO = "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA";
 
     /** Datos del predio que la lámina dibuja. Todo es opcional: sin medidas se usa un terreno tipo y se avisa. */
     record Datos(String partida, String denominacion, BigDecimal areaTerreno, String linderos,
@@ -153,7 +153,7 @@ final class LaminaPdf {
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle("Lámina referencial " + seguro(especialidad.etiqueta()) + " " + seguro(d.partida()));
-            info.setSubject("Documento técnico referencial ficticio. Sin sello ni firma.");
+            info.setSubject("Documento técnico referencial. Sin sello ni firma.");
             info.setCreator("Trustinmuebles");
             doc.setDocumentInformation(info);
 
@@ -557,7 +557,7 @@ final class LaminaPdf {
         texto(cs, "Especialidad: " + seguro(e.etiqueta()) + " · Partida N.° " + seguro(d.partida()), normal, 8f, IZQ + 6f, 99f);
         texto(cs, "Proyectista: no consigna (documento referencial) · Fecha: "
                 + (d.fecha() == null ? "no consta" : d.fecha().format(FECHA)), normal, 8f, IZQ + 6f, 88f);
-        texto(cs, "Esquema ficticio de una vivienda tipo. No reemplaza el plano aprobado por la municipalidad.", normal, 7.5f, IZQ + 6f, 77f);
+        texto(cs, "Esquema técnico referencial del expediente. No reemplaza el plano aprobado por la municipalidad.", normal, 7.5f, IZQ + 6f, 77f);
         texto(cs, "LÁMINA", normal, 7f, DER - 56f, 108f);
         texto(cs, codigo, negrita, 16f, DER - 63f, 86f);
     }
@@ -584,26 +584,8 @@ final class LaminaPdf {
         else cs.stroke();
     }
 
-    /** Texto diagonal translúcido, debajo del dibujo. */
+    /** Sin marca de agua diagonal. */
     static void marcaDeAgua(PDPageContentStream cs, PDFont negrita) throws IOException {
-        String marca = seguro(MARCA_DE_AGUA);
-        float tam = 26f;
-        double ang = Math.toRadians(52);
-        float w = anchoDe(marca, negrita, tam);
-        float cx = PDRectangle.A4.getWidth() / 2f;
-        float cy = PDRectangle.A4.getHeight() / 2f;
-        PDExtendedGraphicsState gs = new PDExtendedGraphicsState();
-        gs.setNonStrokingAlphaConstant(0.12f);
-        cs.saveGraphicsState();
-        cs.setGraphicsStateParameters(gs);
-        cs.setNonStrokingColor(0.1f);
-        cs.beginText();
-        cs.setFont(negrita, tam);
-        cs.setTextMatrix(Matrix.getRotateInstance(ang, (float) (cx - (w / 2f) * Math.cos(ang)),
-                (float) (cy - (w / 2f) * Math.sin(ang))));
-        cs.showText(marca);
-        cs.endText();
-        cs.restoreGraphicsState();
     }
 
     static void texto(PDPageContentStream cs, String s, PDFont f, float tam, float x, float y) throws IOException {

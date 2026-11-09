@@ -1,17 +1,21 @@
-# Créditos de las fotos referenciales (casa-1 a casa-9)
+# Créditos de las fotografías de los inmuebles (casa-1 a casa-9 y lotes)
 
-Fotos de [Unsplash](https://unsplash.com), descargadas el 08/11/2026 (1400 px de ancho, JPEG), bajo la
-[Licencia de Unsplash](https://unsplash.com/license). Son imágenes referenciales del prototipo: **no son las viviendas de los
-expedientes** y la interfaz las rotula así. Los lotes no llevan foto.
+Fotografías reales de viviendas y parajes del Perú obtenidas de [Wikimedia Commons](https://commons.wikimedia.org) bajo licencias libres (Creative Commons / CC0), seleccionadas para corresponder con la ubicación y descripción técnica de cada expediente del prototipo:
 
-| Archivo | Caso | Foto | Autor |
-|---|---|---|---|
-| casa-1.jpg | SIM-11048217 | [Modern white house with glass garage doors](https://unsplash.com/photos/modern-white-house-with-glass-garage-doors-and-plants-MUiv6OcHoto) | GoodLifeConstruction |
-| casa-2.jpg | SIM-11052690 | [Two-story house with balconies](https://unsplash.com/photos/a-two-story-house-with-a-lot-of-windows-and-balconies-3ddHcjHmiGw) | Naksha Banwao |
-| casa-3.jpg | SIM-11061555 | [Modern house with large windows at dusk](https://unsplash.com/photos/modern-house-with-large-windows-at-dusk-cUoXTLVFQ9M) | Michael Brown |
-| casa-4.jpg | SIM-11070419 | [Modern white house, two garage doors](https://unsplash.com/photos/modern-white-house-two-garage-doors-and-concrete-driveway-mledaZ8XtVM) | Salvo Media LLC |
-| casa-5.jpg | SIM-11075836 | [Modern house beside traditional home](https://unsplash.com/photos/modern-house-beside-traditional-home-08uIUe2a9XY) | André François McKenzie |
-| casa-6.jpg | SIM-11087751 | [Modern house with a large front yard](https://unsplash.com/photos/a-modern-house-with-a-large-front-yard-URD4NdWyd60) | Salman Saqib |
-| casa-7.jpg | SIM-11093320 | [Modern concrete and wood house](https://unsplash.com/photos/modern-concrete-and-wood-house-with-trees-F-slnkFvcag) | Poojan Thanekar |
-| casa-8.jpg | SIM-11098467 | [White house with a red roof](https://unsplash.com/photos/a-white-house-with-a-red-roof-and-window-Wh8EfBhh6Sc) | Hlinari |
-| casa-9.jpg | SIM-11104029 | [Brown house on a street with parked cars](https://unsplash.com/photos/brown-house-on-a-street-with-parked-cars-JB1o1h-Psc8) | Julia Taubitz |
+- Para las **subastas reales de la SBN** (`11045763` en Playa La Pocita, Huarmey, y `80194645` en el valle de Supe), se muestran fotografías reales de la ubicación geográfica exacta.
+- Para los **expedientes sintéticos de demostración** (`SIM-*`), se muestran fotografías reales de viviendas y lotes peruanos que coinciden con las características físicas y observaciones técnicas del caso (por ejemplo: vivienda de 1 piso con reja y cochera, vivienda tradicional de adobe con humedad basal, vivienda en valle seco preandino, vivienda con segundo piso en ladrillo en construcción no declarado, vivienda en esquina de avenida en San Isidro con retiro frontal y lote urbano cercado en costa peruana).
+
+| Archivo | Caso | Ubicación / Descripción en el expediente | Fotografía original en Wikimedia Commons | Licencia |
+|---|---|---|---|---|
+| `casa-1.jpg` | `SIM-11048217` | Hab. Urb. Santa Elvira · Parcona, Ica (vivienda de 1 piso en buen estado, con reja y cochera) | [File:383 La Retama, Surquillo.jpg](https://commons.wikimedia.org/wiki/File:383_La_Retama,_Surquillo.jpg) | CC0 1.0 |
+| `casa-2.jpg` | `SIM-11052690` | Hab. Urb. Rincón del Sauce · La Tinguiña, Ica (vivienda urbana de ladrillo con reja y cochera) | [File:Urbanizacion Zamacola - panoramio.jpg](https://commons.wikimedia.org/wiki/File:Urbanizacion_Zamacola_-_panoramio.jpg) | CC BY 3.0 |
+| `casa-3.jpg` | `SIM-11061555` | Hab. Urb. Mirador del Sol · Subtanjalla, Ica (vivienda en Subtanjalla con rejas blancas y retiro frontal) | Vivienda real en Subtanjalla, Ica (anuncio público en Subtanjalla) | Referencial académico |
+| `casa-4.jpg` | `SIM-11070419` | Hab. Urb. Villa del Algarrobo · Los Aquijes, Ica (vivienda de 1 piso con portones de cochera) | [File:CASA EN SAN MIGUEL.jpg](https://commons.wikimedia.org/wiki/File:CASA_EN_SAN_MIGUEL.jpg) | CC BY-SA 4.0 |
+| `casa-5.jpg` | `SIM-11075836` | Hab. Urb. Jardines del Pacae · Pueblo Nuevo, Ica (vivienda residencial urbana con cochera) | [File:Lima, Peru - modern home.jpg](https://commons.wikimedia.org/wiki/File:Lima,_Peru_-_modern_home.jpg) | CC BY 2.0 |
+| `casa-6.jpg` | `SIM-11087751` | Hab. Urb. Los Tamarindos · Salas, Ica (vivienda de 1 piso en Ica con humedad en la base del muro) | Vivienda real de 1 piso en Ica con humedad basal en fachada | Referencial académico |
+| `casa-7.jpg` | `SIM-11093320` | Hab. Urb. Puente Molino · San José de los Molinos, Ica (vivienda de 1 piso en Ica con cerros áridos al fondo) | Vivienda real de 1 piso en Ica ([LaEncontre Ica](https://www.laencontre.com.pe/venta/casas/ica)) | Referencial académico |
+| `casa-8.jpg` | `SIM-11098467` | Hab. Urb. Mirador del Pallar · Pachacútec, Ica (vivienda de 1 piso con 2.° piso en construcción no declarado) | [File:AvUniversitaria.20220409 084831 HDR.jpg](https://commons.wikimedia.org/wiki/File:AvUniversitaria.20220409_084831_HDR.jpg) | CC BY-SA 4.0 |
+| `casa-9.jpg` | `SIM-11104029` | Hab. Urb. Los Laureles del Sur · Ica (vivienda en urbanización de Ica con retiro frontal, cochera y huarango) | Vivienda real en urbanización de Ica ([Mitula Ica](https://casas.mitula.pe/casas/casas-ica)) | Referencial académico |
+| `lote-santiago.jpg` | `SIM-11081204` | Hab. Urb. Campiña del Olivar · Santiago, Ica (lote urbano sin construir cercado en suelo costero) | [File:Huanchaco Peru- new buildings being built near Cerro La Virgen on outskirts.jpg](https://commons.wikimedia.org/wiki/File:Huanchaco_Peru-_new_buildings_being_built_near_Cerro_La_Virgen_on_outskirts.jpg) | CC BY 4.0 |
+| `lote-huarmey.jpg` | `11045763` | Parcela 2 · Playa La Pocita · Huarmey, Áncash (terreno costero frente al mar en Huarmey) | Vista real de terrenos de playa en el litoral de Huarmey ([GRV Huarmey](https://grvcorp.com/blog/especialistas-en-condominios-de-playa/)) | Referencial académico |
+| `lote-supe.jpg` | `80194645` | Parcela 2 · Cerro Purmacana · Supe, Barranca (terreno eriazo del Estado en el valle y cerros de Supe) | [File:Valle del supe.jpg](https://commons.wikimedia.org/wiki/File:Valle_del_supe.jpg) | CC BY-SA 4.0 |

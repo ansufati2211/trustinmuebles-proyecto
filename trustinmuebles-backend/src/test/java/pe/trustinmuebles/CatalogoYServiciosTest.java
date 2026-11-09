@@ -89,9 +89,9 @@ class CatalogoYServiciosTest extends BaseApiTest {
                 .andExpect(jsonPath("$.predio.moneda").value("USD"))
                 .andExpect(jsonPath("$.predio.precioNota", containsString("Subasta Pública 2026 de la SBN")));
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
-                .andExpect(jsonPath("$[*].predio.distrito", contains("Huarmey", "Supe", "Parcona", "La Tinguiña",
+                .andExpect(jsonPath("$[*].predio.distrito", contains("Huarmey", "Parcona", "La Tinguiña",
                         "Subtanjalla", "Los Aquijes", "Pueblo Nuevo", "Santiago", "Salas", "San José de los Molinos",
-                        "Pachacútec", "Ica")))
+                        "Pachacútec", "Ica", "Supe")))
                 .andExpect(jsonPath("$[?(@.codigo=='" + SANTIAGO + "')].predio.tipoInmueble", contains("LOTE_URBANO")))
                 .andExpect(jsonPath("$[?(@.codigo=='" + SANTIAGO + "')].predio.moneda", contains("PEN")))
                 .andExpect(jsonPath("$[*].predio.precioReferencial", everyItem(notNullValue())))
@@ -162,13 +162,13 @@ class CatalogoYServiciosTest extends BaseApiTest {
             i.put("colegiatura", "CAP 000001");
             i.put("profesionalEspecialidad", "Arquitecto");
             emitir(SANTIAGO, especialista(), i).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Perfil Ficticio 01"))
+                    .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Carlos Alberto Mendoza Quispe"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesionalEspecialidad").value("Ingeniero Civil"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CIP N.° SIM-CIP-0001"));
+                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CIP N.° 248910"));
             String guardado = jdbc.queryForObject("select profesional || ' | ' || colegiatura from evaluacion_tecnica "
                     + "where expediente_id = (select e.id from expediente e join caso_lote c on c.id = e.caso_id "
                     + "where c.codigo = ?)", String.class, SANTIAGO);
-            assertThat(guardado).isEqualTo("Ing. Perfil Ficticio 01 | CIP N.° SIM-CIP-0001");
+            assertThat(guardado).isEqualTo("Ing. Carlos Alberto Mendoza Quispe | CIP N.° 248910");
         } finally {
             limpiarInspeccion(SANTIAGO);
         }
@@ -212,7 +212,7 @@ class CatalogoYServiciosTest extends BaseApiTest {
         mvc.perform(get("/api/v1/casos/" + SALAS).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacionTecnica.resultado").value("CON_RIESGO"))
                 .andExpect(jsonPath("$.evaluacionTecnica.riesgoFisicoDetectado").value(true))
-                .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Perfil Ficticio 01"))
+                .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Carlos Alberto Mendoza Quispe"))
                 .andExpect(jsonPath("$.evaluacionTecnica.solicitanteCodigo").value("comprador-01"));
         mvc.perform(get("/api/v1/casos/" + MOLINOS).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.evaluacionTecnica.estado").value("SOLICITADA"))
@@ -264,14 +264,14 @@ class CatalogoYServiciosTest extends BaseApiTest {
     @Test
     @DisplayName("M13: los filtros por tipo, indicador A, indicador B y riesgo físico se combinan")
     void filtrosCombinados() throws Exception {
-        assertThat(codigos("?tipoInmueble=LOTE_URBANO")).containsExactly(HUARMEY, SUPE, SANTIAGO);
+        assertThat(codigos("?tipoInmueble=LOTE_URBANO")).containsExactly(HUARMEY, SANTIAGO, SUPE);
         assertThat(codigos("?tipoInmueble=VIVIENDA_URBANA&estado=AMARILLO"))
                 .containsExactly(TINGUINA, SALAS, PACHACUTEC, ICA);
         assertThat(codigos("?estado=AMARILLO&estadoTecnico=EMITIDO")).containsExactly(TINGUINA, SALAS, ICA);
         assertThat(codigos("?estadoTecnico=INFORME_EMITIDO")).as("alias del estado emitido")
                 .containsExactly(PARCONA, TINGUINA, SALAS, ICA);
         assertThat(codigos("?estadoTecnico=NO_SOLICITADA&estado=GRIS"))
-                .containsExactly(HUARMEY, SUPE, SUBTANJALLA, LOS_AQUIJES);
+                .containsExactly(HUARMEY, SUBTANJALLA, LOS_AQUIJES, SUPE);
         assertThat(codigos("?riesgoFisicoDetectado=true")).containsExactly(SALAS);
         assertThat(codigos("?estado=ROJO&estadoTecnico=SOLICITADA")).containsExactly(MOLINOS);
         assertThat(codigos("?tipoInmueble=LOTE_URBANO&estado=ROJO")).as("sin resultados es una lista vacía").isEmpty();

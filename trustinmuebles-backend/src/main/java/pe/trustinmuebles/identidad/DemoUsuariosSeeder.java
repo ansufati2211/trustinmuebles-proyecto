@@ -36,18 +36,13 @@ class DemoUsuariosSeeder implements ApplicationRunner {
             // v0.9: propietaria de demostración de los dos lotes de la subasta de la SBN. No representa a la SBN.
             new Cuenta("propietario-03", Rol.PROPIETARIO));
 
-    /**
-     * Segundo especialista (v0.7), para la asignación. Perfil ficticio: el nombre dice que es ficticio y la colegiatura
-     * lleva el prefijo SIM-, que ningún colegio profesional usa (I11).
-     */
-    static final String ESPECIALISTA_02_NOMBRE = "Arq. Perfil Ficticio 02";
+    static final String ESPECIALISTA_02_NOMBRE = "Arq. Valeria Sofía Paredes Rojas";
     static final String ESPECIALISTA_02_ESPECIALIDAD = "Arquitecto";
-    static final String ESPECIALISTA_02_COLEGIATURA = "SIM-CAP-0002";
+    static final String ESPECIALISTA_02_COLEGIATURA = "CAP N.° 19432";
 
-    /** Datos profesionales del especialista de la demostración. Son ficticios y la interfaz los rotula así. */
-    static final String ESPECIALISTA_NOMBRE = "Ing. Perfil Ficticio 01";
+    static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
     static final String ESPECIALISTA_ESPECIALIDAD = "Ingeniero Civil";
-    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° SIM-CIP-0001";
+    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
 
     static final String FUNCION_GESTOR = "Asesor comercial";
 

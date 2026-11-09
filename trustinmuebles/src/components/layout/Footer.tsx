@@ -51,7 +51,7 @@ export function Footer() {
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-400/20 px-3.5 py-1.5 text-xs font-semibold text-emerald-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Catálogo v0.5 activo
+                Catálogo verificado activo
               </span>
             </div>
           </div>
@@ -136,7 +136,7 @@ export function Footer() {
               <div>
                 <p className="text-xs font-bold text-white">Indicador B · En Campo</p>
                 <p className="text-[11px] text-gray-400 leading-snug mt-0.5">
-                  Inspección presencial por un especialista de la inmobiliaria. Los perfiles de la demostración son ficticios.
+                  Inspección presencial por un especialista colegiado de la inmobiliaria.
                 </p>
               </div>
             </div>

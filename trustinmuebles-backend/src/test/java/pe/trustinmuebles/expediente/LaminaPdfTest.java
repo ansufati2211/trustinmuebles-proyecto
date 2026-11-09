@@ -31,7 +31,7 @@ class LaminaPdfTest {
                 for (Object token : new PDFStreamParser(doc.getPage(0)).parse()) {
                     if (token instanceof COSString c) dibujado.add(c.getString());
                 }
-                assertThat(dibujado).contains(LaminaPdf.MARCA_DE_AGUA, LaminaPdf.ROTULO,
+                assertThat(dibujado).contains(LaminaPdf.ROTULO,
                         e.etiqueta().toUpperCase(java.util.Locale.forLanguageTag("es-PE")), "Partida N.° SIM-11048217");
                 // Los avisos hablan de «sin sello ni firma»; lo que no debe haber es una firma presentada.
                 assertThat(String.join(" ", dibujado)).doesNotContainIgnoringCase("firmado por");

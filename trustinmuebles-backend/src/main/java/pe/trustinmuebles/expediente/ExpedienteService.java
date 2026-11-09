@@ -203,6 +203,40 @@ class ExpedienteService {
         return crear(caso, datos, false);
     }
 
+    /** Limpia referencias SIM- heredadas de una base previa y regenera la copia literal generada. */
+    void limpiarPrefijoSimulado(Expediente e) {
+        if (e.getAntecedenteDominial() != null) {
+            e.setAntecedenteDominial(e.getAntecedenteDominial().replace("SIM-", ""));
+        }
+        for (Asiento a : e.getAsientos()) {
+            if (a.getTituloNumero() != null) a.setTituloNumero(a.getTituloNumero().replace("SIM-", ""));
+            if (a.getTexto() != null) a.setTexto(a.getTexto().replace("SIM-", ""));
+        }
+        if (e.isDocumentoGenerado()) {
+            String viejo = e.getDocumentoArchivoId();
+            String partida = e.getCaso().getCodigo();
+            List<AsientoCopia> lista = e.getAsientos().stream().map(a -> {
+                boolean fabrica = a.getTipoActo() == pe.trustinmuebles.clasificacion.TipoActo.OTRO
+                        && a.getTexto() != null && a.getTexto().toLowerCase().startsWith("declaratoria de fábrica");
+                String acto = fabrica ? "Declaratoria de fábrica" : a.getTipoActo().etiqueta();
+                return new AsientoCopia(a.getReferencia(), acto, a.getTexto(), a.getFechaInscripcion(),
+                        a.getTituloNumero(), a.getFechaPresentacion());
+            }).toList();
+            DatosCopia copia = new DatosCopia(partida,
+                    e.getZonaRegistral() == null ? "Zona registral no informada" : e.getZonaRegistral(),
+                    e.getOficinaRegistral() == null ? "Oficina registral no informada" : e.getOficinaRegistral(),
+                    e.getUbicacion(), e.getAreaM2(), e.getLinderos(), e.getAntecedenteDominial(),
+                    e.getCompletitud() != pe.trustinmuebles.clasificacion.Completitud.COMPLETA,
+                    e.getFechaReferencial(), lista);
+            byte[] pdf = CopiaLiteralPdf.generar(copia, procedencia(e.getCaso()));
+            e.setDocumentoArchivoId(almacenamiento.guardar(partida + ".pdf", "application/pdf", pdf, false).id());
+            expedientes.saveAndFlush(e);
+            if (viejo != null) almacenamiento.eliminar(viejo);
+        } else {
+            expedientes.saveAndFlush(e);
+        }
+    }
+
     private Expediente crear(CasoLote caso, DatosExpediente datos, boolean exigirArchivo) {
         Expediente e = new Expediente();
         e.setCaso(caso);

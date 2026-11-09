@@ -2,6 +2,9 @@
 name: Imágenes Docker
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:

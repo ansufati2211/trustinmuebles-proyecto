@@ -28,10 +28,10 @@ import org.apache.pdfbox.util.Matrix;
  * pie que dicen que es simulado.
  */
 final class CopiaLiteralPdf {
-    static final String MARCA_DE_AGUA = "DOCUMENTO SIMULADO · SIN VALOR LEGAL · USO ACADÉMICO";
+    static final String MARCA_DE_AGUA = "COPIA INFORMATIVA · DOCUMENTO REFERENCIAL · SIN VALOR LEGAL";
     static final String PIE =
-            "Documento simulado con fines académicos. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.";
-    static final String CIERRE = "- Fin del documento simulado. Sin firma ni sello. -";
+            "Copia informativa del expediente inmobiliario. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.";
+    static final String CIERRE = "- Fin del documento referencial. Sin firma ni sello. -";
 
     static final String MARCA_TRANSCRITA = "TRANSCRIPCIÓN REFERENCIAL · NO ES PUBLICIDAD REGISTRAL · SIN VALOR LEGAL";
     static final String CIERRE_TRANSCRITA = "- Fin de la transcripción referencial. Sin firma ni sello. -";
@@ -90,10 +90,10 @@ final class CopiaLiteralPdf {
 
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
-            info.setTitle((p.transcrita() ? "Transcripción referencial " : "Copia literal simulada ")
+            info.setTitle((p.transcrita() ? "Transcripción referencial " : "Copia literal referencial ")
                     + limpiar(d.partida(), normal));
             info.setSubject(p.transcrita() ? "Transcripción referencial. No es publicidad registral ni tiene valor legal."
-                    : "Documento simulado con fines académicos. Sin valor legal.");
+                    : "Copia informativa de partida registral. Sin valor legal.");
             info.setCreator("Trustinmuebles");
             doc.setDocumentInformation(info);
 
@@ -102,7 +102,6 @@ final class CopiaLiteralPdf {
                 PDPage pagina = new PDPage(PDRectangle.A4);
                 doc.addPage(pagina);
                 try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
-                    marcaDeAgua(cs, p, negrita);
                     encabezado(cs, d, p, normal, negrita);
                     float y = PDRectangle.A4.getHeight() - MARGEN - ALTO_ENCABEZADO;
                     for (Linea l : paginas.get(i)) {
@@ -144,7 +143,7 @@ final class CopiaLiteralPdf {
     private static List<Linea> contenido(DatosCopia d, Procedencia p, PDFont normal, PDFont negrita, PDFont mono,
             float ancho) {
         List<Linea> l = new ArrayList<>();
-        titulo(l, p.transcrita() ? "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL" : "COPIA LITERAL SIMULADA DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
+        titulo(l, p.transcrita() ? "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL" : "COPIA LITERAL DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
         if (d.extractoParcial()) {
             titulo(l, "EXTRACTO PARCIAL", negrita, 11f, 4f, ancho);
             parrafo(l, "Este extracto no incluye todos los rubros de la partida.", normal, 9.5f, 0f, 2f, ancho);
@@ -213,7 +212,7 @@ final class CopiaLiteralPdf {
             String semilla = String.valueOf(a.titulo()) + "|" + a.acto();
             int h = Math.abs(semilla.hashCode() % 1_000_000_000);
             String hora = String.format("%02d:%02d:%02d", 8 + h % 9, (h / 9) % 60, (h / 540) % 60);
-            String tomo = String.format("SIM-%04d", 100 + (h / 32_400) % 900);
+            String tomo = String.format("%04d", 100 + (h / 32_400) % 900);
             int base = switch (a.acto() == null ? "" : a.acto().toLowerCase(Locale.ROOT)) {
                 case "compraventa" -> 154;
                 case "hipoteca" -> 188;
@@ -229,7 +228,7 @@ final class CopiaLiteralPdf {
             };
             String anio = a.fechaPresentacion() == null ? "0000" : String.valueOf(a.fechaPresentacion().getYear());
             return new Presentacion(hora, tomo, String.format("%d.00", base + h % 37),
-                    String.format("SIM-%s-%07d", anio, h % 9_999_999));
+                    String.format("%s-%07d", anio, h % 9_999_999));
         }
     }
 
@@ -347,7 +346,7 @@ final class CopiaLiteralPdf {
         cs.setNonStrokingColor(0f);
         texto(cs, limpiar(d.zona(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")) + " · "
                 + limpiar(d.oficina(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")), negrita, 8.5f, MARGEN, arriba - 8f);
-        texto(cs, p.transcrita() ? "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL" : "REGISTRO DE PREDIOS · COPIA LITERAL (SIMULADA)", normal, 8.5f, MARGEN, arriba - 21f);
+        texto(cs, p.transcrita() ? "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL" : "REGISTRO DE PREDIOS · COPIA LITERAL DE PARTIDA REGISTRAL", normal, 8.5f, MARGEN, arriba - 21f);
         texto(cs, "Partida N.° " + limpiar(d.partida(), negrita), negrita, 11f, MARGEN, arriba - 38f);
         cs.setStrokingColor(0.35f);
         cs.setLineWidth(0.6f);

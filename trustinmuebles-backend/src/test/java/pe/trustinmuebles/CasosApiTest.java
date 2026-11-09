@@ -32,8 +32,8 @@ class CasosApiTest extends BaseApiTest {
         assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(12);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
                 .isEqualTo(10);
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo not like 'SIM-%' and sintetico = true",
-                Integer.class)).as("toda partida simulada lleva el prefijo SIM- para no confundirse con una real").isZero();
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo like 'SIM-%'",
+                Integer.class)).as("ninguna partida del catálogo lleva el prefijo SIM-").isZero();
         // v0.9: las dos partidas reales son de la subasta de la SBN: transcritas, con fuente, fecha y enlace oficial.
         assertThat(jdbc.queryForList("select codigo from caso_lote where codigo not like 'SIM-%' and origen = 'TRANSCRITA'"
                 + " and fuente like 'SBN%' and fuente_url like 'https://www.sbn.gob.pe/%' and fecha_consulta is not null"
@@ -54,14 +54,14 @@ class CasosApiTest extends BaseApiTest {
     void cadaCodigoDevuelveSusDatos() throws Exception {
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador())).andExpect(status().isOk())
                 .andExpect(jsonPath("$", hasSize(12)))
-                .andExpect(jsonPath("$[*].codigo", contains(HUARMEY, SUPE, PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES,
-                        PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS, PACHACUTEC, ICA)))
-                .andExpect(jsonPath("$[2].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
-                .andExpect(jsonPath("$[2].estado").value("VERDE"))
-                .andExpect(jsonPath("$[2].pendientes").value(1))
-                .andExpect(jsonPath("$[4].pendientes").value(2))
+                .andExpect(jsonPath("$[*].codigo", contains(HUARMEY, PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES,
+                        PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS, PACHACUTEC, ICA, SUPE)))
+                .andExpect(jsonPath("$[1].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
+                .andExpect(jsonPath("$[1].estado").value("VERDE"))
+                .andExpect(jsonPath("$[1].pendientes").value(1))
+                .andExpect(jsonPath("$[3].pendientes").value(2))
                 .andExpect(jsonPath("$[0].fuenteUrl").value("https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38"))
-                .andExpect(jsonPath("$[2].fuenteUrl").doesNotExist());
+                .andExpect(jsonPath("$[1].fuenteUrl").doesNotExist());
         for (String codigo : DEMOSTRACION) {
             mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.codigo").value(codigo))
@@ -465,7 +465,7 @@ class CasosApiTest extends BaseApiTest {
                 .andReturn().getResponse().getContentAsByteArray();
         assertThat(new String(pdf, 0, 5, java.nio.charset.StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
         String texto = textoDelPdf(TINGUINA);
-        assertThat(texto).contains("Partida N.° SIM-11052690", "COPIA LITERAL SIMULADA", "TÍTULOS DE DOMINIO",
+        assertThat(texto).contains("Partida N.° 11052690", "COPIA LITERAL DE PARTIDA REGISTRAL", "TÍTULOS DE DOMINIO",
                 "GRAVÁMENES Y CARGAS", "CANCELACIONES", "D00001 · HIPOTECA", "D00002 · EMBARGO", "E00001 · CANCELACIÓN",
                 "Marco Antonio Quispe Huamaní", "no está firmado");
         mvc.perform(get("/api/v1/casos/" + TINGUINA + "/documento")).andExpect(status().isUnauthorized());
