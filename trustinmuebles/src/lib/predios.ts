@@ -62,3 +62,19 @@ export function configPredio(codigo: string, tipo: TipoInmueble): ConfigPredio {
 /** Texto alternativo: dice qué se ve y aclara que no es una foto del inmueble. */
 export const textoAlternativo = (c: ConfigPredio) =>
   `Ilustración referencial: ${c.descripcion}. No es una foto del inmueble.`;
+
+/**
+ * Fotos referenciales del prototipo (Unsplash, licencia libre; ver public/img/casas/CREDITOS.md). No son las viviendas de
+ * los expedientes: se muestran rotuladas como «Imagen referencial». Los lotes no tienen foto y usan su ilustración.
+ */
+export const FOTOS_PREDIO: Record<string, { archivo: string; descripcion: string }> = {
+  "SIM-11048217": { archivo: "casa-1.jpg", descripcion: "fachada de una vivienda moderna de color blanco con cochera" },
+  "SIM-11052690": { archivo: "casa-2.jpg", descripcion: "vivienda de dos pisos con balcones y muchas ventanas" },
+  "SIM-11061555": { archivo: "casa-3.jpg", descripcion: "vivienda moderna con grandes ventanales al atardecer" },
+  "SIM-11070419": { archivo: "casa-4.jpg", descripcion: "vivienda blanca con dos puertas de cochera" },
+  "SIM-11075836": { archivo: "casa-5.jpg", descripcion: "vivienda moderna de revestimiento oscuro junto a una casa tradicional" },
+  "SIM-11087751": { archivo: "casa-6.jpg", descripcion: "vivienda moderna con un amplio jardín frontal" },
+  "SIM-11093320": { archivo: "casa-7.jpg", descripcion: "vivienda de concreto y madera entre árboles" },
+  "SIM-11098467": { archivo: "casa-8.jpg", descripcion: "vivienda blanca con techo rojo" },
+  "SIM-11104029": { archivo: "casa-9.jpg", descripcion: "vivienda marrón en una calle con autos estacionados" },
+};
