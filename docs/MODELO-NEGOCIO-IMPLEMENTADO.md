@@ -1,21 +1,23 @@
-# Modelo de negocio implementado — Trustinmuebles v0.8.0
+# Modelo de negocio implementado — Trustinmuebles, versión actual (v0.9 + «Version real», `d7803f8`)
 
 Este documento describe lo que el **código y las pruebas** hacen hoy. Cuando la documentación anterior dice otra cosa, manda
-el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No verificado**.
+el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No verificado**. Los cambios de los tres últimos commits
+y sus observaciones están en [REPORTE-v0.9-real.md](REPORTE-v0.9-real.md).
 
 ## 0. Ficha
 
 | Campo | Valor |
 |---|---|
-| Versión | `0.8.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`). Es la versión del estudio: congelarla con el tag `v0.8.0` antes del piloto |
-| Fecha de esta revisión | 2 de noviembre de 2026, sobre la rama `feedback-docente-v0.8`, creada desde `main` en `dc6b00a` (feedback docente del 31/10 y decisiones del equipo del 02/11) |
-| Pruebas del backend | `./mvnw test`: **186 ejecutadas, 186 aprobadas**, 0 fallos, 0 errores, 0 omitidas (30 clases); `BUILD SUCCESS` |
-| Pruebas del frontend | `npx pnpm@9 test`: **15 archivos, 82 pruebas, 82 aprobadas** |
-| Compilación del frontend | `npx pnpm@9 build`: correcta (`tsc --noEmit` y `vite build`), con aviso de tamaño del JS principal |
+| Versión | `main` en `d7803f8` («Version real»), sobre `7fc4a54` (v0.9) y `43cd45d` (fotos). Los paquetes siguen numerados `0.8.0` (`trustinmuebles-backend/pom.xml`, `trustinmuebles/package.json`); no hay tag `v0.9` |
+| Fecha de esta revisión | 9 de noviembre de 2026, en la rama `docs-v0.9-real`, creada desde `origin/main` en `d7803f8` |
+| Pruebas del backend | `./mvnw -B verify`: **200 ejecutadas, 200 aprobadas**, 0 fallos, 0 errores, 0 omitidas (32 clases); `BUILD SUCCESS` |
+| Pruebas del frontend | `npx pnpm@9 test`: **16 archivos, 85 pruebas, 85 aprobadas** |
+| Compilación del frontend | `npx pnpm@9 build`: correcta (`tsc --noEmit` y `vite build`), con aviso de tamaño del JS principal (618 kB) |
 | Organización de referencia del caso | LedCons, sin acta ni acuerdo formal acreditado |
-| Alcance | MVP académico con **datos simulados**, para **una sola inmobiliaria de Ica** |
-| Verificación en navegador | Recorrido de 20 pasos con los 5 roles en Chrome: **20 de 20 correctos** el 2 de noviembre de 2026 (`docs/pruebas/RESULTADO-recorrido-v08.md`), sobre una base nueva fuera del repositorio. No cubre lectores de pantalla ni otros navegadores |
-| Rendimiento (NF02) | **20 de 20** en 2 s o menos; mediana 25,2 ms, máximo 54,3 ms. Solo la API |
+| Alcance | MVP académico para **una sola inmobiliaria de Ica**. Las partidas de Ica y los especialistas son contenido redactado por el equipo, aunque desde `d7803f8` ya no se rotulan como simulados; los dos lotes de la SBN vienen de una fuente pública |
+| Verificación en navegador | Recorrido de uso de 27 pasos con las 8 cuentas en Chrome: **27 de 27 correctos** el 9 de noviembre de 2026 (`docs/pruebas/uso-v09/recorrido-v09.mjs`, capturas en `docs/pruebas/uso-v09/capturas/`), sobre una base nueva fuera del repositorio, sin errores de consola ni respuestas 409/500. No cubre lectores de pantalla ni otros navegadores |
+| Demo en la nube | Configurada, **no verificada**: CORS con `https://trust.aurorabeauty.site` y flujo de imágenes Docker en cada push a `main` (sección 11) |
+| Rendimiento (NF02) | **20 de 20** en 2 s o menos el 30/10/2026; mediana 25,2 ms, máximo 54,3 ms. Solo la API. No se volvió a medir |
 
 Las pruebas del backend son de integración (MockMvc con H2 en memoria) y unitarias; las del frontend son de funciones puras
 (Vitest), más una que renderiza el pie (`limitesLegales.test.tsx`); **no prueban cómo se dibujan las demás pantallas**.
@@ -29,7 +31,9 @@ falta (faltantes y checklist) y, si el comprador lo pide, registra una evaluaci�
 **Qué NO hace** (comprobado en el código; ninguna ruta lo hace):
 - No certifica saneamiento. Cada evaluación lleva el texto fijo «No certifica saneamiento ni recomienda comprar»
   (`MotorClasificacion.LIMITE`, verificado por `MotorClasificacionTest` y `CasosApiTest`).
-- No recomienda comprar ni ordena casos por conveniencia (el panel no tiene rankings, D41).
+- No recomienda comprar ni ordena casos por conveniencia. El comprador no ve rankings (D41). D52 matiza D41 solo para el gestor:
+  su panel ordena la lista «Por regularizar» por esfuerzo, para organizar la subsanación, con el aviso «Priorización interna de la
+  inmobiliaria; no es una recomendación de compra».
 - No consulta fuentes oficiales en línea: no hay cliente HTTP hacia SUNARP ni a la Municipalidad; la interfaz solo abre
   enlaces (`lib/fuentes.ts`).
 - No reemplaza a un abogado o notario: la etapa 9 es un texto fijo en el detalle, no una función.
@@ -63,10 +67,18 @@ inmobiliaria coordina la visita» (`PanelEvaluacionTecnica.tsx`). El código no 
 | ACT-02 | Revisor | `REVISOR` (`revisor-01`) | Registrar la captación (partida transcrita o simulada, con el código del propietario); editar partida, planos y checklist; subir PDF; eliminar partidas captadas | Autorizar por el propietario; publicar; emitir el informe técnico; solicitar inspección | `SecurityConfig` (PUT/POST/PATCH/DELETE `/casos/**`); `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `soloElGestorPublica`, `CasosApiTest.checklistSoloRevisor` |
 | ACT-03 | Gestor (asesor comercial) | `GESTOR` (`gestor-01`, función «Asesor comercial») — el asesor comercial **es** este rol | Publicar y retirar casos; atender contactos; asignar o reasignar el especialista; ver el panel de cartera | Editar la partida o el checklist; autorizar; emitir el informe | `DemoUsuariosSeeder.FUNCION_GESTOR`, `SecurityConfig`; `CaptacionPublicacionTest.soloElGestorPublica`, `CarteraTest.permisosPorRol` |
 | ACT-04 | Especialista | `ESPECIALISTA` (`especialista-01`, `especialista-02`) | Registrar el avance y emitir el informe técnico (indicador B) de las inspecciones que el gestor le asignó, firmado con los datos de su cuenta | Actuar sin asignación (409) o si la inspección está asignada a otro (403); editar la partida; cambiar el color de A | `InspeccionService.registrar`; `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite`, `CatalogoYServiciosTest.identidadDelEspecialistaBloqueada` |
-| ACT-05 | Propietario | `PROPIETARIO` (`propietario-01`, `propietario-02`) | Ver solo sus casos (también en borrador) y su historial; otorgar o retirar su autorización | Editar, subir documentos, publicar; ver casos ajenos (404); autorizar casos ajenos (403) | `ExpedienteService.casoDelPropietario`; `CaptacionPublicacionTest.propietarioSoloLectura`, `propietarioVeSoloLoSuyo`, `autorizacionSoloDelPropietario` |
+| ACT-05 | Propietario | `PROPIETARIO` (`propietario-01`, `propietario-02` y, desde la v0.9, `propietario-03`, dueña de demostración de los dos lotes de la SBN; no representa a la SBN) | Ver solo sus casos (también en borrador) y su historial; otorgar o retirar su autorización | Editar, subir documentos, publicar; ver casos ajenos (404); autorizar casos ajenos (403) | `ExpedienteService.casoDelPropietario`; `CaptacionPublicacionTest.propietarioSoloLectura`, `propietarioVeSoloLoSuyo`, `autorizacionSoloDelPropietario` |
 | ACT-06 | Abogado o notario | Externo | Verificación jurídica antes de comprar (etapa 9) | No tiene cuenta ni función en el sistema | Texto fijo en `Expediente.tsx` (D48). Sin prueba automática |
 | ACT-07 | SUNARP (Conoce Aquí, Visor BGR) | Externo, fuente consultada **a mano** | El revisor consulta Conoce Aquí y pega el texto; el comprador o el revisor abren el Visor BGR | El sistema no consulta ni lee SUNARP: solo abre enlaces | `lib/fuentes.ts`, D20. Sin conexión en el backend |
-| ACT-08 | Municipalidad | Externo, fuente consultada **a mano** | Emite la declaración jurada (HR y PU) que aporta el propietario; el revisor marca el ítem del checklist | El sistema no consulta a la Municipalidad | Ítem «Declaración Jurada Municipal (HR y PU)»; `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos` |
+| ACT-08 | Municipalidad | Externo, fuente consultada **a mano** | Emite la declaración jurada (HR y PU) que aporta el propietario y, en un lote, el certificado de zonificación y vías; el revisor marca el ítem del checklist o sube el PDF | El sistema no consulta a la Municipalidad | Ítem «Declaración Jurada Municipal (HR y PU)»; `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos`; documento `CERTIFICADO_ZONIFICACION` (RV-07) |
+| ACT-09 | SBN | Externo, fuente pública | Publica las bases de la II Subasta Pública 2026 y el plano perimétrico de los lotes `11045763` y `80194645` | El sistema solo guarda el PDF publicado y enlaza la fuente (D57) | `CasosApiTest.contenidoCargado` (fuente, enlace y fecha de consulta) |
+
+**Cambios de la v0.9 por actor:**
+- **Revisor (ACT-02):** el origen de la captación se rotula «Transcrita de Conoce Aquí (SUNARP)» o «Registro interno de
+  cartera» (este sigue exigiendo el prefijo `SIM-`); sube el PDF de los cuatro documentos de un lote.
+- **Propietario (ACT-05):** `propietario-03` ve en «Mis inmuebles» los dos lotes de la SBN.
+- **Especialistas (ACT-04):** firman con nombre y colegiatura sin prefijo `SIM-` (sección 9); la interfaz ya no dice «perfil
+  ficticio».
 
 **Cambios de la v0.8 por actor:**
 - **Revisor (ACT-02):** sube el PDF de cada plano (también si estaba no presentado: al subirlo queda presentado); ya no puede
@@ -80,13 +92,15 @@ inmobiliaria coordina la visita» (`PanelEvaluacionTecnica.tsx`). El código no 
 
 ## 4. Flujo de vida del inmueble
 
-Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con los 5 roles (`docs/pruebas/RESULTADO-recorrido-v07.md`).
+Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con las 8 cuentas el 9 de noviembre de 2026 (`docs/pruebas/uso-v09/`, 27 de 27
+pasos; antes, `docs/pruebas/RESULTADO-recorrido-v08.md`). La tabla conserva los nombres de prueba; las que citan «los diez casos»
+hoy recorren los 12.
 
 | ID | Etapa | Quién | Qué ocurre | Pantalla / ruta del frontend | Endpoint | Prueba | Estado |
 |---|---|---|---|---|---|---|---|
-| ETP-1 | Captación | Propietario (fuera) y revisor | El propietario **inicia el proceso fuera del sistema**: entrega sus documentos a la inmobiliaria. El revisor registra el caso con el código de cuenta del propietario; nace en `BORRADOR` y sin autorización. **El indicador A se calcula en ese mismo momento** (origen `PARTIDA_TRANSCRITA` del historial). El revisor elige un **origen obligatorio**: `TRANSCRITA_CONOCE_AQUI` (número sin `SIM-`, fuente «Conoce Aquí – SUNARP») o `SIMULADA_DEMOSTRACION` (número con `SIM-`, fuente «Partida simulada para demostración», `sintetico = true`). El **precio referencial** es opcional y `ProteccionDatos` se aplica a ambos orígenes. Los 10 casos de demostración no pasan por aquí: los carga `CasosSeeder` ya publicados | Menú «Registrar partida» → `#/casos/nueva` (`RegistrarPartida.tsx`) | `POST /api/v1/casos` | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.revisorRegistra`, `origenObligatorio`, `prefijoSegunElOrigen`, `simuladaRegistrada`, `precioEnElCatalogo`, `precioInvalido` | Implementado |
+| ETP-1 | Captación | Propietario (fuera) y revisor | El propietario **inicia el proceso fuera del sistema**: entrega sus documentos a la inmobiliaria. El revisor registra el caso con el código de cuenta del propietario; nace en `BORRADOR` y sin autorización. **El indicador A se calcula en ese mismo momento** (origen `PARTIDA_TRANSCRITA` del historial). El revisor elige un **origen obligatorio**: «Transcrita de Conoce Aquí (SUNARP)» = `TRANSCRITA_CONOCE_AQUI` (número sin `SIM-`, fuente «Conoce Aquí – SUNARP») o «Registro interno de cartera» = `SIMULADA_DEMOSTRACION` (número con `SIM-` obligatorio aunque el mensaje del campo diga «Código interno de ocho dígitos.»; fuente «Partida simulada para demostración», `sintetico = true`; en el historial, «Partida interna incorporada»). El **precio referencial** es opcional y `ProteccionDatos` se aplica a ambos orígenes. Los 12 casos de la semilla no pasan por aquí: los carga `CasosSeeder` ya publicados | Menú «Registrar partida» → `#/casos/nueva` (`RegistrarPartida.tsx`) | `POST /api/v1/casos` | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.revisorRegistra`, `origenObligatorio`, `prefijoSegunElOrigen`, `simuladaRegistrada`, `precioEnElCatalogo`, `precioInvalido` | Implementado |
 | ETP-2 | Autorización | Propietario | El propietario entra con su cuenta y confirma su autorización. **El indicador A ya está calculado antes de autorizar** (desde ETP-1) y el propietario lo ve; autorizar **no** recalcula ni cambia el color. La autorización solo habilita la publicación. Retirarla de un caso publicado lo deja `RETIRADO`. Autorizar dos veces conserva la primera fecha | Panel «Publicación y autorización» (`PanelPublicacion.tsx`), botones «Autorizar publicación» y «Retirar autorización», en `#/mis-inmuebles` y en la columna lateral del detalle `#/casos/{código}` | `PUT` y `DELETE /api/v1/casos/{código}/autorizacion` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor`; `CicloCarteraTest.cicloCompleto` | Implementado |
-| ETP-3 | Pre-evaluación documental (indicador A) | Motor de reglas (automático) | Calcula verde, amarillo, rojo o gris con las reglas `v0.4` sobre el rubro D, los datos mínimos y los planos. Recalcula al registrar, al editar, al subir el PDF del caso o de un plano, y al arrancar si falta o cambió la versión. Cada recálculo agrega una fila al historial | Semáforo del detalle `#/casos/{código}` y de las tarjetas de `#/casos` | Sin endpoint propio: lo disparan `POST /casos`, `PUT /casos/{c}/expediente`, `POST /casos/{c}/documento`, `POST /casos/{c}/planos/{e}/documento` | `MotorClasificacionTest` (10), `MotorPlanosTest` (7), `CasosApiTest.losDiezCasosTienenSuColor`, `colorNoSeFijaAMano` | Implementado |
+| ETP-3 | Pre-evaluación documental (indicador A) | Motor de reglas (automático) | Calcula verde, amarillo, rojo o gris con las reglas `v0.5` sobre el rubro D, los datos mínimos, los planos de una vivienda y los documentos de un lote (v0.9). Recalcula al registrar, al editar, al subir el PDF del caso, de un plano o de un documento del lote, y al arrancar si falta o cambió la versión. Cada recálculo agrega una fila al historial | Semáforo del detalle `#/casos/{código}` y de las tarjetas de `#/casos` | Sin endpoint propio: lo disparan `POST /casos`, `PUT /casos/{c}/expediente`, `POST /casos/{c}/documento`, `POST /casos/{c}/planos/{e}/documento` | `MotorClasificacionTest` (10), `MotorPlanosTest` (7), `CasosApiTest.losDiezCasosTienenSuColor`, `colorNoSeFijaAMano` | Implementado |
 | ETP-4 | Subsanación | Revisor | Incorpora asientos, planos o el PDF que faltaban; el motor recalcula y el historial lo registra con su origen | Detalle: botón «Editar partida» (`EditorExpediente.tsx`) y subida de PDF en el panel de planos (`PanelPlanos.tsx`); historial en `HistorialEvaluaciones.tsx` | `PUT /casos/{c}/expediente`, `POST /casos/{c}/planos/{e}/documento`, `POST /casos/{c}/documento`, `GET /casos/{c}/historial` | `HistorialEvaluacionTest.planoFaltanteLlevaAVerde`, `cadaRecalculoAgregaUnaFila`, `pdfNoLevantaElEmbargo` | Implementado |
 | ETP-5 | Publicación | Gestor | Publica solo con autorización vigente (422 sin ella; 409 si ya está publicado); puede volver a publicar un caso retirado si sigue autorizado. No mira el color de A | Botones «Publicar» y «Retirar» en el panel «Publicación y autorización» del **detalle** del caso, no en la lista de `#/cartera` (la propia pantalla lo indica) | `POST` y `DELETE /api/v1/casos/{código}/publicacion` | `CaptacionPublicacionTest.soloElGestorPublica`, `sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor`; `MigracionV6Test.conservaLosDiezCasos` | Implementado |
 | ETP-6 | Consulta y contacto | Comprador y gestor | El comprador ve el catálogo de publicados y pide contacto con un motivo de lista cerrada (sin texto libre; una pendiente por caso). El gestor la marca atendida. El comprador **no** puede consultar después si fue atendida (D46) | Comprador: `#/casos` (menú «Expedientes») y botón «Solicitar contacto» en el detalle (`SolicitudContacto.tsx`). Gestor: bandeja de `#/cartera`, botón «Marcar atendida» | `GET /casos`, `GET /casos/{c}`, `POST /casos/{c}/contactos`, `GET /contactos?estado=`, `PUT /contactos/{id}/atencion` | `CarteraTest.contactoSoloPublicado`, `motivoCerrado`, `contactoSobreRojo`; `CaptacionPublicacionTest.visibilidadPorRol`; Vitest `contacto.test.ts` | Implementado |
@@ -110,6 +124,15 @@ propietario sigue ocurriendo fuera del sistema y no se registra en él.
   tipo de alerta × estado de gestión y la lista «Por regularizar» ordenada por esfuerzo y código, solo para organizar la
   subsanación (D52). `PanelTiposAlertaTest`, `GestionInmobiliariaTest.conteosDelPanel`. Recorrido v0.8, paso 15.
 
+**Cambios de la v0.9 en el flujo** (recorrido de uso del 9/11/2026, pasos 21 a 24):
+- **ETP-3 y ETP-4 (lotes):** un lote tiene cuatro documentos (`documento_lote`, V15): plano perimétrico y de ubicación,
+  memoria descriptiva, certificado de zonificación y vías, y tasación. Panel «Documentos del lote» con «Documentos presentados N
+  de 4», visor de PDF en el expediente y subida por el revisor (`GET`/`POST /casos/{c}/documentos-lote/{tipo}/documento`).
+  `DocumentosLoteApiTest`, `MotorDocumentosLoteTest`. Santiago (`11081204`) trae los cuatro generados y queda en verde; Huarmey y
+  Supe tienen solo el plano perimétrico oficial y quedan en gris (falta la memoria) con RV-07.
+- **ETP-6 (catálogo):** precio con su moneda (`US$ 90,096` y `US$ 16,802` en los lotes de la SBN), con la nota del precio y la
+  fuente enlazada en el detalle. `CatalogoYServiciosTest`, Vitest `formato.test.ts`.
+
 ## 5. Servicios
 
 | | Indicador A — pre-evaluación documental | Indicador B — evaluación técnica presencial |
@@ -117,7 +140,7 @@ propietario sigue ocurriendo fuera del sistema y no se registra en él.
 | Quién lo activa | Nadie lo pide: el motor lo calcula para todo caso al registrarlo o cambiar sus datos | Solo el comprador, a pedido, una vez por caso (409 a la segunda) |
 | Costo | Incluido. El código no tiene precio para A | S/ 250.00 referencial (`app.inspeccion.costo-referencial`, valor por defecto en `InspeccionService`). Sin pasarela de pago ni agenda |
 | Resultado | Color con motivos, alertas, faltantes, versión de reglas y el texto de límite | Estado (no solicitada, solicitada, en inspección, emitido) y, si se emite, conclusión favorable, con observaciones o con riesgo; informe en PDF |
-| Reglas | Tabla `v0.4` en `contenido/v0.4/reglas.json`, rotulada «borrador del equipo, pendiente de revisión especializada» | Solo el especialista que el gestor asignó registra avance o emite; firma desde la cuenta (M8); fecha de inspección no futura |
+| Reglas | Tabla `v0.5` en `contenido/v0.5/reglas.json` (`app.reglas.version=v0.5`), borrador del equipo pendiente de revisión especializada. Desde `d7803f8` la pantalla dice «Reglas de evaluación v0.5» sin «(en revisión especializada)» | Solo el especialista que el gestor asignó registra avance o emite; firma desde la cuenta (M8); fecha de inspección no futura |
 | Relación | Nunca lo cambia B (RN-10, I2) | No lee ni escribe el módulo `clasificacion` |
 
 ### Colores del indicador A
@@ -128,12 +151,13 @@ faltantes → gris; alerta prioritaria → rojo; alerta de revisión → amarill
 | Color | Etiqueta exacta | Cuándo sale |
 |---|---|---|
 | Verde | «Sin alertas en los campos evaluados» | Datos mínimos completos, ninguna regla aplicada y condición representada contemplada. Agrega el motivo «Esto no significa saneamiento» |
-| Amarillo | «Requiere revisión» | Al menos una regla de revisión vigente: RV-01 otro acto en gravámenes, RV-02 hipoteca, RV-03 carga técnica o servidumbre, RV-04 falta plano de II.EE. o II.SS., RV-05 el área del plano difiere más de 1 % de la inscrita (o no hay inscrita), RV-06 plano observado; sin alerta prioritaria ni faltantes |
+| Amarillo | «Requiere revisión» | Al menos una regla de revisión vigente: RV-01 otro acto en gravámenes, RV-02 hipoteca, RV-03 carga técnica o servidumbre, RV-04 falta plano de II.EE. o II.SS., RV-05 el área del plano difiere más de 1 % de la inscrita (o no hay inscrita), RV-06 plano o documento del lote observado, RV-07 (v0.5) falta el certificado de zonificación y vías de un lote; sin alerta prioritaria ni faltantes |
 | Rojo | «Alerta prioritaria» | Al menos una regla prioritaria vigente: RP-01 embargo, RP-02 anotación de demanda o medida cautelar, RP-03 bloqueo registral; sin faltantes |
-| Gris | «Información insuficiente o condición no evaluable» | Falta un dato mínimo (condición representada, titularidad, extracto completo, estado de alguna anotación del rubro D o, en una vivienda, el plano de arquitectura o de estructuras), **aunque haya un rojo**: las alertas conocidas se siguen mostrando. También sale si la condición representada no está contemplada y no hay otra alerta |
+| Gris | «Información insuficiente o condición no evaluable» | Falta un dato mínimo (condición representada, titularidad, extracto completo, estado de alguna anotación del rubro D o, en una vivienda, el plano de arquitectura o de estructuras; en un lote, el plano perimétrico o la memoria descriptiva), **aunque haya un rojo**: las alertas conocidas se siguen mostrando. También sale si la condición representada no está contemplada y no hay otra alerta |
 
 Los gravámenes cancelados y la copropiedad no generan alerta (`MotorClasificacionTest.canceladoYCopropiedadNoAlertan`). En
-un lote los planos no aplican (`MotorPlanosTest.loteSinPlanos`).
+un lote los planos no aplican (`MotorPlanosTest.loteSinPlanos`); en su lugar cuentan sus documentos (D58,
+`MotorDocumentosLoteTest`). La tasación es informativa y no interviene en A.
 
 ### Servicios internos de la v0.8 (no cambian A ni B)
 
@@ -141,7 +165,7 @@ un lote los planos no aplican (`MotorPlanosTest.loteSinPlanos`).
 |---|---|---|
 | Quién lo ve | Los mismos que ven el detalle (el comprador, solo en casos publicados) | Solo gestor y revisor (I15) |
 | Qué dice | Un ítem por motivo de A (alerta, dato faltante o condición no contemplada): pasos, quién gestiona (propietario, acreedor, revisor, juzgado, municipalidad o notaría), documento requerido, esfuerzo BAJO, MEDIO o ALTO y nota; en una hipoteca, acreedor y plazo si constan | VIABLE, VIABLE_CON_CONDICIONES, REQUIERE_REGULARIZACION o COMPLETAR_INFORMACION, con etiqueta, explicación y sugerencia |
-| Cómo se calcula | `RutasRegularizacion`, de solo lectura, desde la evaluación vigente y `contenido/v0.4/rutas.json`. Esfuerzo del caso = el máximo de sus ítems | `SemaforoGestion`: faltantes o condición no contemplada → completar información; si no, ALTO → requiere regularización; MEDIO → viable con condiciones; si no, viable (`gestion.json`) |
+| Cómo se calcula | `RutasRegularizacion`, de solo lectura, desde la evaluación vigente y `contenido/v0.5/rutas.json`. Esfuerzo del caso = el máximo de sus ítems | `SemaforoGestion`: faltantes o condición no contemplada → completar información; si no, ALTO → requiere regularización; MEDIO → viable con condiciones; si no, viable (`gestion.json`) |
 | Límite | «Orientativo: no es asesoría legal ni recomendación de compra». Sin plazos ni costos: «el plazo depende del trámite; consultar con abogado o notario» | «Uso interno de la inmobiliaria; no se muestra al comprador ni es una recomendación de compra». Contorno sin relleno y otro ícono, para no confundirlo con A |
 | Criterio | Borrador del equipo, pendiente de revisión especializada: BAJO solo documentos del propietario; MEDIO un tercero sin proceso judicial; ALTO un proceso judicial o administrativo | El mismo borrador |
 
@@ -152,7 +176,7 @@ RN-01 a RN-08 vienen de `docs/trazabilidad.md`; RN-09 y RN-10, de `docs/notas-in
 
 | ID | Regla | Estado | Evidencia en código o prueba |
 |---|---|---|---|
-| RN-01 | Solo casos sintéticos | Parcial: las 10 partidas ficticias y las captadas como simuladas cumplen; las partidas transcritas (D20) son un desvío **pendiente de aprobación del asesor** | Prefijo `SIM-` y `sintetico = true`; `CasosApiTest.contenidoCargado`, `sinRastrosDelEstudio`, `RegistrarPartidaTest.prefijoSegunElOrigen` |
+| RN-01 | Solo casos sintéticos | Parcial: las 10 partidas de Ica siguen siendo contenido redactado por el equipo (`sintetico = true`), pero desde `d7803f8` **ya no llevan el prefijo `SIM-`** y nada las rotula como simuladas; las partidas transcritas (D20) y los lotes de la SBN (D57) son desvíos **pendientes de aprobación del asesor**. Las captadas con «Registro interno de cartera» sí llevan `SIM-` | `sintetico = true`; `CasosApiTest.contenidoCargado` (ahora exige que **ninguna** partida del catálogo lleve `SIM-`), `sinRastrosDelEstudio`, `RegistrarPartidaTest.prefijoSegunElOrigen` |
 | RN-02 | Datos mínimos; desconocido no equivale a ausencia | Implementado | `MotorClasificacion` (faltantes); `MotorClasificacionTest.desconocidoNoEsAusencia` |
 | RN-03 | Clasificación y precedencia | Implementado | `MotorClasificacionTest.verde`, `amarilloYRojoPorTipoDeActo`, `demandaYMedidaCautelar` |
 | RN-04 | Información insuficiente da gris y conserva las alertas | Implementado | `MotorClasificacionTest.grisConservaAlertas`; `CasosApiTest.subtanjallaGrisConservaAlerta`, `sinCopiaLiteralGris` |
@@ -172,19 +196,19 @@ RN-01 a RN-08 vienen de `docs/trazabilidad.md`; RN-09 y RN-10, de `docs/notas-in
 | I3 | El checklist (incluida HR y PU) no cambia A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `HistorialEvaluacionTest.operacionesSinRecalculo` | Probado |
 | I4 | La autorización está en el servidor | `SeguridadTest` (8), `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol` | Probado |
 | I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests.respetaLosLimitesEntreModulos` | Probado |
-| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` (lee `application.properties`) | Probado para la ejecución local. En Docker, dentro del contenedor el backend escucha en `0.0.0.0` (`SERVER_ADDRESS` en `trustinmuebles-backend/Dockerfile`), pero no publica puertos, y el frontend se publica en `127.0.0.1`. Esa configuración no se ha ejecutado y la prueba no la cubre |
-| I7 | Los límites legales y el aviso de datos simulados se muestran en el pie; el login comunica el entorno demostrativo | `limitesLegales.test.tsx` (renderiza `components/layout/Footer.tsx`, el pie activo) | Probado para el pie. El login, sin pie, dice «Entorno académico demostrativo · Datos sintéticos»: sin prueba automática. Ninguno se ha visto en un navegador |
+| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` (lee `application.properties`) | Probado para la ejecución local. En Docker, dentro del contenedor el backend escucha en `0.0.0.0` (`SERVER_ADDRESS` en `trustinmuebles-backend/Dockerfile`), pero no publica puertos, y el frontend se publica en `127.0.0.1`. **Desde `d7803f8`** el CORS por defecto incluye `https://trust.aurorabeauty.site` y el flujo de Docker publica imágenes en cada push a `main`: hay una demo pensada para internet, fuera del alcance de I6 y D9. No verificado |
+| I7 | Los límites legales se muestran en el pie | `limitesLegales.test.tsx` (renderiza `components/layout/Footer.tsx`, el pie activo) | Probado y visto en Chrome el 9/11/2026. **Cambio de `d7803f8`:** el pie ya no dice «Los datos y los especialistas son simulados», sino «La información presentada es referencial y se basa en los documentos registrados en cada expediente.»; el login dice «Plataforma de transparencia inmobiliaria · Acceso seguro» en lugar de «Entorno académico demostrativo · Datos sintéticos». La parte de I7 que pedía avisar de los datos simulados ya no se cumple |
 | I8 | El color de A solo cambia cuando el motor recalcula | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`; `HistorialEvaluacionTest.operacionesSinRecalculo`; `CarteraTest.contactoSobreRojo`, `soloElAsignadoEmite` | Probado |
 | I9 | Un plano o un PDF no levanta un rojo por embargo, bloqueo o demanda | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo`; `MotorPlanosTest.losPlanosNoCambianElRojo` | Probado |
 | I10 | Publicar y pedir contacto no dependen del color de A | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `CarteraTest.contactoSobreRojo` | Probado |
-| I11 | Sin nombres, DNI ni teléfonos de propietarios o compradores; contacto con motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado`, `CaptacionPublicacionTest.demostracionPublicada`; Vitest `contacto.test.ts` | Probado (`sinDatosPersonales` solo revisa las cuentas GESTOR y PROPIETARIO) |
+| I11 | Sin nombres, DNI ni teléfonos de propietarios o compradores; contacto con motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado`, `CaptacionPublicacionTest.demostracionPublicada`; Vitest `contacto.test.ts` | Probado (`sinDatosPersonales` solo revisa las cuentas GESTOR y PROPIETARIO). El campo de titulares de 7 de los 10 casos de Ica nombra titulares personas naturales (por ejemplo, «Marco Antonio Quispe Huamaní» en `11052690`), y la copia literal los imprime |
 | I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` | Probado |
 | I13 | El propietario solo autoriza sus propios casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` | Probado |
 | I14 | Nada se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `MigracionV6Test.conservaLosDiezCasos`, `CicloCarteraTest.cicloCompleto`; restricción `ck_caso_publicado_autorizado` (V6) | Probado |
 | I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (v0.8, D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
 
-**Sin prueba automática:** el texto del login de I7. I6 está probada solo como propiedad de configuración, no sobre el despliegue
-con Docker.
+**Sin prueba automática:** el texto del login (comprobado en el recorrido del 9/11/2026). I6 está probada solo como propiedad de
+configuración, no sobre el despliegue con Docker ni sobre el dominio.
 
 ## 8. Fuentes de información
 
@@ -194,6 +218,12 @@ con Docker.
 | Visor Catastral BGR (SUNARP): solo se enlaza | Planos de las 4 especialidades |
 | | Declaración jurada municipal (HR y PU) |
 | | Inspección presencial del especialista (S/ 250.00 referencial) |
+| SBN (v0.9): bases de la II Subasta Pública 2026 y plano perimétrico de cada lote, consultados el 08/11/2026 y enlazados | Memoria descriptiva, certificado de zonificación y tasación de un lote |
+
+**Precio en US$ (v0.9).** `caso_lote` guarda `moneda` (PEN o USD), `precio_nota` y `fuente_url` (V15). Los lotes de la SBN
+muestran el precio base en US$ («US$ 90,096» y «US$ 16,802» en el catálogo), la nota «Precio base de la II Subasta Pública 2026 de
+la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.» y la fuente «SBN – II
+Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)», con su enlace.
 
 **Sin scraping ni APIs:** el backend no hace ninguna petición a SUNARP ni a otros portales; la interfaz abre los sitios con
 `abrirExterno` (`lib/fuentes.ts`). SUNARP no ofrece una API pública de partidas (D20).
@@ -218,18 +248,20 @@ con Docker.
   persona natural da 400 (`ProteccionDatos.verificarAcreedor`, `GravamenTest.soloPersonasJuridicasEnElRubroD`).
 - **v0.8, decisión de captación (V14):** solo códigos de cuenta, fecha, una decisión y un motivo de listas cerradas; cualquier
   otro campo (por ejemplo, un comentario) da 400. Historial de solo adición.
-- **Datos del especialista que usa hoy la semilla** (`DemoUsuariosSeeder`). **Los perfiles de especialista son ficticios y no
-  firman informes reales:**
+- **Datos del especialista que usa hoy la semilla** (`DemoUsuariosSeeder`; V16 los actualiza en bases anteriores, también en los
+  informes ya firmados):
 
 | Cuenta | Nombre | Especialidad | Colegiatura | ¿Prefijo `SIM-`? |
 |---|---|---|---|---|
-| `especialista-01` | Ing. Perfil Ficticio 01 | Ingeniero Civil | CIP N.° SIM-CIP-0001 | Sí |
-| `especialista-02` | Arq. Perfil Ficticio 02 | Arquitecto | SIM-CAP-0002 | Sí |
+| `especialista-01` | Ing. Carlos Alberto Mendoza Quispe | Ingeniero Civil | CIP N.° 248910 | No (desde `d7803f8`) |
+| `especialista-02` | Arq. Valeria Sofía Paredes Rojas | Arquitecto | CAP N.° 19432 | No (desde `d7803f8`) |
 
-  Los 5 informes de demostración (4 emitidos y 1 en inspección) los firma `especialista-01`. La credencial en pantalla usa
-  las iniciales y dice «Perfil ficticio de demostración»; el PDF del informe también lo rotula («Datos del profesional
-  ficticios, solo para la demostración», `InformeTecnicoPdf`). La migración V9 actualiza el perfil y los informes firmados
-  en bases existentes (`MigracionEspecialistaTest`).
+  Los 5 informes de demostración (4 emitidos y 1 en inspección) los firma `especialista-01`. El informe emitido en el recorrido
+  del 9/11/2026 salió firmado «Arq. Valeria Sofía Paredes Rojas · Arquitecto · CAP N.° 19432». La credencial en pantalla usa las
+  iniciales y **ya no dice** «Perfil ficticio de demostración»; el PDF del informe tampoco lo rotula. Son perfiles redactados
+  por el equipo; si esos nombres y números corresponden a profesionales colegiados reales **no se verificó**. Ver el reporte.
+- **Titulares en los asientos:** las partidas de Ica nombran titulares personas naturales (redactados por el equipo). Antes los
+  rodeaba el prefijo `SIM-`; hoy la copia literal se titula «COPIA LITERAL DE PARTIDA REGISTRAL», sin marca de agua.
 
 ## 10. Modelo de ingresos (HIPÓTESIS NO VALIDADAS)
 
@@ -254,13 +286,13 @@ constancia de su decisión de captación. Sigue siendo una hipótesis: no hay ci
   modo PostgreSQL (`./data/h2/`), PDFBox para los PDF, Swagger en `/swagger-ui.html`.
 - **Módulos** (9; `ModularityTests`): `identidad`, `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`,
   `orientacion`, `almacenamiento` y `shared`.
-- **Migraciones:** `V1__esquema` a `V14__decision_captacion`. V6 captación y publicación, V7 historial, V8 contacto y
+- **Migraciones:** `V1__esquema` a `V16__perfiles_especialistas`. V6 captación y publicación, V7 historial, V8 contacto y
   asignación, V9 perfil ficticio de `especialista-01`, V10 asignación de la inspección en curso de la demostración, V11 origen
   `PARTIDA_SIMULADA` en el historial; v0.8: V12 evidencia de documentos, V13 acreedor y plazo del gravamen, V14 decisiones de
-  captación.
-- **Contenido:** casos, reglas, glosario y, desde la v0.8, rutas de regularización (`rutas.json`) y estados de gestión
-  (`gestion.json`) en JSON versionado; versión activa `v0.4` (`app.reglas.version`). Las reglas (`reglas.json`) y el motor no
-  cambiaron.
+  captación; v0.9: V15 documentos del lote, moneda, nota y fuente del precio; `d7803f8`: V16 perfiles de los especialistas.
+- **Contenido:** casos, reglas, glosario, rutas de regularización (`rutas.json`) y estados de gestión (`gestion.json`) en JSON
+  versionado; versión activa **`v0.5`** (`app.reglas.version`), con los PDF oficiales de los lotes de la SBN en
+  `contenido/v0.5/documentos/`. Los 12 casos están en `contenido/v0.5/casos/` con nombre de archivo sin `SIM-`.
 - **Servicios nuevos de la v0.8:** `almacenamiento.DocumentosPdf` (validación y optimización con PDFBox y `javax.imageio`, sin
   dependencias nuevas), `expediente.RutasRegularizacion` y `expediente.SemaforoGestion` (API pública de solo lectura que usa la
   cartera), y en `cartera` la decisión de captación. `ModularityTests` sigue en verde.
@@ -270,50 +302,59 @@ constancia de su decisión de captación. Sigue siendo una hipótesis: no hay ci
 - **Interfaz:** React 19, Vite 8, Tailwind 4, React Router 8 con rutas `#/…`. El servidor de desarrollo reenvía `/api` al
   backend.
 - **Ejecución local:** el backend escucha solo en `127.0.0.1:8080` y la interfaz en `localhost:5173`.
-- **Docker (agregado el 26 de octubre, `edd0bbc` y `42321d1`):** `docker-compose.yml`, un `Dockerfile` por carpeta y un flujo
-  de GitHub Actions que publica las imágenes en GHCR **solo a mano** (`workflow_dispatch`). El frontend se publica en
-  `127.0.0.1:8081` y el backend no publica puertos. Que funcione: **No verificado** (no se construyeron ni levantaron las
-  imágenes). Ver D3.
-- **Dependencias de internet:** la interfaz ya no carga fotografías externas: están en `public/img/` y ninguna muestra a una
-  persona identificable. Las ilustraciones de los predios son SVG propios y la credencial del especialista usa iniciales. Los
-  enlaces a SUNARP sí necesitan internet.
+- **Docker y demo en la nube:** `docker-compose.yml` (para Portainer), un `Dockerfile` por carpeta y un flujo de GitHub Actions
+  que publica `ghcr.io/ansufati2211/trustinmuebles-backend` y `…-frontend` **en cada push a `main`** (desde `d7803f8`) y a mano.
+  El frontend se publica en `127.0.0.1:${FRONTEND_PORT:-8081}` y el backend no publica puertos. `APP_CORS_ALLOWED_ORIGINS` admite
+  por defecto `https://trust.aurorabeauty.site` y localhost en los puertos 8085, 8081 y 5173. El proxy que sirva ese dominio no
+  está en el repositorio. Que funcione: **No verificado** en esta revisión. Ver D3 y D9.
+- **Dependencias de internet:** la interfaz no carga fotografías externas: están en `public/img/`. Las 12 tarjetas usan fotos de
+  `public/img/casas/` (créditos en `CREDITOS.md`: 7 de Wikimedia Commons con licencia CC y 5 con «Referencial académico», tomadas
+  de anuncios o sitios comerciales). Las láminas son dibujos propios y la credencial del especialista usa iniciales. Los enlaces
+  a SUNARP y a la SBN sí necesitan internet.
 
 ## 12. Casos de demostración
 
-Estado al cargar una base nueva (`CasosSeeder`, contenido `v0.4`). Color de A y estado de B fijados por
-`CasosApiTest.losDiezCasosTienenSuColor`. Todos nacen **publicados y autorizados** (`CaptacionPublicacionTest.demostracionPublicada`).
-**Solo la inspección en curso de `SIM-11098467` tiene especialista asignado** (`especialista-01`, V10 en bases existentes); los
-informes emitidos los firma `especialista-01`, pero eso no es una asignación.
+Estado al cargar una base nueva (`CasosSeeder`, contenido `v0.5`), comprobado en el recorrido del 9/11/2026. Color de A y estado
+de B fijados por `CasosApiTest`. Todos nacen **publicados y autorizados** (`CaptacionPublicacionTest.demostracionPublicada`).
+**Solo la inspección en curso de `11098467` tiene especialista asignado** (`especialista-01`, V10 en bases existentes); los
+informes emitidos los firma `especialista-01`, pero eso no es una asignación. Desde `d7803f8` los códigos no llevan `SIM-`; una
+base anterior se renombra al arrancar.
 
 | Partida | Distrito | Propietario | A | Reglas | B | Publicación | Especialista asignado |
 |---|---|---|---|---|---|---|---|
-| `SIM-11048217` | Parcona | propietario-01 | Verde | — | Emitido, favorable | Publicado | No (firma `especialista-01`) |
-| `SIM-11052690` | La Tinguiña | propietario-02 | Amarillo | RV-02, RV-04 | Emitido, con observaciones | Publicado | No (firma `especialista-01`) |
-| `SIM-11061555` | Subtanjalla | propietario-01 | Gris | RP-02, RV-04 | No solicitada | Publicado | No aplica |
-| `SIM-11070419` | Los Aquijes | propietario-02 | Gris | RV-04 | No solicitada | Publicado | No aplica |
-| `SIM-11075836` | Pueblo Nuevo | propietario-01 | Rojo | RP-01 | No solicitada | Publicado | No aplica |
-| `SIM-11081204` | Santiago | propietario-02 | Verde | — | No solicitada | Publicado | No aplica |
-| `SIM-11087751` | Salas | propietario-01 | Amarillo | RV-03 | Emitido, con riesgo | Publicado | No (firma `especialista-01`) |
-| `SIM-11093320` | San José de los Molinos | propietario-02 | Rojo | RP-03 | Solicitada | Publicado | **No: pendiente de asignación por el gestor** |
-| `SIM-11098467` | Pachacútec | propietario-01 | Amarillo | RV-05 | En inspección | Publicado | `especialista-01` |
-| `SIM-11104029` | Ica | propietario-02 | Amarillo | RV-03, RV-06 | Emitido, favorable | Publicado | No (firma `especialista-01`) |
+| `11045763` | Huarmey (SBN) | propietario-03 | Gris | RV-07, información insuficiente | No solicitada | Publicado | No aplica |
+| `11048217` | Parcona | propietario-01 | Verde | — | Emitido, favorable | Publicado | No (firma `especialista-01`) |
+| `11052690` | La Tinguiña | propietario-02 | Amarillo | RV-02, RV-04 | Emitido, con observaciones | Publicado | No (firma `especialista-01`) |
+| `11061555` | Subtanjalla | propietario-01 | Gris | RP-02, RV-04 | No solicitada | Publicado | No aplica |
+| `11070419` | Los Aquijes | propietario-02 | Gris | RV-04 | No solicitada | Publicado | No aplica |
+| `11075836` | Pueblo Nuevo | propietario-01 | Rojo | RP-01 | No solicitada | Publicado | No aplica |
+| `11081204` | Santiago | propietario-02 | Verde | — | No solicitada | Publicado | No aplica |
+| `11087751` | Salas | propietario-01 | Amarillo | RV-03 | Emitido, con riesgo | Publicado | No (firma `especialista-01`) |
+| `11093320` | San José de los Molinos | propietario-02 | Rojo | RP-03 | Solicitada | Publicado | **No: pendiente de asignación por el gestor** |
+| `11098467` | Pachacútec | propietario-01 | Amarillo | RV-05 | En inspección | Publicado | `especialista-01` |
+| `11104029` | Ica | propietario-02 | Amarillo | RV-03, RV-06 | Emitido, favorable | Publicado | No (firma `especialista-01`) |
+| `80194645` | Supe (SBN) | propietario-03 | Gris | RV-07, información insuficiente | No solicitada | Publicado | No aplica |
 
-Solo Santiago es un lote; las otras nueve son viviendas (D23). Los casos 1 a 4 son los del instrumento del estudio (D22).
+Hay 9 viviendas y 3 lotes (D23 según D58). Los casos 1 a 4 de Ica son los del instrumento del estudio (D22). El catálogo los
+ordena con Huarmey primero y Supe al final. Conteo del panel con una base nueva: 2 verdes, 4 amarillos, 2 rojos y 4 grises; por
+tipo, RV-07 = 2 (los dos lotes de la SBN).
 
-**Ruta y semáforo de gestión de los casos de demostración (v0.8; obtenidos de la base de pruebas):**
+**Ruta y semáforo de gestión de los casos de Ica (v0.8, obtenidos de la base de pruebas; en esta revisión solo se volvieron a comprobar Pueblo Nuevo y La Tinguiña):**
 
 | Partida | A | Tipos de alerta | Pasos de la ruta (esfuerzo) | Esfuerzo | Gestión (interno) |
 |---|---|---|---|---|---|
-| `SIM-11048217` Parcona | Verde | — | Sin pasos | — | Viable |
-| `SIM-11052690` La Tinguiña | Amarillo | RV-02, RV-04 | Hipoteca (medio), 2 planos de instalaciones (bajo) | Medio | Viable con condiciones |
-| `SIM-11061555` Subtanjalla | Gris | RP-02, RV-04, información insuficiente | Demanda (alto), 2 planos (bajo), titularidad, completitud y planos base (bajo) | Alto | Completar información |
-| `SIM-11070419` Los Aquijes | Gris | RV-04, información insuficiente | 2 planos (bajo), titularidad, completitud y planos base (bajo) | Bajo | Completar información |
-| `SIM-11075836` Pueblo Nuevo | Rojo | RP-01 | Embargo (alto) | Alto | Requiere regularización |
-| `SIM-11081204` Santiago | Verde | — | Sin pasos | — | Viable |
-| `SIM-11087751` Salas | Amarillo | RV-03 | Carga técnica o servidumbre (medio) | Medio | Viable con condiciones |
-| `SIM-11093320` San José de los Molinos | Rojo | RP-03 | Bloqueo (alto) | Alto | Requiere regularización |
-| `SIM-11098467` Pachacútec | Amarillo | RV-05 | Diferencia de área: ampliación o licencia (alto) | Alto | Requiere regularización |
-| `SIM-11104029` Ica | Amarillo | RV-03, RV-06 | Servidumbre (medio), plano observado (bajo) | Medio | Viable con condiciones |
+| `11048217` Parcona | Verde | — | Sin pasos | — | Viable |
+| `11052690` La Tinguiña | Amarillo | RV-02, RV-04 | Hipoteca (medio), 2 planos de instalaciones (bajo) | Medio | Viable con condiciones |
+| `11061555` Subtanjalla | Gris | RP-02, RV-04, información insuficiente | Demanda (alto), 2 planos (bajo), titularidad, completitud y planos base (bajo) | Alto | Completar información |
+| `11070419` Los Aquijes | Gris | RV-04, información insuficiente | 2 planos (bajo), titularidad, completitud y planos base (bajo) | Bajo | Completar información |
+| `11075836` Pueblo Nuevo | Rojo | RP-01 | Embargo (alto) | Alto | Requiere regularización |
+| `11081204` Santiago | Verde | — | Sin pasos | — | Viable |
+| `11087751` Salas | Amarillo | RV-03 | Carga técnica o servidumbre (medio) | Medio | Viable con condiciones |
+| `11093320` San José de los Molinos | Rojo | RP-03 | Bloqueo (alto) | Alto | Requiere regularización |
+| `11098467` Pachacútec | Amarillo | RV-05 | Diferencia de área: ampliación o licencia (alto) | Alto | Requiere regularización |
+| `11104029` Ica | Amarillo | RV-03, RV-06 | Servidumbre (medio), plano observado (bajo) | Medio | Viable con condiciones |
+
+Los dos lotes de la SBN quedan en «Completar información» (faltan la partida transcrita y la memoria descriptiva).
 
 Pachacútec es amarillo en A pero «requiere regularización» en gestión: una ampliación no declarada pide un trámite municipal
 (esfuerzo alto). Los dos indicadores responden preguntas distintas y ninguno cambia al otro.
@@ -336,13 +377,17 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 
 ## 14. Limitaciones y pendientes reales
 
-- **Revisión especializada** de las reglas `v0.4`, el glosario y la redacción de los casos: pendiente (CP-05b no se da por
+- **Revisión especializada** de las reglas `v0.5`, el glosario y la redacción de los casos: pendiente (CP-05b no se da por
   aprobado).
-- **Aprobación de D20** (partidas transcritas, desvío de RN-01 y PA2) por el asesor: pendiente.
+- **Aprobación de D20 y D57** (partidas transcritas y lotes de la SBN, desvíos de RN-01 y PA2) por el asesor: pendiente.
+- **Lotes de la SBN:** transcribir sus partidas de Conoce Aquí y pedir las memorias descriptivas (D57).
+- **Decisión del equipo sobre `d7803f8`:** quitar los rótulos de simulado, la marca de agua y el prefijo `SIM-`, los nombres y
+  colegiaturas de los especialistas, las fotos con licencia «Referencial académico» y la demo pública cambian supuestos de I6,
+  I7, I11, RN-01 y D9. Están listados, sin corregir, en [REPORTE-v0.9-real.md](REPORTE-v0.9-real.md).
 - **Supuestos D32 a D49** por confirmar con el equipo y el docente.
 - **Respaldo y restauración (CP13):** sin ejecutar.
 - **Separación de demostración, estudio y operación (CP15) e inspección presencial real (CP16):** pendientes.
-- **Docker** no se ha probado: ni las imágenes ni el enlace a `127.0.0.1` se ejecutaron.
+- **Docker y la demo en la nube** no se probaron en esta revisión: ni las imágenes, ni el enlace a `127.0.0.1`, ni el dominio.
 - **Instalación en otro equipo (CP-07)**, piloto, reclutamiento, consentimientos y aplicación del estudio: pendientes.
 - **Accesibilidad** con teclado y lector de pantalla de los componentes de la v0.7 y del rediseño: No verificado.
 - **Tamaño del paquete** del frontend: supera los 500 kB del aviso de Vite.
@@ -364,7 +409,9 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 | ACT-08 | Ítem HR y PU del checklist | `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos` | Fuente externa manual |
 | ETP-1 | `ExpedienteService.registrar`, `OrigenCaptacion`, `RegistrarPartida.tsx` | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.prefijoSegunElOrigen` | Implementado |
 | ETP-2 | `ExpedienteService.autorizar`/`retirarAutorizacion`, `PanelPublicacion.tsx`, `MisInmuebles.tsx` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Implementado |
-| ETP-3 | `MotorClasificacion`, `ClasificacionService`, `reglas.json` v0.4 | `MotorClasificacionTest`, `MotorPlanosTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Implementado |
+| ETP-3 | `MotorClasificacion`, `ClasificacionService`, `reglas.json` v0.5 | `MotorClasificacionTest`, `MotorPlanosTest`, `MotorDocumentosLoteTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Implementado |
+| v0.9 Documentos del lote | `DocumentoLote`, `DocumentoDelLote`, `DocumentoLotePdf`, `DocumentosDelLote.tsx`, `VisorPdf.tsx`, V15 | `DocumentosLoteApiTest`, `MotorDocumentosLoteTest`; recorrido v0.9, pasos 21 a 23 | Implementado |
+| v0.9 Precio con moneda y fuente | `CasoLote.moneda`/`precioNota`/`fuenteUrl`, `lib/formato.ts` (`precio`), V15 | `CatalogoYServiciosTest`; Vitest `formato.test.ts`; recorrido v0.9, pasos 22 y 23 | Implementado |
 | ETP-4 | `ExpedienteService.actualizar`/`asociarDocumentoPlano`, `HistorialEvaluacion` | `HistorialEvaluacionTest.planoFaltanteLlevaAVerde`, `cadaRecalculoAgregaUnaFila` | Implementado |
 | ETP-5 | `ExpedienteService.publicar`/`retirarPublicacion`, `PanelPublicacion.tsx` | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `soloElGestorPublica` | Implementado |
 | ETP-6 | `CarteraService` (contacto), `SolicitudContacto.tsx`, `Cartera.tsx` | `CarteraTest.contactoSoloPublicado`, `motivoCerrado`; Vitest `contacto.test.ts` | Implementado |
@@ -377,7 +424,7 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 | v0.8 Resaltado de A | `lib/resaltado.ts`, `EtiquetaResaltado.tsx`, tokens de `index.css` | Vitest `resaltado.test.ts`; recorrido v0.8, paso 18 | Implementado |
 | v0.8 Diagnóstico del 409 | `ManejadorErrores.causaRaiz` | `ManejadorErroresTest` | Implementado |
 | ETP-9 | Texto fijo en `Expediente.tsx` | — | Fuera del sistema |
-| RN-01 | Prefijo `SIM-`, `CasoLote.sintetico` | `CasosApiTest.contenidoCargado` | Parcial (desvío D20) |
+| RN-01 | `CasoLote.sintetico` (el prefijo `SIM-` ya no se usa en el catálogo) | `CasosApiTest.contenidoCargado` | Parcial (desvíos D20 y D57; ver `d7803f8`) |
 | RN-02 | `MotorClasificacion` (faltantes) | `MotorClasificacionTest.desconocidoNoEsAusencia` | Implementado |
 | RN-03 | `MotorClasificacion` (precedencia) | `MotorClasificacionTest.amarilloYRojoPorTipoDeActo` | Implementado |
 | RN-04 | `MotorClasificacion` (gris conserva alertas) | `MotorClasificacionTest.grisConservaAlertas` | Implementado |
@@ -406,8 +453,11 @@ comprador (D46) y listado de especialistas para la asignación (D45).
 ## 16. Correspondencia con el informe
 
 Relaciona los identificadores del informe del curso con los de este documento. Las pruebas son automáticas salvo «Paso n», que es un
-paso del recorrido de navegador (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 correctos el 30 de octubre de 2026). Las filas de
-la v0.8 citan «Paso v08-n» del recorrido v0.8 (`docs/pruebas/RESULTADO-recorrido-v08.md`, 20 de 20 el 2 de noviembre de 2026).
+paso del recorrido de navegador. «Paso n» numera los pasos del guion (`docs/demo/GUION-DEMO.md`); la numeración histórica viene del
+recorrido v0.7 (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 el 30 de octubre de 2026) y las filas de la v0.8 citan «Paso
+v08-n» (`docs/pruebas/RESULTADO-recorrido-v08.md`, 20 de 20 el 2 de noviembre de 2026). **Todos esos pasos se volvieron a ejecutar
+sobre la versión actual** en el recorrido de uso v0.9 (`docs/pruebas/uso-v09/recorrido-v09.mjs`, 27 de 27 el 9 de noviembre de
+2026), con los códigos sin `SIM-`; la correspondencia está en la tabla del guion.
 
 ### 16.1 Requisitos funcionales
 
