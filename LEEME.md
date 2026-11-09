@@ -1,18 +1,25 @@
-# Trustinmuebles — MVP académico de orientación documental (v0.8.0)
+# Trustinmuebles — orientación documental precompra (versión actual: v0.9 + «Version real», `d7803f8`)
 
 > **Modelo de negocio implementado, comprobado contra el código y las pruebas:**
 > [docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md). Este LEEME usa sus mismos identificadores
-> (ACT, ETP, RN, I).
+> (ACT, ETP, RN, I). El estado de esta versión, con sus pruebas y observaciones, está en
+> [docs/REPORTE-v0.9-real.md](docs/REPORTE-v0.9-real.md).
 
 Proyecto del curso Diseño e Implementación de Arquitectura Empresarial. Trustinmuebles es el sistema de transparencia
 precompra de **una sola inmobiliaria de Ica**, que carga a mano su propia cartera (sin scraping de otros portales ni APIs
-públicas, que SUNARP no ofrece). Muestra **partidas registrales simuladas** de lotes y viviendas urbanas, con documentos que se
-parecen a una copia literal pero son ficticios, explica sus términos y señala qué información falta. **No certifica
-saneamiento, no recomienda comprar, no consulta fuentes oficiales en línea y no reemplaza a un abogado o notario.**
+públicas, que SUNARP no ofrece). Muestra partidas registrales de lotes y viviendas urbanas, con una copia informativa en PDF,
+explica sus términos y señala qué información falta. **No certifica saneamiento, no recomienda comprar, no consulta fuentes
+oficiales en línea y no reemplaza a un abogado o notario.**
 
-**Versión:** `0.8.0` en el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`). La v0.8.0
-incorpora el feedback docente del 31/10/2026 y las decisiones del equipo del 02/11/2026 (ver «Novedades de la v0.8.0»). Es la
-versión que usará el estudio: debe congelarse con el tag `v0.8.0` antes del piloto.
+**Versión actual.** `main` en `d7803f8` («Version real», 08/11/2026), sobre `7fc4a54` (v0.9: lotes de la SBN y documentos del
+lote, reglas `v0.5`) y `43cd45d` (fotos de las viviendas). El número de versión de los paquetes **no cambió**: sigue en `0.8.0` en
+el backend (`trustinmuebles-backend/pom.xml`) y en la interfaz (`trustinmuebles/package.json`). Qué cambió en cada commit:
+[docs/REPORTE-v0.9-real.md](docs/REPORTE-v0.9-real.md), sección 1.
+
+**Cómo se presenta ahora el contenido (d7803f8).** Los diez casos de Ica perdieron el prefijo `SIM-` y la interfaz, los PDF y los
+especialistas dejaron de rotularse como simulados o ficticios. **Los datos siguen siendo los mismos de la demostración**: las
+partidas de Ica, sus titulares y los perfiles de los especialistas fueron redactados por el equipo; solo los dos lotes de la SBN
+provienen de una fuente pública. Ver las observaciones de [docs/REPORTE-v0.9-real.md](docs/REPORTE-v0.9-real.md).
 
 **Organización de referencia del caso:** LedCons, sin acta ni acuerdo formal acreditado. Los datos del sistema no provienen de
 esa organización.
@@ -27,7 +34,7 @@ sistema ordena esa información, la explica y señala los vacíos.
 
 | | Indicador A | Indicador B |
 |---|---|---|
-| Servicio | Pre-evaluación documental automática por reglas (`v0.4`, borrador pendiente de revisión especializada) | Evaluación técnica presencial de 6 pasos |
+| Servicio | Pre-evaluación documental automática por reglas (`v0.5`, borrador pendiente de revisión especializada) | Evaluación técnica presencial de 6 pasos |
 | Quién lo activa | Nadie lo pide: se calcula para todo caso al registrarlo o cambiar sus datos | El comprador, a pedido |
 | Costo | Incluido | S/ 250.00 referencial, sin pasarela de pago |
 | Resultado | Verde «Sin alertas en los campos evaluados», amarillo «Requiere revisión», rojo «Alerta prioritaria» o gris «Información insuficiente o condición no evaluable» | Informe del especialista en PDF |
@@ -42,27 +49,28 @@ Revisor, gestor y especialistas son **personal de la inmobiliaria**; el código 
 | ID | Actor | Rol en el sistema | Responsabilidad |
 |---|---|---|---|
 | ACT-01 | Comprador | COMPRADOR | Consulta el catálogo de casos **publicados**, pide contacto y solicita la inspección (indicador B) |
-| ACT-02 | Revisor | REVISOR | Registra la captación indicando su origen y al propietario, mantiene partidas, planos y checklist, y subsana faltantes |
+| ACT-02 | Revisor | REVISOR | Registra la captación indicando su origen y al propietario, mantiene partidas, planos, documentos del lote y checklist, y subsana faltantes |
 | ACT-03 | Gestor (asesor comercial) | GESTOR | Publica y retira casos, atiende contactos, asigna inspecciones y sigue la cartera en su panel |
 | ACT-04 | Especialista | ESPECIALISTA | Registra el avance y emite el informe técnico, solo si el gestor le asignó la inspección |
 | ACT-05 | Propietario | PROPIETARIO | Consulta sus casos y otorga o retira su autorización. No edita ni sube documentos |
 | ACT-06 | Abogado o notario | Externo | Verificación jurídica antes de comprar |
 | ACT-07 | SUNARP (Conoce Aquí, Visor BGR) | Externo | Fuente consultada a mano; el sistema solo abre enlaces |
-| ACT-08 | Municipalidad | Externo | Fuente consultada a mano (declaración jurada HR y PU que aporta el propietario) |
+| ACT-08 | Municipalidad | Externo | Fuente consultada a mano (HR y PU, zonificación) |
+| ACT-09 | SBN | Externo | Fuente pública de los dos lotes de la subasta (bases y plano perimétrico); el sistema solo enlaza |
 
 ### Flujo de nueve etapas
 
 «Implementado» significa que existe en el backend con pruebas automáticas y en la interfaz con pruebas de sus funciones
-puras. Las pantallas de las etapas 1 a 8 se recorrieron en Chrome con los 5 roles (ver «Pruebas»). El detalle (pantalla, endpoint y prueba de cada
-etapa) está en la sección 4 del modelo de negocio.
+puras. Las pantallas de las etapas 1 a 8 se recorrieron en Chrome con las 8 cuentas el 9 de noviembre de 2026 (ver «Pruebas»).
+El detalle (pantalla, endpoint y prueba de cada etapa) está en la sección 4 del modelo de negocio.
 
 | ID | Etapa | Quién | Estado |
 |---|---|---|---|
-| ETP-1 | Captación: el propietario **inicia el proceso fuera del sistema** (entrega sus documentos a la inmobiliaria) y el revisor registra el caso en «Registrar partida», con el código del propietario; nace en borrador y el indicador A se calcula en ese momento. El revisor elige el **origen** (transcrita de Conoce Aquí o simulada para demostración) y puede indicar un precio referencial | Propietario, revisor | Implementado |
-| ETP-2 | Autorización: el propietario la confirma con su cuenta. **A ya está calculado antes de autorizar** y autorizar no lo cambia; la autorización solo habilita la publicación | Propietario | Implementado |
-| ETP-3 | Pre-evaluación documental automática (indicador A) | Motor de reglas | Implementado |
+| ETP-1 | Captación: el propietario **inicia el proceso fuera del sistema** y el revisor registra el caso en «Registrar partida», con el código del propietario; nace en borrador y el indicador A se calcula en ese momento. El revisor elige el **origen**: «Transcrita de Conoce Aquí (SUNARP)» o «Registro interno de cartera» (este último sigue exigiendo el prefijo `SIM-`) y puede indicar un precio referencial | Propietario, revisor | Implementado |
+| ETP-2 | Autorización: el propietario la confirma con su cuenta. **A ya está calculado antes de autorizar** y autorizar no lo cambia | Propietario | Implementado |
+| ETP-3 | Pre-evaluación documental automática (indicador A), con los planos de una vivienda y los documentos de un lote | Motor de reglas | Implementado |
 | ETP-4 | Subsanación: el revisor incorpora documentos faltantes, el motor recalcula y el historial lo registra | Revisor | Implementado |
-| ETP-5 | Publicación, solo con autorización vigente. El botón «Publicar» está en el **detalle del caso**, no en la lista de la cartera | Gestor | Implementado |
+| ETP-5 | Publicación, solo con autorización vigente. El botón «Publicar» está en el **detalle del caso** | Gestor | Implementado |
 | ETP-6 | Consulta del catálogo y solicitud de contacto | Comprador, gestor | Implementado |
 | ETP-7 | Evaluación técnica presencial (indicador B), con asignación obligatoria del especialista por el gestor | Comprador, gestor, especialista | Implementado |
 | ETP-8 | Seguimiento de la cartera en el panel del gestor | Gestor | Implementado |
@@ -76,36 +84,27 @@ etapa) está en la sección 4 del modelo de negocio.
 - B nunca cambia A (I2) y el checklist, incluida la HR y PU, tampoco (I3).
 - Adjuntar un plano o un PDF no levanta un rojo por embargo, bloqueo o demanda: solo un cambio en los asientos de la partida (I9).
 - Publicar y pedir contacto no dependen del color de A (I10), pero nada se publica sin autorización vigente del propietario (I14).
-- Sin nombres, DNI ni teléfonos de propietarios o compradores: se identifican por su código de cuenta y el contacto usa motivos
-  de una lista cerrada (I11).
+- Compradores y propietarios se identifican por su código de cuenta y el contacto usa motivos de una lista cerrada (I11). Los
+  asientos de las partidas de demostración sí nombran titulares (ver el reporte, observaciones).
 - El historial de evaluaciones es de solo adición (I12) y el propietario solo autoriza sus propios casos (I13).
 - La autorización la valida el servidor (I4); la interfaz solo oculta lo que el rol no puede hacer.
-- v0.8: el semáforo de gestión es interno (solo gestor y revisor), no cambia A ni B, no se muestra al comprador, al propietario
-  ni al especialista y no bloquea la publicación (I15).
-- v0.8: un plano solo queda «presentado» u «observado» con su PDF (subido o la lámina generada de los casos de demostración).
+- El semáforo de gestión es interno (solo gestor y revisor), no cambia A ni B, no se muestra al comprador, al propietario ni al
+  especialista y no bloquea la publicación (I15).
+- Un plano o un documento del lote solo queda «presentado» u «observado» con su PDF (subido o generado por el sistema).
 
-### Novedades de la v0.9 (reglas v0.5)
+### Novedades de la versión actual
 
-- **Dos lotes reales de la subasta de la SBN** (`11045763` Huarmey y `80194645` Supe), de `propietario-03`, con su plano
-  perimétrico oficial y precio en US$. Ver D57. **Pendiente del equipo:** consultar sus partidas en Conoce Aquí y transcribirlas
-  (hoy no tienen asientos), y pedir las memorias descriptivas N.° 0764-2025 y 0501-2025/SBN-DGPE-SDDI.
-- **Documentos del lote** como requisitos del indicador A (D58): plano perimétrico y memoria descriptiva (gris si faltan),
-  zonificación (amarillo, RV-07) y tasación (informativa). Santiago los trae y sigue en verde.
-- Hay 12 casos y 8 cuentas. Pruebas: 200 en el backend y 85 en la interfaz.
+| Commit | Qué cambia |
+|---|---|
+| `7fc4a54` v0.9 | **Dos lotes de la II Subasta Pública 2026 de la SBN** (`11045763` Huarmey y `80194645` Supe) de `propietario-03`, con su plano perimétrico oficial, precio base en US$, nota del precio y fuente con enlace (D57). **Documentos del lote** como requisitos del indicador A (D58, V15): plano perimétrico y memoria descriptiva (gris si faltan), certificado de zonificación (amarillo, **RV-07**) y tasación (informativa). Reglas `v0.4` → **`v0.5`**. Panel «Documentos del lote», visor de PDF compartido y precio con su moneda |
+| `43cd45d` | Fotos referenciales de Unsplash para las 9 viviendas, con el rótulo «Imagen referencial del prototipo» |
+| `d7803f8` «Version real» | Los 10 casos de Ica pasan de `SIM-1104…` a `1104…` (`CasosSeeder` renombra los de una base anterior). Fotos reemplazadas (Wikimedia Commons y otras fuentes) y 3 fotos nuevas de lotes. Especialistas con nombre y colegiatura sin `SIM-` (V16). Copia literal, informe técnico y lámina **sin marca de agua** y con textos «referencial» en lugar de «simulado» o «ficticio». Login **sin tarjetas de cuentas**. Textos de la landing, el pie y el detalle sin «demostración». Docker: CORS con el dominio `https://trust.aurorabeauty.site` y el flujo de imágenes también **en cada push a `main`** |
 
-### Novedades de la v0.8.0
+**Pendiente del equipo (D57):** consultar las partidas de los lotes de la SBN en Conoce Aquí y transcribirlas (hoy no tienen
+asientos) y pedir sus memorias descriptivas.
 
-| Origen | Qué cambia | Dónde |
-|---|---|---|
-| Feedback c | Un plano presentado exige su PDF (422 si no); subirlo a un plano no presentado lo presenta. PDF de hasta 25 MB, optimizado si pasa de 5 MB, máximo guardado 10 MB (413 si no baja), con evidencia de quién lo subió, cuándo, tamaños y huella SHA-256 | Panel de planos, editor, `DocumentosPdf`, V12 |
-| Feedback b | Ruta de regularización por caso (pasos, quién gestiona, documento, esfuerzo) y plazo o vencimiento del gravamen si consta | Sección «Ruta de regularización», `rutas.json`, V13 |
-| Feedback a | Panel del gestor por tipo de alerta y por esfuerzo, lista «Por regularizar» y filtro por tipo de alerta | `#/cartera`, `#/casos`, `GET /cartera/panel` |
-| Decisión 2 | Semáforo de gestión interno con decisión de captación (lista cerrada, historial de solo adición) | Panel «Gestión inmobiliaria (interno)», `gestion.json`, V14 |
-| Interfaz | Resaltado del color de A en tarjetas, listas y cabecera (borde, fondo tenue, ícono y texto) | `lib/resaltado.ts`, `index.css` |
-| Diagnóstico | El 409 por base de datos deja la causa raíz en el log del servidor (sin cambiar la respuesta) | `ManejadorErrores` |
-
-Los criterios de esfuerzo y los estados de gestión son un borrador del equipo, pendiente de revisión especializada; no son
-plazos ni costos. Decisiones D52 a D55 en `docs/decisiones.md`.
+Las novedades de la v0.8 (PDF obligatorio de cada plano, ruta de regularización, panel por tipo de alerta, semáforo de gestión,
+resaltado del color de A) siguen vigentes; ver D52 a D56 en `docs/decisiones.md` y las secciones 4 y 5 del modelo de negocio.
 
 ### Cómo se genera valor (hipótesis no validadas)
 
@@ -124,7 +123,8 @@ comparador de inmuebles, posventa e inteligencia artificial para leer documentos
 
 **Fuera de alcance:** ver «Qué no incluye». La etapa 9 (verificación jurídica) sigue fuera del sistema.
 
-**Limitaciones:** MVP académico con datos simulados; las reglas están pendientes de revisión especializada.
+**Limitaciones:** MVP académico. Las partidas de Ica y los especialistas son contenido redactado por el equipo; las reglas están
+pendientes de revisión especializada.
 
 El producto se llama Trustinmuebles en el código, en la documentación y en el informe (ver `docs/decisiones.md`, D2).
 
@@ -132,9 +132,10 @@ El producto se llama Trustinmuebles en el código, en la documentación y en el 
 
 - `trustinmuebles-backend/` — API de Spring Boot 4 con Java 21, modular con Spring Modulith en 9 módulos: `identidad`,
   `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`, `orientacion`, `almacenamiento` y `shared`. Ver su README.
-- `trustinmuebles/` — interfaz de React 19 con Vite. Los predios y las láminas usan ilustraciones SVG propias. La landing, el
-  login, el catálogo y el registro de partida usan fotografías locales de `public/img/`, y la cartera un fondo de color: la demo no
-  depende de internet para verlos. La credencial del especialista usa sus iniciales.
+- `trustinmuebles/` — interfaz de React 19 con Vite. Las 12 tarjetas del catálogo muestran una fotografía local de
+  `public/img/casas/` con el rótulo «Imagen referencial» (créditos y licencias en `public/img/casas/CREDITOS.md`); las láminas
+  usan dibujos propios. La landing y el login usan fotografías locales de `public/img/`. La credencial del especialista usa sus
+  iniciales.
 
 Documentación en `docs/`: funcionalidades, entorno, decisiones, API, trazabilidad, pruebas con evidencias, manuales y notas para
 el informe. Para saber qué hace el programa, empieza por `docs/MODELO-NEGOCIO-IMPLEMENTADO.md` y `docs/funcionalidades.md`.
@@ -164,7 +165,7 @@ npx pnpm@9 install
 npx pnpm@9 dev
 ```
 
-**bash, zsh o fish:**
+**Git Bash, bash, zsh o fish:**
 
 ```bash
 # Terminal 1: backend en http://127.0.0.1:8080  (Swagger: /swagger-ui.html)
@@ -177,113 +178,140 @@ npx pnpm@9 install
 npx pnpm@9 dev
 ```
 
-Si falta `APP_SEED_PASSWORD` y hay cuentas por crear, el backend se detiene con un mensaje que lo explica.
+Si falta `APP_SEED_PASSWORD` y hay cuentas por crear, el backend se detiene con un mensaje que lo explica. Para probar con una
+base aparte, sin tocar `trustinmuebles-backend/data/`, define también `SPRING_DATASOURCE_URL` (con la URL H2 de
+`application.properties` apuntando a otra carpeta) y `APP_STORAGE_PATH`.
 
-**Docker (no verificado):** hay `docker-compose.yml`, un `Dockerfile` por carpeta y un flujo de GitHub Actions que publica las
-imágenes en GHCR **solo cuando se lanza a mano** (`workflow_dispatch`). No se ha probado. El frontend se publica en
-`127.0.0.1:8081`, solo en este equipo, y el backend no publica puertos. Dentro del contenedor el backend escucha en `0.0.0.0`,
-alcanzable únicamente por la red interna de Docker.
+### Docker y despliegue en la nube (no verificado en esta revisión)
 
-## Cuentas de prueba
+- `docker-compose.yml` (pensado para Portainer) levanta `backend` y `frontend`. Exige `APP_SEED_PASSWORD`, `APP_JWT_SECRET` y
+  `APP_STORAGE_KEY`. El frontend se publica en `127.0.0.1:${FRONTEND_PORT:-8081}` y el backend no publica puertos; dentro del
+  contenedor escucha en `0.0.0.0`.
+- **CORS:** por defecto `APP_CORS_ALLOWED_ORIGINS` admite `https://trust.aurorabeauty.site` y `localhost`/`127.0.0.1` en los
+  puertos 8085, 8081 y 5173 (en `docker-compose.yml` y en el `Dockerfile` del backend). El dominio indica una demo publicada en
+  internet, presumiblemente detrás de un proxy inverso; ese proxy no está en el repositorio.
+- **GitHub Actions** (`.github/workflows/docker.yml`): construye y publica `ghcr.io/ansufati2211/trustinmuebles-backend` y
+  `…-frontend` (`latest` y el SHA) **en cada push a `main`** y también a mano (`workflow_dispatch`). El comentario de la primera
+  línea del flujo todavía dice «solo cuando se lanza a mano».
+- Ni las imágenes ni el dominio se probaron en esta revisión. Ver I6 y D9 en «Uso local».
+
+## Cuentas de prueba (8)
+
+El login ya **no muestra tarjetas de cuentas**: se escribe el código de cuenta y la contraseña. Todas usan la contraseña de
+`APP_SEED_PASSWORD`.
 
 | Cuenta | Rol | Puede |
 |---|---|---|
 | `comprador-01` | COMPRADOR | Consultar el **catálogo de casos publicados** y su detalle, pedir contacto y **solicitar la inspección técnica** (solo este rol) |
-| `revisor-01` | REVISOR | Consultar todos los casos, editar expedientes y planos, cambiar el checklist, subir PDF y registrar o eliminar partidas transcritas |
+| `revisor-01` | REVISOR | Consultar todos los casos, editar expedientes, planos y documentos del lote, cambiar el checklist, subir PDF y registrar o eliminar partidas captadas |
 | `especialista-01` | ESPECIALISTA | Consultar todos los casos y registrar el avance o emitir el informe de las inspecciones que el gestor le asignó. No edita partidas |
-| `especialista-02` | ESPECIALISTA | Igual que `especialista-01`; perfil «Arq. Perfil Ficticio 02», `SIM-CAP-0002` |
+| `especialista-02` | ESPECIALISTA | Igual que `especialista-01` |
 | `gestor-01` | GESTOR (asesor comercial) | Publicar y retirar casos, atender contactos, asignar inspecciones y ver el panel de cartera |
-| `propietario-01`, `propietario-02`, `propietario-03` | PROPIETARIO | Consultar solo sus casos (también en borrador) y otorgar o retirar su autorización; nada más |
+| `propietario-01`, `propietario-02` | PROPIETARIO | Consultar solo sus casos (también en borrador) y otorgar o retirar su autorización |
+| `propietario-03` | PROPIETARIO | Igual; es la cuenta de los dos lotes de la SBN. No representa a la SBN |
 
 Cada rol tiene su menú: el comprador y el especialista ven «Expedientes»; el revisor agrega «Registrar partida»; el gestor,
-«Cartera»; el propietario ve solo «Mis inmuebles». Un caso nuevo nace en borrador y solo se publica con la autorización de su
-propietario.
+«Cartera»; el propietario ve solo «Mis inmuebles».
 
-El especialista `especialista-01` firma como **Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001**. Son datos
-ficticios: la credencial en pantalla usa iniciales y dice «Perfil ficticio de demostración», y el PDF del informe también los
-rotula así. El servidor toma esos datos de la cuenta y no del formulario (M8). **Los perfiles de especialista son ficticios y no
-firman informes reales.**
+**Especialistas** (`DemoUsuariosSeeder`, V16 en bases anteriores). El servidor toma estos datos de la cuenta y no del formulario
+(M8):
 
-Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD`. Al arrancar se crea cada cuenta que falte, también en una base ya
-creada; las que existen no se tocan: si cambias la variable con una base ya creada, su contraseña no cambia. Para empezar de
-cero, apaga el backend y borra la carpeta `trustinmuebles-backend/data/`. Una base anterior se migra al arrancar (V5 a V11);
-V6, V9 y V10 se probaron sobre bases en memoria (`MigracionV6Test`, `MigracionEspecialistaTest`, `MigracionAsignacionTest`),
-**no sobre una base real en `data/`**. V9 actualiza el perfil de `especialista-01` y los informes ya firmados con el perfil
-anterior. No hay registro abierto.
+| Cuenta | Nombre con el que firma | Especialidad | Colegiatura |
+|---|---|---|---|
+| `especialista-01` | Ing. Carlos Alberto Mendoza Quispe | Ingeniero Civil | CIP N.° 248910 |
+| `especialista-02` | Arq. Valeria Sofía Paredes Rojas | Arquitecto | CAP N.° 19432 |
 
-## Casos cargados
+Desde `d7803f8` la credencial y el PDF del informe **ya no dicen** «Perfil ficticio de demostración». Son perfiles redactados
+por el equipo; que esos nombres y números no correspondan a profesionales colegiados reales **no se verificó** (ver el reporte).
 
-Cada caso es una partida simulada: lleva el prefijo `SIM-`, un predio en un distrito de Ica (con una habilitación inventada), su
-copia literal y sus láminas de planos en PDF, y un informe técnico cuando se emitió. Todo es inventado. Los diez nacen
-**publicados y autorizados**. Solo la inspección en curso de `SIM-11098467` tiene especialista asignado (`especialista-01`);
-`SIM-11093320` queda solicitada y pendiente de asignación. Los informes emitidos los firma `especialista-01`.
+Al arrancar se crea cada cuenta que falte, también en una base ya creada; las que existen no se tocan: si cambias la variable
+con una base ya creada, su contraseña no cambia. Para empezar de cero, apaga el backend y borra `trustinmuebles-backend/data/`
+(o usa `scripts/reiniciar-demo.ps1`). Una base anterior se migra al arrancar (hasta V16) y `CasosSeeder` renombra sus casos
+`SIM-…` a los códigos nuevos. No hay registro abierto.
 
-| Partida | Predio | Propietario | Tipo | Precio ref. | A | B | HR y PU | Qué muestra |
-|---|---|---|---|---|---|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | propietario-01 | Vivienda | S/ 185,000 | Verde | Favorable | Revisado | Una titular; hipoteca cancelada; 4 planos |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | propietario-02 | Vivienda | S/ 210,000 | Amarillo | Con observaciones | Revisado | Copropiedad; hipoteca vigente; faltan II.EE. e II.SS. |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | propietario-01 | Vivienda | S/ 120,000 | Gris | No solicitada | Observado | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
-| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | propietario-02 | Vivienda | S/ 98,000 | Gris | No solicitada | Pendiente | Sin copia literal ni planos |
-| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | propietario-01 | Vivienda | S/ 165,000 | Rojo | No solicitada | Observado | Embargo vigente; 4 planos |
-| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | propietario-02 | Lote | S/ 75,000 | Verde | No solicitada | Revisado | Lote recién independizado; los planos no aplican |
-| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | propietario-01 | Vivienda (adobe) | S/ 88,000 | Amarillo | Con riesgo | Observado | Sucesión intestada; servidumbre de paso |
-| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | propietario-02 | Vivienda | S/ 110,000 | Rojo | Solicitada (pendiente de asignación) | Pendiente | Bloqueo registral vigente |
-| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | propietario-01 | Vivienda | S/ 140,000 | Amarillo | En inspección (`especialista-01`) | Observado | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos |
-| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | propietario-02 | Vivienda | S/ 260,000 | Amarillo | Favorable | Revisado | Reserva vial; plano de estructuras observado |
+## Casos cargados (12)
 
-Los precios son referenciales y simulados. Solo Santiago es un lote: las otras nueve tienen declaratoria de fábrica o planos y
-sus reglas lo exigen (ver `docs/decisiones.md`, D23).
+Diez casos de Ica (9 viviendas y el lote de Santiago) y dos lotes de la SBN. Todos nacen **publicados y autorizados**. Solo la
+inspección en curso de `11098467` tiene especialista asignado (`especialista-01`); `11093320` queda solicitada y pendiente de
+asignación. Los informes emitidos de la semilla los firma `especialista-01`. Colores comprobados en el recorrido del 9 de
+noviembre de 2026.
 
-Los casos 5 a 10 no forman parte del instrumento del estudio: las formas A y B usan solo los 4 primeros.
+| Partida | Predio | Propietario | Tipo | Precio ref. | A | B | Qué muestra |
+|---|---|---|---|---|---|---|---|
+| `11045763` | Parcela 2 · Playa La Pocita · Huarmey, Áncash | propietario-03 | Lote (SBN) | US$ 90,096 | Gris | No solicitada | Partida por transcribir; plano perimétrico oficial; faltan memoria (gris) y zonificación (RV-07) |
+| `11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | propietario-01 | Vivienda | S/ 185,000 | Verde | Favorable | Una titular; hipoteca cancelada; 4 planos |
+| `11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | propietario-02 | Vivienda | S/ 210,000 | Amarillo | Con observaciones | Copropiedad; hipoteca vigente; faltan II.EE. e II.SS. |
+| `11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | propietario-01 | Vivienda | S/ 120,000 | Gris | No solicitada | Extracto parcial; demanda vigente; sin planos |
+| `11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | propietario-02 | Vivienda | S/ 98,000 | Gris | No solicitada | Sin copia literal ni planos |
+| `11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | propietario-01 | Vivienda | S/ 165,000 | Rojo | No solicitada | Embargo vigente; 4 planos |
+| `11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | propietario-02 | Lote | S/ 75,000 | Verde | No solicitada | Los 4 documentos del lote (generados); los planos no aplican |
+| `11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | propietario-01 | Vivienda (adobe) | S/ 88,000 | Amarillo | Con riesgo | Sucesión intestada; servidumbre de paso |
+| `11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | propietario-02 | Vivienda | S/ 110,000 | Rojo | Solicitada (pendiente de asignación) | Bloqueo registral vigente |
+| `11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | propietario-01 | Vivienda | S/ 140,000 | Amarillo | En inspección (`especialista-01`) | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos |
+| `11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | propietario-02 | Vivienda | S/ 260,000 | Amarillo | Favorable | Reserva vial; plano de estructuras observado |
+| `80194645` | Parcela 2 · Cerro Purmacana · Supe | propietario-03 | Lote (SBN) | US$ 16,802 | Gris | No solicitada | Igual que Huarmey |
 
-Las reglas (tabla borrador v0.4), el glosario y la redacción de los documentos están **pendientes de revisión especializada**.
-Si tenías una base creada con una versión anterior a la v0.4, apaga el backend y borra `trustinmuebles-backend/data/`: los casos
-cambiaron de código.
+**Lotes de la SBN.** Precio base de la II Subasta Pública 2026 (venta ad corpus), con la nota «Las ofertas se presentan según
+las bases; no es una oferta de la inmobiliaria» y la fuente «SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano
+perimétrico oficial)», enlazada a `https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38`. El plano perimétrico es el
+PDF oficial y se abre en el visor del expediente.
 
-## Captación: partidas transcritas y simuladas
+**Documentos del lote** (los tres lotes): plano perimétrico y de ubicación, memoria descriptiva, certificado de zonificación y
+vías, y tasación. Santiago trae los cuatro generados por el sistema (sin sello ni firma) y sigue en verde.
+
+**Fotos.** Las 12 tarjetas llevan foto con el rótulo «Imagen referencial» (no son fotos del inmueble del expediente). Según
+`CREDITOS.md`, 7 vienen de Wikimedia Commons con licencia CC (CC0, CC BY o CC BY-SA) y 5 (`casa-3`, `casa-6`, `casa-7`,
+`casa-9` y `lote-huarmey`) son de anuncios o sitios comerciales con la licencia «Referencial académico», que no es una licencia
+libre. `CREDITOS.md` todavía cita los casos con el prefijo `SIM-`.
+
+Los casos de Ica 5 a 10 no forman parte del instrumento del estudio: las formas A y B usan solo los 4 primeros.
+
+Las reglas (tabla borrador `v0.5`, 10 reglas), el glosario (57 términos) y la redacción de los documentos están **pendientes de
+revisión especializada**.
+
+## Captación: origen de la partida
 
 «Registrar partida» (`#/casos/nueva`, solo el revisor) es **la única forma de captar un caso desde la interfaz** (ETP-1). El
 campo **origen** es obligatorio:
 
-| Origen | Número | Fuente | `sintetico` |
-|---|---|---|---|
-| `TRANSCRITA_CONOCE_AQUI` | Sin el prefijo `SIM-` | «Conoce Aquí – SUNARP» | `false` |
-| `SIMULADA_DEMOSTRACION` | Con el prefijo `SIM-` | «Partida simulada para demostración» | `true` |
+| Origen en pantalla | Valor | Número | Fuente guardada | `sintetico` |
+|---|---|---|---|---|
+| «Transcrita de Conoce Aquí (SUNARP)» | `TRANSCRITA_CONOCE_AQUI` | Ocho dígitos, con una letra inicial opcional, sin `SIM-` | «Conoce Aquí – SUNARP» | `false` |
+| «Registro interno de cartera» | `SIMULADA_DEMOSTRACION` | **Con el prefijo `SIM-`** (`SIM-` + ocho dígitos) | «Partida simulada para demostración» | `true` |
+
+Con «Registro interno de cartera», el campo dice «Código interno de ocho dígitos.» si falta el prefijo, pero la validación de la
+interfaz y del servidor sigue exigiendo `SIM-`. El historial rotula la primera evaluación como «Partida interna incorporada».
 
 El **precio referencial** es opcional (positivo, en soles) y se muestra en el catálogo. En ambos orígenes el servidor rechaza DNI,
-estado civil y domicilios (`ProteccionDatos`), y los dos se pueden eliminar; los diez casos de demostración, no. No hay API de
-SUNARP: una partida transcrita se consulta a mano y se pega el texto, sin nombres ni datos de personas naturales. Ver
-`docs/guia-transcripcion.md` y `docs/decisiones.md` (D20 y D50). La partida transcrita es un desvío de RN-01 y PA2 que el asesor
-debe aprobar.
+estado civil y domicilios (`ProteccionDatos`). No hay API de SUNARP: una partida transcrita se consulta a mano y se pega el
+texto. Ver `docs/guia-transcripcion.md` y `docs/decisiones.md` (D20, D50 y D57). Las partidas transcritas y los lotes de la SBN son
+un desvío de RN-01 y PA2 que el asesor debe aprobar.
 
 ## Pruebas
 
 ```powershell
-cd trustinmuebles-backend; .\mvnw.cmd test     # 186 pruebas del backend
-cd trustinmuebles; npx pnpm@9 test              # 82 pruebas del frontend
-cd trustinmuebles; npx pnpm@9 build             # verifica tipos y compila
+cd trustinmuebles-backend; .\mvnw.cmd verify    # 200 pruebas del backend
+cd trustinmuebles; npx pnpm@9 test               # 85 pruebas del frontend
+cd trustinmuebles; npx pnpm@9 build              # verifica tipos y compila
 ```
 
-En bash: `./mvnw test` en lugar de `.\mvnw.cmd test`. Las pruebas del backend no necesitan `APP_SEED_PASSWORD`: usan la
+En Git Bash: `./mvnw verify` en lugar de `.\mvnw.cmd verify`. Las pruebas del backend no necesitan `APP_SEED_PASSWORD`: usan la
 contraseña de `src/test/resources/application-test.properties` y una base en memoria.
 
-**Última ejecución real (2 de noviembre de 2026, rama `feedback-docente-v0.8`):** backend 186 ejecutadas, 186 aprobadas, 0
-fallos, 0 errores, 0 omitidas (30 clases); frontend 15 archivos, 82 aprobadas; build correcto, con aviso de tamaño del JS
-principal. Las pruebas del frontend son de funciones puras (permisos, navegación, filtros, totales del panel, historial,
-contacto, subida de PDF, ruta, gestión y resaltado), más una que renderiza el pie: no prueban el dibujado de las demás pantallas.
-Las pruebas de PDF generan los archivos en la propia prueba y usan límites pequeños de `application-test.properties`.
+**Última ejecución real (9 de noviembre de 2026, sobre `d7803f8`, rama `docs-v0.9-real`):** backend **200 ejecutadas, 200
+aprobadas**, 0 fallos, 0 errores, 0 omitidas (32 clases), `BUILD SUCCESS`; frontend **16 archivos, 85 aprobadas**; build
+correcto, con el aviso de tamaño del JS principal (618 kB). Coincide con lo anunciado en `7fc4a54`. Las pruebas del frontend son
+de funciones puras, más una que renderiza el pie. **Ojo:** `d7803f8` cambió aserciones de 12 archivos de prueba (10 del backend y 2 de la interfaz) para que acepten
+los textos nuevos (por ejemplo, ya no exigen la marca de agua); ver el reporte.
 
-**Recorrido de navegador de la v0.8:** 20 de 20 pasos correctos con los 5 roles en Chrome, el 2 de noviembre de 2026, sobre
-una base nueva fuera del repositorio. Script en `docs/pruebas/recorrido-v08.mjs`, capturas en `docs/pruebas/capturas-v08/` y
-tabla en `docs/pruebas/RESULTADO-recorrido-v08.md`. El recorrido de la v0.7 (`recorrido-v07.mjs`) marca planos como presentados
-sin PDF, que la v0.8 rechaza: queda como registro histórico.
+**Recorrido de uso de la versión actual:** **27 de 27 pasos correctos** con las 8 cuentas en Chrome, el 9 de noviembre de 2026,
+sobre una base nueva fuera del repositorio, sin errores de consola ni respuestas 409 o 500. Script en
+`docs/pruebas/uso-v09/recorrido-v09.mjs`, capturas en `docs/pruebas/uso-v09/capturas/` y datos en
+`docs/pruebas/uso-v09/RESULTADO-recorrido-v09.json`. Los recorridos anteriores (`recorrido-v08.mjs`, `recorrido-v07.mjs`) usan los
+códigos `SIM-…` y quedan como registro histórico.
 
-**Recorrido de navegador de la v0.7:** 15 de 15 pasos correctos con los 5 roles en Chrome, el 30 de octubre de 2026. Script en
-`docs/pruebas/recorrido-v07.mjs`, capturas en `docs/pruebas/capturas-v07/` y tabla en `docs/pruebas/RESULTADO-recorrido-v07.md`.
-`docs/pruebas/recorrido-v06.mjs` está obsoleto.
-
-**Rendimiento (NF02):** 20 de 20 en 2 s o menos el 30 de octubre de 2026 (mediana 25,2 ms, máximo 54,3 ms, solo la API). Se mide con
-`node scripts/medir-nf02.mjs`.
+**Rendimiento (NF02):** 20 de 20 en 2 s o menos el 30 de octubre de 2026 (mediana 25,2 ms, máximo 54,3 ms, solo la API). No se
+volvió a medir en esta versión. Se mide con `node scripts/medir-nf02.mjs`.
 
 ## Invariantes
 
@@ -294,62 +322,56 @@ sin PDF, que la v0.8 rechaza: queda como registro histórico.
 | I3 | El checklist no cambia el color del indicador A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `HistorialEvaluacionTest.operacionesSinRecalculo` | Probado |
 | I4 | La autorización está en el servidor | `SeguridadTest`, `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol` | Probado |
 | I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests` | Probado |
-| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` | Probado en local. En Docker el puerto publicado queda ligado a `127.0.0.1` y el backend no publica puertos (configuración, no verificada en ejecución) |
-| I7 | Los límites legales y el aviso de datos simulados están en el pie; el login comunica el entorno demostrativo | `limitesLegales.test.tsx` (renderiza el pie activo) | Probado el pie; el login, sin prueba automática ni verificación en navegador |
+| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` | Probado en local. El CORS por defecto incluye un dominio público (`trust.aurorabeauty.site`): la demo en la nube contradice el alcance «solo local» de I6 y D9 (ver el reporte) |
+| I7 | Los límites legales están en el pie | `limitesLegales.test.tsx` (renderiza el pie activo) | Probado el pie y visto en el navegador. El pie y el login **ya no dicen** que los datos son simulados ni que es un entorno demostrativo |
 | I8 | El color de A cambia solo cuando el motor recalcula | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`, `CarteraTest.contactoSobreRojo` | Probado |
 | I9 | Un plano o PDF no levanta un rojo por embargo, bloqueo o demanda | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` | Probado |
 | I10 | Publicar y pedir contacto no dependen del color de A | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `CarteraTest.contactoSobreRojo` | Probado |
-| I11 | Sin nombres, DNI ni teléfonos; contacto con motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado` | Probado |
+| I11 | Compradores y propietarios sin nombres, DNI ni teléfonos; contacto con motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado` | Probado para las cuentas. Los asientos de los casos de Ica nombran titulares personas naturales |
 | I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` | Probado |
 | I13 | El propietario solo autoriza sus casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura` | Probado |
 | I14 | No se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `CicloCarteraTest` | Probado |
-| I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (v0.8, D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
+| I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
 
-**I7:** el pie activo (`components/layout/Footer.tsx`, usado por `AppShell.tsx`) muestra los textos de `lib/limitesLegales.ts`: no
-certifica saneamiento, no recomienda comprar, no reemplaza asesoría legal, datos y especialistas simulados, y verificación
-jurídica con abogado o notario fuera del sistema. La pantalla de login no lleva pie: dice «Entorno académico demostrativo ·
-Datos sintéticos». Cada resultado de A muestra «No certifica saneamiento ni recomienda comprar».
+**Textos actuales comprobados en el navegador (9/11/2026).**
+- Pie (`lib/limitesLegales.ts`, en todas las pantallas con sesión y en la landing): «No certifica saneamiento.», «No recomienda
+  comprar.», «No reemplaza asesoría legal.», «La información presentada es referencial y se basa en los documentos registrados
+  en cada expediente.» y «La verificación jurídica con abogado o notario se realiza fuera del sistema.». Además: «Catálogo
+  verificado activo» e «Indicador B · En Campo: Inspección presencial por un especialista colegiado de la inmobiliaria.».
+- Login: «Iniciar sesión», «Ingresa con tu código de cuenta y contraseña para consultar los expedientes.» y «Plataforma de
+  transparencia inmobiliaria · Acceso seguro». Ya no dice «Entorno académico demostrativo · Datos sintéticos».
+- Landing: «12 expedientes en el catálogo», «plataforma tecnológica privada (PropTech) diseñada para transparentar…»,
+  «Especialista colegiado de la inmobiliaria», «El catálogo reúne 12 lotes y viviendas verificados en nuestro portafolio» e
+  «Inicia sesión con tu cuenta asignada…». No dice «MVP académico», «ficticio» ni «simulado».
+- El aviso superior «Aviso legal: …» (`components/base/TopBar.tsx`) existe en el código pero ninguna pantalla lo usa.
+- Cada resultado de A sigue mostrando «No certifica saneamiento ni recomienda comprar».
 
 ## Funcionalidades implementadas
 
-- **Acceso por rol:** cinco roles, ingreso con código de cuenta, menú y guarda de rutas por rol; el servidor vuelve a comprobar
-  cada permiso (403) y oculta los casos que no corresponden (404).
-- **Catálogo (`#/casos`):** tarjetas con ilustración, tipo, distrito, área, precio referencial y los dos indicadores. Filtros
-  combinables por tipo, indicador A e indicador B (incluido «con riesgo físico detectado»), resueltos en el servidor y
-  reflejados en la URL. El comprador solo ve los publicados.
-- **Indicador A:** semáforo automático por reglas versionadas (`v0.4`) sobre el rubro D, los datos mínimos y los 4 planos de la
-  vivienda, con motivos, alertas y faltantes.
-- **Expediente técnico de 4 planos** (arquitectura, estructuras, II.EE. e II.SS.) con lámina 2D referencial en PDF; el revisor
-  puede subir el PDF real de cada plano.
-- **Indicador B:** solo el comprador lo solicita (S/ 250.00 referencial, sin pago en línea); el especialista emite el informe
-  en 6 pasos, firmado con los datos de su cuenta, también en PDF. Nunca cambia A.
-- **Checklist** con la declaración jurada municipal (HR y PU) en los 10 casos; solo el revisor lo cambia.
-- **Copia literal simulada en PDF, glosario cerrado, edición transaccional del revisor y partidas transcritas** sin datos
-  personales.
-- **v0.7, ciclo de cartera:**
-  - Captación con origen obligatorio, código del propietario y precio opcional; el caso nace en borrador (ETP-1).
-  - Autorización del propietario desde «Mis inmuebles» (`#/mis-inmuebles`) o el detalle; retirarla despublica (ETP-2).
-  - Publicación y retiro por el gestor desde el panel «Publicación y autorización» del detalle (ETP-5).
-  - Historial de evaluaciones de solo adición en el detalle, salvo para el comprador (ETP-4).
-  - Solicitud de contacto del comprador con motivo de lista cerrada y bandeja del gestor con «Marcar atendida» (ETP-6).
-  - Asignación obligatoria del especialista por el gestor en el panel de evaluación técnica del detalle; sin ella nadie registra
-    avance ni emite (ETP-7).
-  - Panel «Cartera» (`#/cartera`) con totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable
-    (ETP-8).
-  - Texto fijo de la etapa 9 en el detalle (ETP-9).
-- **v0.8, feedback docente y decisiones del equipo:**
-  - Un plano solo queda presentado u observado con su PDF; la subida valida el archivo (400 si no es PDF, está cifrado o dañado),
-    lo optimiza si pasa de 5 MB y lo rechaza (413) si supera 25 MB de entrada o 10 MB guardado. Cada documento dice su origen
-    («Subido por…», «Generado por el sistema…» o «Falta el archivo») y se puede descargar.
-  - Ruta de regularización en el detalle, con el plazo del gravamen si consta y el aviso «Orientativo: no es asesoría legal ni
-    recomendación de compra».
-  - Panel del gestor por tipo de alerta, por esfuerzo y por estado de gestión, con la lista «Por regularizar» y la matriz tipo de
-    alerta × estado de gestión; filtro por tipo de alerta en el catálogo y en Cartera.
-  - Panel «Gestión inmobiliaria (interno)» y decisión de captación (solo gestor), con confirmación al publicar si la última
-    decisión es no captar por ahora.
-  - Tarjetas, lista de Cartera, Mis inmuebles y cabecera del detalle resaltadas por el color de A, siempre con ícono y texto.
+- **Acceso por rol:** cinco roles y ocho cuentas, ingreso escribiendo el código de cuenta, menú y guarda de rutas por rol; el
+  servidor vuelve a comprobar cada permiso (403) y oculta los casos que no corresponden (404).
+- **Catálogo (`#/casos`):** tarjetas con foto referencial, tipo, distrito, área, precio en su moneda (S/ o US$) y los dos
+  indicadores, resaltadas por el color de A. Filtros combinables por tipo, indicador A, indicador B y tipo de alerta, resueltos en
+  el servidor y reflejados en la URL. El comprador solo ve los publicados.
+- **Indicador A:** semáforo automático por reglas versionadas (`v0.5`) sobre el rubro D, los datos mínimos, los 4 planos de una
+  vivienda y los 4 documentos de un lote, con motivos, alertas y faltantes.
+- **Expediente técnico de 4 planos** con lámina 2D referencial en PDF; el revisor sube el PDF real de cada plano.
+- **Documentos del lote** (v0.9): panel con «Documentos presentados N de 4», visor de PDF dentro del expediente y subida por el
+  revisor.
+- **Indicador B:** solo el comprador lo solicita (S/ 250.00 referencial, sin pago en línea); el especialista asignado emite el
+  informe en 6 pasos, firmado con los datos de su cuenta, también en PDF. Nunca cambia A.
+- **Checklist** con la declaración jurada municipal (HR y PU); solo el revisor lo cambia.
+- **Copia literal en PDF** (copia informativa del expediente; en los lotes de la SBN, transcripción referencial), glosario
+  cerrado, edición transaccional del revisor y partidas captadas.
+- **Ciclo de cartera (v0.7):** captación en borrador, autorización del propietario desde «Mis inmuebles», publicación y retiro
+  por el gestor, historial de solo adición, contacto con motivo cerrado, asignación obligatoria del especialista, panel
+  «Cartera» y texto fijo de la etapa 9.
+- **v0.8:** PDF obligatorio por plano (hasta 25 MB, optimizado si pasa de 5 MB, máximo guardado 10 MB), ruta de regularización,
+  panel del gestor por tipo de alerta, esfuerzo y estado de gestión, decisión de captación con confirmación al publicar y
+  resaltado del color de A.
+- **v0.9:** lotes de la SBN con precio en US$, nota y fuente; documentos del lote y regla RV-07; cuenta `propietario-03`.
 
-El detalle por pantalla está en `docs/funcionalidades.md`.
+El detalle por pantalla está en `docs/funcionalidades.md` (redactado para la v0.8; no se actualizó en esta revisión).
 
 ## Fuentes de información
 
@@ -357,6 +379,7 @@ El detalle por pantalla está en `docs/funcionalidades.md`.
 |---|---|
 | Conoce Aquí (SUNARP): texto de la partida, que el revisor transcribe | Copia literal certificada (SUNARP, con costo) |
 | Visor Catastral BGR (SUNARP): ubicación gráfica, solo enlazada | Planos de las 4 especialidades |
+| SBN: bases de la subasta y plano perimétrico de los dos lotes, enlazados | Memoria descriptiva, certificado de zonificación y tasación de un lote |
 | | Declaración jurada municipal (HR y PU) |
 | | Inspección presencial del especialista (costo referencial) |
 
@@ -367,20 +390,23 @@ sus condiciones de uso.
 
 Integraciones estatales, scraping de portales, OCR, inteligencia artificial o visión artificial, autenticidad documental,
 dictámenes jurídicos, pagos en línea, contratos, firmas, agenda de visitas, tours, posventa y reportes descargables
-(sección 1.7 del informe). Los filtros del catálogo son simples (tipo e indicadores), no búsquedas avanzadas. El comprador no
-puede consultar después el estado de su solicitud de contacto (D46).
+(sección 1.7 del informe). Los filtros del catálogo son simples, no búsquedas avanzadas. El comprador no puede consultar después
+el estado de su solicitud de contacto (D46).
 
 ## Pendiente fuera del código
 
-Revisión especializada del contenido, aprobación de D20 por el asesor, confirmación de los supuestos D32 a D49, piloto, reclutamiento, consentimientos y aplicación del estudio, fechas y presupuesto. Los materiales del
-estudio (formas A y B, claves y bases vacías) están en la carpeta `estudio/`, que se mantiene **fuera de este repositorio** a
-propósito. La lista completa está en la sección 14 del modelo de negocio.
+Revisión especializada del contenido, aprobación de D20 y D57 por el asesor, confirmación de los supuestos D32 a D49, decisión
+sobre las observaciones de [docs/REPORTE-v0.9-real.md](docs/REPORTE-v0.9-real.md), piloto, reclutamiento, consentimientos y
+aplicación del estudio, fechas y presupuesto. Los materiales del estudio (formas A y B, claves y bases vacías) están en la
+carpeta `estudio/`, que se mantiene **fuera de este repositorio** a propósito. La lista completa está en la sección 14 del modelo
+de negocio.
 
 ## Uso local
 
-El backend escucha solo en `127.0.0.1` y la interfaz solo en localhost. La configuración de seguridad es de desarrollo
-local. No la uses en un servidor accesible desde la red (ver `docs/decisiones.md`, D9). En Docker, el puerto publicado queda ligado
-a `127.0.0.1`.
+En local, el backend escucha solo en `127.0.0.1` y la interfaz solo en localhost. La configuración de seguridad es de desarrollo
+local; `docs/decisiones.md` (D9) pide no usarla en un servidor accesible desde la red. La configuración actual de Docker incluye
+un dominio público en CORS y un flujo que publica las imágenes en cada push a `main`: si la demo está en internet, eso es un
+cambio de alcance frente a D9 que el equipo debe documentar (ver el reporte).
 
 La carpeta `data/` no se versiona, ni en la raíz ni en `trustinmuebles-backend/`. Los archivos de `data/` de la raíz que se
 versionaron por error en `567cbfc` siguen en el historial de Git.

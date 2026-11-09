@@ -1,0 +1,532 @@
+{
+  "fecha": "2026-11-09T14:43:25.639Z",
+  "commit": "d7803f8",
+  "correctos": 27,
+  "total": 27,
+  "pasos": [
+    {
+      "n": 1,
+      "cuenta": "las 8 cuentas",
+      "esperado": "Login escribiendo el código (sin tarjetas de cuentas); las 8 cuentas entran",
+      "obtenido": "el login no muestra tarjetas de cuentas; textos: Transparencia total antes de tomar tu decisión inmobiliaria. / Revisa partidas registrales de SUNARP, planos de 4 especialidades e informes de inspección física en un solo entorno. / Partida N.° 11048217 / Especialista colegiado de la inmobiliaria / Plataforma de transparencia inmobiliaria · Acceso seguro / Ingresa con tu código de cuenta y contraseña para consultar los expedientes. / Plataforma de transparencia inmobiliaria · Acceso seguro; comprador-01 entra (#/casos, rol COMPRADOR); revisor-01 entra (#/casos, rol REVISOR); especialista-01 entra (#/casos, rol ESPECIALISTA); especialista-02 entra (#/casos, rol ESPECIALISTA); gestor-01 entra (#/casos, rol GESTOR); propietario-01 entra (#/casos, rol PROPIETARIO); propietario-02 entra (#/casos, rol PROPIETARIO); propietario-03 entra (#/casos, rol PROPIETARIO)",
+      "ok": true,
+      "captura": "01-login-8-cuentas.png"
+    },
+    {
+      "n": 2,
+      "cuenta": "comprador-01",
+      "esperado": "Catálogo: 12 casos, códigos sin SIM-, fotos con rótulo y color de A con texto",
+      "obtenido": "12 casos en el servidor, 12 tarjetas; códigos: 11045763, 11048217, 11052690, 11061555, 11070419, 11075836, 11081204, 11087751, 11093320, 11098467, 11104029, 80194645; 12 tarjetas con foto, todas con el rótulo «Imagen referencial»; colores A: 11045763=GRIS, 11048217=VERDE, 11052690=AMARILLO, 11061555=GRIS, 11070419=GRIS, 11075836=ROJO, 11081204=VERDE, 11087751=AMARILLO, 11093320=ROJO, 11098467=AMARILLO, 11104029=AMARILLO, 80194645=GRIS; 12 de 12 fotos cargadas",
+      "ok": true,
+      "captura": "02-catalogo-comprador.png"
+    },
+    {
+      "n": 3,
+      "cuenta": "revisor-01",
+      "esperado": "Registra SIM-99000404 (origen interno, exige SIM-) con propietario-02; nace en borrador y gris",
+      "obtenido": "opciones de origen: Elegir el origen / Transcrita de Conoce Aquí (SUNARP) / Registro interno de cartera; con «99000404» sin SIM-: «Código interno de ocho dígitos.»; borrador y sin autorización; propietario-02; A = GRIS; fuente guardada: «Partida simulada para demostración», sintético=true; API con origen interno y número sin SIM-: 400 propietarioCodigo: no debe estar vacío; contexto: no debe estar vacío; asientos: no debe ser nulo; fechaConsulta: no debe ser nulo; denominacion: no debe estar vacío; completitud: no debe ser nulo; confirmaSinDatosPersonales: no debe ser nulo; condicionRepresentada: no debe estar vacío",
+      "ok": true,
+      "captura": "03-registro-borrador.png"
+    },
+    {
+      "n": 4,
+      "cuenta": "comprador-01",
+      "esperado": "No ve el borrador en el catálogo ni por URL",
+      "obtenido": "catálogo con 12 casos; SIM-99000404 ausente; por URL: «No encontramos este expediente»; servidor: 404",
+      "ok": true,
+      "captura": "04-comprador-no-ve-borrador.png"
+    },
+    {
+      "n": 5,
+      "cuenta": "propietario-01",
+      "esperado": "No ve el caso de otro propietario",
+      "obtenido": "ausente de Mis inmuebles; por URL: «No encontramos este expediente»",
+      "ok": true,
+      "captura": "05-propietario-ajeno.png"
+    },
+    {
+      "n": 6,
+      "cuenta": "gestor-01",
+      "esperado": "Sin botón Publicar mientras no haya autorización",
+      "obtenido": "sin botón «Publicar»; aviso de autorización pendiente; servidor: 422",
+      "ok": true,
+      "captura": "06-gestor-sin-autorizacion.png"
+    },
+    {
+      "n": 7,
+      "cuenta": "propietario-02",
+      "esperado": "Autoriza su caso; sigue en borrador",
+      "obtenido": "el caso aparece en Mis inmuebles; autorizado y en borrador",
+      "ok": true,
+      "captura": "07-propietario-autoriza.png"
+    },
+    {
+      "n": 8,
+      "cuenta": "revisor-01",
+      "esperado": "Indicador A gris y primera entrada del historial",
+      "obtenido": "historial: PARTIDA_SIMULADA; etiqueta en pantalla: «Partida interna incorporada»",
+      "ok": true,
+      "captura": "08-revisor-a-e-historial.png"
+    },
+    {
+      "n": 9,
+      "cuenta": "revisor-01",
+      "esperado": "Sube los PDF de arquitectura y estructuras (node scripts/generar-pdf-demo.mjs): A pasa de gris a amarillo",
+      "obtenido": "A = AMARILLO; «Subido por revisor-01 …»; historial: GRIS → AMARILLO",
+      "ok": true,
+      "captura": "09-subsanacion-planos.png"
+    },
+    {
+      "n": 10,
+      "cuenta": "gestor-01",
+      "esperado": "Publica y A no cambia",
+      "obtenido": "publicado; A idéntico: AMARILLO",
+      "ok": true,
+      "captura": "10-gestor-publica.png"
+    },
+    {
+      "n": 11,
+      "cuenta": "comprador-01",
+      "esperado": "Ve SIM-99000404 con S/ 150,000; en 11075836 pide contacto e inspección",
+      "obtenido": "SIM-99000404 en el catálogo con S/ 150,000 (13 tarjetas); 11048217: planos con lámina; 11048217: glosario visible; inspección solicitada; A = ROJO; «Pendiente de asignación por el gestor»",
+      "ok": true,
+      "captura": "11-comprador-consulta.png"
+    },
+    {
+      "n": 12,
+      "cuenta": "gestor-01",
+      "esperado": "Marca atendido el contacto y asigna especialista-02",
+      "obtenido": "contacto atendido; asignada a especialista-02",
+      "ok": true,
+      "captura": "12-gestor-atiende-asigna.png"
+    },
+    {
+      "n": 13,
+      "cuenta": "especialista-01",
+      "esperado": "No puede emitir: la inspección es de otro",
+      "obtenido": "sin formulario de informe; aviso «asignada a otro especialista»; servidor: 403",
+      "ok": true,
+      "captura": "13-especialista-no-asignado.png"
+    },
+    {
+      "n": 14,
+      "cuenta": "especialista-02",
+      "esperado": "Emite el informe; 11075836 sigue en rojo (anota nombre y colegiatura)",
+      "obtenido": "informe emitido; A = ROJO; firma: Arq. Valeria Sofía Paredes Rojas · Arquitecto · CAP N.° 19432; rótulo «Perfil ficticio»: no",
+      "ok": true,
+      "captura": "14-especialista-emite.png"
+    },
+    {
+      "n": 15,
+      "cuenta": "revisor-01",
+      "esperado": "PDF de unos 5,4 MB: aviso previo y optimización al subirlo (II.EE. de SIM-99000404)",
+      "obtenido": "aviso: «Se optimizará automáticamente: pesa 5,4 MB y el máximo guardado es 10 MB.» (5,4 MB); «Optimizado: 5,4 MB → 0,1 MB»; guardado 0,1 MB",
+      "ok": true,
+      "captura": "15-pdf-grande-optimizado.png"
+    },
+    {
+      "n": 16,
+      "cuenta": "comprador-01",
+      "esperado": "Ruta de regularización de 11075836 (alto, Juzgado) y 11052690 (medio)",
+      "obtenido": "11075836: ALTO, RP-01; «Esfuerzo alto» y «Juzgado»; aviso orientativo; 11052690: MEDIO; acreedor: «No consta…»",
+      "ok": true,
+      "captura": "16-ruta-regularizacion.png"
+    },
+    {
+      "n": 17,
+      "cuenta": "gestor-01",
+      "esperado": "Panel de cartera: conteos, tipos de alerta, esfuerzo y gestión; filtro RP-01",
+      "obtenido": "13 casos; publicación {\"BORRADOR\":0,\"PUBLICADO\":13,\"RETIRADO\":0}; colores {\"VERDE\":2,\"AMARILLO\":5,\"ROJO\":2,\"GRIS\":4}; contactos pendientes 0; inspecciones 2 (1 asignadas, 1 sin asignar); por tipo: RP-01=1, RP-02=1, RP-03=1, RV-02=1, RV-03=2, RV-04=4, RV-05=1, RV-06=1, RV-07=2, INFORMACION_INSUFICIENTE=4; esfuerzo {\"BAJO\":2,\"MEDIO\":5,\"ALTO\":4,\"SIN_PASOS\":2}; gestión {\"VIABLE\":3,\"VIABLE_CON_CONDICIONES\":3,\"REQUIERE_REGULARIZACION\":3,\"COMPLETAR_INFORMACION\":4}; tarjetas y tabla; aviso de priorización; filtro RP-01: 13 → 1 filas",
+      "ok": true,
+      "captura": "17-panel-cartera.png"
+    },
+    {
+      "n": 18,
+      "cuenta": "gestor-01, comprador-01",
+      "esperado": "Decisión «No captar por ahora» en 11075836; publicar pide confirmación; el comprador no ve la gestión",
+      "obtenido": "A no cambia: ROJO; gestión: REQUIERE_REGULARIZACION; confirmación: «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?»; el comprador no ve el panel de gestión",
+      "ok": true,
+      "captura": "18-decision-captacion.png"
+    },
+    {
+      "n": 19,
+      "cuenta": "comprador-01",
+      "esperado": "Filtro del catálogo por RV-02 · Hipoteca vigente",
+      "obtenido": "servidor: 11052690; 1 tarjetas; chip «Alerta · RV-02 …»",
+      "ok": true,
+      "captura": "19-filtro-rv02.png"
+    },
+    {
+      "n": 20,
+      "cuenta": "comprador-01",
+      "esperado": "Tarjetas resaltadas por el color de A, con texto; a 390 px sin desborde",
+      "obtenido": "13 tarjetas con resaltado; borde izquierdo ≥ 3 px; cada tarjeta dice su estado con texto; 390 px sin desborde horizontal (0 px)",
+      "ok": true,
+      "captura": "20-tarjetas-resaltadas.png"
+    },
+    {
+      "n": 21,
+      "cuenta": "revisor-01, comprador-01",
+      "esperado": "Santiago 11081204: documentos del lote (4 de 4) y color de A",
+      "obtenido": "4 documentos: PLANO_PERIMETRICO:PRESENTADO:GENERADO, MEMORIA_DESCRIPTIVA:PRESENTADO:GENERADO, CERTIFICADO_ZONIFICACION:PRESENTADO:GENERADO, TASACION:PRESENTADO:GENERADO; «Documentos presentados 4 de 4»; 4 tarjetas de documento; A = VERDE; motivos: No se detectaron alertas en los campos evaluados (0 anotación(es) revisada(s)). Esto no significa saneamiento.",
+      "ok": true,
+      "captura": "21-santiago-documentos-lote.png"
+    },
+    {
+      "n": 22,
+      "cuenta": "comprador-01",
+      "esperado": "11045763: precio en US$, fuente SBN, plano perimétrico en el visor y color de A",
+      "obtenido": "moneda USD; en pantalla «US$ 90,096»; nota del precio visible: «Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.»; fuente: «SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)» (https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38); documentos: PLANO_PERIMETRICO:PRESENTADO:SUBIDO, MEMORIA_DESCRIPTIVA:NO_PRESENTADO:-, CERTIFICADO_ZONIFICACION:NO_PRESENTADO:-, TASACION:NO_PRESENTADO:-; A = GRIS; titular publicación: null; botón «Ver documento» del plano perimétrico; el visor muestra el PDF en un iframe; PDF 200, 0,8 MB",
+      "ok": true,
+      "captura": "22-huarmey-sbn.png"
+    },
+    {
+      "n": 23,
+      "cuenta": "comprador-01",
+      "esperado": "80194645: precio en US$, fuente SBN, plano perimétrico en el visor y color de A",
+      "obtenido": "moneda USD; en pantalla «US$ 16,802»; nota del precio visible: «Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.»; fuente: «SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)» (https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38); documentos: PLANO_PERIMETRICO:PRESENTADO:SUBIDO, MEMORIA_DESCRIPTIVA:NO_PRESENTADO:-, CERTIFICADO_ZONIFICACION:NO_PRESENTADO:-, TASACION:NO_PRESENTADO:-; A = GRIS; titular publicación: null; botón «Ver documento» del plano perimétrico; el visor muestra el PDF en un iframe; PDF 200, 0,2 MB",
+      "ok": true,
+      "captura": "23-supe-sbn.png"
+    },
+    {
+      "n": 24,
+      "cuenta": "propietario-03",
+      "esperado": "Mis inmuebles muestra los dos lotes de la SBN",
+      "obtenido": "11045763 y 80194645 en Mis inmuebles; 2 tarjetas",
+      "ok": true,
+      "captura": "24-propietario-03.png"
+    },
+    {
+      "n": 25,
+      "cuenta": "comprador-01",
+      "esperado": "Descarga de PDF: copia literal, informe técnico y lámina (título, marca de agua y pie)",
+      "obtenido": "copia literal: título «Copia literal referencial 11052690»; encabezado «\u001fYb­+Sw¶:º[\u001eiÌ¿ªÙ?øâ2\u001f\u001d&ÂÁÅÌÃ{NY0\u001bÜ±ÇÑÍ!b¦½\bÂØErY³û¸¤Ìþe¡ÇÒ9./×ëü8\u0010ÔÛSúÌSÂC+ÞJeý&°øúz¨/4±Ûïx¨6\u0015Êg¬ÙÔ½é\u001a\f­Þ\f\u001d\náÆIoYþ^!ª[Ja£øu'a\u0017||B¿îßßgxãc_ù\\X&÷VÑ¯\u0015]¦¹2®ë2ÑSX^Ã?WúZ=Êxóº-¢ÚºD§Ì'yt\u001f¶a ®ü\u0018&ö{¨¯ì?úÄ¿ÿ¢¾\u0017PFdÁý\u0004»Sêæ\r\nendstream\nendobj\n16 0 obj\n<<\n/Length 51\n/Root 1 0 R\n/Info 2 0 R\n/ID [<290B28D1E21ADBF18AF857694F538215CA0E2FA033C8377C011B17FF3EBC27ED> <290B28D1E21ADBF18AF857694F538215CA0E2FA033C8377C011B17FF3EBC27ED>]\n/Type /XRef\n/Size 17\n/Index [0 16]\n/W [1 2 1]\n/Filter /FlateDecode\n>>\nstream\r\nx%ÈË\t\u0000 \u0010\u0003Ñdý\u000bbg6g»fñð\u0018\u0018\u0000°b\u0012$\u0012Ë_b;Þ,Eª4é\u001c\u001b\u000f>\u0003ø\r\nendstream\nendobj\nstartxref\n3938\n%%EOF\n\n0 g\nBT\n/F1 8.5 Tf\n56 777.88977 Td\n<5A4F4E412052454749535452414C204E2EB0205849202D20534544452049434120B7204F464943494E412052454749535452414C20444520494341> Tj\nET\nBT\n/F2 8.5 Tf\n56 764.88977 Td\n<524547495354524F2044452050524544494F5320B720434F504941204C49544552414C20444520504152544944412052454749535452414C> Tj\nET\nBT\n/F1 11 Tf\n56 747.88977 Td\n<50617274696461204E2EB0203131303532363930> Tj\nET\n0.35 G\n0.6 w\n56 739.88977 m\n539.27563 739.88977 l\nS\n0.1 g\nBT\n/F1 13 Tf\n56 709.24976 Td\n(COPIA LITERAL DE PARTIDA REGISTRAL»; textos en mayúsculas con «·»: «ZONA REGISTRAL N.° XI - SEDE ICA · OFICINA REGISTRAL DE ICA», «REGISTRO DE PREDIOS · COPIA LITERAL DE PARTIDA REGISTRAL», «F00001 · DECLARATORIA DE FÁBRICA»; pie «Copia informativa del expediente inmobiliario. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.»; contiene {\"COPIA LITERAL\":true,\"Copia informativa\":true,\"SIMULAD\":false,\"SIN VALOR LEGAL\":false}; copia transcrita (SBN): título «Transcripción referencial 11045763»; encabezado «REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL»; textos en mayúsculas con «·»: «ZONA REGISTRAL N.° VII - SEDE HUARAZ · OFICINA REGISTRAL DE CASMA», «REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL»; pie «una copia literal emitida por SUNARP, no tiene valor legal y omite los nombres de personas naturales.»; contiene {\"TRANSCRIPCIÓN REFERENCIAL\":true,\"Transcrito\":true}; informe técnico: título «Informe técnico referencial 11075836»; encabezado «Paso 5. Emisión del informe técnico, con el profesional colegiado responsable.»; textos en mayúsculas con «·»: «INFORME TÉCNICO DE INSPECCIÓN · REFERENCIAL»; pie «Informe técnico referencial. No está firmado ni sellado por un profesional y no tiene valor legal.»; contiene {\"INFORME TÉCNICO REFERENCIAL\":true,\"Informe técnico referencial\":true,\"FICTICIO\":false}; lámina: título «Lámina referencial Plano arquitectónico 11048217»; encabezado «DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA»; textos en mayúsculas con «·»: «DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA»; pie «Esquema técnico referencial del expediente. No reemplaza el plano aprobado por la municipalidad.»; contiene {\"DOCUMENTO TÉCNICO REFERENCIAL\":true,\"FICTICIO\":false}; PDF guardados en C:\\Users\\gab02\\AppData\\Local\\Temp\\recorrido-v09-ZMuarq",
+      "ok": true,
+      "captura": "25-pdf-descargas.png"
+    },
+    {
+      "n": 26,
+      "cuenta": "propietario-02, comprador-01",
+      "esperado": "Retira la autorización y el caso sale del catálogo",
+      "obtenido": "retirado y sin autorización; fuera del catálogo; por URL: no encontrado",
+      "ok": true,
+      "captura": "26-retira-autorizacion.png"
+    },
+    {
+      "n": 27,
+      "cuenta": "todas / sin sesión",
+      "esperado": "Pie con los límites legales en las pantallas y textos del login y la landing",
+      "obtenido": "pie en /casos/nueva (revisor-01); pie en /cartera (gestor-01); pie en /mis-inmuebles (propietario-03); pie en /casos (comprador-01); aviso superior: «null»; pie en la landing; landing: expedientes en el catálogo: sí; PropTech: sí; Especialista colegiado de la inmobiliaria: sí; 12 lotes y viviendas: sí; cuenta asignada: sí; MVP académico: no; ficticio: no; simulad: no; login: «Plataforma de transparencia inmobiliaria · Acceso seguro / Ingresa con tu código de cuenta y contraseña para consultar los expedientes.» (ya no dice «Entorno académico demostrativo»)",
+      "ok": true,
+      "captura": "27-pie-y-login.png"
+    }
+  ],
+  "datos": {
+    "login": {
+      "h1": "Iniciar sesión",
+      "lineas": [
+        "Transparencia total antes de tomar tu decisión inmobiliaria.",
+        "Revisa partidas registrales de SUNARP, planos de 4 especialidades e informes de inspección física en un solo entorno.",
+        "Partida N.° 11048217",
+        "Especialista colegiado de la inmobiliaria",
+        "Plataforma de transparencia inmobiliaria · Acceso seguro",
+        "Ingresa con tu código de cuenta y contraseña para consultar los expedientes.",
+        "Plataforma de transparencia inmobiliaria · Acceso seguro"
+      ]
+    },
+    "catalogo": [
+      {
+        "codigo": "11045763",
+        "distrito": "Huarmey",
+        "estado": "GRIS",
+        "precio": 90096.39,
+        "moneda": "USD"
+      },
+      {
+        "codigo": "11048217",
+        "distrito": "Parcona",
+        "estado": "VERDE",
+        "precio": 185000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11052690",
+        "distrito": "La Tinguiña",
+        "estado": "AMARILLO",
+        "precio": 210000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11061555",
+        "distrito": "Subtanjalla",
+        "estado": "GRIS",
+        "precio": 120000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11070419",
+        "distrito": "Los Aquijes",
+        "estado": "GRIS",
+        "precio": 98000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11075836",
+        "distrito": "Pueblo Nuevo",
+        "estado": "ROJO",
+        "precio": 165000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11081204",
+        "distrito": "Santiago",
+        "estado": "VERDE",
+        "precio": 75000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11087751",
+        "distrito": "Salas",
+        "estado": "AMARILLO",
+        "precio": 88000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11093320",
+        "distrito": "San José de los Molinos",
+        "estado": "ROJO",
+        "precio": 110000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11098467",
+        "distrito": "Pachacútec",
+        "estado": "AMARILLO",
+        "precio": 140000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "11104029",
+        "distrito": "Ica",
+        "estado": "AMARILLO",
+        "precio": 260000,
+        "moneda": "PEN"
+      },
+      {
+        "codigo": "80194645",
+        "distrito": "Supe",
+        "estado": "GRIS",
+        "precio": 16801.84,
+        "moneda": "USD"
+      }
+    ],
+    "fotos": [
+      "/img/casas/lote-huarmey.jpg",
+      "/img/casas/casa-1.jpg",
+      "/img/casas/casa-2.jpg",
+      "/img/casas/casa-3.jpg",
+      "/img/casas/casa-4.jpg",
+      "/img/casas/casa-5.jpg",
+      "/img/casas/lote-santiago.jpg",
+      "/img/casas/casa-6.jpg",
+      "/img/casas/casa-7.jpg",
+      "/img/casas/casa-8.jpg",
+      "/img/casas/casa-9.jpg",
+      "/img/casas/lote-supe.jpg"
+    ],
+    "origenes": [
+      "Elegir el origen",
+      "Transcrita de Conoce Aquí (SUNARP)",
+      "Registro interno de cartera"
+    ],
+    "mensajeSinSim": "Código interno de ocho dígitos.",
+    "fuenteNuevo": "Partida simulada para demostración",
+    "apiSinSim": "400 propietarioCodigo: no debe estar vacío; contexto: no debe estar vacío; asientos: no debe ser nulo; fechaConsulta: no debe ser nulo; denominacion: no debe estar vacío; completitud: no debe ser nulo; confirmaSinDatosPersonales: no debe ser nulo; condicionRepresentada: no debe estar vacío",
+    "etiquetaHistorial": "Partida interna incorporada",
+    "firma": {
+      "profesional": "Arq. Valeria Sofía Paredes Rojas",
+      "especialidad": "Arquitecto",
+      "colegiatura": "CAP N.° 19432"
+    },
+    "rotuloFicticio": false,
+    "panel": {
+      "totalCasos": 13,
+      "publicacion": {
+        "BORRADOR": 0,
+        "PUBLICADO": 13,
+        "RETIRADO": 0
+      },
+      "color": {
+        "VERDE": 2,
+        "AMARILLO": 5,
+        "ROJO": 2,
+        "GRIS": 4
+      },
+      "contactosPendientes": 0,
+      "inspecciones": 2,
+      "asignadas": 1,
+      "sinAsignar": 1,
+      "tipos": [
+        "RP-01=1",
+        "RP-02=1",
+        "RP-03=1",
+        "RV-02=1",
+        "RV-03=2",
+        "RV-04=4",
+        "RV-05=1",
+        "RV-06=1",
+        "RV-07=2",
+        "INFORMACION_INSUFICIENTE=4"
+      ],
+      "esfuerzo": {
+        "BAJO": 2,
+        "MEDIO": 5,
+        "ALTO": 4,
+        "SIN_PASOS": 2
+      },
+      "gestion": {
+        "VIABLE": 3,
+        "VIABLE_CON_CONDICIONES": 3,
+        "REQUIERE_REGULARIZACION": 3,
+        "COMPLETAR_INFORMACION": 4
+      }
+    },
+    "santiago": {
+      "estado": "VERDE",
+      "docs": [
+        "PLANO_PERIMETRICO:PRESENTADO:GENERADO",
+        "MEMORIA_DESCRIPTIVA:PRESENTADO:GENERADO",
+        "CERTIFICADO_ZONIFICACION:PRESENTADO:GENERADO",
+        "TASACION:PRESENTADO:GENERADO"
+      ],
+      "precio": 75000,
+      "moneda": "PEN"
+    },
+    "huarmey": {
+      "estado": "GRIS",
+      "precio": 90096.39,
+      "moneda": "USD",
+      "nota": "Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.",
+      "fuente": "SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)",
+      "fuenteUrl": "https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38",
+      "precioPantalla": "US$ 90,096",
+      "docs": [
+        "PLANO_PERIMETRICO:PRESENTADO",
+        "MEMORIA_DESCRIPTIVA:NO_PRESENTADO",
+        "CERTIFICADO_ZONIFICACION:NO_PRESENTADO",
+        "TASACION:NO_PRESENTADO"
+      ]
+    },
+    "supe": {
+      "estado": "GRIS",
+      "precio": 16801.84,
+      "moneda": "USD",
+      "nota": "Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.",
+      "fuente": "SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)",
+      "fuenteUrl": "https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38",
+      "precioPantalla": "US$ 16,802",
+      "docs": [
+        "PLANO_PERIMETRICO:PRESENTADO",
+        "MEMORIA_DESCRIPTIVA:NO_PRESENTADO",
+        "CERTIFICADO_ZONIFICACION:NO_PRESENTADO",
+        "TASACION:NO_PRESENTADO"
+      ]
+    },
+    "pdfs": {
+      "copia literal": {
+        "ruta": "/casos/11052690/documento",
+        "titulo": "Copia literal referencial 11052690",
+        "encabezado": "\u001fYb­+Sw¶:º[\u001eiÌ¿ªÙ?øâ2\u001f\u001d&ÂÁÅÌÃ{NY0\u001bÜ±ÇÑÍ!b¦½\bÂØErY³û¸¤Ìþe¡ÇÒ9./×ëü8\u0010ÔÛSúÌSÂC+ÞJeý&°øúz¨/4±Ûïx¨6\u0015Êg¬ÙÔ½é\u001a\f­Þ\f\u001d\náÆIoYþ^!ª[Ja£øu'a\u0017||B¿îßßgxãc_ù\\X&÷VÑ¯\u0015]¦¹2®ë2ÑSX^Ã?WúZ=Êxóº-¢ÚºD§Ì'yt\u001f¶a ®ü\u0018&ö{¨¯ì?úÄ¿ÿ¢¾\u0017PFdÁý\u0004»Sêæ\r\nendstream\nendobj\n16 0 obj\n<<\n/Length 51\n/Root 1 0 R\n/Info 2 0 R\n/ID [<290B28D1E21ADBF18AF857694F538215CA0E2FA033C8377C011B17FF3EBC27ED> <290B28D1E21ADBF18AF857694F538215CA0E2FA033C8377C011B17FF3EBC27ED>]\n/Type /XRef\n/Size 17\n/Index [0 16]\n/W [1 2 1]\n/Filter /FlateDecode\n>>\nstream\r\nx%ÈË\t\u0000 \u0010\u0003Ñdý\u000bbg6g»fñð\u0018\u0018\u0000°b\u0012$\u0012Ë_b;Þ,Eª4é\u001c\u001b\u000f>\u0003ø\r\nendstream\nendobj\nstartxref\n3938\n%%EOF\n\n0 g\nBT\n/F1 8.5 Tf\n56 777.88977 Td\n<5A4F4E412052454749535452414C204E2EB0205849202D20534544452049434120B7204F464943494E412052454749535452414C20444520494341> Tj\nET\nBT\n/F2 8.5 Tf\n56 764.88977 Td\n<524547495354524F2044452050524544494F5320B720434F504941204C49544552414C20444520504152544944412052454749535452414C> Tj\nET\nBT\n/F1 11 Tf\n56 747.88977 Td\n<50617274696461204E2EB0203131303532363930> Tj\nET\n0.35 G\n0.6 w\n56 739.88977 m\n539.27563 739.88977 l\nS\n0.1 g\nBT\n/F1 13 Tf\n56 709.24976 Td\n(COPIA LITERAL DE PARTIDA REGISTRAL",
+        "pie": "Copia informativa del expediente inmobiliario. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.",
+        "textosMayusculasConPunto": [
+          "ZONA REGISTRAL N.° XI - SEDE ICA · OFICINA REGISTRAL DE ICA",
+          "REGISTRO DE PREDIOS · COPIA LITERAL DE PARTIDA REGISTRAL",
+          "F00001 · DECLARATORIA DE FÁBRICA"
+        ],
+        "contiene": {
+          "COPIA LITERAL": true,
+          "Copia informativa": true,
+          "SIMULAD": false,
+          "SIN VALOR LEGAL": false
+        },
+        "bytes": 4294,
+        "paginas": 0
+      },
+      "copia transcrita (SBN)": {
+        "ruta": "/casos/11045763/documento",
+        "titulo": "Transcripción referencial 11045763",
+        "encabezado": "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL",
+        "pie": "una copia literal emitida por SUNARP, no tiene valor legal y omite los nombres de personas naturales.",
+        "textosMayusculasConPunto": [
+          "ZONA REGISTRAL N.° VII - SEDE HUARAZ · OFICINA REGISTRAL DE CASMA",
+          "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL"
+        ],
+        "contiene": {
+          "TRANSCRIPCIÓN REFERENCIAL": true,
+          "Transcrito": true
+        },
+        "bytes": 2658,
+        "paginas": 0
+      },
+      "informe técnico": {
+        "ruta": "/casos/11075836/inspeccion/documento",
+        "titulo": "Informe técnico referencial 11075836",
+        "encabezado": "Paso 5. Emisión del informe técnico, con el profesional colegiado responsable.",
+        "pie": "Informe técnico referencial. No está firmado ni sellado por un profesional y no tiene valor legal.",
+        "textosMayusculasConPunto": [
+          "INFORME TÉCNICO DE INSPECCIÓN · REFERENCIAL"
+        ],
+        "contiene": {
+          "INFORME TÉCNICO REFERENCIAL": true,
+          "Informe técnico referencial": true,
+          "FICTICIO": false
+        },
+        "bytes": 3475,
+        "paginas": 0
+      },
+      "lámina": {
+        "ruta": "/casos/11048217/planos/ARQUITECTURA/documento",
+        "titulo": "Lámina referencial Plano arquitectónico 11048217",
+        "encabezado": "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA",
+        "pie": "Esquema técnico referencial del expediente. No reemplaza el plano aprobado por la municipalidad.",
+        "textosMayusculasConPunto": [
+          "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA"
+        ],
+        "contiene": {
+          "DOCUMENTO TÉCNICO REFERENCIAL": true,
+          "FICTICIO": false
+        },
+        "bytes": 2463,
+        "paginas": 0
+      }
+    },
+    "pie": [
+      "Catálogo verificado activo",
+      "Indicador B · En Campo",
+      "Inspección presencial por un especialista colegiado de la inmobiliaria.",
+      "No certifica saneamiento.",
+      "No recomienda comprar.",
+      "No reemplaza asesoría legal.",
+      "La información presentada es referencial y se basa en los documentos registrados en cada expediente.",
+      "La verificación jurídica con abogado o notario se realiza fuera del sistema."
+    ],
+    "avisoSuperior": null,
+    "landing": [
+      "expedientes en el catálogo: sí",
+      "PropTech: sí",
+      "Especialista colegiado de la inmobiliaria: sí",
+      "12 lotes y viviendas: sí",
+      "cuenta asignada: sí",
+      "MVP académico: no",
+      "ficticio: no",
+      "simulad: no"
+    ],
+    "loginFinal": [
+      "Plataforma de transparencia inmobiliaria · Acceso seguro",
+      "Ingresa con tu código de cuenta y contraseña para consultar los expedientes."
+    ]
+  },
+  "erroresConsola": [],
+  "respuestas409o500": [],
+  "pdfTemporales": "C:\\Users\\gab02\\AppData\\Local\\Temp\\recorrido-v09-ZMuarq"
+}
