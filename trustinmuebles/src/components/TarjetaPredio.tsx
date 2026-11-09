@@ -2,7 +2,7 @@ import { Link } from "react-router";
 import { ArrowRight, CheckCircle2, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-react";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
-import { m2, soles } from "@/lib/formato";
+import { m2, precio } from "@/lib/formato";
 import { InsigniaPublicacion } from "@/components/PanelPublicacion";
 import { ChipGestion } from "@/components/PanelGestion";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
@@ -36,14 +36,14 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
 
         {c.origen === "TRANSCRITA" && (
           <span className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-info-suave px-3 py-1.5 text-xs font-bold text-info-tinta shadow-tarjeta">
-            <FileSearch className="size-3.5" aria-hidden="true" /> Transcrita de SUNARP
+            <FileSearch className="size-3.5" aria-hidden="true" /> {c.fuenteUrl ? "Subasta SBN" : "Transcrita de SUNARP"}
           </span>
         )}
 
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
           {p.precioReferencial != null ? (
             <p className="cifras text-2xl font-black tracking-tight text-white drop-shadow-sm">
-              {soles(p.precioReferencial, true)}
+              {precio(p.precioReferencial, p.moneda, true)}
             </p>
           ) : (
             <p className="text-base font-bold text-white/90">Precio a consultar</p>

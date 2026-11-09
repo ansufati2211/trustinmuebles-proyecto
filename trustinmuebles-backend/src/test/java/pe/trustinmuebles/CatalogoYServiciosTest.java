@@ -81,11 +81,19 @@ class CatalogoYServiciosTest extends BaseApiTest {
                 .andExpect(jsonPath("$.predio.precioReferencial").value(185000.00))
                 .andExpect(jsonPath("$.predio.moneda").value("PEN"))
                 .andExpect(jsonPath("$.predio.precioNota", containsString("referencial e informativo")));
+        // v0.9: el precio base de un lote de la subasta de la SBN va en dólares, con su propia nota.
+        mvc.perform(get("/api/v1/casos/" + HUARMEY).header("Authorization", comprador())).andExpect(status().isOk())
+                .andExpect(jsonPath("$.predio.tipoInmueble").value("LOTE_URBANO"))
+                .andExpect(jsonPath("$.predio.tipoInmuebleEtiqueta").value("Lote o terreno"))
+                .andExpect(jsonPath("$.predio.precioReferencial").value(90096.39))
+                .andExpect(jsonPath("$.predio.moneda").value("USD"))
+                .andExpect(jsonPath("$.predio.precioNota", containsString("Subasta Pública 2026 de la SBN")));
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
-                .andExpect(jsonPath("$[*].predio.distrito", contains("Parcona", "La Tinguiña", "Subtanjalla",
-                        "Los Aquijes", "Pueblo Nuevo", "Santiago", "Salas", "San José de los Molinos", "Pachacútec",
-                        "Ica")))
+                .andExpect(jsonPath("$[*].predio.distrito", contains("Huarmey", "Supe", "Parcona", "La Tinguiña",
+                        "Subtanjalla", "Los Aquijes", "Pueblo Nuevo", "Santiago", "Salas", "San José de los Molinos",
+                        "Pachacútec", "Ica")))
                 .andExpect(jsonPath("$[?(@.codigo=='" + SANTIAGO + "')].predio.tipoInmueble", contains("LOTE_URBANO")))
+                .andExpect(jsonPath("$[?(@.codigo=='" + SANTIAGO + "')].predio.moneda", contains("PEN")))
                 .andExpect(jsonPath("$[*].predio.precioReferencial", everyItem(notNullValue())))
                 .andExpect(jsonPath("$[*].predio.areaM2", everyItem(notNullValue())));
     }
@@ -256,17 +264,18 @@ class CatalogoYServiciosTest extends BaseApiTest {
     @Test
     @DisplayName("M13: los filtros por tipo, indicador A, indicador B y riesgo físico se combinan")
     void filtrosCombinados() throws Exception {
-        assertThat(codigos("?tipoInmueble=LOTE_URBANO")).containsExactly(SANTIAGO);
+        assertThat(codigos("?tipoInmueble=LOTE_URBANO")).containsExactly(HUARMEY, SUPE, SANTIAGO);
         assertThat(codigos("?tipoInmueble=VIVIENDA_URBANA&estado=AMARILLO"))
                 .containsExactly(TINGUINA, SALAS, PACHACUTEC, ICA);
         assertThat(codigos("?estado=AMARILLO&estadoTecnico=EMITIDO")).containsExactly(TINGUINA, SALAS, ICA);
         assertThat(codigos("?estadoTecnico=INFORME_EMITIDO")).as("alias del estado emitido")
                 .containsExactly(PARCONA, TINGUINA, SALAS, ICA);
-        assertThat(codigos("?estadoTecnico=NO_SOLICITADA&estado=GRIS")).containsExactly(SUBTANJALLA, LOS_AQUIJES);
+        assertThat(codigos("?estadoTecnico=NO_SOLICITADA&estado=GRIS"))
+                .containsExactly(HUARMEY, SUPE, SUBTANJALLA, LOS_AQUIJES);
         assertThat(codigos("?riesgoFisicoDetectado=true")).containsExactly(SALAS);
         assertThat(codigos("?estado=ROJO&estadoTecnico=SOLICITADA")).containsExactly(MOLINOS);
         assertThat(codigos("?tipoInmueble=LOTE_URBANO&estado=ROJO")).as("sin resultados es una lista vacía").isEmpty();
-        assertThat(codigos("")).hasSize(10);
+        assertThat(codigos("")).hasSize(12);
     }
 
     @Test

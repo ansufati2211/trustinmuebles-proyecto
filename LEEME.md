@@ -84,6 +84,15 @@ etapa) está en la sección 4 del modelo de negocio.
   ni al especialista y no bloquea la publicación (I15).
 - v0.8: un plano solo queda «presentado» u «observado» con su PDF (subido o la lámina generada de los casos de demostración).
 
+### Novedades de la v0.9 (reglas v0.5)
+
+- **Dos lotes reales de la subasta de la SBN** (`11045763` Huarmey y `80194645` Supe), de `propietario-03`, con su plano
+  perimétrico oficial y precio en US$. Ver D57. **Pendiente del equipo:** consultar sus partidas en Conoce Aquí y transcribirlas
+  (hoy no tienen asientos), y pedir las memorias descriptivas N.° 0764-2025 y 0501-2025/SBN-DGPE-SDDI.
+- **Documentos del lote** como requisitos del indicador A (D58): plano perimétrico y memoria descriptiva (gris si faltan),
+  zonificación (amarillo, RV-07) y tasación (informativa). Santiago los trae y sigue en verde.
+- Hay 12 casos y 8 cuentas. Pruebas: 200 en el backend y 85 en la interfaz.
+
 ### Novedades de la v0.8.0
 
 | Origen | Qué cambia | Dónde |
@@ -184,7 +193,7 @@ alcanzable únicamente por la red interna de Docker.
 | `especialista-01` | ESPECIALISTA | Consultar todos los casos y registrar el avance o emitir el informe de las inspecciones que el gestor le asignó. No edita partidas |
 | `especialista-02` | ESPECIALISTA | Igual que `especialista-01`; perfil «Arq. Perfil Ficticio 02», `SIM-CAP-0002` |
 | `gestor-01` | GESTOR (asesor comercial) | Publicar y retirar casos, atender contactos, asignar inspecciones y ver el panel de cartera |
-| `propietario-01`, `propietario-02` | PROPIETARIO | Consultar solo sus casos (también en borrador) y otorgar o retirar su autorización; nada más |
+| `propietario-01`, `propietario-02`, `propietario-03` | PROPIETARIO | Consultar solo sus casos (también en borrador) y otorgar o retirar su autorización; nada más |
 
 Cada rol tiene su menú: el comprador y el especialista ven «Expedientes»; el revisor agrega «Registrar partida»; el gestor,
 «Cartera»; el propietario ve solo «Mis inmuebles». Un caso nuevo nace en borrador y solo se publica con la autorización de su

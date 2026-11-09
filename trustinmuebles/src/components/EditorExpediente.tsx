@@ -197,7 +197,8 @@ export function EditorExpediente({ detalle, alGuardar }: { detalle: DetalleCaso;
             {(p) => <textarea {...p} rows={2} maxLength={500} className={claseAreaTexto} value={nota} onChange={(e) => setNota(e.target.value)} />}
           </Campo>
 
-          <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} planosGuardados={x.planos} />
+          <BloqueTecnico tecnico={tecnico} setTecnico={setTecnico} planosGuardados={x.planos}
+            documentosGuardados={x.documentosLote ?? []} />
           <FilasAsientos filas={filas} setFilas={setFilas} />
 
           {errores.length > 0 && (

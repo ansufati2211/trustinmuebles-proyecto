@@ -1,0 +1,123 @@
+{
+  "codigo": "80194645",
+  "denominacion": "Parcela 2 · Cerro Purmacana · Supe, Lima",
+  "contexto": "Supe, Lima",
+  "distrito": "Supe",
+  "precioReferencial": 16801.84,
+  "moneda": "USD",
+  "precioNota": "Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.",
+  "propietario": "propietario-03",
+  "origen": "TRANSCRITA",
+  "fuente": "SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)",
+  "fuenteUrl": "https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38",
+  "fechaConsulta": "2026-11-08",
+  "expediente": {
+    "condicionRepresentada": "Terreno del Estado inscrito, ofrecido en subasta pública por la SBN.",
+    "completitud": "INCOMPLETA",
+    "fechaReferencial": "2026-11-08",
+    "nota": "Lote 9 de la II Subasta Pública 2026 de la SBN (CUS 210182; Res. N.° 812-2026/SBN-DGPE-SDDI del 24.04.2026). Según las bases: desocupado y sin proceso judicial; está sobre una zona de protección de colinas arenosas (Área de Protección Ecológica del PAT de Barranca), con superposición parcial en trámite ante la DIREFOR. El acceso cruza propiedad de la DIREFOR y un canal de riego: hay que gestionar una servidumbre de paso. Partida pendiente de transcribir.",
+    "zonaRegistral": "Zona Registral N.° IX - Sede Lima",
+    "oficinaRegistral": "Oficina Registral de Barranca",
+    "ubicacion": "«Parcela 2», al pie del Cerro Purmacana, a la altura del Centro Poblado Virgen del Rosario, girando en dirección sur por una trocha carrozable, distrito de Supe, provincia de Barranca, departamento de Lima.",
+    "areaM2": 14722.40,
+    "linderos": "Según el plano perimétrico y de ubicación de la SBN (8 vértices, perímetro de 495.36 m): por el norte, con el área remanente del predio del Estado (partida N.° 80126287), en una línea quebrada de cuatro tramos que suman 137.84 m (A-B a D-E); por el este, con la Parcela 3 (área a independizar), en 113.86 m (E-F); por el sur, con terreno eriazo, en dos tramos que suman 156.30 m (F-G y G-H); por el oeste, con la Parcela 1 (área a independizar), en 87.36 m (H-A).",
+    "antecedenteDominial": "Según el plano, la parcela es un área a independizar del predio del Estado inscrito en la partida 80126287 (CUS matriz 95099). Por confirmar con la partida.",
+    "asientos": [],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida (Conoce Aquí)",
+        "estado": "PENDIENTE",
+        "observacion": "Consultar la partida 80194645 de la Oficina Registral de Barranca."
+      },
+      {
+        "nombre": "Plano perimétrico y de ubicación (SBN)",
+        "estado": "REVISADO",
+        "observacion": "Plano oficial descargado de la página de subastas de la SBN."
+      },
+      {
+        "nombre": "Memoria descriptiva N.° 0501-2025/SBN-DGPE-SDDI",
+        "estado": "PENDIENTE",
+        "observacion": "La SBN no la publica en línea; se puede pedir por transparencia (Ley 27806)."
+      },
+      {
+        "nombre": "Certificado de zonificación y vías",
+        "estado": "PENDIENTE",
+        "observacion": "Anexo 1 de las bases: sin zonificación."
+      },
+      {
+        "nombre": "Bases de la II Subasta Pública 2026",
+        "estado": "REVISADO",
+        "observacion": "Anexo 1 y notas de condición del lote."
+      },
+      {
+        "nombre": "Visita al lote",
+        "estado": "PENDIENTE",
+        "observacion": "Las bases permiten visitar el lote antes de la subasta."
+      },
+      {
+        "nombre": "Servidumbre de paso",
+        "estado": "PENDIENTE",
+        "observacion": "Nota (ii) de las bases: el acceso cruza propiedad de la DIREFOR y un canal de riego."
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Extracto parcial",
+      "Zona registral",
+      "Antecedente dominial",
+      "Linderos",
+      "Titularidad",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Independización",
+      "Servidumbre",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación",
+      "Subasta pública",
+      "Precio base",
+      "CUS",
+      "Venta ad corpus",
+      "Concesión minera"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": "Plano oficial de la SBN, tal como se publica en su página de subastas. Su autenticidad se puede verificar con la clave que trae impresa.",
+        "resumen": "Plano N.° 1108-2025/SBNSDDI (lámina L-01, del 24/04/2025), expediente 425-2023/SBNSDDI. Área: 14,722.40 m²; perímetro: 495.36 m; 8 vértices; zona 18 sur.",
+        "archivo": "documentos/80194645/plano-perimetrico.pdf"
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "NO_PRESENTADO",
+        "observacion": "El plano cita la memoria descriptiva N.° 0501-2025/SBN-DGPE-SDDI, pero la SBN no la publica en línea. Se puede pedir a la SBN por transparencia (Ley 27806).",
+        "resumen": null,
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "NO_PRESENTADO",
+        "observacion": "El Anexo 1 de las bases indica «Sin zonificación»: no hay un certificado que adjuntar.",
+        "resumen": null,
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "NO_PRESENTADO",
+        "observacion": "La SBN no publica el informe de tasación. El precio base se aprobó con la Res. N.° 812-2026/SBN-DGPE-SDDI.",
+        "resumen": null,
+        "archivo": null
+      }
+    ]
+  }
+}

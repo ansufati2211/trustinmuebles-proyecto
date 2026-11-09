@@ -15,7 +15,7 @@ import tools.jackson.databind.JsonNode;
 /** v0.8 (decisión 2, I15, D54): semáforo de gestión interno y decisión de captación. */
 class GestionInmobiliariaTest extends BaseApiTest {
     static final String[] SEMILLA = {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS,
-            PACHACUTEC, ICA};
+            PACHACUTEC, ICA, HUARMEY, SUPE};
 
     ResultActions decidir(String codigo, String authorization, String cuerpo) throws Exception {
         return mvc.perform(post("/api/v1/casos/" + codigo + "/decision-captacion").header("Authorization", authorization)
@@ -155,7 +155,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
             assertThat(p.get("porEstadoGestion").get(e).asLong()).as(e).isEqualTo(porEstado.getOrDefault(e, 0L));
             suma += p.get("porEstadoGestion").get(e).asLong();
         }
-        assertThat(suma).isEqualTo(10);
+        assertThat(suma).isEqualTo(12);
         for (JsonNode fila : p.get("matrizGestion")) {
             String tipo = fila.get("codigo").asString();
             fila.get("porEstadoGestion").properties().forEach(c -> assertThat(c.getValue().asLong())

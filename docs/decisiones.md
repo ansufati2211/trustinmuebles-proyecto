@@ -555,3 +555,28 @@ usa contorno discontinuo sin relleno y otros íconos.
 con los valores de la v0.6 (`31d9e6a`) junto con los tokens del resaltado, con variantes oscuras que solo se activan con un tema
 oscuro explícito.
 
+
+## D57. v0.9: dos lotes reales de una subasta de la SBN
+
+**Qué:** el catálogo incluye dos lotes de la II Subasta Pública 2026 de la SBN, con datos del Anexo 1 de las bases y el plano
+perimétrico oficial de cada uno: `11045763` (Huarmey, Parcela 2, Lote 14, US$ 90,096.39) y `80194645` (Supe, Parcela 2, Lote 9,
+US$ 16,801.84). Fuente: https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38, consultada el 08/11/2026. Se cargan
+como `TRANSCRITA`, con fuente, enlace y fecha de consulta, en la cartera normal y con la cuenta de demostración `propietario-03`.
+**Desviación de RN-01/PA2** (igual que D20): hay datos reales. Requiere la aprobación del asesor antes del estudio. Son
+documentos publicados por una entidad del Estado; los planos solo muestran nombres de funcionarios en ejercicio de su función.
+**No se inventa nada de la partida:** quedan sin asientos y con completitud INCOMPLETA hasta que se transcriba de Conoce Aquí.
+La memoria descriptiva, el certificado de zonificación y la tasación no se publican en línea: figuran «no presentados», con la
+nota de cómo pedirlos (la memoria, por transparencia, Ley 27806). Por eso los dos lotes salen en gris.
+**Dato corregido:** el perímetro del Lote 14 es 363.84 m (el plano), no 363.64 m.
+**Precio:** columna `moneda` (PEN o USD), `precio_nota` y `fuente_url` en `caso_lote` (V15). La etiqueta del catálogo pasa a
+«Lote o terreno».
+
+## D58. v0.9: documentos del lote como requisitos del indicador A (reglas v0.5)
+
+**Qué:** un lote tiene cuatro documentos (tabla `documento_lote`, V15): plano perimétrico y de ubicación, memoria descriptiva,
+certificado de zonificación y vías, y tasación. Sin plano perimétrico o sin memoria descriptiva el indicador A queda en gris
+(faltante); sin certificado de zonificación, en amarillo (regla RV-07); la tasación es informativa. Un documento observado activa
+RV-06. Como un plano, uno presentado exige su PDF y el motor lee el estado, nunca el archivo (I9).
+**Reglas:** `contenido/v0.4` pasa a `v0.5` (10 reglas, 57 términos). Las reglas son un borrador pendiente de revisión.
+**Santiago** (lote de demostración) recibe sus cuatro documentos generados (con marca de agua, sin sellos ni firmas) y sigue en
+verde. Los lotes de la SBN guardan el PDF oficial original (`carga-inicial`). Con esto D23 pasa a 9 viviendas y 3 lotes.

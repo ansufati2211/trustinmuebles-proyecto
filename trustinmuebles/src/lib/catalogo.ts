@@ -24,7 +24,7 @@ export const FILTROS_VACIOS: Filtros = { tipo: "", indicadorA: "", indicadorB: "
 
 export const OPCIONES_TIPO: { valor: TipoInmueble; etiqueta: string }[] = [
   { valor: "VIVIENDA_URBANA", etiqueta: "Vivienda urbana" },
-  { valor: "LOTE_URBANO", etiqueta: "Lote urbano" },
+  { valor: "LOTE_URBANO", etiqueta: "Lote o terreno" },
 ];
 
 export const OPCIONES_A: { valor: EstadoSemaforo; etiqueta: string }[] = [

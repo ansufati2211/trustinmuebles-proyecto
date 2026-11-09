@@ -87,4 +87,9 @@ class Expediente {
     @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
     @OrderBy("id ASC")
     private List<PlanoTecnico> planos = new ArrayList<>();
+
+    /** v0.9: documentos del lote. Solo se evalúan y se muestran cuando el predio es un lote. */
+    @OneToMany(mappedBy = "expediente", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("id ASC")
+    private List<DocumentoDelLote> documentosLote = new ArrayList<>();
 }

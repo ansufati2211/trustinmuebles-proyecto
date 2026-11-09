@@ -8,7 +8,7 @@ import pe.trustinmuebles.clasificacion.TipoPredio;
  */
 public enum TipoInmueble {
     VIVIENDA_URBANA("Vivienda urbana"),
-    LOTE_URBANO("Lote urbano");
+    LOTE_URBANO("Lote o terreno");
 
     private final String etiqueta;
 

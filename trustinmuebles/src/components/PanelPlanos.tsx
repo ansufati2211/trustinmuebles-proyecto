@@ -8,6 +8,9 @@ import { Badge, type TonoBadge } from "@/components/base/Badge";
 import { Modal } from "@/components/base/Modal";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { OrigenDocumento, SubirPdf } from "@/components/DocumentoPdf";
+import { DocumentosDelLote } from "@/components/DocumentosDelLote";
+import { ESTADO_DOCUMENTO, hayDocumento } from "@/components/estadoDocumento";
+import { VisorPdf } from "@/components/VisorPdf";
 import { abrirPdf, api, pdfComoUrl } from "@/lib/api";
 import { compararAreas } from "@/lib/areas";
 import { m2 } from "@/lib/formato";
@@ -23,14 +26,8 @@ const CORTO: Record<Especialidad, string> = {
   SANITARIAS: "Instalaciones sanitarias (II.SS.)",
 };
 
-const ESTADO: Record<EstadoPlano, { tono: TonoBadge; Icono: LucideIcon }> = {
-  PRESENTADO: { tono: "verde", Icono: CheckCircle2 },
-  OBSERVADO: { tono: "amarillo", Icono: AlertTriangle },
-  NO_PRESENTADO: { tono: "gris", Icono: CircleHelp },
-  NO_APLICA: { tono: "gris", Icono: CircleHelp },
-};
-
-const hayPlano = (estado: EstadoPlano) => estado === "PRESENTADO" || estado === "OBSERVADO";
+const ESTADO = ESTADO_DOCUMENTO;
+const hayPlano = hayDocumento;
 
 function Miniatura({ especialidad, apagada }: { especialidad: Especialidad; apagada: boolean }) {
   const trazo = apagada ? "#A9B4AF" : "#2B5F86";
@@ -105,70 +102,6 @@ function ComparadorAreas({ plano, inscrita }: { plano: number | null; inscrita: 
           : "Coincide con el área inscrita (diferencia de hasta 1 %)."}
       </p>
     </figure>
-  );
-}
-
-function VisorLamina({ codigo, especialidad, abierto, alCerrar }: { codigo: string; especialidad: Especialidad; abierto: boolean; alCerrar: () => void }) {
-  const [url, setUrl] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const ruta = `/casos/${codigo}/planos/${especialidad}/documento`;
-
-  useEffect(() => {
-    if (!abierto) return;
-    let vigente = true;
-    let creada: string | null = null;
-    setUrl(null);
-    setError(null);
-    pdfComoUrl(ruta)
-      .then((u) => {
-        creada = u;
-        if (vigente) setUrl(u);
-        else URL.revokeObjectURL(u);
-      })
-      .catch((e) => {
-        if (vigente) setError(e instanceof Error ? e.message : "No se pudo abrir la lámina");
-      });
-    return () => {
-      vigente = false;
-      if (creada) URL.revokeObjectURL(creada);
-    };
-  }, [abierto, ruta]);
-
-  const abrirAparte = () => {
-    abrirPdf(ruta).catch((e) => setError(e instanceof Error ? e.message : "No se pudo abrir el PDF"));
-  };
-
-  return (
-    <Modal
-      abierto={abierto}
-      alCerrar={alCerrar}
-      ancho="xl"
-      titulo={`Lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`}
-      descripcion="Esquema referencial dibujado con las medidas del expediente, con marca de agua y sin sello ni firma. Si el revisor subió el plano real, se muestra ese."
-      pie={
-        <>
-          <Button variant="outline" onClick={abrirAparte}>
-            Abrir el PDF en otra pestaña <ExternalLink aria-hidden="true" />
-          </Button>
-          <Button onClick={alCerrar}>Cerrar</Button>
-        </>
-      }
-    >
-      <div className="aspect-[4/3] w-full overflow-hidden rounded-2xl border border-border bg-muted">
-        {error ? (
-          <p role="alert" className="p-6 text-sm font-semibold text-sem-rojo-tinta">{error}</p>
-        ) : url ? (
-          <iframe title={`PDF de la lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`} src={url} className="h-full w-full" />
-        ) : (
-          <div role="status" className="grid h-full place-items-center">
-            <span className="flex items-center gap-3 text-sm font-semibold text-tinta-2">
-              <span className="size-5 animate-spin rounded-full border-2 border-primary/20 border-t-primary" aria-hidden="true" />
-              Cargando la lámina…
-            </span>
-          </div>
-        )}
-      </div>
-    </Modal>
   );
 }
 
@@ -247,7 +180,15 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
         )}
         {error && <p role="alert" className="text-sm font-semibold text-sem-rojo-tinta">{error}</p>}
       </div>
-      {conArchivo && <VisorLamina codigo={codigo} especialidad={especialidad} abierto={visor} alCerrar={() => setVisor(false)} />}
+      {conArchivo && (
+        <VisorPdf
+          ruta={ruta}
+          titulo={`Lámina: ${ETIQUETA_ESPECIALIDAD[especialidad]}`}
+          descripcion="Esquema referencial dibujado con las medidas del expediente, con marca de agua y sin sello ni firma. Si el revisor subió el plano real, se muestra ese."
+          abierto={visor}
+          alCerrar={() => setVisor(false)}
+        />
+      )}
     </li>
   );
 }
@@ -264,17 +205,15 @@ export function PanelPlanos({ detalle, esRevisor, alCambiar }: { detalle: Detall
         id="titulo-planos"
         descripcion={
           x.tipoPredio === "LOTE"
-            ? undefined
+            ? "Un lote no tiene planos de edificación, pero sí sus propios documentos. Aquí se revisa si están; no se evalúa si su contenido es correcto."
             : "Una vivienda necesita cuatro planos distintos. Aquí se revisa solo si están y si el área coincide con la partida; no se evalúa si la obra está bien hecha. Eso lo verifica el especialista en la inspección presencial."
         }
       >
-        Expediente técnico de planos (2D)
+        {x.tipoPredio === "LOTE" ? "Documentos del lote" : "Expediente técnico de planos (2D)"}
       </TituloSeccion>
 
       {x.tipoPredio === "LOTE" ? (
-        <p className="rounded-2xl border border-dashed border-border bg-superficie p-4 text-sm leading-relaxed text-tinta-2">
-          Los planos no aplican: este predio es un lote sin edificación. Se revisan cuando hay una vivienda construida.
-        </p>
+        <DocumentosDelLote detalle={detalle} esRevisor={esRevisor} alCambiar={recargar} />
       ) : (
         <>
           <div>

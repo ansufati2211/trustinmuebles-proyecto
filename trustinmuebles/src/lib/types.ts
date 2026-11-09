@@ -8,6 +8,8 @@ export type TipoPredio = "LOTE" | "VIVIENDA";
 export type TipoInmueble = "VIVIENDA_URBANA" | "LOTE_URBANO";
 export type Especialidad = "ARQUITECTURA" | "ESTRUCTURAS" | "ELECTRICAS" | "SANITARIAS";
 export type EstadoPlano = "PRESENTADO" | "OBSERVADO" | "NO_PRESENTADO" | "NO_APLICA";
+/** v0.9: documentos del expediente de un lote. */
+export type DocumentoLoteTipo = "PLANO_PERIMETRICO" | "MEMORIA_DESCRIPTIVA" | "CERTIFICADO_ZONIFICACION" | "TASACION";
 export type SistemaConstructivo = "ALBANILERIA_CONFINADA" | "APORTICADO" | "ADOBE" | "OTRO";
 export type EstadoTecnico = "NO_SOLICITADA" | "SOLICITADA" | "EN_INSPECCION" | "EMITIDO";
 export type ResultadoTecnico = "FAVORABLE" | "CON_OBSERVACIONES" | "CON_RIESGO";
@@ -28,7 +30,10 @@ export type TipoActo =
 export interface Usuario { id: number; codigoCuenta: string; rol: Rol; funcion?: string | null }
 export interface Sesion { token: string; usuario: Usuario }
 
-/** Datos del predio para el catálogo. El precio es referencial e informativo (en soles) y no interviene en el semáforo. */
+/**
+ * Datos del predio para el catálogo. El precio es referencial e informativo y no interviene en el semáforo. moneda es
+ * PEN o, v0.9, USD (precio base de una subasta de la SBN).
+ */
 export interface Predio {
   tipoInmueble: TipoInmueble; tipoInmuebleEtiqueta: string; distrito: string | null; areaM2: number | null;
   areaConstruidaInscrita: number | null; precioReferencial: number | null; moneda: string | null; precioNota: string | null;
@@ -37,6 +42,8 @@ export interface Predio {
 export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
   pendientes: number; origen: Origen; fuente: string | null; fechaConsulta: string | null; estadoTecnico: EstadoTecnico;
+  /** v0.9: enlace a la publicación oficial (por ejemplo, la subasta de la SBN). */
+  fuenteUrl?: string | null;
   resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean; predio: Predio;
   estadoPublicacion: EstadoPublicacion;
   /** v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
@@ -72,6 +79,12 @@ export interface Plano {
 export interface DocumentoInfo {
   origen: "SUBIDO" | "GENERADO" | "FALTA"; subidoPor: string | null; subidoEn: string | null;
   tamanoBytes: number | null; tamanoOriginalBytes: number | null; optimizado: boolean; sha256: string | null;
+}
+
+/** v0.9: un documento del lote. Siempre vienen los cuatro; el que no se registró llega como no presentado. */
+export interface DocumentoLote {
+  tipo: DocumentoLoteTipo; tipoEtiqueta: string; estado: EstadoPlano; observacion: string | null;
+  resumen: string | null; tieneDocumentoPropio: boolean; documento?: DocumentoInfo | null;
 }
 
 /** Respuesta de una subida (v0.8). */
@@ -111,6 +124,8 @@ export interface Expediente {
   ubicacion: string | null; areaM2: number | null; linderos: string | null; antecedenteDominial: string | null;
   tieneDocumento: boolean; documentoGenerado: boolean; documento?: DocumentoInfo | null; asientos: Asiento[];
   tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: Plano[];
+  /** v0.9: vacío si el predio no es un lote. */
+  documentosLote?: DocumentoLote[];
 }
 
 export interface Motivo { tipo: "FALTANTE" | "ALERTA" | "CONDICION" | "LIMITE"; texto: string }
@@ -130,7 +145,7 @@ export interface Termino { concepto: string; explicacion: string; version: strin
 
 export interface DetalleCaso {
   codigo: string; denominacion: string; contexto: string; sintetico: boolean; origen: Origen;
-  fuente: string | null; fechaConsulta: string | null; expediente: Expediente;
+  fuente: string | null; fechaConsulta: string | null; fuenteUrl?: string | null; expediente: Expediente;
   evaluacion: Evaluacion | null; evaluacionTecnica: EvaluacionTecnica; checklist: ItemChecklist[]; terminos: Termino[];
   predio: Predio; publicacion: Publicacion;
   /** v0.8 (I15): solo para gestor y revisor. */
@@ -191,11 +206,16 @@ export interface PlanoPeticion {
   sistemaConstructivo: SistemaConstructivo | null; observacion: string | null;
 }
 
+export interface DocumentoLotePeticion { tipo: DocumentoLoteTipo; estado: EstadoPlano; observacion: string | null }
+
 export interface PeticionExpediente {
   condicionRepresentada: string; completitud: Completitud; fechaReferencial: string; nota: string | null;
   zonaRegistral: string | null; oficinaRegistral: string | null; ubicacion: string | null; areaM2: number | null;
   linderos: string | null; antecedenteDominial: string | null; asientos: AsientoPeticion[];
-  tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[]; versionEsperada: number;
+  tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[];
+  /** v0.9: documentos del lote; si no viene, el servidor los deja como estaban. */
+  documentosLote?: DocumentoLotePeticion[];
+  versionEsperada: number;
 }
 
 /** v0.8: esfuerzo de regularización (criterio del equipo, borrador). No es un plazo ni un costo. */

@@ -22,7 +22,7 @@ import { PredioImagen } from "@/components/base/PredioImagen";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { Desplegable } from "@/components/base/Desplegable";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
-import { m2, soles } from "@/lib/formato";
+import { m2, precio } from "@/lib/formato";
 import { puedeVerHistorial } from "@/lib/permisos";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
@@ -308,7 +308,7 @@ export default function Expediente() {
                     <LandPlot className="size-4" aria-hidden="true" />{p.tipoInmuebleEtiqueta}
                   </span>
                   <span className="inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-3 py-1 text-gray-200 backdrop-blur-md">
-                    <MapPin className="size-4" aria-hidden="true" />{p.distrito ?? d.contexto}, Ica
+                    <MapPin className="size-4" aria-hidden="true" />{p.distrito ? (d.contexto.startsWith(p.distrito) ? d.contexto : `${p.distrito}, Ica`) : d.contexto}
                   </span>
                 </p>
                 <h1 className="mt-4 text-3xl font-black leading-tight tracking-tight text-white md:text-4xl">{d.denominacion}</h1>
@@ -319,7 +319,7 @@ export default function Expediente() {
                 {p.precioReferencial != null ? (
                   <>
                     <p className="text-xs font-bold uppercase tracking-wider text-emerald-300">Precio</p>
-                    <p className="cifras text-4xl font-black tracking-tight">{soles(p.precioReferencial, true)}</p>
+                    <p className="cifras text-4xl font-black tracking-tight">{precio(p.precioReferencial, p.moneda, true)}</p>
                     {p.precioNota && <p className="mt-1 text-xs text-gray-300">{p.precioNota}</p>}
                   </>
                 ) : (
@@ -560,11 +560,16 @@ export default function Expediente() {
                   {transcrita ? (
                     <>
                       <p className="text-sm leading-relaxed text-tinta-2">
-                        Transcrita de {d.fuente}{d.fechaConsulta ? `, consultada el ${fecha(d.fechaConsulta)}` : ""}.
+                        {d.fuenteUrl ? "Datos de " : "Transcrita de "}{d.fuente}{d.fechaConsulta ? `, consultada el ${fecha(d.fechaConsulta)}` : ""}.
                         No incluye nombres, DNI ni domicilios de personas naturales. Para la copia literal certificada o los
                         planos del título archivado, solicítalos en SUNARP (tienen costo).
                       </p>
                       <div className="space-y-2">
+                        {d.fuenteUrl && (
+                          <Button variant="outline" className="w-full" onClick={() => abrirExterno(d.fuenteUrl!)}>
+                            Ver la publicación de la SBN <ExternalLink aria-hidden="true" />
+                          </Button>
+                        )}
                         <Button variant="outline" className="w-full" onClick={() => abrirExterno(CONOCE_AQUI)}>
                           Ver en Conoce Aquí <ExternalLink aria-hidden="true" />
                         </Button>

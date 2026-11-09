@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import pe.trustinmuebles.almacenamiento.ArchivoContenido;
 import pe.trustinmuebles.checklist.ItemChecklistDto;
+import pe.trustinmuebles.clasificacion.DocumentoLote;
 import pe.trustinmuebles.clasificacion.Especialidad;
 import pe.trustinmuebles.clasificacion.HistorialEvaluacionDto;
 import pe.trustinmuebles.inspeccion.EvaluacionTecnicaDto;
@@ -169,5 +170,23 @@ class CasoController {
     ResponseEntity<DocumentoDto> subirPlano(@PathVariable String codigo, @PathVariable Especialidad especialidad,
             @RequestParam("documento") MultipartFile documento) {
         return ResponseEntity.status(201).body(servicio.asociarDocumentoPlano(codigo, especialidad, documento));
+    }
+
+    /** v0.9: PDF de un documento del lote (plano perimétrico, memoria descriptiva, zonificación o tasación). */
+    @GetMapping("/{codigo}/documentos-lote/{tipo}/documento")
+    ResponseEntity<byte[]> documentoLote(@PathVariable String codigo, @PathVariable DocumentoLote tipo) {
+        ExpedienteService.DocumentoPlano d = servicio.documentoLote(codigo, tipo);
+        return ResponseEntity.ok().contentType(MediaType.APPLICATION_PDF)
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "default-src 'none'; sandbox")
+                .header("Content-Disposition", "inline; filename=\"" + d.nombre() + "\"")
+                .cacheControl(CacheControl.noStore())
+                .body(d.datos());
+    }
+
+    @PostMapping(value = "/{codigo}/documentos-lote/{tipo}/documento", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    ResponseEntity<DocumentoDto> subirDocumentoLote(@PathVariable String codigo, @PathVariable DocumentoLote tipo,
+            @RequestParam("documento") MultipartFile documento) {
+        return ResponseEntity.status(201).body(servicio.asociarDocumentoLote(codigo, tipo, documento));
     }
 }

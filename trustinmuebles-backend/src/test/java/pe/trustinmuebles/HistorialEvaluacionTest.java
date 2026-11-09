@@ -106,7 +106,7 @@ class HistorialEvaluacionTest extends BaseApiTest {
         assertThat(primera.get("estadoAnterior").isNull()).isTrue();
         assertThat(primera.get("estadoNuevo").asString()).isEqualTo("VERDE");
         assertThat(primera.get("cuentaCodigo").asString()).isEqualTo("sistema");
-        assertThat(primera.get("versionReglas").asString()).isEqualTo("v0.4");
+        assertThat(primera.get("versionReglas").asString()).isEqualTo("v0.5");
 
         int antes = jdbc.queryForObject("select count(*) from historial_evaluacion", Integer.class);
         contexto.getBean("casosSeeder", ApplicationRunner.class).run(new DefaultApplicationArguments());
@@ -143,7 +143,7 @@ class HistorialEvaluacionTest extends BaseApiTest {
         assertThat(ultima.get("estadoNuevo").asString()).isEqualTo("VERDE");
         assertThat(ultima.get("motivos")).isNotEmpty();
         assertThat(ultima.get("faltantes").isArray()).isTrue();
-        assertThat(ultima.get("versionReglas").asString()).isEqualTo("v0.4");
+        assertThat(ultima.get("versionReglas").asString()).isEqualTo("v0.5");
         assertThat(ultima.get("registradaEn").asString()).isNotBlank();
         restaurar(PARCONA, original);
         assertThat(contar(PARCONA)).isEqualTo(antes + 2);

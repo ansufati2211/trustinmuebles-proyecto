@@ -15,7 +15,7 @@ import tools.jackson.databind.node.ObjectNode;
 /** v0.8 (feedback b, decisión 3): ruta de regularización por caso, de solo lectura y orientativa. */
 class RutaRegularizacionTest extends BaseApiTest {
     static final String[] SEMILLA = {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS,
-            PACHACUTEC, ICA};
+            PACHACUTEC, ICA, HUARMEY, SUPE};
 
     JsonNode ruta(String codigo, String authorization) throws Exception {
         return json.readTree(mvc.perform(get("/api/v1/casos/" + codigo + "/ruta-regularizacion")

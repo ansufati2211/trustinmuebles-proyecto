@@ -32,7 +32,9 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     static final List<Cuenta> CUENTAS = List.of(new Cuenta("comprador-01", Rol.COMPRADOR),
             new Cuenta("revisor-01", Rol.REVISOR), new Cuenta("especialista-01", Rol.ESPECIALISTA),
             new Cuenta("gestor-01", Rol.GESTOR), new Cuenta("propietario-01", Rol.PROPIETARIO),
-            new Cuenta("propietario-02", Rol.PROPIETARIO), new Cuenta("especialista-02", Rol.ESPECIALISTA));
+            new Cuenta("propietario-02", Rol.PROPIETARIO), new Cuenta("especialista-02", Rol.ESPECIALISTA),
+            // v0.9: propietaria de demostración de los dos lotes de la subasta de la SBN. No representa a la SBN.
+            new Cuenta("propietario-03", Rol.PROPIETARIO));
 
     /**
      * Segundo especialista (v0.7), para la asignación. Perfil ficticio: el nombre dice que es ficticio y la colegiatura

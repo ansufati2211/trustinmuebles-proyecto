@@ -163,10 +163,10 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
-    @DisplayName("Los asientos en Courier quedan justificados y los 10 casos del contenido generan su copia literal")
+    @DisplayName("Los asientos en Courier quedan justificados y los 12 casos del contenido generan su copia literal")
     void losDiezCasosGeneranSuCopia() throws Exception {
         var mapa = new tools.jackson.databind.ObjectMapper();
-        var dir = java.nio.file.Path.of("src/main/resources/contenido/v0.4/casos");
+        var dir = java.nio.file.Path.of("src/main/resources/contenido/v0.5/casos");
         int n = 0;
         try (var archivos = java.nio.file.Files.list(dir)) {
             for (var f : archivos.sorted().toList()) {
@@ -185,6 +185,6 @@ class CopiaLiteralPdfTest {
                 n++;
             }
         }
-        assertThat(n).isEqualTo(10);
+        assertThat(n).isEqualTo(12);
     }
 }

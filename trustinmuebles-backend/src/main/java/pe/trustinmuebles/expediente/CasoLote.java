@@ -48,9 +48,21 @@ class CasoLote {
     /** Distrito del predio, para el catálogo y sus filtros. */
     private String distrito;
 
-    /** Precio referencial en soles. Es informativo, no una oferta; en una partida captada es opcional. */
+    /** Precio referencial. Es informativo, no una oferta; en una partida captada es opcional. */
     @Column(name = "precio_referencial")
     private java.math.BigDecimal precioReferencial;
+
+    /** v0.9: moneda del precio, PEN o USD (el precio base de una subasta de la SBN se publica en dólares). */
+    @Column(nullable = false, length = 3)
+    private String moneda = "PEN";
+
+    /** v0.9: nota propia del precio. Si no hay, se muestra la nota general del precio referencial. */
+    @Column(name = "precio_nota", length = 200)
+    private String precioNota;
+
+    /** v0.9: enlace a la publicación oficial de la que salen los datos (por ejemplo, la subasta de la SBN). */
+    @Column(name = "fuente_url", length = 300)
+    private String fuenteUrl;
 
     /** Revisor responsable del registro del caso. No otorga edición al comprador. */
     @Column(name = "responsable_id", nullable = false)

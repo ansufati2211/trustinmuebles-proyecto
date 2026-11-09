@@ -4,7 +4,7 @@ import type { EntradaHistorial } from "./types";
 
 const entrada = (p: Partial<EntradaHistorial>): EntradaHistorial => ({
   registradaEn: "2026-10-20T15:30:00Z", estadoAnterior: "AMARILLO", estadoNuevo: "VERDE",
-  motivos: [{ tipo: "LIMITE", texto: "No se detectaron alertas." }], faltantes: [], versionReglas: "v0.4",
+  motivos: [{ tipo: "LIMITE", texto: "No se detectaron alertas." }], faltantes: [], versionReglas: "v0.5",
   origen: "PLANO_ADJUNTO", cuentaCodigo: "revisor-01", ...p,
 });
 
@@ -15,7 +15,7 @@ describe("línea de tiempo del historial", () => {
     expect(e.cambioDeColor).toBe(true);
     expect(e.origen).toBe("Plano incorporado o adjuntado");
     expect(e.cuenta).toBe("revisor-01");
-    expect(e.versionReglas).toBe("v0.4");
+    expect(e.versionReglas).toBe("v0.5");
     expect(e.motivos).toEqual(["No se detectaron alertas."]);
     expect(e.fecha).not.toBe("");
   });

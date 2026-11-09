@@ -247,12 +247,12 @@ class CarteraTest extends BaseApiTest {
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
             JsonNode p = json.readTree(r);
 
-            assertThat(p.get("totalCasos").asInt()).isEqualTo(10);
+            assertThat(p.get("totalCasos").asInt()).isEqualTo(12);
             assertThat(p.get("porColor").get("VERDE").asInt()).isEqualTo(2);
             assertThat(p.get("porColor").get("AMARILLO").asInt()).isEqualTo(4);
             assertThat(p.get("porColor").get("ROJO").asInt()).isEqualTo(2);
-            assertThat(p.get("porColor").get("GRIS").asInt()).isEqualTo(2);
-            assertThat(p.get("porEstadoPublicacion").get("PUBLICADO").asInt()).isEqualTo(10);
+            assertThat(p.get("porColor").get("GRIS").asInt()).isEqualTo(4);
+            assertThat(p.get("porEstadoPublicacion").get("PUBLICADO").asInt()).isEqualTo(12);
             assertThat(p.get("porEstadoPublicacion").get("BORRADOR").asInt()).isZero();
 
             // Coherencia con el catálogo del gestor: mismos colores y mismos casos con faltantes.

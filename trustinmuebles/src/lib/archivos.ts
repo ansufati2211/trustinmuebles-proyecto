@@ -32,12 +32,16 @@ export function resumenOptimizacion(r: Pick<DocumentoSubido, "optimizado" | "tam
 
 export const TEXTO_GENERADO = "Generado por el sistema a partir de la transcripción, no es un documento oficial";
 export const TEXTO_FALTA = "Falta el archivo";
+/** v0.9: cuenta con la que el backend registra los archivos que trae la carga de contenido. */
+export const CARGA_INICIAL = "carga-inicial";
 
 /** De dónde sale un PDF, en una frase. {@code fecha} formatea la fecha de subida. */
 export function origenDocumento(info: DocumentoInfo | null | undefined, fecha: (iso: string) => string): string {
   if (!info || info.origen === "FALTA") return TEXTO_FALTA;
   if (info.origen === "GENERADO") return TEXTO_GENERADO;
-  const partes = [`Subido por ${info.subidoPor ?? "una cuenta"}`];
+  // v0.9: un archivo que trae el contenido (por ejemplo, el plano oficial de la SBN) no lo subió ninguna cuenta.
+  const partes = [info.subidoPor === CARGA_INICIAL ? "Archivo original de la fuente, cargado con el contenido"
+    : `Subido por ${info.subidoPor ?? "una cuenta"}`];
   if (info.subidoEn) partes.push(`el ${fecha(info.subidoEn)}`);
   const tamano = info.tamanoBytes == null ? "" : `, ${mb(info.tamanoBytes)}`;
   const opt = info.optimizado && info.tamanoOriginalBytes != null ? ` (optimizado desde ${mb(info.tamanoOriginalBytes)})` : "";

@@ -25,6 +25,7 @@ import pe.trustinmuebles.expediente.CasoDtos.*;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.AsientoCopia;
 import pe.trustinmuebles.expediente.CopiaLiteralPdf.DatosCopia;
 import pe.trustinmuebles.checklist.EstadoItem;
+import pe.trustinmuebles.clasificacion.DocumentoLote;
 import pe.trustinmuebles.clasificacion.Especialidad;
 import pe.trustinmuebles.clasificacion.EstadoPlano;
 import pe.trustinmuebles.clasificacion.TipoPredio;
@@ -95,7 +96,7 @@ class ExpedienteService {
             return new ResumenCaso(e.getCaso().getCodigo(), e.getCaso().getDenominacion(), e.getCaso().getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
-                    e.getCaso().getFechaConsulta(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
+                    e.getCaso().getFechaConsulta(), e.getCaso().getFuenteUrl(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
                     e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev), gestionPara(e, u));
         }).filter(filtro::acepta).toList();
     }
@@ -157,6 +158,9 @@ class ExpedienteService {
                 .map(p -> String.join("|", String.valueOf(p.getEspecialidad()), String.valueOf(p.getEstado()),
                         numero(p.getAreaConstruida()), String.valueOf(p.getSistemaConstructivo()),
                         String.valueOf(p.getObservacion())))
+                .sorted().collect(java.util.stream.Collectors.joining("\n")) + "\n" + e.getDocumentosLote().stream()
+                .map(x -> String.join("|", String.valueOf(x.getTipo()), String.valueOf(x.getEstado()),
+                        String.valueOf(x.getObservacion())))
                 .sorted().collect(java.util.stream.Collectors.joining("\n"));
     }
 
@@ -333,6 +337,109 @@ class ExpedienteService {
         return e.getPlanos().stream().filter(x -> x.getEspecialidad() == especialidad).findFirst().orElse(null);
     }
 
+    // ------------------------------------------------------------ documentos del lote (v0.9)
+
+    /**
+     * El PDF de un documento del lote: el guardado o, solo en un caso de la carga de contenido sin archivo, uno generado
+     * con los datos del caso (con marca de agua). A una partida captada sin archivo le falta el documento.
+     */
+    @Transactional(readOnly = true)
+    DocumentoPlano documentoLote(String codigo, DocumentoLote tipo) {
+        Expediente e = buscarVisible(codigo);
+        DocumentoDelLote d = documentoDe(e, tipo);
+        if (e.getTipoPredio() != TipoPredio.LOTE || d == null
+                || (d.getEstado() != EstadoPlano.PRESENTADO && d.getEstado() != EstadoPlano.OBSERVADO)) {
+            throw new NoEncontradoException("Documento del lote", tipo.etiqueta());
+        }
+        String nombre = codigo + "-" + nombreDeArchivo(tipo) + ".pdf";
+        if (d.getArchivoId() != null) return new DocumentoPlano(almacenamiento.leer(d.getArchivoId()).datos(), nombre);
+        if (e.getCaso().esCaptado()) throw new NoEncontradoException("Archivo del documento", tipo.etiqueta());
+        CasoLote c = e.getCaso();
+        byte[] pdf = DocumentoLotePdf.generar(tipo, new DocumentoLotePdf.Datos(codigo, c.getDenominacion(),
+                e.getUbicacion(), e.getZonaRegistral(), e.getOficinaRegistral(), e.getAreaM2(), e.getLinderos(),
+                d.getResumen(), c.getPrecioReferencial(), c.getMoneda(), e.getFechaReferencial()));
+        return new DocumentoPlano(pdf, nombre);
+    }
+
+    static String nombreDeArchivo(DocumentoLote tipo) {
+        return tipo.name().toLowerCase(java.util.Locale.ROOT).replace('_', '-');
+    }
+
+    /**
+     * El revisor sube el PDF de un documento del lote: queda presentado (si estaba observado, lo sigue estando) y se
+     * recalcula. El motor no lee el archivo, solo el estado del documento (I9).
+     */
+    DocumentoDto asociarDocumentoLote(String codigo, DocumentoLote tipo, MultipartFile archivo) {
+        Expediente e = buscar(codigo);
+        if (e.getTipoPredio() != TipoPredio.LOTE) {
+            throw new ReglaNegocioException("Los documentos del lote solo aplican a un lote");
+        }
+        DocumentoDelLote d = documentoDe(e, tipo);
+        if (d != null && d.getEstado() == EstadoPlano.NO_APLICA) {
+            throw new ReglaNegocioException("Este documento está marcado como «no aplica»");
+        }
+        PdfPreparado pdf = documentosPdf.preparar(archivo);
+        var guardado = guardarDocumentoLote(e, tipo, pdf, UsuarioActual.actual().codigoCuenta());
+        recalcular(e, OrigenEvaluacion.PLANO_ADJUNTO);
+        return DocumentoDto.de(codigo, guardado.sha256(), pdf);
+    }
+
+    /**
+     * Carga de contenido: guarda el PDF de un documento que trae el caso (por ejemplo, el plano oficial de la SBN). No
+     * recalcula; lo hace el seeder al final, como con el resto del contenido.
+     */
+    void adjuntarDocumentoLoteDeContenido(String codigo, DocumentoLote tipo, byte[] datos) {
+        Expediente e = buscar(codigo);
+        guardarDocumentoLote(e, tipo, documentosPdf.preparar(datos, "application/pdf"), CARGA_INICIAL);
+    }
+
+    static final String CARGA_INICIAL = "carga-inicial";
+
+    private pe.trustinmuebles.almacenamiento.ArchivoGuardado guardarDocumentoLote(Expediente e, DocumentoLote tipo,
+            PdfPreparado pdf, String subidoPor) {
+        DocumentoDelLote d = documentoDe(e, tipo);
+        if (d == null) {
+            d = new DocumentoDelLote();
+            d.setExpediente(e);
+            d.setTipo(tipo);
+            e.getDocumentosLote().add(d);
+        }
+        if (d.getEstado() != EstadoPlano.OBSERVADO) d.setEstado(EstadoPlano.PRESENTADO);
+        String viejo = d.getArchivoId();
+        var guardado = almacenamiento.guardarDocumento(
+                e.getCaso().getCodigo() + "-" + nombreDeArchivo(tipo) + ".pdf", pdf, subidoPor);
+        d.setArchivoId(guardado.id());
+        expedientes.saveAndFlush(e);
+        if (viejo != null) almacenamiento.eliminar(viejo);
+        return guardado;
+    }
+
+    /**
+     * Carga de contenido sobre una base existente: agrega los documentos del lote que el caso aún no tiene, sin tocar
+     * los que el revisor ya registró. Devuelve los tipos agregados.
+     */
+    List<DocumentoLote> completarDocumentosLote(String codigo, List<DocumentoLoteDatos> datos) {
+        Expediente e = buscar(codigo);
+        List<DocumentoLote> agregados = new java.util.ArrayList<>();
+        for (DocumentoLoteDatos x : datos) {
+            if (documentoDe(e, x.tipo()) != null) continue;
+            DocumentoDelLote d = new DocumentoDelLote();
+            d.setExpediente(e);
+            d.setTipo(x.tipo());
+            d.setEstado(x.estado());
+            d.setObservacion(vacioANull(x.observacion()));
+            d.setResumen(vacioANull(x.resumen()));
+            e.getDocumentosLote().add(d);
+            agregados.add(x.tipo());
+        }
+        if (!agregados.isEmpty()) expedientes.saveAndFlush(e);
+        return agregados;
+    }
+
+    private static DocumentoDelLote documentoDe(Expediente e, DocumentoLote tipo) {
+        return e.getDocumentosLote().stream().filter(x -> x.getTipo() == tipo).findFirst().orElse(null);
+    }
+
     private static final List<String> CHECKLIST_TRANSCRITA = List.of("Copia literal certificada (SPRL)",
             "Título archivado del asiento de dominio", "Ubicación en el Visor BGR");
     private static final List<String> TERMINOS_TRANSCRITA = List.of("Partida registral", "Copia literal", "Rubro",
@@ -406,9 +513,10 @@ class ExpedienteService {
     static PredioDto predio(Expediente e) {
         CasoLote c = e.getCaso();
         TipoInmueble tipo = TipoInmueble.de(e.getTipoPredio());
+        boolean hayPrecio = c.getPrecioReferencial() != null;
         return new PredioDto(tipo, tipo.etiqueta(), c.getDistrito(), e.getAreaM2(), e.getAreaConstruidaInscrita(),
-                c.getPrecioReferencial(), c.getPrecioReferencial() == null ? null : "PEN",
-                c.getPrecioReferencial() == null ? null : PRECIO_NOTA);
+                c.getPrecioReferencial(), hayPrecio ? c.getMoneda() : null,
+                !hayPrecio ? null : c.getPrecioNota() != null ? c.getPrecioNota() : PRECIO_NOTA);
     }
 
     /** Elimina una partida captada (por ejemplo, ante el pedido de un titular). Los casos de demostración no se borran. */
@@ -421,6 +529,8 @@ class ExpedienteService {
         List<String> archivos = new java.util.ArrayList<>();
         if (e.getDocumentoArchivoId() != null) archivos.add(e.getDocumentoArchivoId());
         e.getPlanos().stream().map(PlanoTecnico::getArchivoId).filter(java.util.Objects::nonNull).forEach(archivos::add);
+        e.getDocumentosLote().stream().map(DocumentoDelLote::getArchivoId).filter(java.util.Objects::nonNull)
+                .forEach(archivos::add);
         expedientes.delete(e);
         expedientes.flush();
         casos.delete(caso);
@@ -494,6 +604,7 @@ class ExpedienteService {
         reconciliar(e, n.asientos());
         List<String> sobrantes = new java.util.ArrayList<>();
         if (d.tipoPredio() != null) aplicarBloqueTecnico(e, d, sobrantes, exigirArchivo);
+        if (d.documentosLote() != null) aplicarDocumentosLote(e, d.documentosLote(), sobrantes, exigirArchivo);
 
         if (!e.isDocumentoGenerado()) return sobrantes;
         String viejo = e.getDocumentoArchivoId();
@@ -556,6 +667,55 @@ class ExpedienteService {
             if (!hay && t.getArchivoId() != null) {
                 sobrantes.add(t.getArchivoId());
                 t.setArchivoId(null);
+            }
+        }
+    }
+
+    static final String SIN_ARCHIVO_DOCUMENTO = "Sube el PDF del documento antes de marcarlo como presentado";
+
+    /**
+     * v0.9: documentos del lote, con la misma regla que los planos: con {@code exigirArchivo}, uno solo pasa a presentado
+     * u observado si ya tiene su PDF. Los que no vienen en la lista se quitan. El resumen solo lo cambia la carga de
+     * contenido; una edición lo conserva.
+     */
+    private static void aplicarDocumentosLote(Expediente e, List<DocumentoLoteDatos> nuevos, List<String> sobrantes,
+            boolean exigirArchivo) {
+        Set<DocumentoLote> vistos = new HashSet<>();
+        for (DocumentoLoteDatos x : nuevos) {
+            if (!vistos.add(x.tipo())) throw new IllegalArgumentException("Documento repetido: " + x.tipo().etiqueta());
+        }
+        Map<DocumentoLote, DocumentoDelLote> actuales = new LinkedHashMap<>();
+        for (DocumentoDelLote x : e.getDocumentosLote()) actuales.put(x.getTipo(), x);
+        e.getDocumentosLote().removeIf(x -> {
+            boolean sobra = !vistos.contains(x.getTipo());
+            if (sobra && x.getArchivoId() != null) sobrantes.add(x.getArchivoId());
+            return sobra;
+        });
+        for (DocumentoLoteDatos x : nuevos) {
+            DocumentoDelLote d = actuales.get(x.tipo());
+            // Un documento que no existe y sigue sin presentarse, sin observación, no se guarda: así reenviar la lista
+            // completa que muestra el detalle no cuenta como un cambio de documentos.
+            if (d == null && x.estado() == EstadoPlano.NO_PRESENTADO && vacioANull(x.observacion()) == null
+                    && vacioANull(x.resumen()) == null) {
+                continue;
+            }
+            if (d == null) {
+                d = new DocumentoDelLote();
+                d.setExpediente(e);
+                d.setTipo(x.tipo());
+                e.getDocumentosLote().add(d);
+            }
+            boolean hay = x.estado() == EstadoPlano.PRESENTADO || x.estado() == EstadoPlano.OBSERVADO;
+            boolean habia = d.getEstado() == EstadoPlano.PRESENTADO || d.getEstado() == EstadoPlano.OBSERVADO;
+            if (exigirArchivo && hay && d.getArchivoId() == null && (d.getId() == null || !habia)) {
+                throw new ReglaNegocioException(SIN_ARCHIVO_DOCUMENTO + " (" + x.tipo().etiqueta() + ")");
+            }
+            d.setEstado(x.estado());
+            d.setObservacion(vacioANull(x.observacion()));
+            if (x.resumen() != null) d.setResumen(vacioANull(x.resumen()));
+            if (!hay && d.getArchivoId() != null) {
+                sobrantes.add(d.getArchivoId());
+                d.setArchivoId(null);
             }
         }
     }
@@ -712,7 +872,9 @@ class ExpedienteService {
                                 a.getTipoActo().etiqueta(), a.getTipoActo())).toList(),
                 e.getTipoPredio(), e.getAreaConstruidaInscrita(),
                 e.getPlanos().stream().map(p -> new EntradaClasificacion.PlanoEntrada(p.getEspecialidad(),
-                        p.getEstado(), p.getAreaConstruida())).toList());
+                        p.getEstado(), p.getAreaConstruida())).toList(),
+                e.getDocumentosLote().stream().map(d -> new EntradaClasificacion.DocumentoLoteEntrada(d.getTipo(),
+                        d.getEstado())).toList());
     }
 
     private DetalleCaso aDetalle(Expediente e) {
@@ -731,9 +893,10 @@ class ExpedienteService {
                         p.getSistemaConstructivo() == null ? null : p.getSistemaConstructivo().etiqueta(),
                         p.getObservacion(), p.getArchivoId() != null, documentoDelPlano(e, p),
                         p.getEspecialidad() == Especialidad.ARQUITECTURA
-                                ? coincide(p.getAreaConstruida(), e.getAreaConstruidaInscrita()) : null)).toList());
+                                ? coincide(p.getAreaConstruida(), e.getAreaConstruidaInscrita()) : null)).toList(),
+                documentosLoteDto(e));
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
-                c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), exp,
+                c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
                 glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()),
                 gestionPara(e, UsuarioActual.actual()));
@@ -757,6 +920,32 @@ class ExpedienteService {
         if (p.getEstado() != EstadoPlano.PRESENTADO && p.getEstado() != EstadoPlano.OBSERVADO) return null;
         if (p.getArchivoId() != null) {
             return almacenamiento.metadatos(p.getArchivoId()).map(DocumentoInfoDto::subido)
+                    .orElse(DocumentoInfoDto.falta());
+        }
+        return e.getCaso().esCaptado() ? DocumentoInfoDto.falta() : DocumentoInfoDto.generado();
+    }
+
+    /** v0.9: los cuatro documentos de un lote, en orden; el que no se registró sale como no presentado. */
+    private List<DocumentoLoteDto> documentosLoteDto(Expediente e) {
+        if (e.getTipoPredio() != TipoPredio.LOTE) return List.of();
+        List<DocumentoLoteDto> lista = new java.util.ArrayList<>();
+        for (DocumentoLote tipo : DocumentoLote.values()) {
+            DocumentoDelLote d = documentoDe(e, tipo);
+            if (d == null) {
+                lista.add(new DocumentoLoteDto(tipo, tipo.etiqueta(), EstadoPlano.NO_PRESENTADO, null, null, false, null));
+            } else {
+                lista.add(new DocumentoLoteDto(tipo, tipo.etiqueta(), d.getEstado(), d.getObservacion(), d.getResumen(),
+                        d.getArchivoId() != null, documentoDelLote(e, d)));
+            }
+        }
+        return lista;
+    }
+
+    /** Origen del PDF de un documento del lote: guardado, generado (solo casos de demostración) o falta el archivo. */
+    private DocumentoInfoDto documentoDelLote(Expediente e, DocumentoDelLote d) {
+        if (d.getEstado() != EstadoPlano.PRESENTADO && d.getEstado() != EstadoPlano.OBSERVADO) return null;
+        if (d.getArchivoId() != null) {
+            return almacenamiento.metadatos(d.getArchivoId()).map(DocumentoInfoDto::subido)
                     .orElse(DocumentoInfoDto.falta());
         }
         return e.getCaso().esCaptado() ? DocumentoInfoDto.falta() : DocumentoInfoDto.generado();

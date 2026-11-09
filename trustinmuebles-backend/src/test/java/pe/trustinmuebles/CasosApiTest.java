@@ -27,15 +27,20 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Contenido v0.4 cargado: 10 casos simulados, 48 términos, 9 reglas (3 prioritarias), las cuentas de demostración")
+    @DisplayName("Contenido v0.5 cargado: 10 casos simulados y 2 lotes de la SBN, 57 términos, 10 reglas (3 prioritarias), las cuentas")
     void contenidoCargado() {
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(10);
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(12);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
                 .isEqualTo(10);
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo not like 'SIM-%'", Integer.class))
-                .as("toda partida lleva el prefijo SIM- para no confundirse con una real").isZero();
-        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(48);
-        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.4'", Integer.class)).isEqualTo(9);
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo not like 'SIM-%' and sintetico = true",
+                Integer.class)).as("toda partida simulada lleva el prefijo SIM- para no confundirse con una real").isZero();
+        // v0.9: las dos partidas reales son de la subasta de la SBN: transcritas, con fuente, fecha y enlace oficial.
+        assertThat(jdbc.queryForList("select codigo from caso_lote where codigo not like 'SIM-%' and origen = 'TRANSCRITA'"
+                + " and fuente like 'SBN%' and fuente_url like 'https://www.sbn.gob.pe/%' and fecha_consulta is not null"
+                + " and propietario_codigo = 'propietario-03' and moneda = 'USD'", String.class))
+                .containsExactlyInAnyOrder(HUARMEY, SUPE);
+        assertThat(jdbc.queryForObject("select count(*) from termino_glosario", Integer.class)).isEqualTo(57);
+        assertThat(jdbc.queryForObject("select count(*) from regla where version = 'v0.5'", Integer.class)).isEqualTo(10);
         assertThat(jdbc.queryForObject("select count(*) from regla where prioridad = 'PRIORITARIA'", Integer.class))
                 .isEqualTo(3);
         assertThat(jdbc.queryForObject(
@@ -48,18 +53,25 @@ class CasosApiTest extends BaseApiTest {
     @DisplayName("CP-02 el listado y cada código devuelven sus propios datos")
     void cadaCodigoDevuelveSusDatos() throws Exception {
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador())).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(10)))
-                .andExpect(jsonPath("$[*].codigo", contains(PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO,
-                        SANTIAGO, SALAS, MOLINOS, PACHACUTEC, ICA)))
-                .andExpect(jsonPath("$[0].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
-                .andExpect(jsonPath("$[0].estado").value("VERDE"))
-                .andExpect(jsonPath("$[0].pendientes").value(1))
-                .andExpect(jsonPath("$[2].pendientes").value(2));
-        for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS,
-                MOLINOS, PACHACUTEC, ICA}) {
+                .andExpect(jsonPath("$", hasSize(12)))
+                .andExpect(jsonPath("$[*].codigo", contains(HUARMEY, SUPE, PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES,
+                        PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS, PACHACUTEC, ICA)))
+                .andExpect(jsonPath("$[2].denominacion").value("Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica"))
+                .andExpect(jsonPath("$[2].estado").value("VERDE"))
+                .andExpect(jsonPath("$[2].pendientes").value(1))
+                .andExpect(jsonPath("$[4].pendientes").value(2))
+                .andExpect(jsonPath("$[0].fuenteUrl").value("https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38"))
+                .andExpect(jsonPath("$[2].fuenteUrl").doesNotExist());
+        for (String codigo : DEMOSTRACION) {
             mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
                     .andExpect(status().isOk()).andExpect(jsonPath("$.codigo").value(codigo))
                     .andExpect(jsonPath("$.sintetico").value(true));
+        }
+        for (String codigo : new String[] {HUARMEY, SUPE}) {
+            mvc.perform(get("/api/v1/casos/" + codigo).header("Authorization", comprador()))
+                    .andExpect(status().isOk()).andExpect(jsonPath("$.codigo").value(codigo))
+                    .andExpect(jsonPath("$.sintetico").value(false))
+                    .andExpect(jsonPath("$.origen").value("TRANSCRITA"));
         }
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.expediente.titularidad",
@@ -71,7 +83,7 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Los 10 casos dan el color, las reglas y el estado técnico que describe su ficha")
+    @DisplayName("Los 12 casos dan el color, las reglas y el estado técnico que describe su ficha")
     void losDiezCasosTienenSuColor() throws Exception {
         // código, color documental, reglas aplicadas (en el orden de la tabla), estado técnico
         Object[][] esperado = {
@@ -85,6 +97,9 @@ class CasosApiTest extends BaseApiTest {
             {MOLINOS, "ROJO", List.of("RP-03"), "SOLICITADA"},
             {PACHACUTEC, "AMARILLO", List.of("RV-05"), "EN_INSPECCION"},
             {ICA, "AMARILLO", List.of("RV-03", "RV-06"), "EMITIDO"},
+            // v0.9: partida por transcribir y sin memoria descriptiva; se conserva la alerta de zonificación (RN-04).
+            {HUARMEY, "GRIS", List.of("RV-07"), "NO_SOLICITADA"},
+            {SUPE, "GRIS", List.of("RV-07"), "NO_SOLICITADA"},
         };
         for (Object[] e : esperado) {
             JsonNode d = leer((String) e[0]);
@@ -97,6 +112,31 @@ class CasosApiTest extends BaseApiTest {
         // Un lote no lleva planos; las demás son viviendas con la declaratoria de fábrica en el rubro F.
         assertThat(leer(SANTIAGO).get("expediente").get("tipoPredio").asString()).isEqualTo("LOTE");
         assertThat(leer(SANTIAGO).get("expediente").get("planos")).isEmpty();
+        // v0.9: Santiago tiene sus cuatro documentos del lote presentados y por eso sigue en VERDE.
+        JsonNode docs = leer(SANTIAGO).get("expediente").get("documentosLote");
+        assertThat(docs).hasSize(4);
+        docs.forEach(x -> {
+            assertThat(x.get("estado").asString()).isEqualTo("PRESENTADO");
+            assertThat(x.get("documento").get("origen").asString()).isEqualTo("GENERADO");
+        });
+        assertThat(leer(PARCONA).get("expediente").get("documentosLote")).as("una vivienda no los lleva").isEmpty();
+        // Los lotes de la SBN: faltan la titularidad, la completitud y la memoria; el plano es el PDF oficial guardado.
+        for (String codigo : new String[] {HUARMEY, SUPE}) {
+            JsonNode d = leer(codigo);
+            var faltantes = new java.util.ArrayList<String>();
+            d.get("evaluacion").get("faltantes").forEach(f -> faltantes.add(f.asString()));
+            assertThat(faltantes).as("faltantes de " + codigo)
+                    .containsExactly("Titularidad", "Completitud del extracto", "Memoria descriptiva");
+            JsonNode lote = d.get("expediente").get("documentosLote");
+            assertThat(lote.get(0).get("tipo").asString()).isEqualTo("PLANO_PERIMETRICO");
+            assertThat(lote.get(0).get("documento").get("origen").asString()).isEqualTo("SUBIDO");
+            assertThat(lote.get(0).get("documento").get("subidoPor").asString()).isEqualTo("carga-inicial");
+            assertThat(lote.get(1).get("estado").asString()).isEqualTo("NO_PRESENTADO");
+            assertThat(lote.get(1).get("observacion").asString()).contains("transparencia");
+            assertThat(d.get("predio").get("moneda").asString()).isEqualTo("USD");
+            assertThat(d.get("predio").get("precioNota").asString()).contains("Precio base");
+            assertThat(d.get("publicacion").get("estado").asString()).isEqualTo("PUBLICADO");
+        }
         assertThat(leer(PUEBLO_NUEVO).get("expediente").get("asientos").toString()).contains("Declaratoria de fábrica");
     }
 
@@ -108,7 +148,7 @@ class CasosApiTest extends BaseApiTest {
         assertThat(lista).doesNotContain("postest", "pretest", "forma b", "forma a", "sintético de",
                 "práctica", "simulad", "mvp", "ejemplo", "escenario", "académic");
         for (String codigo : new String[] {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS,
-                MOLINOS, PACHACUTEC, ICA}) {
+                MOLINOS, PACHACUTEC, ICA, HUARMEY, SUPE}) {
             // El término «Documento simulado» del glosario se queda; se revisan el expediente, la evaluación y el checklist.
             ObjectNode detalle = (ObjectNode) leer(codigo).deepCopy();
             detalle.remove("terminos");
@@ -131,7 +171,7 @@ class CasosApiTest extends BaseApiTest {
                 .andExpect(jsonPath("$.evaluacion.motivos[*].texto",
                         hasItem(containsString("Esto no significa saneamiento"))))
                 .andExpect(jsonPath("$.evaluacion.limite", containsString("No certifica saneamiento ni recomienda comprar")))
-                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.4"));
+                .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.5"));
     }
 
     @Test
@@ -175,11 +215,11 @@ class CasosApiTest extends BaseApiTest {
     void glosario() throws Exception {
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.terminos", not(empty())))
-                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.4"))))
+                .andExpect(jsonPath("$.terminos[*].version", everyItem(is("v0.5"))))
                 .andExpect(jsonPath("$.terminos[*].estadoRevision", everyItem(is("pendiente de revisión"))))
                 .andExpect(jsonPath("$.terminos[*].concepto", hasItems("Hipoteca", "Embargo", "Copropiedad", "Cancelación")));
         mvc.perform(get("/api/v1/glosario").header("Authorization", comprador())).andExpect(status().isOk())
-                .andExpect(jsonPath("$", hasSize(48)));
+                .andExpect(jsonPath("$", hasSize(57)));
         mvc.perform(post("/api/v1/glosario").header("Authorization", revisor())
                 .contentType(MediaType.APPLICATION_JSON).content("{\"concepto\":\"x\",\"explicacion\":\"y\"}"))
                 .andExpect(status().is4xxClientError());
@@ -293,7 +333,7 @@ class CasosApiTest extends BaseApiTest {
             // Sin la hipoteca sigue AMARILLO: faltan los planos de II.EE. y II.SS. (RV-04).
             actualizarExpediente(TINGUINA, revisor(), p).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
-                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.4"))
+                    .andExpect(jsonPath("$.evaluacion.versionReglas").value("v0.5"))
                     .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-04")))
                     .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")));
 

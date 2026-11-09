@@ -17,7 +17,7 @@ import tools.jackson.databind.ObjectMapper;
 import tools.jackson.databind.node.ObjectNode;
 
 /**
- * Base de las pruebas de integración: H2 en memoria con el contenido v0.4 ya cargado y las cuentas de prueba.
+ * Base de las pruebas de integración: H2 en memoria con el contenido v0.5 ya cargado y las cuentas de prueba.
  * Las pruebas que modifican un caso lo restauran al terminar, así que el orden de ejecución no importa.
  */
 @SpringBootTest
@@ -39,6 +39,15 @@ public abstract class BaseApiTest {
     protected static final String MOLINOS = "SIM-11093320";
     protected static final String PACHACUTEC = "SIM-11098467";
     protected static final String ICA = "SIM-11104029";
+    /**
+     * v0.9: lotes reales de la II Subasta Pública 2026 de la SBN, de la cuenta propietario-03. Partida por transcribir y
+     * sin memoria descriptiva: deben dar GRIS y conservar la alerta de zonificación (RV-07).
+     */
+    protected static final String HUARMEY = "11045763";
+    protected static final String SUPE = "80194645";
+    /** Los diez casos de demostración (sintéticos), sin los dos lotes de la SBN. */
+    protected static final String[] DEMOSTRACION = {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO,
+            SALAS, MOLINOS, PACHACUTEC, ICA};
 
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;
@@ -60,8 +69,11 @@ public abstract class BaseApiTest {
         return token("revisor-01");
     }
 
-    /** v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01, propietario-02 y especialista-02. */
-    protected static final int CUENTAS_DEMO = 7;
+    /**
+     * v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01, propietario-02 y especialista-02. v0.9:
+     * propietario-03 (lotes de la subasta de la SBN).
+     */
+    protected static final int CUENTAS_DEMO = 8;
 
     protected String gestor() throws Exception {
         return token("gestor-01");
@@ -121,6 +133,16 @@ public abstract class BaseApiTest {
                 if (pl.hasNonNull(campo)) n.put(campo, pl.get(campo).asString());
             }
             if (pl.hasNonNull("areaConstruida")) n.put("areaConstruida", pl.get("areaConstruida").decimalValue());
+        }
+        // v0.9: documentos del lote, también tal cual (en una vivienda la lista viene vacía).
+        if (e.has("documentosLote") && !e.get("documentosLote").isEmpty()) {
+            var docs = p.putArray("documentosLote");
+            for (JsonNode d : e.get("documentosLote")) {
+                ObjectNode n = docs.addObject();
+                n.put("tipo", d.get("tipo").asString());
+                n.put("estado", d.get("estado").asString());
+                if (d.hasNonNull("observacion")) n.put("observacion", d.get("observacion").asString());
+            }
         }
         p.put("versionEsperada", e.get("version").asLong());
         return p;

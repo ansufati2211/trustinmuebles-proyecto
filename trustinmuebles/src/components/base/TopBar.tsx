@@ -26,7 +26,7 @@ export function TopBar() {
           <Info className="mt-0.5 size-3.5 shrink-0 text-arena sm:mt-0" aria-hidden="true" />
           <p>
             <strong className="font-bold">Entorno de demostración.</strong> Partidas ficticias y transcritas de SUNARP sin
-            nombres de personas; precios y profesionales simulados. Información referencial: no certifica saneamiento ni
+            nombres de personas; precios y profesionales simulados, salvo dos lotes de una subasta de la SBN. Información referencial: no certifica saneamiento ni
             recomienda comprar.
           </p>
         </div>

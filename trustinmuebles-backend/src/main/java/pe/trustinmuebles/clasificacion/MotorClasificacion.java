@@ -52,6 +52,12 @@ final class MotorClasificacion {
                 if (estadoDe(entrada, e) == EstadoPlano.NO_PRESENTADO) faltantes.add(e.etiqueta());
             }
         }
+        // v0.9: un lote necesita su plano perimétrico y su memoria descriptiva para evaluarse.
+        if (esLote(entrada)) {
+            for (DocumentoLote d : DOCUMENTOS_MINIMOS_LOTE) {
+                if (estadoDe(entrada, d) == EstadoPlano.NO_PRESENTADO) faltantes.add(d.etiqueta());
+            }
+        }
 
         Set<String> contempladas = new LinkedHashSet<>();
         for (String c : condicionesContempladas) contempladas.add(normalizar(c));
@@ -114,11 +120,19 @@ final class MotorClasificacion {
                     .filter(e -> estadoDe(entrada, e) == EstadoPlano.NO_PRESENTADO)
                     .map(e -> new Coincidencia(e.etiqueta(), "No presentado"))
                     .toList();
-            case PLANO_OBSERVADO -> !esVivienda(entrada) ? List.of() : entrada.planos().stream()
+            case PLANO_OBSERVADO -> esVivienda(entrada) ? entrada.planos().stream()
                     .filter(p -> p.estado() == EstadoPlano.OBSERVADO)
                     .map(p -> new Coincidencia(p.especialidad().etiqueta(), "Observado por el revisor"))
-                    .toList();
+                    .toList()
+                    : esLote(entrada) ? entrada.documentosLote().stream()
+                    .filter(d -> d.estado() == EstadoPlano.OBSERVADO)
+                    .map(d -> new Coincidencia(d.tipo().etiqueta(), "Observado por el revisor"))
+                    .toList()
+                    : List.of();
             case DISCREPANCIA_AREA -> discrepanciaDeArea(entrada);
+            case DOCUMENTO_LOTE_NO_PRESENTADO -> !esLote(entrada) ? List.of()
+                    : estadoDe(entrada, DocumentoLote.CERTIFICADO_ZONIFICACION) != EstadoPlano.NO_PRESENTADO ? List.of()
+                    : List.of(new Coincidencia(DocumentoLote.CERTIFICADO_ZONIFICACION.etiqueta(), "No presentado"));
         };
     }
 
@@ -144,6 +158,20 @@ final class MotorClasificacion {
 
     private static boolean esVivienda(EntradaClasificacion e) {
         return e.tipoPredio() == TipoPredio.VIVIENDA;
+    }
+
+    private static boolean esLote(EntradaClasificacion e) {
+        return e.tipoPredio() == TipoPredio.LOTE;
+    }
+
+    /** Sin estos documentos un lote no se puede evaluar (gris). La zonificación es una alerta y la tasación, informativa. */
+    static final List<DocumentoLote> DOCUMENTOS_MINIMOS_LOTE =
+            List.of(DocumentoLote.PLANO_PERIMETRICO, DocumentoLote.MEMORIA_DESCRIPTIVA);
+
+    /** Un documento del lote que no figura se considera no presentado. */
+    private static EstadoPlano estadoDe(EntradaClasificacion e, DocumentoLote tipo) {
+        return e.documentosLote().stream().filter(d -> d.tipo() == tipo)
+                .map(EntradaClasificacion.DocumentoLoteEntrada::estado).findFirst().orElse(EstadoPlano.NO_PRESENTADO);
     }
 
     /** Un plano que no figura se considera no presentado. */

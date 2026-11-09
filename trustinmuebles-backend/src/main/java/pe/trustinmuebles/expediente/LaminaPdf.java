@@ -223,12 +223,12 @@ final class LaminaPdf {
         texto(cs, "LÍMITE DEL TERRENO", normal, 6.5f, l.x(0) + 2f, l.y(l.m.largo()) + 3f);
     }
 
-    private static String fmt(double v) {
+    static String fmt(double v) {
         return String.format(Locale.ROOT, "%.2f", v);
     }
 
     /** Cota horizontal: la línea va a {@code yLinea} y las líneas de extensión parten de {@code yObjeto}. */
-    private static void cotaH(PDPageContentStream cs, PDFont f, float xa, float xb, float yObjeto, float yLinea,
+    static void cotaH(PDPageContentStream cs, PDFont f, float xa, float xb, float yObjeto, float yLinea,
             String valor) throws IOException {
         cs.setStrokingColor(0.2f);
         cs.setLineWidth(0.5f);
@@ -247,7 +247,7 @@ final class LaminaPdf {
         texto(cs, valor, f, 7.5f, (xa + xb) / 2f - anchoDe(valor, f, 7.5f) / 2f, yLinea + (arriba == yLinea ? 3f : 3f));
     }
 
-    private static void cotaV(PDPageContentStream cs, PDFont f, float ya, float yb, float xObjeto, float xLinea,
+    static void cotaV(PDPageContentStream cs, PDFont f, float ya, float yb, float xObjeto, float xLinea,
             String valor) throws IOException {
         cs.setStrokingColor(0.2f);
         cs.setLineWidth(0.5f);
@@ -564,7 +564,7 @@ final class LaminaPdf {
 
     // ---------------------------------------------------------------- primitivas
 
-    private static void caja(PDPageContentStream cs, float x, float y, float w, float h) throws IOException {
+    static void caja(PDPageContentStream cs, float x, float y, float w, float h) throws IOException {
         cs.setStrokingColor(0.3f);
         cs.setLineWidth(0.7f);
         cs.addRect(x, y, w, h);
@@ -572,7 +572,7 @@ final class LaminaPdf {
     }
 
     /** Círculo con curvas de Bézier. Con {@code relleno} lo pinta con el color de relleno actual; si no, solo el borde. */
-    private static void circulo(PDPageContentStream cs, float cx, float cy, float r, boolean relleno) throws IOException {
+    static void circulo(PDPageContentStream cs, float cx, float cy, float r, boolean relleno) throws IOException {
         final float k = 0.5523f * r;
         cs.moveTo(cx + r, cy);
         cs.curveTo(cx + r, cy + k, cx + k, cy + r, cx, cy + r);
@@ -585,7 +585,7 @@ final class LaminaPdf {
     }
 
     /** Texto diagonal translúcido, debajo del dibujo. */
-    private static void marcaDeAgua(PDPageContentStream cs, PDFont negrita) throws IOException {
+    static void marcaDeAgua(PDPageContentStream cs, PDFont negrita) throws IOException {
         String marca = seguro(MARCA_DE_AGUA);
         float tam = 26f;
         double ang = Math.toRadians(52);
@@ -606,7 +606,7 @@ final class LaminaPdf {
         cs.restoreGraphicsState();
     }
 
-    private static void texto(PDPageContentStream cs, String s, PDFont f, float tam, float x, float y) throws IOException {
+    static void texto(PDPageContentStream cs, String s, PDFont f, float tam, float x, float y) throws IOException {
         cs.beginText();
         cs.setFont(f, tam);
         cs.newLineAtOffset(x, y);
@@ -614,12 +614,12 @@ final class LaminaPdf {
         cs.endText();
     }
 
-    private static float anchoDe(String s, PDFont f, float tam) throws IOException {
+    static float anchoDe(String s, PDFont f, float tam) throws IOException {
         return f.getStringWidth(s) / 1000f * tam;
     }
 
     /** Solo caracteres de la codificación del PDF; el resto se cambia por «?» para no romper la generación. */
-    private static String seguro(String s) {
+    static String seguro(String s) {
         if (s == null) return "";
         StringBuilder sb = new StringBuilder();
         s.codePoints().forEach(cp -> sb.append(cp >= 32 && cp < 256 && !(cp >= 127 && cp < 160) ? (char) cp : '?'));

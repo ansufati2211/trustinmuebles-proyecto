@@ -68,7 +68,13 @@ class RegistrarPartidaTest extends BaseApiTest {
                     .andExpect(jsonPath("$.origen").value("TRANSCRITA"))
                     .andExpect(jsonPath("$.sintetico").value(false))
                     .andExpect(jsonPath("$.fuente").value("Conoce Aquí – SUNARP"))
-                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"))
+                    // v0.9: un lote recién captado aún no tiene su plano perimétrico ni su memoria descriptiva: queda en
+                    // gris y conserva la alerta de la hipoteca (RN-04).
+                    .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"))
+                    .andExpect(jsonPath("$.evaluacion.faltantes", contains("Plano perimétrico y de ubicación",
+                            "Memoria descriptiva")))
+                    .andExpect(jsonPath("$.evaluacion.reglasAplicadas", contains("RV-02", "RV-07")))
+                    .andExpect(jsonPath("$.expediente.documentosLote", hasSize(4)))
                     .andExpect(jsonPath("$.checklist", hasSize(3)))
                     .andExpect(jsonPath("$.terminos", not(empty())))
                     .andExpect(jsonPath("$.expediente.tieneDocumento").value(true));
@@ -190,7 +196,7 @@ class RegistrarPartidaTest extends BaseApiTest {
                     .andExpect(jsonPath("$.origen").value("SINTETICO"))
                     .andExpect(jsonPath("$.sintetico").value(true))
                     .andExpect(jsonPath("$.fuente").value("Partida simulada para demostración"))
-                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"));
+                    .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"));
             byte[] pdf = mvc.perform(get("/api/v1/casos/" + SIMULADA + "/documento").header("Authorization", revisor()))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
             try (PDDocument doc = Loader.loadPDF(pdf)) {
@@ -244,7 +250,7 @@ class RegistrarPartidaTest extends BaseApiTest {
             registrar(conPrecio, revisor()).andExpect(status().isCreated())
                     .andExpect(jsonPath("$.predio.precioReferencial").value(152500.50))
                     .andExpect(jsonPath("$.predio.moneda").value("PEN"))
-                    .andExpect(jsonPath("$.evaluacion.estado").value("AMARILLO"));
+                    .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"));
             mvc.perform(put("/api/v1/casos/" + NUMERO + "/autorizacion").header("Authorization", propietario(1)))
                     .andExpect(status().isOk());
             mvc.perform(post("/api/v1/casos/" + NUMERO + "/publicacion").header("Authorization", gestor()))

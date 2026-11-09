@@ -30,6 +30,9 @@ describe("subida de PDF (v0.8)", () => {
       .toBe(TEXTO_GENERADO);
     expect(origenDocumento({ origen: "SUBIDO", subidoPor: "revisor-01", subidoEn: "2026-11-02T10:00:00Z", tamanoBytes: 2 * MB, tamanoOriginalBytes: 2 * MB, optimizado: false, sha256: "x" }, f))
       .toBe("Subido por revisor-01 el 2026-11-02, 2 MB");
+    // v0.9: el plano oficial que trae el contenido no lo subió ninguna cuenta.
+    expect(origenDocumento({ origen: "SUBIDO", subidoPor: "carga-inicial", subidoEn: "2026-11-08T10:00:00Z", tamanoBytes: 2 * MB, tamanoOriginalBytes: 2 * MB, optimizado: false, sha256: "x" }, f))
+      .toBe("Archivo original de la fuente, cargado con el contenido el 2026-11-08, 2 MB");
   });
 
   it("solo permite marcar presentado un plano con archivo o ya presentado", () => {

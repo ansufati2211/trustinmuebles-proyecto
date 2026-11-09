@@ -240,16 +240,16 @@ class CaptacionPublicacionTest extends BaseApiTest {
             registrar(partida(BORRADOR, "propietario-01")).andExpect(status().isCreated());
             retirar(SANTIAGO, gestor()).andExpect(status().isOk());
 
-            assertThat(codigos(comprador())).hasSize(9).doesNotContain(BORRADOR, SANTIAGO);
+            assertThat(codigos(comprador())).hasSize(11).doesNotContain(BORRADOR, SANTIAGO);
             for (String ruta : new String[] {"", "/documento", "/planos/ARQUITECTURA/documento",
-                    "/inspeccion/documento"}) {
+                    "/inspeccion/documento", "/documentos-lote/PLANO_PERIMETRICO/documento"}) {
                 mvc.perform(get("/api/v1/casos/" + SANTIAGO + ruta).header("Authorization", comprador()))
                         .andExpect(status().isNotFound());
             }
             mvc.perform(post("/api/v1/casos/" + SANTIAGO + "/inspeccion/solicitud").header("Authorization", comprador()))
                     .andExpect(status().isNotFound());
             for (String auth : new String[] {revisor(), gestor(), especialista()}) {
-                assertThat(codigos(auth)).hasSize(11).contains(BORRADOR, SANTIAGO);
+                assertThat(codigos(auth)).hasSize(13).contains(BORRADOR, SANTIAGO);
                 mvc.perform(get("/api/v1/casos/" + SANTIAGO).header("Authorization", auth)).andExpect(status().isOk())
                         .andExpect(jsonPath("$.publicacion.estado").value("RETIRADO"));
             }
@@ -257,7 +257,7 @@ class CaptacionPublicacionTest extends BaseApiTest {
             if (!"PUBLICADO".equals(estado(SANTIAGO))) publicar(SANTIAGO, gestor());
             borrar(BORRADOR);
         }
-        assertThat(codigos(comprador())).hasSize(10);
+        assertThat(codigos(comprador())).hasSize(12);
     }
 
     @Test
@@ -267,6 +267,8 @@ class CaptacionPublicacionTest extends BaseApiTest {
         List<String> p2 = codigos(propietario(2));
         assertThat(p1).containsExactly(PARCONA, SUBTANJALLA, PUEBLO_NUEVO, SALAS, PACHACUTEC);
         assertThat(p2).containsExactly(TINGUINA, LOS_AQUIJES, SANTIAGO, MOLINOS, ICA);
+        // v0.9: los dos lotes de la subasta de la SBN son de la cuenta propietario-03.
+        assertThat(codigos(propietario(3))).containsExactly(HUARMEY, SUPE);
         mvc.perform(get("/api/v1/casos/" + PARCONA).header("Authorization", propietario(1))).andExpect(status().isOk())
                 .andExpect(jsonPath("$.publicacion.propietarioCodigo").value("propietario-01"));
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", propietario(1)))
@@ -285,6 +287,9 @@ class CaptacionPublicacionTest extends BaseApiTest {
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true and estado_publicacion = "
                 + "'PUBLICADO' and autorizacion_fecha is not null and propietario_codigo is not null", Integer.class))
                 .isEqualTo(10);
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = false and estado_publicacion = "
+                + "'PUBLICADO' and autorizacion_fecha is not null and propietario_codigo = 'propietario-03'", Integer.class))
+                .as("los dos lotes de la SBN").isEqualTo(2);
         mvc.perform(get("/api/v1/casos").header("Authorization", comprador()))
                 .andExpect(jsonPath("$[*].estadoPublicacion", everyItem(is("PUBLICADO"))));
     }

@@ -1,5 +1,5 @@
 {
-  "version": "v0.4",
+  "version": "v0.5",
   "estadoRevision": "pendiente de revisión",
   "terminos": [
     {
@@ -193,6 +193,42 @@
     {
       "concepto": "Reserva vial",
       "explicacion": "Franja de un predio que la autoridad reserva para ensanchar o abrir una vía. Se anota como carga técnica y puede limitar lo que se construye en esa franja."
+    },
+    {
+      "concepto": "Plano perimétrico",
+      "explicacion": "Plano que dibuja el contorno de un terreno con sus vértices, lados, medidas y colindancias. Suele incluir un plano de ubicación y un cuadro de datos técnicos con las coordenadas."
+    },
+    {
+      "concepto": "Memoria descriptiva",
+      "explicacion": "Documento que describe por escrito un predio: su ubicación, linderos y medidas perimétricas, área y perímetro. Acompaña al plano perimétrico."
+    },
+    {
+      "concepto": "Certificado de zonificación y vías",
+      "explicacion": "Documento de la municipalidad que indica la zonificación de un terreno (qué usos y qué altura se permiten) y las vías que lo afectan."
+    },
+    {
+      "concepto": "Tasación",
+      "explicacion": "Informe que estima el valor de un predio. En una subasta del Estado sirve para fijar el precio base."
+    },
+    {
+      "concepto": "Subasta pública",
+      "explicacion": "Venta en la que un predio se adjudica a quien ofrece el mayor precio, a partir de un precio base y según unas bases publicadas."
+    },
+    {
+      "concepto": "Precio base",
+      "explicacion": "Monto mínimo desde el que se ofrece un predio en una subasta. Las ofertas no pueden ser menores."
+    },
+    {
+      "concepto": "CUS",
+      "explicacion": "Código Único SINABIP: número con el que la SBN identifica un predio del Estado en su registro de bienes."
+    },
+    {
+      "concepto": "Venta ad corpus",
+      "explicacion": "Venta de un predio como cuerpo cierto: se vende tal como está, aunque su área real difiera de la indicada."
+    },
+    {
+      "concepto": "Concesión minera",
+      "explicacion": "Derecho que el Estado otorga para explorar o explotar minerales en un área. Puede superponerse a un terreno sin ser su propietario."
     }
   ]
 }

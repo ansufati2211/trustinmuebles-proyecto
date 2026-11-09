@@ -1,9 +1,10 @@
 {
-  "version": "v0.4",
+  "version": "v0.5",
   "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
   "condicionesContempladas": [
     "Lote urbano inscrito en el Registro de Predios.",
-    "Lote urbano inscrito, según declara el vendedor."
+    "Lote urbano inscrito, según declara el vendedor.",
+    "Terreno del Estado inscrito, ofrecido en subasta pública por la SBN."
   ],
   "reglas": [
     {
@@ -106,8 +107,18 @@
       "tipoCondicion": "PLANO_OBSERVADO",
       "prefijoReferencia": null,
       "tiposActo": [],
-      "titulo": "Plano observado por el revisor",
-      "explicacion": "El revisor marcó este plano con una observación documental. Revisa la observación antes de continuar.",
+      "titulo": "Plano o documento observado por el revisor",
+      "explicacion": "El revisor marcó este plano de la vivienda o este documento del lote con una observación documental. Revisa la observación antes de continuar.",
+      "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
+    },
+    {
+      "codigo": "RV-07",
+      "prioridad": "REVISION",
+      "tipoCondicion": "DOCUMENTO_LOTE_NO_PRESENTADO",
+      "prefijoReferencia": null,
+      "tiposActo": [],
+      "titulo": "Sin certificado de zonificación y vías",
+      "explicacion": "El expediente del lote no incluye el certificado de zonificación y vías. Sin él no se sabe qué uso y qué altura permite la municipalidad ni si una vía proyectada afecta el terreno.",
       "estadoRevision": "borrador del equipo, pendiente de revisión especializada"
     }
   ]

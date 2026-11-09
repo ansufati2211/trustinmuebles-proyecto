@@ -31,9 +31,16 @@ class MotorClasificacionTest {
         return new AnotacionEntrada(ref, estado, tipo.etiqueta(), tipo);
     }
 
+    /** v0.9: el lote de estas pruebas trae sus cuatro documentos, para que solo cuente la partida. */
+    static List<EntradaClasificacion.DocumentoLoteEntrada> documentosCompletos() {
+        return java.util.Arrays.stream(DocumentoLote.values())
+                .map(d -> new EntradaClasificacion.DocumentoLoteEntrada(d, EstadoPlano.PRESENTADO)).toList();
+    }
+
     static EntradaClasificacion caso(String condicion, String titular, Completitud completitud,
             AnotacionEntrada... anotaciones) {
-        return new EntradaClasificacion(condicion, titular, completitud, List.of(anotaciones));
+        return new EntradaClasificacion(condicion, titular, completitud, List.of(anotaciones), TipoPredio.LOTE, null,
+                List.of(), documentosCompletos());
     }
 
     static ResultadoClasificacion evaluar(EntradaClasificacion e) {

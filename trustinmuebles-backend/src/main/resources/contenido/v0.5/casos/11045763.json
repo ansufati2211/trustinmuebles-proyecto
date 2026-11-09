@@ -1,0 +1,118 @@
+{
+  "codigo": "11045763",
+  "denominacion": "Parcela 2 · Playa La Pocita · Huarmey, Áncash",
+  "contexto": "Huarmey, Áncash",
+  "distrito": "Huarmey",
+  "precioReferencial": 90096.39,
+  "moneda": "USD",
+  "precioNota": "Precio base de la II Subasta Pública 2026 de la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.",
+  "propietario": "propietario-03",
+  "origen": "TRANSCRITA",
+  "fuente": "SBN – II Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)",
+  "fuenteUrl": "https://www.sbn.gob.pe/publicacion_subastas_detalles.php?item=38",
+  "fechaConsulta": "2026-11-08",
+  "expediente": {
+    "condicionRepresentada": "Terreno del Estado inscrito, ofrecido en subasta pública por la SBN.",
+    "completitud": "INCOMPLETA",
+    "fechaReferencial": "2026-11-08",
+    "nota": "Lote 14 de la II Subasta Pública 2026 de la SBN (CUS 210267; Res. N.° 2163-2026/SBN-DGPE-SDDI del 01.10.2026). Según la nota (k) de las bases: desocupado, sin proceso judicial y con superposición parcial con dos concesiones mineras. Partida pendiente de transcribir de Conoce Aquí.",
+    "zonaRegistral": "Zona Registral N.° VII - Sede Huaraz",
+    "oficinaRegistral": "Oficina Registral de Casma",
+    "ubicacion": "«Parcela 2», a 200 metros al norte de la Playa La Pocita, altura del km 303+200 de la Carretera Panamericana Norte (margen izquierda, en dirección sur a norte), distrito y provincia de Huarmey, departamento de Áncash.",
+    "areaM2": 7577.36,
+    "linderos": "Según el plano perimétrico de la SBN (11 vértices, perímetro de 363.84 m): por el norte, con la Parcela 3 (área a independizar), en 81.09 m (tramo 1-2); por el este, con una vía proyectada de 10 m de ancho, en 69.67 m (tramo 2-3), y en 11.66 m (tramo 3-4); por el sur, con propiedad de terceros, en 81.26 m (tramo 4-5); por el oeste, con una trocha carrozable, en una línea quebrada de siete tramos que suman 120.16 m (tramos 5-6 a 11-1).",
+    "antecedenteDominial": "Según el plano, la parcela es un área a independizar del terreno eriazo del Estado inscrito en la partida 11004346 (área remanente). Por confirmar con la partida.",
+    "asientos": [],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida (Conoce Aquí)",
+        "estado": "PENDIENTE",
+        "observacion": "Consultar la partida 11045763 de la Oficina Registral de Casma."
+      },
+      {
+        "nombre": "Plano perimétrico y de ubicación (SBN)",
+        "estado": "REVISADO",
+        "observacion": "Plano oficial descargado de la página de subastas de la SBN."
+      },
+      {
+        "nombre": "Memoria descriptiva N.° 0764-2025/SBN-DGPE-SDDI",
+        "estado": "PENDIENTE",
+        "observacion": "La SBN no la publica en línea; se puede pedir por transparencia (Ley 27806)."
+      },
+      {
+        "nombre": "Certificado de zonificación y vías",
+        "estado": "PENDIENTE",
+        "observacion": "Anexo 1 de las bases: sin zonificación."
+      },
+      {
+        "nombre": "Bases de la II Subasta Pública 2026",
+        "estado": "REVISADO",
+        "observacion": "Anexo 1 y notas de condición del lote."
+      },
+      {
+        "nombre": "Visita al lote",
+        "estado": "PENDIENTE",
+        "observacion": "Las bases permiten visitar el lote antes de la subasta."
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Extracto parcial",
+      "Zona registral",
+      "Antecedente dominial",
+      "Linderos",
+      "Titularidad",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Independización",
+      "Servidumbre",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación",
+      "Subasta pública",
+      "Precio base",
+      "CUS",
+      "Venta ad corpus",
+      "Concesión minera"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": "Plano oficial de la SBN, tal como se publica en su página de subastas. Su autenticidad se puede verificar con la clave que trae impresa.",
+        "resumen": "Plano N.° 1673-2025/SBN-DGPE-SDDI (lámina L-01, escala 1/750, del 27/05/2025). Área: 7,577.36 m²; perímetro: 363.84 m; 11 vértices; datum PSAD56, zona 17 sur.",
+        "archivo": "documentos/11045763/plano-perimetrico.pdf"
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "NO_PRESENTADO",
+        "observacion": "El plano cita la memoria descriptiva N.° 0764-2025/SBN-DGPE-SDDI, pero la SBN no la publica en línea. Se puede pedir a la SBN por transparencia (Ley 27806).",
+        "resumen": null,
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "NO_PRESENTADO",
+        "observacion": "El Anexo 1 de las bases indica «Sin zonificación»: no hay un certificado que adjuntar.",
+        "resumen": null,
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "NO_PRESENTADO",
+        "observacion": "La SBN no publica el informe de tasación. El precio base se aprobó con la Res. N.° 2163-2026/SBN-DGPE-SDDI.",
+        "resumen": null,
+        "archivo": null
+      }
+    ]
+  }
+}

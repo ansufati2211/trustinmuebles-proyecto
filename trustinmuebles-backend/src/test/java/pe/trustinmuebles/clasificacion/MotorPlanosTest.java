@@ -96,9 +96,10 @@ class MotorPlanosTest {
     }
 
     @Test
-    @DisplayName("En un lote los planos no aplican: no generan faltantes ni alertas")
+    @DisplayName("En un lote los planos no aplican: con sus documentos completos no generan faltantes ni alertas")
     void loteSinPlanos() {
-        var e = new EntradaClasificacion(CONDICION, "Titular", Completitud.COMPLETA, List.of());
+        var e = new EntradaClasificacion(CONDICION, "Titular", Completitud.COMPLETA, List.of(), TipoPredio.LOTE, null,
+                List.of(), MotorClasificacionTest.documentosCompletos());
         var r = MotorClasificacion.evaluar(e, TABLA, List.of(CONDICION), "v-test");
         assertThat(r.estado()).isEqualTo(EstadoSemaforo.VERDE);
         assertThat(r.alertas()).isEmpty();

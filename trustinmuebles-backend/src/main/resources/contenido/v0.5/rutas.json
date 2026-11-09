@@ -1,5 +1,5 @@
 {
-  "version": "v0.4",
+  "version": "v0.5",
   "estadoRevision": "borrador del equipo, pendiente de revisión especializada",
   "aviso": "Orientativo: no es asesoría legal ni recomendación de compra",
   "plazoGeneral": "El plazo depende del trámite; consultar con abogado o notario.",
@@ -104,15 +104,27 @@
       "nota": "Una ampliación no declarada requiere un trámite administrativo antes de inscribirse."
     },
     "RV-06": {
-      "titulo": "Subsanar el plano observado",
+      "titulo": "Subsanar el plano o documento observado",
       "pasos": [
         "Revisar la observación registrada por el revisor.",
-        "Pedir al propietario el plano corregido y subir el nuevo PDF."
+        "Pedir al propietario el plano o documento corregido y subir el nuevo PDF."
       ],
       "gestiona": "propietario",
-      "documentoRequerido": "PDF del plano corregido",
+      "documentoRequerido": "PDF del plano o documento corregido",
       "esfuerzo": "BAJO",
       "nota": "Si la observación es de fondo (por ejemplo, sin firma del profesional), puede requerir a un tercero."
+    },
+    "RV-07": {
+      "titulo": "Obtener el certificado de zonificación y vías",
+      "pasos": [
+        "Pedir el certificado de zonificación y vías en la municipalidad provincial.",
+        "Si el terreno figura «sin zonificación», consultar el plan urbano o el plan de acondicionamiento territorial (PAT) vigente.",
+        "Subir el PDF del certificado en los documentos del lote."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "Certificado de zonificación y vías",
+      "esfuerzo": "MEDIO",
+      "nota": "Lo emite la municipalidad; un terreno sin zonificación puede necesitar un trámite de asignación de zonificación."
     }
   },
   "faltantes": {
@@ -200,6 +212,30 @@
       "documentoRequerido": "Copia literal de la partida",
       "esfuerzo": "MEDIO",
       "nota": "El semáforo no evalúa condiciones que la versión de reglas no contempla."
+    },
+    "PLANO_PERIMETRICO": {
+      "textoFaltante": "Plano perimétrico y de ubicación",
+      "titulo": "Presentar el plano perimétrico y de ubicación",
+      "pasos": [
+        "Pedir al propietario el plano perimétrico y de ubicación del lote.",
+        "Subir el PDF del plano en los documentos del lote."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF del plano perimétrico y de ubicación",
+      "esfuerzo": "BAJO",
+      "nota": "Un lote necesita este plano para evaluarse."
+    },
+    "MEMORIA_DESCRIPTIVA": {
+      "textoFaltante": "Memoria descriptiva",
+      "titulo": "Presentar la memoria descriptiva",
+      "pasos": [
+        "Pedir al propietario la memoria descriptiva del lote (en un predio del Estado, a la entidad que lo administra).",
+        "Subir el PDF de la memoria en los documentos del lote."
+      ],
+      "gestiona": "propietario",
+      "documentoRequerido": "PDF de la memoria descriptiva",
+      "esfuerzo": "BAJO",
+      "nota": "Un lote necesita la memoria descriptiva para evaluarse."
     }
   }
 }

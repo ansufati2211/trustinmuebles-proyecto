@@ -1,6 +1,6 @@
 import { AlertTriangle, CheckCircle2, CircleHelp, Clock, Eye, ShieldAlert, type LucideIcon } from "lucide-react";
 import type {
-  Completitud, Especialidad, EstadoAnotacion, EstadoItem, EstadoPlano, EstadoSemaforo, EstadoTecnico,
+  Completitud, DocumentoLoteTipo, Especialidad, EstadoAnotacion, EstadoItem, EstadoPlano, EstadoSemaforo, EstadoTecnico,
   ResultadoTecnico, SistemaConstructivo, TipoActo, TipoPredio, VerificacionCampo,
 } from "./types";
 
@@ -88,6 +88,34 @@ export const QUE_VALIDA: Record<Especialidad, string> = {
   ESTRUCTURAS: "Si existe y qué sistema constructivo declara (por ejemplo, albañilería confinada).",
   ELECTRICAS: "Si existe el plano de circuitos, tablero y pozo a tierra.",
   SANITARIAS: "Si existe el plano de redes de agua y desagüe.",
+};
+
+/** v0.9: documentos del expediente de un lote, en el orden en que se muestran. */
+export const DOCUMENTOS_LOTE: DocumentoLoteTipo[] = [
+  "PLANO_PERIMETRICO", "MEMORIA_DESCRIPTIVA", "CERTIFICADO_ZONIFICACION", "TASACION",
+];
+
+export const ETIQUETA_DOCUMENTO_LOTE: Record<DocumentoLoteTipo, string> = {
+  PLANO_PERIMETRICO: "Plano perimétrico y de ubicación",
+  MEMORIA_DESCRIPTIVA: "Memoria descriptiva",
+  CERTIFICADO_ZONIFICACION: "Certificado de zonificación y vías",
+  TASACION: "Tasación",
+};
+
+/** Qué muestra cada documento del lote. Como en los planos, se revisa si está, no si su contenido es correcto. */
+export const QUE_MUESTRA_LOTE: Record<DocumentoLoteTipo, string> = {
+  PLANO_PERIMETRICO: "El contorno del terreno: vértices, lados, medidas, colindancias y su ubicación.",
+  MEMORIA_DESCRIPTIVA: "La descripción escrita del terreno: ubicación, linderos, área y perímetro.",
+  CERTIFICADO_ZONIFICACION: "Qué usos y qué altura permite la municipalidad, y qué vías afectan el terreno.",
+  TASACION: "Una estimación del valor del terreno. Es informativa.",
+};
+
+/** Cómo pesa cada documento en el indicador A (reglas v0.5, borrador del equipo). */
+export const EFECTO_DOCUMENTO_LOTE: Record<DocumentoLoteTipo, string> = {
+  PLANO_PERIMETRICO: "Sin él, el indicador A queda en gris.",
+  MEMORIA_DESCRIPTIVA: "Sin ella, el indicador A queda en gris.",
+  CERTIFICADO_ZONIFICACION: "Sin él, el indicador A pasa a amarillo.",
+  TASACION: "No cambia el indicador A.",
 };
 
 export const ETIQUETA_ESTADO_PLANO: Record<EstadoPlano, string> = {

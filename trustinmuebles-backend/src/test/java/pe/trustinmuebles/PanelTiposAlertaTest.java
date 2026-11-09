@@ -15,7 +15,7 @@ import tools.jackson.databind.JsonNode;
 /** v0.8 (feedback a, D52): cartera por tipo de alerta y por esfuerzo, y filtro por tipo de alerta en GET /casos. */
 class PanelTiposAlertaTest extends BaseApiTest {
     static final String[] SEMILLA = {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO, SALAS, MOLINOS,
-            PACHACUTEC, ICA};
+            PACHACUTEC, ICA, HUARMEY, SUPE};
 
     JsonNode panel() throws Exception {
         return json.readTree(mvc.perform(get("/api/v1/cartera/panel").header("Authorization", gestor()))
@@ -46,7 +46,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
             esfuerzos.merge(r.get("esfuerzo").isNull() ? "SIN_PASOS" : r.get("esfuerzo").asString(), 1L, Long::sum);
         }
         JsonNode p = panel();
-        assertThat(p.get("totalCasos").asInt()).isEqualTo(10);
+        assertThat(p.get("totalCasos").asInt()).isEqualTo(12);
         for (JsonNode t : p.get("porTipoAlerta")) {
             assertThat(t.get("casos").asLong()).as(t.get("codigo").asString())
                     .isEqualTo(tipos.getOrDefault(t.get("codigo").asString(), 0L));
@@ -58,7 +58,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
             assertThat(p.get("porEsfuerzo").get(e).asLong()).as(e).isEqualTo(esfuerzos.getOrDefault(e, 0L));
             suma += p.get("porEsfuerzo").get(e).asLong();
         }
-        assertThat(suma).isEqualTo(10);
+        assertThat(suma).isEqualTo(12);
         // Casos conocidos: Parcona sin pasos, La Tinguiña MEDIO, Pueblo Nuevo ALTO.
         assertThat(p.get("porEsfuerzo").get("SIN_PASOS").asLong()).isGreaterThanOrEqualTo(1);
         assertThat(p.get("avisoPriorizacion").asString())

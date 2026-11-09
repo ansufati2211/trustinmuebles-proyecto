@@ -69,11 +69,45 @@
       "Pendiente",
       "Revisado",
       "Semáforo informativo",
-      "Independización"
+      "Independización",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación"
     ],
     "tipoPredio": "LOTE",
     "areaConstruidaInscrita": null,
     "planos": [],
-    "informeTecnico": null
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Lote rectangular de 9.00 m de frente por 18.00 m de fondo: vértices A a D, ángulos de 90° y perímetro de 54.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Describe el Lote 5 de la Manzana B con los linderos de la partida: área de 162.00 m² y perímetro de 54.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Zonificación RDM (residencial de densidad media). Calle Los Olivos: sección vial de 12.00 m, sin afectación vial sobre el lote.",
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Valor comercial del terreno por comparación con lotes de la misma habilitación urbana.",
+        "archivo": null
+      }
+    ]
   }
 }

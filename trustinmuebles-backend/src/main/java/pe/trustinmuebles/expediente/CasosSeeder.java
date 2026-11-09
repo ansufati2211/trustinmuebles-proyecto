@@ -11,6 +11,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.support.PathMatchingResourcePatternResolver;
 import org.springframework.stereotype.Component;
@@ -26,7 +27,8 @@ import pe.trustinmuebles.orientacion.GlosarioService;
 import tools.jackson.databind.ObjectMapper;
 
 /**
- * Carga los casos de contenido/<versión>/casos/*.json (única "migración de datos", 6.8.2).
+ * Carga los casos de contenido/<versión>/casos/*.json (única "migración de datos", 6.8.2). v0.9: un caso puede traer
+ * datos de una publicación oficial (origen TRANSCRITA, con fuente) y los PDF de sus documentos del lote.
  * Es idempotente: no pisa lo que el revisor ya editó. Después recalcula las evaluaciones que falten
  * o que usen otra versión de reglas. El PDF de cada caso lo genera el sistema con CopiaLiteralPdf.
  */
@@ -90,11 +92,23 @@ class CasosSeeder implements ApplicationRunner {
         caso.setDenominacion(c.denominacion());
         caso.setContexto(c.contexto());
         caso.setSintetico(true);
+        if (c.esDeFuentePublica()) {
+            // v0.9: un caso con datos de una publicación oficial (la subasta de la SBN) cita su fuente y su fecha de
+            // consulta, y no lleva datos de personas naturales (lo exige ck_caso_origen).
+            caso.setSintetico(false);
+            caso.setOrigen(CasoLote.Origen.TRANSCRITA);
+            caso.setFuente(c.fuente());
+            caso.setFuenteUrl(c.fuenteUrl());
+            caso.setFechaConsulta(c.fechaConsulta());
+            caso.setSinDatosPersonales(true);
+        }
         caso.setDistrito(c.distrito());
         caso.setPrecioReferencial(c.precioReferencial());
+        if (c.moneda() != null) caso.setMoneda(c.moneda());
+        caso.setPrecioNota(c.precioNota());
         caso.setResponsableId(responsableId);
         // v0.7: los casos de demostración nacen publicados, con la autorización de su propietario (I14).
-        caso.setPropietarioCodigo(propietarioDe(c.codigo()));
+        caso.setPropietarioCodigo(propietarioDe(c));
         caso.setAutorizacionFecha(java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         caso.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
         casos.save(caso);
@@ -105,6 +119,7 @@ class CasosSeeder implements ApplicationRunner {
             checklist.agregar(e.getId(), it.nombre(), it.estado(), it.observacion(), i++);
         }
         glosario.asociar(e.getId(), c.terminos());
+        adjuntarArchivos(c, c.documentosLote().stream().map(ContenidoCaso.DocumentoLoteJson::tipo).toList());
         var informe = c.expediente().informeTecnico();
         if (informe != null) {
             // «Solicitada» es solo la constancia del pedido; el resto trae un informe en curso o emitido, firmado por
@@ -125,6 +140,29 @@ class CasosSeeder implements ApplicationRunner {
         return DEL_PROPIETARIO_02.contains(codigo) ? "propietario-02" : "propietario-01";
     }
 
+    /** v0.9: el propietario que indica el caso; si no lo indica, el reparto de siempre. */
+    static String propietarioDe(CasoJson c) {
+        return c.propietario() != null ? c.propietario() : propietarioDe(c.codigo());
+    }
+
+    /** v0.9: guarda los PDF que trae el contenido para los documentos indicados (por ejemplo, el plano de la SBN). */
+    private void adjuntarArchivos(CasoJson c, List<pe.trustinmuebles.clasificacion.DocumentoLote> tipos) {
+        for (ContenidoCaso.DocumentoLoteJson d : c.documentosLote()) {
+            if (d.archivo() == null || !tipos.contains(d.tipo())) continue;
+            servicio.adjuntarDocumentoLoteDeContenido(c.codigo(), d.tipo(), leerArchivo(d.archivo()));
+        }
+    }
+
+    private byte[] leerArchivo(String ruta) {
+        if (ruta.contains("..")) throw new IllegalStateException("Ruta de contenido no válida: " + ruta);
+        Resource r = new ClassPathResource("contenido/" + version + "/" + ruta);
+        try (InputStream in = r.getInputStream()) {
+            return in.readAllBytes();
+        } catch (IOException ex) {
+            throw new UncheckedIOException("No se pudo leer el archivo de contenido " + ruta, ex);
+        }
+    }
+
     /**
      * Completa un caso ya cargado con lo que el contenido agregó después (v0.6): distrito, precio referencial e ítems
      * de checklist nuevos, como la declaración jurada municipal. Solo rellena lo que falta; no pisa lo editado.
@@ -134,7 +172,8 @@ class CasosSeeder implements ApplicationRunner {
         if (caso.getDistrito() == null) caso.setDistrito(c.distrito());
         if (caso.getPrecioReferencial() == null) caso.setPrecioReferencial(c.precioReferencial());
         // Solo rellena el propietario si falta; el estado de publicación y la autorización no se tocan.
-        if (caso.getPropietarioCodigo() == null) caso.setPropietarioCodigo(propietarioDe(c.codigo()));
+        if (caso.getPropietarioCodigo() == null) caso.setPropietarioCodigo(propietarioDe(c));
+        if (caso.getFuenteUrl() == null && c.esDeFuentePublica()) caso.setFuenteUrl(c.fuenteUrl());
         Expediente e = expedientes.findByCasoCodigo(c.codigo()).orElseThrow();
         var actuales = checklist.listar(e.getId());
         java.util.Set<String> nombres = new java.util.HashSet<>();
@@ -142,6 +181,10 @@ class CasosSeeder implements ApplicationRunner {
         int orden = actuales.size();
         for (ContenidoCaso.ItemJson it : c.items()) {
             if (nombres.add(it.nombre())) checklist.agregar(e.getId(), it.nombre(), it.estado(), it.observacion(), orden++);
+        }
+        // v0.9: un lote de una base anterior recibe los documentos que el contenido le agregó (Santiago).
+        if (e.getTipoPredio() == pe.trustinmuebles.clasificacion.TipoPredio.LOTE && !c.documentosLote().isEmpty()) {
+            adjuntarArchivos(c, servicio.completarDocumentosLote(c.codigo(), c.documentosLoteDatos()));
         }
     }
 

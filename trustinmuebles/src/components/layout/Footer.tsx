@@ -51,7 +51,7 @@ export function Footer() {
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-400/20 px-3.5 py-1.5 text-xs font-semibold text-emerald-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Catálogo v0.4 activo
+                Catálogo v0.5 activo
               </span>
             </div>
           </div>

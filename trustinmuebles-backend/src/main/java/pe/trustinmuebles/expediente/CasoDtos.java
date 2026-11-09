@@ -14,6 +14,7 @@ import java.util.List;
 import pe.trustinmuebles.checklist.EstadoItem;
 import pe.trustinmuebles.checklist.ItemChecklistDto;
 import pe.trustinmuebles.clasificacion.Completitud;
+import pe.trustinmuebles.clasificacion.DocumentoLote;
 import pe.trustinmuebles.clasificacion.EstadoAnotacion;
 import pe.trustinmuebles.clasificacion.EstadoSemaforo;
 import pe.trustinmuebles.clasificacion.EvaluacionDto;
@@ -35,6 +36,8 @@ final class CasoDtos {
 
     record ResumenCaso(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             long pendientes, String origen, String fuente, LocalDate fechaConsulta,
+            /* v0.9: enlace a la publicación oficial (por ejemplo, la subasta de la SBN); null en los demás casos. */
+            String fuenteUrl,
             EstadoTecnico estadoTecnico, ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado,
             PredioDto predio, EstadoPublicacion estadoPublicacion,
             /* v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
@@ -51,7 +54,7 @@ final class CasoDtos {
 
     /**
      * Datos del predio para el catálogo. El área es la del terreno inscrita en la partida y el precio es referencial
-     * e informativo (en soles); ninguno de los dos interviene en el semáforo.
+     * e informativo (en soles o, v0.9, en dólares); ninguno de los dos interviene en el semáforo.
      */
     record PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
             BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota) {}
@@ -64,6 +67,13 @@ final class CasoDtos {
     record PlanoDto(Especialidad especialidad, String especialidadEtiqueta, EstadoPlano estado, BigDecimal areaConstruida,
             SistemaConstructivo sistemaConstructivo, String sistemaConstructivoEtiqueta, String observacion,
             boolean tieneDocumentoPropio, DocumentoInfoDto documento, Boolean coincideArea) {}
+
+    /**
+     * v0.9: un documento del expediente de un lote. Siempre vienen los cuatro; el que no se registró sale como no
+     * presentado. {@code documento} es null si no hay archivo que mostrar.
+     */
+    record DocumentoLoteDto(DocumentoLote tipo, String tipoEtiqueta, EstadoPlano estado, String observacion,
+            String resumen, boolean tieneDocumentoPropio, DocumentoInfoDto documento) {}
 
     /**
      * v0.8: de dónde sale el PDF de un plano o del caso. origen: SUBIDO (con su evidencia), GENERADO (lámina o copia
@@ -89,10 +99,12 @@ final class CasoDtos {
             LocalDate fechaReferencial, String nota, String zonaRegistral, String oficinaRegistral, String ubicacion,
             BigDecimal areaM2, String linderos, String antecedenteDominial, boolean tieneDocumento,
             boolean documentoGenerado, DocumentoInfoDto documento, List<AsientoDto> asientos, TipoPredio tipoPredio,
-            BigDecimal areaConstruidaInscrita, List<PlanoDto> planos) {}
+            BigDecimal areaConstruidaInscrita, List<PlanoDto> planos,
+            /* v0.9: vacío si el predio no es un lote. */
+            List<DocumentoLoteDto> documentosLote) {}
 
     record DetalleCaso(String codigo, String denominacion, String contexto, boolean sintetico, String origen,
-            String fuente, LocalDate fechaConsulta, ExpedienteDto expediente, EvaluacionDto evaluacion,
+            String fuente, LocalDate fechaConsulta, String fuenteUrl, ExpedienteDto expediente, EvaluacionDto evaluacion,
             EvaluacionTecnicaDto evaluacionTecnica, List<ItemChecklistDto> checklist, List<TerminoDto> terminos,
             PredioDto predio, PublicacionDto publicacion,
             /* v0.8 (I15): solo para GESTOR y REVISOR; para los demás roles el campo no viene en la respuesta. */
@@ -130,6 +142,12 @@ final class CasoDtos {
             SistemaConstructivo sistemaConstructivo,
             @Size(max = 500) String observacion) {}
 
+    /** v0.9: un documento del lote, tal como lo registra el revisor. «Presentado» u «observado» exige su PDF. */
+    record DocumentoLoteRequest(
+            @NotNull DocumentoLote tipo,
+            @NotNull EstadoPlano estado,
+            @Size(max = 500) String observacion) {}
+
     record ActualizarExpedienteRequest(
             @NotBlank @Size(max = 255) String condicionRepresentada,
             @NotNull Completitud completitud,
@@ -146,6 +164,8 @@ final class CasoDtos {
             TipoPredio tipoPredio,
             @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruidaInscrita,
             @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
+            /* v0.9: documentos del lote. Si no vienen, quedan como estaban. */
+            @Size(max = 4) List<@Valid @NotNull DocumentoLoteRequest> documentosLote,
             @NotNull Long versionEsperada) {
 
         DatosExpediente datos() {
@@ -154,7 +174,9 @@ final class CasoDtos {
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
                             a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
-                    tipoPredio, areaConstruidaInscrita, planosDatos(planos));
+                    tipoPredio, areaConstruidaInscrita, planosDatos(planos), documentosLote == null ? null
+                            : documentosLote.stream().map(x -> new DocumentoLoteDatos(x.tipo(), x.estado(),
+                                    x.observacion(), null)).toList());
         }
     }
 
@@ -195,7 +217,7 @@ final class CasoDtos {
                     asientos.stream().map(a -> new AsientoDatos(a.referencia(), a.tipoActo(), a.estado(),
                             a.fechaInscripcion(), a.tituloNumero(), a.fechaPresentacion(), a.texto(),
                             a.canceloNumero(), a.titulares(), a.acreedor(), a.plazoOVencimiento())).toList(),
-                    tipoPredio, areaConstruidaInscrita, planosDatos(planos));
+                    tipoPredio, areaConstruidaInscrita, planosDatos(planos), null);
         }
     }
 
@@ -234,7 +256,12 @@ final class CasoDtos {
             String nota, String zonaRegistral, String oficinaRegistral, String ubicacion, BigDecimal areaM2,
             String linderos, String antecedenteDominial, List<AsientoDatos> asientos,
             /* Bloque técnico: null en tipoPredio significa «no tocar lo que ya hay». */
-            TipoPredio tipoPredio, BigDecimal areaConstruidaInscrita, List<PlanoDatos> planos) {}
+            TipoPredio tipoPredio, BigDecimal areaConstruidaInscrita, List<PlanoDatos> planos,
+            /* v0.9: null significa «no tocar los documentos del lote». */
+            List<DocumentoLoteDatos> documentosLote) {}
+
+    /** v0.9: un documento del lote. El resumen solo lo trae la carga de contenido. */
+    record DocumentoLoteDatos(DocumentoLote tipo, EstadoPlano estado, String observacion, String resumen) {}
 
     record PlanoDatos(Especialidad especialidad, EstadoPlano estado, BigDecimal areaConstruida,
             SistemaConstructivo sistemaConstructivo, String observacion) {}

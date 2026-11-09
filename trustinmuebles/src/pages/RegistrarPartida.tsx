@@ -25,7 +25,7 @@ const CONDICIONES = [
 const OPCIONES_CONDICION = CONDICIONES.map((c) => ({ valor: c, etiqueta: c }));
 const OPCIONES_COMPLETITUD = (Object.keys(ETIQUETA_COMPLETITUD) as Completitud[]).map((c) => ({ valor: c, etiqueta: ETIQUETA_COMPLETITUD[c] }));
 
-const PROPIETARIOS_DEMO = ["propietario-01", "propietario-02"];
+const PROPIETARIOS_DEMO = ["propietario-01", "propietario-02", "propietario-03"];
 
 const OPCIONES_ORIGEN: { valor: OrigenCaptacion; etiqueta: string }[] = [
   { valor: "TRANSCRITA_CONOCE_AQUI", etiqueta: "Transcrita de Conoce Aquí (SUNARP)" },

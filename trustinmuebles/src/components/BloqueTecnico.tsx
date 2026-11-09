@@ -1,13 +1,24 @@
 import { campo } from "@/components/FilasAsientos";
 import { puedeMarcarPresentado } from "@/lib/archivos";
-import { ESPECIALIDADES, ETIQUETA_ESPECIALIDAD, ETIQUETA_ESTADO_PLANO, ETIQUETA_PREDIO, ETIQUETA_SISTEMA, QUE_VALIDA } from "@/lib/semaforo";
-import type { Especialidad, EstadoPlano, Expediente, Plano, PlanoPeticion, SistemaConstructivo, TipoPredio } from "@/lib/types";
+import {
+  DOCUMENTOS_LOTE, EFECTO_DOCUMENTO_LOTE, ESPECIALIDADES, ETIQUETA_DOCUMENTO_LOTE, ETIQUETA_ESPECIALIDAD,
+  ETIQUETA_ESTADO_PLANO, ETIQUETA_PREDIO, ETIQUETA_SISTEMA, QUE_VALIDA,
+} from "@/lib/semaforo";
+import type {
+  DocumentoLote, DocumentoLotePeticion, DocumentoLoteTipo, Especialidad, EstadoPlano, Expediente, Plano, PlanoPeticion,
+  SistemaConstructivo, TipoPredio,
+} from "@/lib/types";
 
 /** Un plano del formulario. El estado es documental: dice si el plano está, no si la obra está bien. */
 export interface PlanoFila { estado: EstadoPlano; area: string; sistema: SistemaConstructivo | ""; observacion: string }
 
+/** v0.9: un documento del lote en el formulario: su estado documental y una observación. */
+export interface DocumentoFila { estado: EstadoPlano; observacion: string }
+
 export interface Tecnico {
   tipoPredio: TipoPredio; areaInscrita: string; planos: Record<Especialidad, PlanoFila>;
+  /** v0.9: solo al editar un expediente existente. Al registrar una partida los documentos se suben después. */
+  documentos?: Record<DocumentoLoteTipo, DocumentoFila>;
 }
 
 const FILA_VACIA: PlanoFila = { estado: "NO_PRESENTADO", area: "", sistema: "", observacion: "" };
@@ -25,12 +36,34 @@ export function tecnicoDesde(x: Expediente): Tecnico {
       sistema: p.sistemaConstructivo ?? "", observacion: p.observacion ?? "",
     };
   }
-  return { tipoPredio: x.tipoPredio, areaInscrita: x.areaConstruidaInscrita == null ? "" : String(x.areaConstruidaInscrita), planos };
+  const documentos = Object.fromEntries(DOCUMENTOS_LOTE.map((t) => [t, { estado: "NO_PRESENTADO", observacion: "" }])) as
+    Record<DocumentoLoteTipo, DocumentoFila>;
+  for (const d of x.documentosLote ?? []) documentos[d.tipo] = { estado: d.estado, observacion: d.observacion ?? "" };
+  return {
+    tipoPredio: x.tipoPredio, areaInscrita: x.areaConstruidaInscrita == null ? "" : String(x.areaConstruidaInscrita),
+    planos, documentos,
+  };
 }
 
-/** Un lote no lleva planos de edificación: se envía el tipo y nada más. */
-export function tecnicoAPeticion(t: Tecnico): { tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[] } {
-  if (t.tipoPredio === "LOTE") return { tipoPredio: "LOTE", areaConstruidaInscrita: null, planos: [] };
+/**
+ * Un lote no lleva planos de edificación: se envía el tipo y, al editar, sus documentos (v0.9). Una vivienda envía sus
+ * cuatro planos.
+ */
+export function tecnicoAPeticion(t: Tecnico): {
+  tipoPredio: TipoPredio; areaConstruidaInscrita: number | null; planos: PlanoPeticion[];
+  documentosLote?: DocumentoLotePeticion[];
+} {
+  if (t.tipoPredio === "LOTE") {
+    const base = { tipoPredio: "LOTE" as const, areaConstruidaInscrita: null, planos: [] };
+    if (!t.documentos) return base;
+    const docs = t.documentos;
+    return {
+      ...base,
+      documentosLote: DOCUMENTOS_LOTE.map((tipo) => ({
+        tipo, estado: docs[tipo].estado, observacion: docs[tipo].observacion.trim() || null,
+      })),
+    };
+  }
   return {
     tipoPredio: "VIVIENDA",
     areaConstruidaInscrita: t.areaInscrita.trim() === "" ? null : Number(t.areaInscrita),
@@ -52,11 +85,15 @@ export function tecnicoAPeticion(t: Tecnico): { tipoPredio: TipoPredio; areaCons
  * «Presentado» y «Observado» solo se pueden elegir si el plano ya tiene su PDF (o ya estaba presentado); al registrar
  * una partida aún no hay archivos, así que los planos se presentan después, subiendo su PDF.
  */
-export function BloqueTecnico({ tecnico, setTecnico, planosGuardados = [] }: {
-  tecnico: Tecnico; setTecnico: (t: Tecnico) => void; planosGuardados?: Plano[];
+export function BloqueTecnico({ tecnico, setTecnico, planosGuardados = [], documentosGuardados = [] }: {
+  tecnico: Tecnico; setTecnico: (t: Tecnico) => void; planosGuardados?: Plano[]; documentosGuardados?: DocumentoLote[];
 }) {
   const cambiar = (e: Especialidad, parcial: Partial<PlanoFila>) =>
     setTecnico({ ...tecnico, planos: { ...tecnico.planos, [e]: { ...tecnico.planos[e], ...parcial } } });
+  const cambiarDocumento = (d: DocumentoLoteTipo, parcial: Partial<DocumentoFila>) => {
+    if (!tecnico.documentos) return;
+    setTecnico({ ...tecnico, documentos: { ...tecnico.documentos, [d]: { ...tecnico.documentos[d], ...parcial } } });
+  };
 
   return (
     <fieldset className="space-y-4">
@@ -78,8 +115,44 @@ export function BloqueTecnico({ tecnico, setTecnico, planosGuardados = [] }: {
         )}
       </div>
       {tecnico.tipoPredio === "LOTE" && (
-        <p className="text-xs text-muted-foreground">Un lote no lleva planos de edificación. Elige «Vivienda» para registrar los 4 planos.</p>
+        <p className="text-xs text-muted-foreground">
+          Un lote no lleva planos de edificación. Elige «Vivienda» para registrar los 4 planos.{" "}
+          {tecnico.documentos
+            ? "Sus documentos (plano perimétrico, memoria descriptiva, zonificación y tasación) se registran aquí; para marcarlos presentados, sube antes su PDF en «Documentos del lote»."
+            : "Sus documentos (plano perimétrico, memoria descriptiva, zonificación y tasación) se suben después de registrar la partida, en el expediente."}
+        </p>
       )}
+      {tecnico.tipoPredio === "LOTE" && tecnico.documentos && DOCUMENTOS_LOTE.map((d) => {
+        const f = tecnico.documentos![d];
+        const conArchivo = puedeMarcarPresentado(documentosGuardados.find((x) => x.tipo === d));
+        return (
+          <div key={d} className="space-y-3 rounded-2xl border border-gray-100 bg-gray-50/60 p-4">
+            <p className="text-sm font-bold text-foreground">{ETIQUETA_DOCUMENTO_LOTE[d]}</p>
+            <p className="text-xs text-muted-foreground">{EFECTO_DOCUMENTO_LOTE[d]}</p>
+            <div className="grid sm:grid-cols-3 gap-3">
+              <div>
+                <label htmlFor={`bt-doc-estado-${d}`} className="block text-xs font-bold text-muted-foreground mb-1">Estado</label>
+                <select id={`bt-doc-estado-${d}`} className={campo} value={f.estado}
+                  onChange={(ev) => cambiarDocumento(d, { estado: ev.target.value as EstadoPlano })}>
+                  {(["PRESENTADO", "OBSERVADO", "NO_PRESENTADO", "NO_APLICA"] as EstadoPlano[]).map((s) => {
+                    const bloqueado = (s === "PRESENTADO" || s === "OBSERVADO") && !conArchivo;
+                    return (
+                      <option key={s} value={s} disabled={bloqueado}>
+                        {ETIQUETA_ESTADO_PLANO[s]}{bloqueado ? " (sube el PDF primero)" : ""}
+                      </option>
+                    );
+                  })}
+                </select>
+              </div>
+              <div className="sm:col-span-2">
+                <label htmlFor={`bt-doc-obs-${d}`} className="block text-xs font-bold text-muted-foreground mb-1">Observación del revisor (opcional)</label>
+                <input id={`bt-doc-obs-${d}`} className={campo} maxLength={500} value={f.observacion}
+                  onChange={(ev) => cambiarDocumento(d, { observacion: ev.target.value })} />
+              </div>
+            </div>
+          </div>
+        );
+      })}
       {tecnico.tipoPredio === "VIVIENDA" && ESPECIALIDADES.map((e) => {
         const f = tecnico.planos[e];
         const hay = f.estado === "PRESENTADO" || f.estado === "OBSERVADO";
