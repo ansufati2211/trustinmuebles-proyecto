@@ -15,9 +15,11 @@ import { PanelGestion } from "@/components/PanelGestion";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { resaltadoA } from "@/lib/resaltado";
 import { puedeVerGestion } from "@/lib/gestion";
+import { PanelDatosComerciales } from "@/components/PanelDatosComerciales";
 import { PanelPublicacion } from "@/components/PanelPublicacion";
 import { SolicitudContacto } from "@/components/SolicitudContacto";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
+import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { Desplegable } from "@/components/base/Desplegable";
@@ -325,6 +327,9 @@ export default function Expediente() {
                 ) : (
                   <p className="font-bold text-gray-200">Precio a consultar con la inmobiliaria.</p>
                 )}
+                {p.precioPorM2 != null && (
+                  <p className="cifras mt-1 text-sm font-semibold text-gray-200">{precio(p.precioPorM2, p.moneda)} por m²</p>
+                )}
                 <dl className="cifras mt-4 grid grid-cols-2 gap-4 border-t border-white/15 pt-4 text-sm">
                   <div>
                     <dt className="text-xs font-bold text-gray-300">Área del terreno</dt>
@@ -338,6 +343,8 @@ export default function Expediente() {
                   </div>
                 </dl>
               </div>
+
+              <LineaIndependizacion predio={p} oscuro />
 
               <div data-resaltado={ev?.estado ?? "SIN_EVALUAR"} className="overflow-hidden rounded-3xl bg-card shadow-tarjeta">
                 <div className={`space-y-3 p-5 ${resaltadoA(ev?.estado).contenedor}`}>
@@ -510,6 +517,7 @@ export default function Expediente() {
 
           <aside className="space-y-6">
             {d.publicacion && <PanelPublicacion codigo={d.codigo} publicacion={d.publicacion} alCambiar={setData} />}
+            {esRevisor && <PanelDatosComerciales key={d.codigo} detalle={d} alGuardar={setData} />}
 
             <div className="flex gap-3 rounded-[2rem] border border-info-tinta/20 bg-info-suave p-6 text-sm font-semibold text-info-tinta">
               <Scale className="size-5 shrink-0" aria-hidden="true" />

@@ -56,6 +56,10 @@ final class CasoDtos {
             ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado, PredioDto predio,
             List<String> tiposAlerta, TitularidadComercial titularidadComercial) {}
 
+    /** v1.0: valores para los selectores de filtro del catálogo público. */
+    record OpcionesFiltro(List<String> proyectos, List<String> distritos,
+            List<pe.trustinmuebles.clasificacion.TipoAlerta> tiposAlerta) {}
+
     /** v1.0: una página del catálogo público (la primera es la 0). */
     record PaginaPublica(List<InmueblePublico> items, int pagina, int tamano, int total, int totalPaginas) {}
 
@@ -77,7 +81,14 @@ final class CasoDtos {
      * e informativo (en soles o, v0.9, en dólares); ninguno de los dos interviene en el semáforo.
      */
     record PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
-            BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota) {}
+            BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota,
+            /* v1.0: precio referencial entre el área del terreno (null si falta alguno); informativo. */
+            BigDecimal precioPorM2, String proyecto, EstadoComercial estadoComercial, String estadoComercialEtiqueta,
+            Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion) {}
+
+    /** v1.0: datos comerciales del caso que el asesor puede corregir. Los que no vienen quedan como estaban. */
+    record DatosComercialesRequest(@Size(max = 120) String proyecto, EstadoComercial estadoComercial,
+            Independizacion independizacion) {}
 
     record AsientoDto(String referencia, String rubro, TipoActo tipoActo, String tipoActoEtiqueta,
             EstadoAnotacion estado, LocalDate fechaInscripcion, String tituloNumero, LocalDate fechaPresentacion,
@@ -229,6 +240,8 @@ final class CasoDtos {
             /* v0.7: cuenta PROPIETARIO del caso. El caso nace en BORRADOR y sin autorización. v1.0: obligatoria solo
                si la titularidad comercial es PARTICULAR (lo comprueba el servicio). */
             @Size(max = 40) String propietarioCodigo,
+            /* v1.0: opcionales; sin ellos, «sin proyecto», disponible y la independización «no consta». */
+            @Size(max = 120) String proyecto, EstadoComercial estadoComercial, Independizacion independizacion,
             /* Opcional, en soles. Es informativo y no interviene en el semáforo. */
             @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal precioReferencial,
             /* v1.0: INMOBILIARIA o PARTICULAR; si no se indica, PARTICULAR. */

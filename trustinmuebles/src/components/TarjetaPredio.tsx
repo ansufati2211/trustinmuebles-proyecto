@@ -1,5 +1,6 @@
 import { Link } from "react-router";
-import { ArrowRight, Building2, CheckCircle2, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Clock, FileSearch, Handshake, LandPlot, MapPin, Ruler, Tag, type LucideIcon } from "lucide-react";
+import { Badge, type TonoBadge } from "@/components/base/Badge";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, precio } from "@/lib/formato";
@@ -8,7 +9,10 @@ import { ChipGestion } from "@/components/PanelGestion";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { resaltadoA } from "@/lib/resaltado";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
-import type { InmueblePublico, ResumenCaso } from "@/lib/types";
+import type { EstadoComercial, InmueblePublico, ResumenCaso } from "@/lib/types";
+
+const TONO_COMERCIAL: Record<EstadoComercial, TonoBadge> = { DISPONIBLE: "marca", SEPARADO: "arena", VENDIDO: "info" };
+const ICONO_COMERCIAL: Record<EstadoComercial, LucideIcon> = { DISPONIBLE: Tag, SEPARADO: Handshake, VENDIDO: CheckCircle2 };
 
 /**
  * Tarjeta de un inmueble. Con {@code publico} (v1.0) enlaza a la ficha pública y no muestra datos internos (pendientes,
@@ -49,9 +53,14 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
 
         <div className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-2 p-4">
           {p.precioReferencial != null ? (
-            <p className="cifras text-2xl font-black tracking-tight text-white drop-shadow-sm">
-              {precio(p.precioReferencial, p.moneda, true)}
-            </p>
+            <div>
+              <p className="cifras text-2xl font-black tracking-tight text-white drop-shadow-sm">
+                {precio(p.precioReferencial, p.moneda, true)}
+              </p>
+              {p.precioPorM2 != null && (
+                <p className="cifras text-xs font-semibold text-white/90">{precio(p.precioPorM2, p.moneda)} por m²</p>
+              )}
+            </div>
           ) : (
             <p className="text-base font-bold text-white/90">Precio a consultar</p>
           )}
@@ -75,7 +84,7 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
           <ul className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1.5 text-sm font-medium text-tinta-2">
             <li className="flex items-center gap-1.5">
               <MapPin className="size-4 text-primary" aria-hidden="true" />
-              {p.distrito ?? c.contexto}
+              {p.proyecto ? `${p.proyecto} · ` : ""}{p.distrito ?? c.contexto}
             </li>
             {p.areaM2 != null && (
               <li className="cifras flex items-center gap-1.5">
@@ -90,6 +99,11 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
           className="flex flex-col items-start gap-2 rounded-2xl border border-border bg-background/70 p-3.5"
           aria-label="Indicadores del inmueble"
         >
+          {p.estadoComercial && (
+            <Badge tono={TONO_COMERCIAL[p.estadoComercial]} icono={ICONO_COMERCIAL[p.estadoComercial]} tamano="sm">
+              Estado comercial: {p.estadoComercialEtiqueta ?? p.estadoComercial}
+            </Badge>
+          )}
           <IndicadorA estado={c.estado} tamano="sm" />
           <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
           {conPublicacion && interno?.estadoPublicacion && <InsigniaPublicacion estado={interno.estadoPublicacion} tamano="sm" />}
