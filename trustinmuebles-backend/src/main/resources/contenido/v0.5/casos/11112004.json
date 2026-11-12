@@ -1,0 +1,113 @@
+{
+  "codigo": "11112004",
+  "denominacion": "Partida matriz · Horizonte de Los Aquijes · Los Aquijes, Ica",
+  "contexto": "Los Aquijes, Ica",
+  "distrito": "Los Aquijes",
+  "precioReferencial": null,
+  "proyecto": "Horizonte de Los Aquijes",
+  "titularidadComercial": "INMOBILIARIA",
+  "estadoPublicacion": "BORRADOR",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-11-10",
+    "nota": "Partida matriz del proyecto: los lotes que aún no tienen partida propia muestran su indicador A.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Terreno matriz del proyecto Horizonte de Los Aquijes, distrito de Los Aquijes, provincia y departamento de Ica.",
+    "areaM2": 15600.0,
+    "linderos": "Frente: con la vía de acceso al distrito, en 130.00 ml. Derecha: con terreno de terceros, en 120.00 ml. Izquierda: con terreno de terceros, en 120.00 ml. Fondo: con camino de servidumbre de paso, en 130.00 ml.",
+    "antecedenteDominial": "El terreno proviene de la acumulación de dos predios rústicos, inscrita en esta partida a favor de la empresa.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2025-03-14",
+        "tituloNumero": "2025-00018842",
+        "fechaPresentacion": "2025-02-27",
+        "texto": "Desarrollos Horizonte Aquijes S.A.C. adquiere el terreno matriz por compraventa, con el área, linderos y medidas perimétricas que figuran en la descripción del inmueble.",
+        "canceloNumero": null,
+        "titulares": "Desarrollos Horizonte Aquijes S.A.C. (100 %)"
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida matriz",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Resolución de habilitación urbana",
+        "estado": "REVISADO",
+        "observacion": null
+      },
+      {
+        "nombre": "Plano de lotización del proyecto",
+        "estado": "REVISADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento referencial",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Independización",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Terreno matriz de 130.00 m de frente por 120.00 m de fondo: vértices A a D y perímetro de 500.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Describe el terreno matriz con los linderos de la partida: área de 15600.00 m². Incluye el cuadro de áreas de lotes, vías y aportes.",
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Zonificación RDM (residencial de densidad media) en las manzanas A a F, y CV (comercio vecinal) en las manzanas G y H. Vías locales de 12.00 m, sin afectación vial sobre los lotes.",
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Valor comercial del terreno por comparación con lotes de proyectos cercanos del mismo distrito.",
+        "archivo": null
+      }
+    ]
+  }
+}

@@ -182,6 +182,6 @@ class CopiaLiteralPdfTest {
                 n++;
             }
         }
-        assertThat(n).isEqualTo(15); // v1.0 (etapa 3a): más las 3 partidas matrices de los proyectos
+        assertThat(n).isEqualTo(16); // v1.0 (etapas 3a y 3b): más las 4 partidas matrices de los proyectos
     }
 }

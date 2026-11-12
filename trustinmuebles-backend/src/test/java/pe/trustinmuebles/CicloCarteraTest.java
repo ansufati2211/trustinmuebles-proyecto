@@ -250,9 +250,9 @@ class CicloCarteraTest extends BaseApiTest {
         mvc.perform(get("/api/v1/cartera/panel").header("Authorization", comprador)).andExpect(status().isForbidden());
         JsonNode panel = this.json.readTree(mvc.perform(get("/api/v1/cartera/panel").header("Authorization", gestor))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        // v1.0 (etapa 3a): más las 3 partidas matrices (dos verdes), que siguen en borrador.
+        // v1.0 (etapas 3a y 3b): más las 4 partidas matrices (tres verdes), que siguen en borrador.
         assertThat(panel.get("totalCasos").asInt()).isEqualTo(13 + MATRICES.length);
-        assertThat(panel.get("porColor").get("VERDE").asInt()).isEqualTo(3 + 2);
+        assertThat(panel.get("porColor").get("VERDE").asInt()).isEqualTo(3 + 3);
         assertThat(panel.get("porEstadoPublicacion").get("PUBLICADO").asInt()).isEqualTo(13);
         assertThat(panel.get("contactosPendientes")).isEmpty();
         assertThat(panel.get("inspecciones").toString()).doesNotContain(CASO);

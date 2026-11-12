@@ -75,6 +75,25 @@
         { "nombre": "Red eléctrica y alumbrado público", "estado": "EN_PROCESO", "fecha": null },
         { "nombre": "Independización de los lotes de la segunda etapa", "estado": "PENDIENTE", "fecha": null }
       ]
+    },
+    {
+      "codigo": "horizonte-de-los-aquijes",
+      "nombre": "Horizonte de Los Aquijes",
+      "distrito": "Los Aquijes",
+      "descripcion": "Proyecto de 80 lotes en ocho manzanas, a pocos minutos de la plaza del distrito. Sus lotes se cargan desde el plano de lotización de la inmobiliaria.",
+      "recorridoUrl": null,
+      "casoMatriz": "11112004",
+      "semilla": 3404,
+      "independizacion": "EN_PARTIDA_MATRIZ",
+      "manzanas": [],
+      "hitos": [
+        { "nombre": "Compra del terreno matriz", "estado": "COMPLETADO", "fecha": "2025-02-27" },
+        { "nombre": "Aprobación de la habilitación urbana", "estado": "COMPLETADO", "fecha": "2025-11-18" },
+        { "nombre": "Trazado de calles y lotización", "estado": "COMPLETADO", "fecha": "2026-03-09" },
+        { "nombre": "Redes de agua potable y desagüe", "estado": "EN_PROCESO", "fecha": null },
+        { "nombre": "Red eléctrica y alumbrado público", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Independización de los lotes en el Registro de Predios", "estado": "PENDIENTE", "fecha": null }
+      ]
     }
   ]
 }

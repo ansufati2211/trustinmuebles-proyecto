@@ -1,7 +1,7 @@
-import { actuaComoRevisor } from "@/lib/permisos";
+import { actuaComoGestor, actuaComoRevisor } from "@/lib/permisos";
 import { useState } from "react";
 import type { CSSProperties } from "react";
-import { useNavigate, useSearchParams } from "react-router";
+import { Link, useNavigate, useSearchParams } from "react-router";
 import { ExternalLink, FolderOpen, Search, SlidersHorizontal, FunnelX, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { TarjetaPredio } from "@/components/TarjetaPredio";
@@ -102,6 +102,12 @@ export default function Casos() {
               Lotes y viviendas que la inmobiliaria tiene a la venta. Cada uno trae su evaluación documental (indicador A) y,
               si se pidió, su evaluación técnica presencial (indicador B).
             </p>
+            {actuaComoGestor(usuario?.rol) && (
+              <Link to="/proyectos" style={retraso(330)}
+                className="anim-enter mt-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md hover:bg-white/20">
+                Proyectos y carga de lotes por CSV
+              </Link>
+            )}
           </div>
 
           <dl style={retraso(380)} className="anim-enter grid grid-cols-2 gap-3 sm:min-w-[320px]">

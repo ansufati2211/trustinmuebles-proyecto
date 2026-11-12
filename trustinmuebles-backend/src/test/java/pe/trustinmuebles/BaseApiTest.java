@@ -50,15 +50,17 @@ public abstract class BaseApiTest {
             SALAS, MOLINOS, PACHACUTEC, ICA};
 
     /**
-     * v1.0 (etapa 3a): partidas matrices de los tres proyectos precargados. Son de la inmobiliaria, quedan en borrador
+     * v1.0 (etapas 3a y 3b): partidas matrices de los cuatro proyectos precargados. Son de la inmobiliaria, quedan en borrador
      * (no se ofrecen como inmuebles) y tienen su autorización registrada: sus lotes sin caso propio se publican con ella.
      */
     protected static final String MATRIZ_VENTISCA = "11112001";
     protected static final String MATRIZ_LUCUMO = "11112002";
     protected static final String MATRIZ_SAUZAL = "11112003";
-    protected static final String[] MATRICES = {MATRIZ_VENTISCA, MATRIZ_LUCUMO, MATRIZ_SAUZAL};
-    /** Casos de la carga: los 12 de siempre (10 de demostración y 2 de la SBN) más las 3 partidas matrices. */
-    protected static final int CASOS_CARGA = 15;
+    /** Etapa 3b: la matriz del cuarto proyecto, que empieza sin lotes (se cargan desde un CSV). */
+    protected static final String MATRIZ_AQUIJES = "11112004";
+    protected static final String[] MATRICES = {MATRIZ_VENTISCA, MATRIZ_LUCUMO, MATRIZ_SAUZAL, MATRIZ_AQUIJES};
+    /** Casos de la carga: los 12 de siempre (10 de demostración y 2 de la SBN) más las 4 partidas matrices. */
+    protected static final int CASOS_CARGA = 16;
 
     /**
      * v1.0 (etapa 3a): cuántos inmuebles ofrece el catálogo público, contados en la base: los casos publicados más los
