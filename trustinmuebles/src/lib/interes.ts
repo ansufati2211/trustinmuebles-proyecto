@@ -82,7 +82,19 @@ export interface OpcionesBandeja { proyectos: { codigo: string; nombre: string; 
 /** A qué se refiere el interés: un caso publicado, o un lote o un proyecto. {@code nombre} y {@code referencia}, para mostrar. */
 export interface DestinoInteres {
   casoCodigo?: string; proyectoCodigo?: string; lote?: string; nombre: string; referencia: string;
+  /**
+   * v1.0 (etapa 5): lo que buscó en el asistente (zona, tipo, presupuesto y área), para que el asesor lo vea en la
+   * bandeja. Un presupuesto escrito en el formulario reemplaza al de la búsqueda.
+   */
+  busqueda?: {
+    zona?: string; tipo?: "LOTE" | "VIVIENDA"; presupuestoMin?: number; presupuestoMax?: number; moneda?: "PEN" | "USD";
+    areaDeseada?: number;
+  };
 }
+
+/** Una visita al lote exige un lote o un inmueble: en una búsqueda general solo se ofrecen la reunión y la llamada. */
+export const modalidadesPara = (destino: DestinoInteres) =>
+  destino.casoCodigo || destino.lote ? MODALIDADES : MODALIDADES.filter((m) => m.valor !== "VISITA_AL_LOTE");
 
 export interface FormularioInteres {
   nombre: string; medio: Medio; contacto: string; formaPago: FormaPago; presupuestoMax: string; mensaje: string;
@@ -164,10 +176,18 @@ export function cuerpoInteres(destino: DestinoInteres, f: FormularioInteres, ver
   if (destino.casoCodigo) cuerpo.casoCodigo = destino.casoCodigo;
   if (destino.proyectoCodigo) cuerpo.proyectoCodigo = destino.proyectoCodigo;
   if (destino.lote) cuerpo.lote = destino.lote;
+  const b = destino.busqueda;
+  if (b) {
+    for (const k of ["zona", "tipo", "presupuestoMin", "presupuestoMax", "moneda", "areaDeseada"] as const) {
+      if (b[k] != null && b[k] !== "") cuerpo[k] = b[k];
+    }
+  }
   if (f.mensaje.trim()) cuerpo.mensaje = f.mensaje.trim();
   if (f.presupuestoMax.trim()) {
     cuerpo.presupuestoMax = Number(f.presupuestoMax.replace(/[\s,]/g, ""));
     cuerpo.moneda = "PEN";
+    // El mínimo de la búsqueda solo se conserva si sigue siendo coherente con el máximo escrito en soles.
+    if (b?.moneda !== "PEN" || (b.presupuestoMin ?? 0) > (cuerpo.presupuestoMax as number)) delete cuerpo.presupuestoMin;
   }
   if (f.sitioWeb) cuerpo.sitioWeb = f.sitioWeb;
   if (f.quiereCita) {
@@ -178,8 +198,9 @@ export function cuerpoInteres(destino: DestinoInteres, f: FormularioInteres, ver
   return cuerpo;
 }
 
-/** Mensaje armado para WhatsApp: «Hola, me interesa <lote o inmueble> (ref. <código>)». */
-export const mensajeWhatsapp = (nombre: string, referencia: string) => `Hola, me interesa ${nombre} (ref. ${referencia})`;
+/** Mensaje armado para WhatsApp: «Hola, me interesa <lote o inmueble> (ref. <código>)». Sin referencia (una búsqueda), sin «ref.». */
+export const mensajeWhatsapp = (nombre: string, referencia: string) =>
+  referencia ? `Hola, me interesa ${nombre} (ref. ${referencia})` : `Hola, me interesa ${nombre}`;
 
 /** Enlace de WhatsApp, o null si la inmobiliaria no configuró un número (app.contacto.whatsapp vacío). */
 export function enlaceWhatsapp(numero: string | null | undefined, nombre: string, referencia: string): string | null {

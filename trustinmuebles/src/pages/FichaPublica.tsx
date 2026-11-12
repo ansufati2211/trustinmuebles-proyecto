@@ -5,6 +5,7 @@ import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { SolicitarCita } from "@/components/SolicitarCita";
+import { UsosDelLote } from "@/components/UsosDelLote";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
 import { m2, precio } from "@/lib/formato";
@@ -141,6 +142,9 @@ export default function FichaPublica() {
             <p className="flex gap-2 text-xs text-tinta-2"><Info className="size-4 shrink-0" aria-hidden="true" />{t.limite}</p>
           </section>
         </div>
+
+        {/* v1.0 (etapa 5): usos que suelen permitirse; sin zonificación, «consulta los parámetros». */}
+        <div className={`${tarjeta} mt-8`}><UsosDelLote zonificacion={p.zonificacion} areaM2={p.areaM2} /></div>
 
         {documentos.length > 0 && (
           <section aria-labelledby="titulo-docs" className={`${tarjeta} mt-8 space-y-4`}>

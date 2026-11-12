@@ -5,7 +5,7 @@ import { Modal } from "@/components/base/Modal";
 import { Campo, claseAreaTexto, claseCampo } from "@/components/base/Campo";
 import { api, ApiError, post } from "@/lib/api";
 import {
-  FORMAS_PAGO, FRANJAS, MAX_MENSAJE, MODALIDADES, cuerpoInteres, enlaceWhatsapp, formularioVacio, hoyLima, sumarDias,
+  FORMAS_PAGO, FRANJAS, MAX_MENSAJE, modalidadesPara, cuerpoInteres, enlaceWhatsapp, formularioVacio, hoyLima, sumarDias,
   validarFormulario, type ConfigContacto, type DestinoInteres, type FormularioInteres, type Recibido,
 } from "@/lib/interes";
 
@@ -26,7 +26,9 @@ function useConfigContacto() {
  * correo, con su consentimiento. No exige cuenta ni pide DNI. Si la inmobiliaria configuró WhatsApp, ofrece también
  * escribir por ahí con el mensaje ya armado.
  */
-export function SolicitarCita({ destino, compacto = false }: { destino: DestinoInteres; compacto?: boolean }) {
+export function SolicitarCita({ destino, compacto = false, textoBoton = "Solicitar cita" }: {
+  destino: DestinoInteres; compacto?: boolean; textoBoton?: string;
+}) {
   const config = useConfigContacto();
   const [abierto, setAbierto] = useState(false);
   const [enviado, setEnviado] = useState<Recibido | null>(null);
@@ -41,7 +43,7 @@ export function SolicitarCita({ destino, compacto = false }: { destino: DestinoI
       ) : (
         <div className="flex flex-wrap gap-3">
           <Button size={compacto ? "default" : "lg"} onClick={() => setAbierto(true)}>
-            <CalendarCheck aria-hidden="true" /> Solicitar cita
+            <CalendarCheck aria-hidden="true" /> {textoBoton}
           </Button>
           {whatsapp && (
             <a href={whatsapp} target="_blank" rel="noopener noreferrer"
@@ -62,7 +64,8 @@ export function SolicitarCita({ destino, compacto = false }: { destino: DestinoI
 function FormularioCita({ destino, config, alCerrar, alEnviar }: {
   destino: DestinoInteres; config: ConfigContacto | null; alCerrar: () => void; alEnviar: (r: Recibido) => void;
 }) {
-  const [f, setF] = useState<FormularioInteres>(() => formularioVacio(true));
+  const modalidades = modalidadesPara(destino);
+  const [f, setF] = useState<FormularioInteres>(() => ({ ...formularioVacio(true), modalidad: modalidades[0].valor }));
   const [errores, setErrores] = useState<ReturnType<typeof validarFormulario>>({});
   const [enviando, setEnviando] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -93,7 +96,7 @@ function FormularioCita({ destino, config, alCerrar, alEnviar }: {
 
   return (
     <Modal abierto alCerrar={alCerrar} ancho="lg" titulo="Solicitar cita"
-      descripcion={`${destino.nombre} · ref. ${destino.referencia}`}
+      descripcion={destino.referencia ? `${destino.nombre} · ref. ${destino.referencia}` : destino.nombre}
       pie={
         <>
           <Button variant="outline" onClick={alCerrar} disabled={enviando}>Cancelar</Button>
@@ -103,8 +106,8 @@ function FormularioCita({ destino, config, alCerrar, alEnviar }: {
       <form className="space-y-6" onSubmit={(e) => { e.preventDefault(); void enviar(); }} noValidate>
         <fieldset className="space-y-3">
           <legend className="mb-2 text-sm font-bold text-foreground">¿Qué prefieres?</legend>
-          <div className="grid gap-3 sm:grid-cols-3">
-            {MODALIDADES.map((m) => (
+          <div className={`grid gap-3 ${modalidades.length === 3 ? "sm:grid-cols-3" : "sm:grid-cols-2"}`}>
+            {modalidades.map((m) => (
               <label key={m.valor} className="flex cursor-pointer flex-col gap-1 rounded-2xl border border-border bg-superficie p-4 has-[:checked]:border-primary has-[:checked]:bg-secondary has-[:focus-visible]:ring-4 has-[:focus-visible]:ring-primary/20">
                 <span className="flex items-center gap-2 font-bold text-foreground">
                   <input type="radio" name="modalidad" value={m.valor} className="accent-primary"

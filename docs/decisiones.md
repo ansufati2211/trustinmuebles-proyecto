@@ -773,3 +773,43 @@ el registro o la cita, deja de moverse. Los lotes de los interesados en Separaci
 asesor los marque.
 **Pruebas:** `InteresApiTest` (validaciones, consentimiento, nunca DNI, trampa, límite, destinos, permisos, precarga, filtros,
 etapas, notas, citas, marcar lote y eliminar), `InteresUnidadTest`, `lib/interes.test.ts`, `pages/interes.test.tsx`.
+
+## D66. v1.0 (etapa 5): asistente de búsqueda y usos del lote (sin migración)
+
+**Qué:** solo interfaz. No hay migración, ni endpoint nuevo, ni dependencias nuevas, y no cambia el backend.
+**Asistente (`lib/asistente.ts`, `components/AsistenteBusqueda.tsx`, arriba de los filtros de `#/inmuebles`):** usa reglas
+y expresiones regulares sobre el texto normalizado (minúsculas, sin tildes ni «ñ», «m²» como «m2»), sin IA y sin enviar la
+frase a ningún servicio. Reconoce estas cosas, en este orden, y cada una se quita del texto antes de buscar la siguiente:
+«sin problemas» y sus variantes (= indicador A verde); el uso («para casa», «para negocio», «para alquilar», «para
+almacén», que va antes que el tipo para que «lote para casa» no se lea como una vivienda); el precio por m² («a 300 soles el
+m2»); el área (siempre con unidad o como frente por fondo, «8 x 20»: «más de», «al menos», «entre», «hasta»; un área sola es
+un mínimo); el precio («menos de», «hasta», «entre X y Y», con «mil», «k», «millón», «S/», «soles», «$» o «dólares»;
+«entre 40 y 60 mil» toma el «mil» para los dos; un número sin moneda ni «mil» solo cuenta como precio si es 1000 o más; un
+monto suelto con moneda o «mil» es el presupuesto máximo; sin moneda, soles); los proyectos y distritos de
+`GET /publico/filtros` (nombre completo o, en un proyecto, una palabra de 5 letras o más que no esté en otro proyecto ni en
+un distrito, como «Ventisca»); el tipo (si nombra lotes y casas a la vez, no filtra por tipo); y el orden («más barato»,
+«más grande»). La búsqueda reemplaza los filtros anteriores y los escribe en la URL. **El uso no es un filtro del
+catálogo:** solo se usa para recomendar y vive en el estado de la página.
+**Etiquetas:** se leen de los filtros vigentes, así que también siguen los cambios hechos a mano en el panel. Quitar una
+etiqueta quita solo ese filtro.
+**Recomendación:** los 3 mejores de la página de resultados que se ve, sin vendidos. Puntúa el indicador A (verde +3,
+amarillo +1, rojo −2), estar disponible (+2; separado −4), que la zonificación suela permitir el uso pedido (+2, o −2 si no),
+el menor precio y la mayor área entre los disponibles (+1, o +3 si es el orden pedido) y el precio por m² en el tercio más
+bajo de su moneda (+1). Cada recomendación explica sus motivos. El verde de un lote sin caso propio se atribuye a la
+partida matriz del proyecto. Ningún motivo promete una compra segura ni habla de saneamiento.
+**Si no entiende** la frase, lo dice y ofrece botones con búsquedas que sí entiende (incluidos dos proyectos cargados).
+**Cita:** al final, «Solicitar cita» con la búsqueda adjunta (`zona`, `tipo`, `presupuestoMin`, `presupuestoMax`, `moneda` y
+`areaDeseada`, campos que `POST /publico/interes` ya aceptaba desde la etapa 4). Si la búsqueda tiene un proyecto, el
+interés se vincula a él. Sin lote ni inmueble no se ofrece «Visita al lote» (`modalidadesPara`), porque el servidor la
+rechazaría. Un presupuesto escrito en el formulario reemplaza al de la búsqueda. Sin referencia, el mensaje de WhatsApp no
+lleva «ref.».
+**Usos del lote (`contenido/usos-lote.json` en la interfaz, `lib/usosLote.ts`, `components/UsosDelLote.tsx`):** guía
+orientativa que relaciona zonificación (RDB, RDM, RDA, CV, CZ, I1, I2 y alias antiguos como R4) y área mínima con usos
+típicos de cuatro categorías (casa, negocio, alquilar, almacén). La ficha del lote y la ficha pública del caso muestran
+«Usos que suelen permitirse»: los que el área alcanza y los que suelen pedir un lote más grande. Sin zonificación, o con
+una que no está en la guía, dicen «consulta los parámetros». Siempre llevan el aviso «Verifica el certificado de
+parámetros urbanísticos de la municipalidad antes de comprar». No interviene en el indicador A ni en ninguna regla.
+**Kit:** `docs/demo/kit/frases-asistente.md`, con 10 frases probadas contra la base precargada (etiquetas, resultados y
+recomendaciones) y una frase que no da resultados, para mostrar cómo responde el asistente.
+**Pruebas:** `lib/asistente.test.ts` (45, de las cuales más de 30 son frases), `lib/usosLote.test.ts`,
+`pages/asistente.test.tsx` y casos nuevos en `lib/interes.test.ts`.
