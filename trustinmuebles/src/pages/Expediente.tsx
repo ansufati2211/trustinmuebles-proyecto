@@ -23,7 +23,7 @@ import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { Desplegable } from "@/components/base/Desplegable";
 import { TituloSeccion } from "@/components/base/TituloSeccion";
 import { m2, precio } from "@/lib/formato";
-import { puedeVerHistorial } from "@/lib/permisos";
+import { actuaComoGestor, actuaComoRevisor, puedeVerHistorial } from "@/lib/permisos";
 import { abrirPdf, api, patch } from "@/lib/api";
 import { abrirExterno, CONOCE_AQUI, VISOR_BGR } from "@/lib/fuentes";
 import { OrigenDocumento } from "@/components/DocumentoPdf";
@@ -227,7 +227,7 @@ function FilaChecklist({ codigo, item, esRevisor, alCambiar }: {
 export default function Expediente() {
   const { codigo = "" } = useParams();
   const { usuario } = useAuth();
-  const esRevisor = usuario?.rol === "REVISOR";
+  const esRevisor = actuaComoRevisor(usuario?.rol);
   const { data: d, loading, error, setData, reload } = useApi<DetalleCaso>(codigo ? `/casos/${codigo}` : null);
   const [errorPdf, setErrorPdf] = useState<string | null>(null);
   const [confirmando, setConfirmando] = useState(false);
@@ -454,7 +454,7 @@ export default function Expediente() {
 
             {d.gestion && puedeVerGestion(usuario?.rol) && (
               <PanelGestion key={`gestion-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} gestion={d.gestion}
-                esGestor={usuario?.rol === "GESTOR"} />
+                esGestor={actuaComoGestor(usuario?.rol)} />
             )}
 
             <RutaRegularizacion key={`ruta-${ev?.calculadaEn ?? "sin-evaluacion"}`} codigo={d.codigo} />

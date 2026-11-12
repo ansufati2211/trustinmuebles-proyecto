@@ -57,11 +57,12 @@ class ExpedienteService {
     private final DocumentosPdf documentosPdf;
     private final RutasRegularizacion rutas;
     private final SemaforoGestion gestion;
+    private final HistorialAutorizacionRepository autorizaciones;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
             InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf,
-            RutasRegularizacion rutas, SemaforoGestion gestion) {
+            RutasRegularizacion rutas, SemaforoGestion gestion, HistorialAutorizacionRepository autorizaciones) {
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -73,6 +74,7 @@ class ExpedienteService {
         this.documentosPdf = documentosPdf;
         this.rutas = rutas;
         this.gestion = gestion;
+        this.autorizaciones = autorizaciones;
     }
 
     /**
@@ -97,7 +99,8 @@ class ExpedienteService {
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(),
                     checklist.contarPendientes(e.getId()), e.getCaso().getOrigen().name(), e.getCaso().getFuente(),
                     e.getCaso().getFechaConsulta(), e.getCaso().getFuenteUrl(), t.estado(), t.resultado(), t.riesgoFisicoDetectado(), predio(e),
-                    e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev), gestionPara(e, u));
+                    e.getCaso().getEstadoPublicacion(), RutasRegularizacion.tiposAlerta(ev), gestionPara(e, u),
+                    e.getCaso().getTitularidadComercial());
         }).filter(filtro::acepta).toList();
     }
 
@@ -499,8 +502,15 @@ class ExpedienteService {
             throw new ConflictoException("La partida " + req.numero() + " ya está registrada");
         }
         verificarDatosPersonales(req.datos(), req.denominacion(), req.contexto());
-        String propietario = req.propietarioCodigo().trim();
-        if (!identidad.tieneRol(propietario, Rol.PROPIETARIO)) {
+        TitularidadComercial titularidad = req.titularidadComercial() == null ? TitularidadComercial.PARTICULAR
+                : req.titularidadComercial();
+        String propietario = req.propietarioCodigo() == null || req.propietarioCodigo().isBlank() ? null
+                : req.propietarioCodigo().trim();
+        // v1.0: un inmueble de un particular exige su cuenta de propietario; uno de la inmobiliaria puede no tenerla.
+        if (propietario == null && titularidad == TitularidadComercial.PARTICULAR) {
+            throw new IllegalArgumentException("propietarioCodigo: es obligatorio en un inmueble de un particular");
+        }
+        if (propietario != null && !identidad.tieneRol(propietario, Rol.PROPIETARIO)) {
             throw new IllegalArgumentException("propietarioCodigo: «" + propietario + "» no es una cuenta de propietario");
         }
 
@@ -518,6 +528,7 @@ class ExpedienteService {
         caso.setResponsableId(UsuarioActual.actual().id());
         // Etapa 1 (captación): el caso nace en borrador y sin autorización; solo el propietario puede otorgarla.
         caso.setPropietarioCodigo(propietario);
+        caso.setTitularidadComercial(titularidad);
         caso.setAutorizacionFecha(null);
         caso.setEstadoPublicacion(EstadoPublicacion.BORRADOR);
         casos.save(caso);
@@ -824,7 +835,7 @@ class ExpedienteService {
         return switch (u.rol()) {
             case COMPRADOR -> c.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO;
             case PROPIETARIO -> u.codigoCuenta().equals(c.getPropietarioCodigo());
-            case REVISOR, GESTOR, ESPECIALISTA -> true;
+            case REVISOR, GESTOR, ESPECIALISTA, ASESOR -> true;
         };
     }
 
@@ -835,8 +846,11 @@ class ExpedienteService {
      * ya estaba autorizado se conserva la fecha original. No recalcula ni cambia el color del indicador A (I8).
      */
     PublicacionDto autorizar(String codigo) {
-        CasoLote c = casoDelPropietario(codigo);
-        if (c.getAutorizacionFecha() == null) c.setAutorizacionFecha(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        CasoLote c = casoQueAutoriza(codigo);
+        if (c.getAutorizacionFecha() == null) {
+            c.setAutorizacionFecha(Instant.now().truncatedTo(ChronoUnit.MILLIS));
+            registrarAutorizacion(c, HistorialAutorizacion.Accion.OTORGADA, c.getAutorizacionFecha());
+        }
         return publicacion(casos.saveAndFlush(c), UsuarioActual.actual());
     }
 
@@ -845,7 +859,10 @@ class ExpedienteService {
      * RETIRADO. El historial y el color del indicador A no cambian.
      */
     PublicacionDto retirarAutorizacion(String codigo) {
-        CasoLote c = casoDelPropietario(codigo);
+        CasoLote c = casoQueAutoriza(codigo);
+        if (c.getAutorizacionFecha() != null) {
+            registrarAutorizacion(c, HistorialAutorizacion.Accion.RETIRADA, Instant.now().truncatedTo(ChronoUnit.MILLIS));
+        }
         c.setAutorizacionFecha(null);
         if (c.getEstadoPublicacion() == EstadoPublicacion.PUBLICADO) c.setEstadoPublicacion(EstadoPublicacion.RETIRADO);
         return publicacion(casos.saveAndFlush(c), UsuarioActual.actual());
@@ -876,26 +893,117 @@ class ExpedienteService {
         return publicacion(casos.saveAndFlush(c), u);
     }
 
-    /** El caso del propietario autenticado. Otro rol, o el propietario de otro caso, recibe 403. */
-    private CasoLote casoDelPropietario(String codigo) {
-        UsuarioActual u = exigirRol(Rol.PROPIETARIO, "Solo el propietario autoriza su caso");
+    /**
+     * v1.0: quién otorga o retira la autorización depende de la titularidad comercial. En un caso PARTICULAR, solo su
+     * propietario (otro rol, o el propietario de otro caso, recibe 403). En uno de la INMOBILIARIA, el asesor o el gestor
+     * la registran en su nombre, y el propietario no puede hacerlo (403).
+     */
+    private CasoLote casoQueAutoriza(String codigo) {
+        UsuarioActual u = UsuarioActual.actual();
+        if (u.rol() != Rol.PROPIETARIO && !u.rol().incluye(Rol.GESTOR)) {
+            throw new AccessDeniedException("Solo el propietario autoriza su caso");
+        }
         CasoLote c = buscar(codigo).getCaso();
+        if (c.getTitularidadComercial() == TitularidadComercial.INMOBILIARIA) {
+            if (!u.rol().incluye(Rol.GESTOR)) {
+                throw new AccessDeniedException(
+                        "En un inmueble de la inmobiliaria, la autorización la registra el asesor o el gestor");
+            }
+            return c;
+        }
+        if (u.rol() != Rol.PROPIETARIO) throw new AccessDeniedException("Solo el propietario autoriza su caso");
         if (!u.codigoCuenta().equals(c.getPropietarioCodigo())) {
             throw new AccessDeniedException("Solo el propietario de este caso puede autorizarlo");
         }
         return c;
     }
 
+    /** Agrega una fila al historial de autorizaciones (solo adición) con la cuenta que la registra y la fecha. */
+    private void registrarAutorizacion(CasoLote c, HistorialAutorizacion.Accion accion, Instant fecha) {
+        HistorialAutorizacion h = new HistorialAutorizacion();
+        h.setCasoCodigo(c.getCodigo());
+        h.setAccion(accion);
+        h.setEnNombreDe(c.getTitularidadComercial());
+        h.setCuentaCodigo(UsuarioActual.actual().codigoCuenta());
+        h.setRegistradaEn(fecha);
+        autorizaciones.save(h);
+    }
+
+    /** v1.0: historial de autorizaciones de un caso, del más antiguo al más reciente. Nunca para el comprador. */
+    @Transactional(readOnly = true)
+    List<AutorizacionDto> autorizaciones(String codigo) {
+        if (UsuarioActual.actual().rol() == Rol.COMPRADOR) {
+            throw new AccessDeniedException("El comprador no consulta el historial de autorizaciones");
+        }
+        CasoLote c = buscarVisible(codigo).getCaso();
+        return autorizaciones.findByCasoCodigoOrderByIdAsc(c.getCodigo()).stream()
+                .map(h -> new AutorizacionDto(h.getAccion().name(), h.getEnNombreDe(), h.getCuentaCodigo(),
+                        h.getRegistradaEn())).toList();
+    }
+
+    // ------------------------------------------------------ portal público (v1.0)
+
+    /** Tamaño de página del catálogo público. */
+    static final int TAMANO_PAGINA_PUBLICA = 24;
+
+    /**
+     * v1.0: catálogo público, sin sesión. Solo casos PUBLICADOS, ordenados por código, en páginas de 24. Muestra lo que
+     * ve el comprador: nunca el semáforo de gestión, las decisiones de captación ni el código del propietario.
+     */
+    @Transactional(readOnly = true)
+    PaginaPublica listarPublico(int pagina) {
+        if (pagina < 0) throw new IllegalArgumentException("pagina: debe ser 0 o mayor");
+        List<Expediente> publicados = expedientes.findAllByOrderByCasoCodigoAsc().stream()
+                .filter(e -> e.getCaso().getEstadoPublicacion() == EstadoPublicacion.PUBLICADO).toList();
+        int total = publicados.size();
+        int desde = Math.min(pagina * TAMANO_PAGINA_PUBLICA, total);
+        int hasta = Math.min(desde + TAMANO_PAGINA_PUBLICA, total);
+        List<InmueblePublico> items = publicados.subList(desde, hasta).stream().map(e -> {
+            EvaluacionDto ev = clasificacion.obtener(e.getId()).orElse(null);
+            EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
+            CasoLote c = e.getCaso();
+            return new InmueblePublico(c.getCodigo(), c.getDenominacion(), c.getContexto(),
+                    ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(), c.getOrigen().name(),
+                    c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), t.estado(), t.resultado(),
+                    t.riesgoFisicoDetectado(), predio(e), RutasRegularizacion.tiposAlerta(ev),
+                    c.getTitularidadComercial());
+        }).toList();
+        int paginas = (total + TAMANO_PAGINA_PUBLICA - 1) / TAMANO_PAGINA_PUBLICA;
+        return new PaginaPublica(items, pagina, TAMANO_PAGINA_PUBLICA, total, paginas);
+    }
+
+    /** v1.0: ficha pública de un caso PUBLICADO. Un borrador, uno retirado o uno inexistente dan 404. */
+    @Transactional(readOnly = true)
+    DetalleCaso detallePublico(String codigo) {
+        Expediente e = buscar(codigo);
+        if (e.getCaso().getEstadoPublicacion() != EstadoPublicacion.PUBLICADO) throw new NoEncontradoException("Caso", codigo);
+        DetalleCaso d = aDetalle(e, null);
+        return new DetalleCaso(d.codigo(), d.denominacion(), d.contexto(), d.sintetico(), d.origen(), d.fuente(),
+                d.fechaConsulta(), d.fuenteUrl(), d.expediente(), d.evaluacion(), sinCuentas(d.evaluacionTecnica()),
+                d.checklist(), d.terminos(), d.predio(), d.publicacion(), null);
+    }
+
+    /** En el portal público no se muestran las cuentas del solicitante ni del especialista asignado. */
+    private static EvaluacionTecnicaDto sinCuentas(EvaluacionTecnicaDto t) {
+        if (t == null) return null;
+        return new EvaluacionTecnicaDto(t.estado(), t.estadoEtiqueta(), t.resultado(), t.resultadoEtiqueta(),
+                t.profesional(), t.colegiatura(), t.fechaSolicitud(), t.fechaInspeccion(), t.verifArquitectura(),
+                t.verifEstructuras(), t.verifElectricas(), t.verifSanitarias(), t.observaciones(), t.conclusiones(),
+                t.estudiosAdicionales(), t.limite(), t.profesionalEspecialidad(), null, t.riesgoFisicoDetectado(),
+                t.servicio(), null);
+    }
+
     private static UsuarioActual exigirRol(Rol rol, String mensaje) {
         UsuarioActual u = UsuarioActual.actual();
-        if (u.rol() != rol) throw new AccessDeniedException(mensaje);
+        if (!u.rol().incluye(rol)) throw new AccessDeniedException(mensaje);
         return u;
     }
 
     /** El comprador no ve el código del propietario (I11). */
     static PublicacionDto publicacion(CasoLote c, UsuarioActual u) {
-        return new PublicacionDto(c.getEstadoPublicacion(), u.rol() == Rol.COMPRADOR ? null : c.getPropietarioCodigo(),
-                c.getAutorizacionFecha() != null, c.getAutorizacionFecha());
+        boolean ocultar = u == null || u.rol() == Rol.COMPRADOR;
+        return new PublicacionDto(c.getEstadoPublicacion(), ocultar ? null : c.getPropietarioCodigo(),
+                c.getAutorizacionFecha() != null, c.getAutorizacionFecha(), c.getTitularidadComercial());
     }
 
     /** El motor evalúa los asientos del rubro D (gravámenes y cargas), con su estado ya normalizado. */
@@ -912,6 +1020,11 @@ class ExpedienteService {
     }
 
     private DetalleCaso aDetalle(Expediente e) {
+        return aDetalle(e, UsuarioActual.actual());
+    }
+
+    /** Detalle visto por una sesión; {@code u} es null en el portal público (se ve como un comprador, v1.0). */
+    private DetalleCaso aDetalle(Expediente e, UsuarioActual u) {
         CasoLote c = e.getCaso();
         ExpedienteDto exp = new ExpedienteDto(e.getVersion(), e.getCondicionRepresentada(), e.getTitularidad(),
                 e.getCompletitud(), e.getFechaReferencial(), e.getNota(), e.getZonaRegistral(),
@@ -932,13 +1045,12 @@ class ExpedienteService {
         return new DetalleCaso(c.getCodigo(), c.getDenominacion(), c.getContexto(), c.isSintetico(),
                 c.getOrigen().name(), c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), exp,
                 clasificacion.obtener(e.getId()).orElse(null), inspeccion.obtener(e.getId()), checklist.listar(e.getId()),
-                glosario.terminosDe(e.getId()), predio(e), publicacion(c, UsuarioActual.actual()),
-                gestionPara(e, UsuarioActual.actual()));
+                glosario.terminosDe(e.getId()), predio(e), publicacion(c, u), gestionPara(e, u));
     }
 
     /** I15: el semáforo de gestión solo se calcula y se envía al gestor y al revisor; para los demás, null (se omite). */
     private GestionInmobiliaria gestionPara(Expediente e, UsuarioActual u) {
-        return SemaforoGestion.puedeVer(u.rol()) ? gestion.de(rutas.calcular(e)) : null;
+        return u != null && SemaforoGestion.puedeVer(u.rol()) ? gestion.de(rutas.calcular(e)) : null;
     }
 
     /** Origen del PDF del caso (v0.8): generado por el sistema a partir de la transcripción o subido por una cuenta. */

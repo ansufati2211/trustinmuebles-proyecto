@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { ArrowRight, CheckCircle2, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-react";
+import { ArrowRight, Building2, CheckCircle2, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-react";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, precio } from "@/lib/formato";
@@ -8,12 +8,19 @@ import { ChipGestion } from "@/components/PanelGestion";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { resaltadoA } from "@/lib/resaltado";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
-import type { ResumenCaso } from "@/lib/types";
+import type { InmueblePublico, ResumenCaso } from "@/lib/types";
 
-export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; conPublicacion?: boolean }) {
+/**
+ * Tarjeta de un inmueble. Con {@code publico} (v1.0) enlaza a la ficha pública y no muestra datos internos (pendientes,
+ * publicación ni gestión, que el portal público tampoco recibe).
+ */
+export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
+  c: ResumenCaso | InmueblePublico; conPublicacion?: boolean; publico?: boolean;
+}) {
   const p = c.predio;
-  const enlace = `/casos/${c.codigo}`;
-  const sinPendientes = c.pendientes === 0;
+  const enlace = publico ? `/inmuebles/${c.codigo}` : `/casos/${c.codigo}`;
+  const interno = "pendientes" in c ? c : null;
+  const sinPendientes = interno?.pendientes === 0;
   const resaltado = resaltadoA(c.estado);
 
   return (
@@ -85,16 +92,17 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
         >
           <IndicadorA estado={c.estado} tamano="sm" />
           <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
-          {conPublicacion && c.estadoPublicacion && <InsigniaPublicacion estado={c.estadoPublicacion} tamano="sm" />}
-          {c.gestion && (
+          {conPublicacion && interno?.estadoPublicacion && <InsigniaPublicacion estado={interno.estadoPublicacion} tamano="sm" />}
+          {interno?.gestion && (
             <div className="flex flex-wrap gap-1.5">
-              <ChipGestion estado={c.gestion.estado} />
-              <ChipEsfuerzo esfuerzo={c.gestion.esfuerzo} />
+              <ChipGestion estado={interno.gestion.estado} />
+              <ChipEsfuerzo esfuerzo={interno.gestion.esfuerzo} />
             </div>
           )}
         </div>
 
         <div className="mt-auto flex items-center justify-between gap-3 border-t border-border pt-4">
+          {interno ? (
           <span
             className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold ${
               sinPendientes ? "bg-secondary text-secondary-foreground" : "bg-muted text-tinta-2"
@@ -105,13 +113,18 @@ export function TarjetaPredio({ c, conPublicacion = false }: { c: ResumenCaso; c
             ) : (
               <Clock className="size-3.5" aria-hidden="true" />
             )}
-            {sinPendientes ? "Sin pendientes" : `${c.pendientes} pendiente${c.pendientes === 1 ? "" : "s"}`}
+            {sinPendientes ? "Sin pendientes" : `${interno.pendientes} pendiente${interno.pendientes === 1 ? "" : "s"}`}
           </span>
+          ) : c.titularidadComercial === "INMOBILIARIA" ? (
+            <span className="inline-flex items-center gap-1.5 rounded-full bg-secondary px-3 py-1 text-xs font-bold text-secondary-foreground">
+              <Building2 className="size-3.5" aria-hidden="true" /> Venta directa
+            </span>
+          ) : <span />}
           <span
             aria-hidden="true"
             className="inline-flex items-center gap-1.5 rounded-xl bg-secondary px-4 py-2 text-sm font-bold text-secondary-foreground transition-all duration-300 ease-expo group-hover:bg-primary group-hover:text-white group-hover:shadow-md group-hover:shadow-primary/30"
           >
-            Ver expediente
+            {publico ? "Ver ficha" : "Ver expediente"}
             <ArrowRight className="size-4 transition-transform duration-300 ease-expo group-hover:translate-x-1" />
           </span>
         </div>

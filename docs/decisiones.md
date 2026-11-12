@@ -580,3 +580,39 @@ RV-06. Como un plano, uno presentado exige su PDF y el motor lee el estado, nunc
 **Reglas:** `contenido/v0.4` pasa a `v0.5` (10 reglas, 57 términos). Las reglas son un borrador pendiente de revisión.
 **Santiago** (lote de demostración) recibe sus cuatro documentos generados (con marca de agua, sin sellos ni firmas) y sigue en
 verde. Los lotes de la SBN guardan el PDF oficial original (`carga-inicial`). Con esto D23 pasa a 9 viviendas y 3 lotes.
+
+## D59. v1.0 (etapa 1): rol ASESOR
+
+**Qué:** `Rol.ASESOR` reúne los permisos del REVISOR y del GESTOR (`Rol.incluye`): registra, subsana (edita el expediente, sube
+planos y documentos, checklist), publica y retira, atiende contactos, asigna inspecciones, ve el panel, el semáforo de gestión y
+las decisiones de captación. No solicita inspecciones ni contactos (son del comprador), no emite el informe B (solo el
+especialista) y no autoriza por un particular. Cuenta `asesor-01` (función «Asesor inmobiliario», sin nombre ni colegiatura).
+`SecurityConfig` agrega ASESOR donde estaba REVISOR o GESTOR; los servicios usan `incluye` en lugar de comparar el rol.
+**Pruebas:** `AsesorTest`. `CUENTAS_DEMO` pasa de 8 a 9: la aserción es la misma (cuentas de la carga y ninguna más).
+**Interfaz:** menú del asesor Registrar, Proyectos (por ahora la lista de expedientes, `/casos`), Cartera e Interesados
+(bandeja de contactos pendientes, la misma de Cartera).
+
+## D60. v1.0 (etapa 1): titularidad comercial y autorización en nombre de la inmobiliaria (V17)
+
+**Qué:** `caso_lote.titularidad_comercial` (`INMOBILIARIA` o `PARTICULAR`; los existentes, `PARTICULAR`). En un caso de la
+inmobiliaria, el asesor o el gestor registran la autorización en su nombre; el propietario y el revisor reciben 403. En uno
+particular, solo su propietario, como antes. Publicar sigue exigiendo autorización vigente (I14, `ck_caso_publicado_autorizado`).
+`POST /casos` acepta `titularidadComercial` (por defecto PARTICULAR); `propietarioCodigo` solo es obligatorio en PARTICULAR.
+**Historial:** tabla `historial_autorizacion`, de solo adición (entidad `@Immutable`, repositorio sin borrar ni actualizar):
+acción (OTORGADA o RETIRADA), en nombre de quién, cuenta y fecha. Autorizar algo ya autorizado no agrega fila.
+`GET /casos/{c}/autorizaciones` para el equipo y el propietario del caso; el comprador recibe 403.
+**Precarga:** solo el lote de Santiago (`11081204`) pasa a INMOBILIARIA, con su autorización registrada por `asesor-01` (V17 en una
+base existente, `CasosSeeder` en una nueva). El pedido decía dos o tres lotes, pero solo hay tres lotes: los dos de la subasta de
+la SBN son del Estado y marcarlos como de la inmobiliaria contradiría su nota de precio («no es una oferta de la inmobiliaria»).
+Los casos 1 a 4 no se tocan. Santiago conserva `propietario-02` como dato histórico, pero ese propietario ya no autoriza.
+
+## D61. v1.0 (etapa 1): portal público
+
+**Qué:** `GET /api/v1/publico/inmuebles?pagina=` (páginas de 24, la primera es la 0) y `GET /api/v1/publico/inmuebles/{codigo}`,
+sin sesión. Solo casos PUBLICADOS; un borrador, un retirado o uno inexistente dan 404. Muestran lo que ve el comprador: indicador A
+con sus motivos, indicador B y los datos del predio; nunca el semáforo de gestión, las decisiones de captación, el código del
+propietario ni las cuentas del solicitante o del especialista asignado. Cualquier escritura sin sesión da 401.
+**Interfaz:** inicio, `/inmuebles` y `/inmuebles/:codigo` se abren sin sesión; el botón «Ingresar» lleva al login del personal.
+Los PDF siguen exigiendo sesión. El inicio explica el recorrido en 5 pasos (Registrar, Evaluar y completar, Publicar, Buscar,
+Solicitar cita).
+**Pruebas:** `PortalPublicoTest`, `TitularidadComercialTest`, `lib/publico.test.ts`.

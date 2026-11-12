@@ -1,3 +1,4 @@
+import { actuaComoRevisor } from "@/lib/permisos";
 import { useMemo, useState, type FormEvent } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router";
 import { Check, ClipboardPaste, ExternalLink, EyeOff, FilePlus2, Lock, X, type LucideIcon } from "lucide-react";
@@ -15,7 +16,7 @@ import { disociar } from "@/lib/disociar";
 import { abrirExterno, CONOCE_AQUI, normalizarNumero, numeroValidoParaOrigen, VISOR_BGR } from "@/lib/fuentes";
 import { leerPartida } from "@/lib/leerPartida";
 import { ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
-import type { Completitud, DetalleCaso, OrigenCaptacion } from "@/lib/types";
+import type { Completitud, DetalleCaso, OrigenCaptacion, TitularidadComercial } from "@/lib/types";
 
 const CONDICIONES = [
   "Lote urbano inscrito en el Registro de Predios.",
@@ -75,6 +76,9 @@ export default function RegistrarPartida() {
   const [denominacion, setDenominacion] = useState("");
   const [contexto, setContexto] = useState("");
   const [propietario, setPropietario] = useState("");
+  // v1.0: un inmueble de la inmobiliaria no exige cuenta de propietario; su autorización la registra el asesor.
+  const [titularidad, setTitularidad] = useState<TitularidadComercial>("PARTICULAR");
+  const exigePropietario = titularidad === "PARTICULAR";
   const [fechaConsulta, setFechaConsulta] = useState(hoy());
   const [condicion, setCondicion] = useState(CONDICIONES[0]);
   const [completitud, setCompletitud] = useState<Completitud>("COMPLETA");
@@ -103,7 +107,7 @@ export default function RegistrarPartida() {
   );
   const limpieza = useMemo(() => disociar(textosOriginales, { extras, ignorar }), [textosOriginales, extras, ignorar]);
 
-  if (usuario?.rol !== "REVISOR") {
+  if (!actuaComoRevisor(usuario?.rol)) {
     return (
       <div className="flex flex-1 flex-col items-center justify-center gap-5 px-4 py-32 text-center">
         <span className="grid size-16 place-items-center rounded-3xl bg-sem-rojo-suave text-sem-rojo-tinta">
@@ -160,7 +164,8 @@ export default function RegistrarPartida() {
       asientos: filasAPeticion(l.filas),
       ...tecnicoAPeticion(tecnico),
       confirmaSinDatosPersonales: confirmo,
-      propietarioCodigo: propietario.trim(),
+      propietarioCodigo: propietario.trim() || null,
+      titularidadComercial: titularidad,
     };
     try {
       const nuevo = await post<DetalleCaso>("/casos", cuerpo);
@@ -178,7 +183,7 @@ export default function RegistrarPartida() {
   const simulada = origen === "SIMULADA_DEMOSTRACION";
   const numeroValido = origen !== "" && numeroValidoParaOrigen(numero, origen);
   const completados = [
-    numeroValido && denominacion.trim() !== "" && propietario.trim() !== "",
+    numeroValido && denominacion.trim() !== "" && (!exigePropietario || propietario.trim() !== ""),
     pegado.trim() !== "" || hayTexto,
     hayTexto,
     confirmo,
@@ -273,8 +278,21 @@ export default function RegistrarPartida() {
             </div>
 
             <Campo
-              etiqueta="Código de cuenta del propietario"
-              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador: el indicador A se calcula ahora y el gestor solo podrá publicarlo con la autorización del propietario."
+              etiqueta="Titularidad comercial"
+              ayuda="Inmobiliaria: un inmueble que la inmobiliaria vende por cuenta propia; su autorización la registra el asesor o el gestor. Particular: solo el propietario autoriza."
+            >
+              {(p) => (
+                <select {...p} className={claseCampo} value={titularidad}
+                  onChange={(e) => setTitularidad(e.target.value as TitularidadComercial)}>
+                  <option value="PARTICULAR">Particular (autoriza el propietario)</option>
+                  <option value="INMOBILIARIA">Inmobiliaria (autoriza el asesor en su nombre)</option>
+                </select>
+              )}
+            </Campo>
+
+            <Campo
+              etiqueta={exigePropietario ? "Código de cuenta del propietario" : "Código de cuenta del propietario (opcional)"}
+              ayuda="Solo el código de la cuenta: sin nombres, DNI ni teléfonos. El expediente queda en borrador: el indicador A se calcula ahora y solo se podrá publicar con una autorización vigente."
             >
               {(p) => (
                 <>
@@ -455,7 +473,7 @@ export default function RegistrarPartida() {
             )}
 
             <div className="flex flex-wrap gap-3">
-              <Button type="submit" size="lg" disabled={guardando || !confirmo || !hayTexto || !numeroValido || !propietario.trim()}>
+              <Button type="submit" size="lg" disabled={guardando || !confirmo || !hayTexto || !numeroValido || (exigePropietario && !propietario.trim())}>
                 {guardando ? "Registrando…" : "Registrar partida"}
               </Button>
               <Button type="button" variant="outline" size="lg" asChild>

@@ -5,7 +5,10 @@ import { Badge, type TonoBadge } from "@/components/base/Badge";
 import { api, post } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { ETIQUETA_PUBLICACION } from "@/lib/cartera";
-import { esPropietarioDe, puedeAutorizar, puedePublicar, puedeRetirarAutorizacion, puedeRetirarPublicacion } from "@/lib/permisos";
+import {
+  actuaComoGestor, esDeLaInmobiliaria, esPropietarioDe, puedeAutorizar, puedePublicar, puedeRetirarAutorizacion,
+  puedeRetirarPublicacion,
+} from "@/lib/permisos";
 import { fecha } from "@/lib/semaforo";
 import { confirmacionAlPublicar } from "@/lib/gestion";
 import type { DecisionCaptacion, DetalleCaso, EstadoPublicacion, Publicacion } from "@/lib/types";
@@ -61,7 +64,7 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
     puedeAutorizar(usuario, p) && (
       <Button key="aut" className="rounded-xl" disabled={enviando}
         onClick={() => ejecutar(() => api(ruta("autorizacion"), { method: "PUT" }), "Autorización registrada.")}>
-        Autorizar publicación
+        {esDeLaInmobiliaria(p) ? "Registrar autorización de la inmobiliaria" : "Autorizar publicación"}
       </Button>
     ),
     puedeRetirarAutorizacion(usuario, p) && (
@@ -105,6 +108,7 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
         <InsigniaAutorizacion p={p} />
       </div>
       <dl className="grid gap-3 text-sm sm:grid-cols-2">
+        <div><dt className="text-xs font-bold text-tinta-2">Titularidad comercial</dt><dd className="font-bold text-foreground">{esDeLaInmobiliaria(p) ? "Inmobiliaria" : "Particular"}</dd></div>
         {p.propietarioCodigo && (
           <div><dt className="text-xs font-bold text-tinta-2">Propietario (código de cuenta)</dt><dd className="font-bold text-foreground">{p.propietarioCodigo}</dd></div>
         )}
@@ -112,8 +116,12 @@ export function PanelPublicacion({ codigo, publicacion, alCambiar }: {
           <div><dt className="text-xs font-bold text-tinta-2">Autorizado el</dt><dd className="font-bold text-foreground">{fecha(p.autorizacionFecha)}</dd></div>
         )}
       </dl>
-      {rol === "GESTOR" && !p.autorizada && p.estado !== "PUBLICADO" && (
-        <p className="text-sm text-tinta-2">No se puede publicar hasta que el propietario autorice el caso.</p>
+      {actuaComoGestor(rol) && !p.autorizada && p.estado !== "PUBLICADO" && (
+        <p className="text-sm text-tinta-2">
+          {esDeLaInmobiliaria(p)
+            ? "No se puede publicar hasta registrar la autorización de la inmobiliaria."
+            : "No se puede publicar hasta que el propietario autorice el caso."}
+        </p>
       )}
       {esPropietarioDe(usuario, p) && (
         <p className="text-sm text-tinta-2">

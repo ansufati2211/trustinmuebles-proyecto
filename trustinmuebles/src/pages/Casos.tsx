@@ -1,3 +1,4 @@
+import { actuaComoRevisor } from "@/lib/permisos";
 import { useState } from "react";
 import type { CSSProperties } from "react";
 import { useNavigate, useSearchParams } from "react-router";
@@ -46,7 +47,7 @@ export default function Casos() {
   const buscarEnSunarp = async () => {
     setCopiado(await copiar(qNumero));
     abrirExterno(CONOCE_AQUI);
-    if (usuario?.rol === "REVISOR") navigate(`/casos/nueva?numero=${encodeURIComponent(qNumero)}`);
+    if (actuaComoRevisor(usuario?.rol)) navigate(`/casos/nueva?numero=${encodeURIComponent(qNumero)}`);
   };
 
   const etiquetaDe = (lista: { valor: string; etiqueta: string }[], valor: string) =>
@@ -270,7 +271,7 @@ export default function Casos() {
                 <p className="mb-6 leading-relaxed text-tinta-2">
                   Puedes consultarla gratis en Conoce Aquí, de SUNARP (con tu DNI). Trustinmuebles no la trae sola: el sitio
                   oficial pide la identidad de quien consulta.
-                  {usuario?.rol === "REVISOR"
+                  {actuaComoRevisor(usuario?.rol)
                     ? " Después pega el texto aquí para registrarla sin los datos de personas naturales."
                     : " Si la necesitas aquí, pide al revisor que la registre."}
                 </p>

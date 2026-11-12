@@ -8,7 +8,9 @@ import {
   ClipboardCheck, Eye, FolderOpen, HardHat, Layers, Lock, Plus, Ruler,
 } from "lucide-react";
 import { ESTADOS, PROCEDIMIENTO_INSPECCION } from "@/lib/semaforo";
-import type { EstadoSemaforo } from "@/lib/types";
+import type { EstadoSemaforo, PaginaPublica } from "@/lib/types";
+import { PASOS_COMO_FUNCIONA, rutaPaginaPublica } from "@/lib/publico";
+import { useApi } from "@/lib/useApi";
 
 const retraso = (ms: number): CSSProperties => ({ "--d": `${ms}ms` } as CSSProperties);
 
@@ -111,16 +113,13 @@ const CASOS_MUESTRA: {
   },
 ];
 
-const PASOS = [
-  { n: 1, titulo: "Ingresa y elige un caso", texto: "Accede con tu cuenta asignada y filtra por número de partida o distrito en Ica." },
-  { n: 2, titulo: "Consulta partida y planos", texto: "Revisa los asientos por rubro, abre las láminas 2D en PDF y toca cualquier término del glosario." },
-  { n: 3, titulo: "Contrasta ambos indicadores", texto: "Lee los motivos del semáforo documental, el checklist y solicita o descarga el informe técnico." },
-];
+// v1.0: cómo funciona en 5 pasos, de la captación del inmueble a la cita (lib/publico.ts, con prueba).
+const PASOS = PASOS_COMO_FUNCIONA;
 
 const FAQS = [
   { p: "¿Trustinmuebles es una entidad del gobierno?", r: "No. Es una plataforma tecnológica privada (PropTech) diseñada para transparentar los documentos de una cartera inmobiliaria en Ica." },
   { p: "¿El semáforo verde garantiza que la compra es segura?", r: "No. El semáforo verde indica únicamente que no se detectaron alertas en los campos evaluados del expediente. Nunca certifica saneamiento ni reemplaza a un abogado." },
-  { p: "¿Qué pasa cuando hago clic en «Expedientes»?", r: "El sistema te pedirá iniciar sesión con una cuenta autorizada para acceder a los 12 expedientes del catálogo." },
+  { p: "¿Necesito una cuenta para ver los inmuebles?", r: "No. El catálogo y la ficha de cada inmueble publicado se ven sin iniciar sesión. Para pedir que un asesor te contacte se ingresa con una cuenta." },
   { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un especialista de la inmobiliaria verifica en campo las 4 especialidades y emite un informe técnico que no altera el color del semáforo documental." },
 ];
 
@@ -178,6 +177,8 @@ function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; r
 
 export default function Landing() {
   const location = useLocation();
+  const resumenPublico = useApi<PaginaPublica>(rutaPaginaPublica(0));
+  const publicados = resumenPublico.data?.total ?? null;
 
   useEffect(() => {
     const destino = (location.state as { desplazarA?: string } | null)?.desplazarA;
@@ -231,8 +232,8 @@ export default function Landing() {
                   asChild
                   className="group btn-glint rounded-full h-14 px-8 text-base shadow-xl shadow-primary/25 transition-all duration-300 ease-expo hover:-translate-y-0.5 hover:shadow-2xl hover:shadow-primary/35 active:scale-[0.98]"
                 >
-                  <Link to="/casos">
-                    Explorar los 12 expedientes
+                  <Link to="/inmuebles">
+                    Ver inmuebles en venta
                     <ArrowRight className="ml-2 w-5 h-5 transition-transform duration-300 ease-expo group-hover:translate-x-1.5" />
                   </Link>
                 </Button>
@@ -248,7 +249,7 @@ export default function Landing() {
 
               <dl style={retraso(560)} className="anim-enter grid grid-cols-3 gap-4 max-w-md border-t border-gray-200 pt-6">
                 {[
-                  { n: "12", t: "expedientes en el catálogo" },
+                  { n: publicados == null ? "—" : String(publicados), t: "inmuebles publicados" },
                   { n: "4", t: "planos por vivienda" },
                   { n: "6", t: "pasos de inspección" },
                 ].map((d) => (
@@ -520,12 +521,12 @@ export default function Landing() {
               ¿Cómo funciona el recorrido?
             </h2>
             <p className="text-lg text-muted-foreground">
-              Tres pasos para revisar cualquier expediente de la plataforma.
+              Cinco pasos, desde que registramos un inmueble hasta tu cita con un asesor.
             </p>
           </Reveal>
 
-          <div className="grid md:grid-cols-3 gap-10 relative">
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-px bg-gray-300" aria-hidden="true" />
+          <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-10 lg:gap-6 relative">
+            <div className="hidden lg:block absolute top-12 left-[10%] right-[10%] h-px bg-gray-300" aria-hidden="true" />
             {PASOS.map((p, i) => (
               <Reveal key={p.n} delay={i * 140}>
                 <div className="relative flex flex-col items-center text-center group">
@@ -624,15 +625,15 @@ export default function Landing() {
               Empieza por revisar la partida.
             </h2>
             <p className="text-gray-300 text-lg md:text-xl mb-10 max-w-2xl mx-auto">
-              Inicia sesión con tu cuenta asignada y explora las partidas, los planos 2D y los informes técnicos.
+              Recorre los lotes y casas publicados y abre la ficha de cada uno, sin crear una cuenta.
             </p>
             <Button
               size="lg"
               asChild
               className="group btn-glint rounded-full h-14 px-10 text-lg bg-primary text-white shadow-2xl shadow-primary/40 transition-all duration-300 ease-expo hover:-translate-y-0.5 hover:bg-emerald-600 active:scale-[0.98]"
             >
-              <Link to="/casos">
-                Ir a los expedientes
+              <Link to="/inmuebles">
+                Ver inmuebles
                 <ChevronRight className="ml-2 w-5 h-5 transition-transform duration-300 ease-expo group-hover:translate-x-1.5" />
               </Link>
             </Button>

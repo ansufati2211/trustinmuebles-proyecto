@@ -201,7 +201,7 @@ class CarteraService {
 
     private static UsuarioActual exigir(Rol rol, String mensaje) {
         UsuarioActual u = UsuarioActual.actual();
-        if (u.rol() != rol) throw new AccessDeniedException(mensaje);
+        if (!u.rol().incluye(rol)) throw new AccessDeniedException(mensaje);
         return u;
     }
 

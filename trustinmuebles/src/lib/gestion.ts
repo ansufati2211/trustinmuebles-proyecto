@@ -30,7 +30,7 @@ export const ETIQUETA_MOTIVO_DECISION: Record<MotivoDecision, string> = {
 };
 
 /** I15: solo el gestor y el revisor ven el semáforo de gestión; solo el gestor registra decisiones. */
-export const puedeVerGestion = (rol: Rol | undefined) => rol === "GESTOR" || rol === "REVISOR";
+export const puedeVerGestion = (rol: Rol | undefined) => rol === "GESTOR" || rol === "REVISOR" || rol === "ASESOR";
 
 export const CONFIRMAR_PUBLICAR = "La decisión registrada es no captar por ahora. ¿Publicar de todos modos?";
 
