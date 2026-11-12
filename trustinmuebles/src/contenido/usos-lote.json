@@ -1,0 +1,87 @@
+{
+  "version": "2026-11",
+  "titulo": "Usos que suelen permitirse",
+  "aviso": "Verifica el certificado de parámetros urbanísticos de la municipalidad antes de comprar.",
+  "sinZonificacion": "Este inmueble no tiene una zonificación registrada en el portal: consulta los parámetros urbanísticos en la municipalidad del distrito antes de decidir qué construir.",
+  "zonaDesconocida": "No tenemos una guía para esta zonificación: consulta los parámetros urbanísticos en la municipalidad del distrito.",
+  "nota": "Guía orientativa basada en los usos habituales de cada zonificación y en el área mínima de lote que suelen exigir. Cada municipalidad fija sus propios parámetros (altura, retiros, área libre y usos compatibles).",
+  "categorias": {
+    "CASA": "Para casa",
+    "NEGOCIO": "Para negocio",
+    "ALQUILAR": "Para alquilar",
+    "ALMACEN": "Para almacén"
+  },
+  "zonas": [
+    {
+      "codigo": "RDB",
+      "nombre": "Residencial de densidad baja",
+      "alias": ["R1", "R2"],
+      "usos": [
+        { "categoria": "CASA", "texto": "Casa unifamiliar", "areaMinimaM2": 200 },
+        { "categoria": "ALQUILAR", "texto": "Casa con un departamento independiente para alquilar", "areaMinimaM2": 200 },
+        { "categoria": "NEGOCIO", "texto": "Bodega o consultorio pequeño en el primer piso, si la municipalidad lo declara compatible", "areaMinimaM2": 200 }
+      ]
+    },
+    {
+      "codigo": "RDM",
+      "nombre": "Residencial de densidad media",
+      "alias": ["R3", "R4"],
+      "usos": [
+        { "categoria": "CASA", "texto": "Casa unifamiliar", "areaMinimaM2": 90 },
+        { "categoria": "NEGOCIO", "texto": "Bodega, tienda o consultorio en el primer piso, junto con la vivienda", "areaMinimaM2": 90 },
+        { "categoria": "ALQUILAR", "texto": "Vivienda multifamiliar de pocos pisos, con departamentos para alquilar", "areaMinimaM2": 120 }
+      ]
+    },
+    {
+      "codigo": "RDA",
+      "nombre": "Residencial de densidad alta",
+      "alias": ["R5", "R6", "R8"],
+      "usos": [
+        { "categoria": "CASA", "texto": "Casa unifamiliar", "areaMinimaM2": 90 },
+        { "categoria": "ALQUILAR", "texto": "Edificio de departamentos para vender o alquilar", "areaMinimaM2": 150 },
+        { "categoria": "NEGOCIO", "texto": "Locales comerciales en el primer piso del edificio", "areaMinimaM2": 150 }
+      ]
+    },
+    {
+      "codigo": "CV",
+      "nombre": "Comercio vecinal",
+      "alias": ["C2", "C3"],
+      "usos": [
+        { "categoria": "NEGOCIO", "texto": "Tienda, bodega, restaurante u oficina", "areaMinimaM2": 90 },
+        { "categoria": "CASA", "texto": "Vivienda en los pisos altos, sobre el local", "areaMinimaM2": 90 },
+        { "categoria": "ALQUILAR", "texto": "Locales comerciales para alquilar", "areaMinimaM2": 90 },
+        { "categoria": "ALMACEN", "texto": "Depósito pequeño ligado a un comercio", "areaMinimaM2": 200 }
+      ]
+    },
+    {
+      "codigo": "CZ",
+      "nombre": "Comercio zonal",
+      "alias": ["C5"],
+      "usos": [
+        { "categoria": "NEGOCIO", "texto": "Tiendas, galería comercial, oficinas o servicios", "areaMinimaM2": 200 },
+        { "categoria": "ALQUILAR", "texto": "Locales y oficinas para alquilar", "areaMinimaM2": 200 },
+        { "categoria": "ALMACEN", "texto": "Almacén de mercadería de un comercio", "areaMinimaM2": 300 },
+        { "categoria": "CASA", "texto": "Vivienda en los pisos altos", "areaMinimaM2": 200 }
+      ]
+    },
+    {
+      "codigo": "I1",
+      "nombre": "Industria elemental y complementaria",
+      "alias": ["I1R"],
+      "usos": [
+        { "categoria": "ALMACEN", "texto": "Almacén, depósito o taller", "areaMinimaM2": 300 },
+        { "categoria": "NEGOCIO", "texto": "Taller de servicios o venta al por mayor", "areaMinimaM2": 300 },
+        { "categoria": "ALQUILAR", "texto": "Almacén para alquilar", "areaMinimaM2": 300 }
+      ]
+    },
+    {
+      "codigo": "I2",
+      "nombre": "Industria liviana",
+      "alias": [],
+      "usos": [
+        { "categoria": "ALMACEN", "texto": "Almacén o centro de distribución", "areaMinimaM2": 1000 },
+        { "categoria": "NEGOCIO", "texto": "Planta industrial liviana", "areaMinimaM2": 1000 }
+      ]
+    }
+  ]
+}

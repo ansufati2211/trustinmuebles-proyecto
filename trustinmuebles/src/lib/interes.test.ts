@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   cuerpoInteres, enlaceWhatsapp, estadoSugerido, formularioVacio, hoyLima, mensajeWhatsapp, normalizarCelular,
-  ofreceMarcarLote, rutaInteresados, sumarDias, textoPresupuesto, validarFormulario, type FormularioInteres,
+  modalidadesPara, ofreceMarcarLote, rutaInteresados, sumarDias, textoPresupuesto, validarFormulario, type FormularioInteres,
 } from "./interes";
 
 /* v1.0 (etapa 4): formulario público de interés y cita, WhatsApp y bandeja. */
@@ -106,5 +106,31 @@ describe("bandeja de interesados", () => {
     expect(textoPresupuesto({ presupuestoMin: null, presupuestoMax: 45000, moneda: "PEN" })).toBe("hasta S/ 45,000");
     expect(textoPresupuesto({ presupuestoMin: 30000, presupuestoMax: 45000, moneda: "PEN" })).toBe("S/ 30,000 a 45,000");
     expect(textoPresupuesto({ presupuestoMin: null, presupuestoMax: null, moneda: null })).toBe("sin presupuesto");
+  });
+});
+
+describe("cita desde el asistente de búsqueda (v1.0 etapa 5)", () => {
+  it("la búsqueda viaja con la solicitud: zona, tipo, presupuesto y área", () => {
+    const c = cuerpoInteres({ nombre: "un inmueble con esta búsqueda: lotes", referencia: "",
+      busqueda: { zona: "Salas", tipo: "LOTE", presupuestoMin: 40000, presupuestoMax: 60000, moneda: "PEN", areaDeseada: 120 } },
+    valido({ quiereCita: false }), "v");
+    expect(c).toMatchObject({ zona: "Salas", tipo: "LOTE", presupuestoMin: 40000, presupuestoMax: 60000, moneda: "PEN", areaDeseada: 120 });
+    expect(c).not.toHaveProperty("casoCodigo");
+  });
+
+  it("un presupuesto escrito en el formulario reemplaza al de la búsqueda sin dejar un rango imposible", () => {
+    const destino = { nombre: "n", referencia: "", busqueda: { presupuestoMin: 40000, presupuestoMax: 60000, moneda: "PEN" as const } };
+    expect(cuerpoInteres(destino, valido({ presupuestoMax: "50000" }), "v")).toMatchObject({ presupuestoMin: 40000, presupuestoMax: 50000 });
+    expect(cuerpoInteres(destino, valido({ presupuestoMax: "30000" }), "v")).not.toHaveProperty("presupuestoMin");
+  });
+
+  it("una búsqueda general no ofrece «visita al lote»; un lote o un inmueble sí", () => {
+    expect(modalidadesPara({ nombre: "n", referencia: "" }).map((m) => m.valor)).toEqual(["REUNION_EN_OFICINA", "LLAMADA"]);
+    expect(modalidadesPara({ proyectoCodigo: "p", lote: "A-1", nombre: "n", referencia: "r" })).toHaveLength(3);
+    expect(modalidadesPara({ casoCodigo: "1", nombre: "n", referencia: "r" })).toHaveLength(3);
+  });
+
+  it("WhatsApp sin referencia no agrega «ref.»", () => {
+    expect(mensajeWhatsapp("un inmueble con esta búsqueda: lotes", "")).toBe("Hola, me interesa un inmueble con esta búsqueda: lotes");
   });
 });

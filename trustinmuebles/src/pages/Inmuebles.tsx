@@ -1,8 +1,12 @@
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
 import { ChevronLeft, ChevronRight, Home } from "lucide-react";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { TarjetaPredio } from "@/components/TarjetaPredio";
 import { FiltrosInmuebles } from "@/components/FiltrosInmuebles";
+import { AsistenteBusqueda } from "@/components/AsistenteBusqueda";
+import { quitarEtiqueta } from "@/lib/asistente";
+import type { CategoriaUso } from "@/lib/usosLote";
 import { useApi } from "@/lib/useApi";
 import { paginaDeLaUrl, paginasVisibles, textoRango, TAMANO_PAGINA } from "@/lib/publico";
 import {
@@ -19,6 +23,9 @@ export default function Inmuebles() {
   const [params, setParams] = useSearchParams();
   const pagina = paginaDeLaUrl(params.get("pagina"));
   const filtros = filtrosDeLaUrl(params);
+  // v1.0 (etapa 5): el asistente de búsqueda escribe los filtros en la URL; el uso deseado no es un filtro y vive aquí.
+  const [asistente, setAsistente] = useState(false);
+  const [uso, setUso] = useState<CategoriaUso | null>(null);
   const conFiltros = contarFiltros(filtros) > 0;
   const { data, loading, error, reload } = useApi<PaginaPublica>(rutaCatalogoPublico(filtros, pagina));
   const opciones = useApi<OpcionesFiltro>("/publico/filtros");
@@ -26,7 +33,7 @@ export default function Inmuebles() {
   /** Cambiar un filtro o el orden vuelve a la primera página; cambiar de página conserva los filtros. */
   const aplicar = (siguientes: FiltrosPublico, nuevaPagina = 0) => setParams(filtrosALaUrl(siguientes, nuevaPagina));
   const cambiar = (parcial: Partial<FiltrosPublico>) => aplicar({ ...filtros, ...parcial });
-  const limpiar = () => aplicar(sinFiltros(filtros));
+  const limpiar = () => { setUso(null); aplicar(sinFiltros(filtros)); };
   const irA = (n: number) => {
     aplicar(filtros, n);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -47,8 +54,15 @@ export default function Inmuebles() {
       </section>
 
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
-        <FiltrosInmuebles filtros={filtros} opciones={opciones.data} cambiar={cambiar} limpiar={limpiar}
-          total={data ? data.total : null} />
+        <AsistenteBusqueda opciones={opciones.data} filtros={filtros} uso={uso} activo={asistente}
+          resultados={data && !loading ? data.items : null} cargando={loading}
+          alBuscar={(f, u) => { setUso(u); setAsistente(true); aplicar(f); }}
+          alQuitar={(clave) => { const r = quitarEtiqueta(filtros, uso, clave); setUso(r.uso); aplicar(r.filtros); }}
+          alCerrar={() => { setAsistente(false); limpiar(); }} />
+        <div className="mt-6">
+          <FiltrosInmuebles filtros={filtros} opciones={opciones.data} cambiar={cambiar} limpiar={limpiar}
+            total={data ? data.total : null} />
+        </div>
         {data && conFiltros && data.total > 0 && (
           <p className="cifras mt-4 text-sm font-semibold text-tinta-2">{textoRango(data)}</p>
         )}

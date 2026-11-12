@@ -12,3 +12,8 @@ Pasos: ingresar como asesor (o gestor) → Cartera → «Proyectos y carga de lo
 «Cargar lotes (CSV)» → elegir el archivo → revisar la vista previa → confirmar.
 
 Para repetir la demostración desde cero, reiniciar la base (`scripts/reiniciar-demo.ps1`).
+
+## Asistente de búsqueda (etapa 5)
+
+`frases-asistente.md` reúne 10 frases probadas para el asistente del catálogo, con las etiquetas, los resultados y lo que
+recomienda cada una, y una frase que no entiende, que muestra los botones de ayuda.

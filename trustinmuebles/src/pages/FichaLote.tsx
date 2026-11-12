@@ -6,6 +6,7 @@ import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { IndicadorProyecto } from "@/components/IndicadorProyecto";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { SolicitarCita } from "@/components/SolicitarCita";
+import { UsosDelLote } from "@/components/UsosDelLote";
 import { m2, precio } from "@/lib/formato";
 import { enlaceProyecto, rutaLotePublico } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
@@ -101,7 +102,10 @@ export default function FichaLote() {
           </div>
         </div>
 
-        <div className={`${tarjeta} mt-10`}><IndicadorProyecto indicador={d.indicadorA} /></div>
+        {/* v1.0 (etapa 5): usos que suelen permitirse según la zonificación y el área, con el aviso de verificar. */}
+        <div className={`${tarjeta} mt-10`}><UsosDelLote zonificacion={p.zonificacion ?? d.lote.zonificacion} areaM2={p.areaM2 ?? d.lote.areaM2} /></div>
+
+        <div className={`${tarjeta} mt-8`}><IndicadorProyecto indicador={d.indicadorA} /></div>
 
         <p className="mt-8 text-xs leading-relaxed text-tinta-2">
           La información es referencial y no reemplaza la verificación legal con un abogado o notario antes de comprar.
