@@ -247,13 +247,14 @@ class CarteraTest extends BaseApiTest {
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
             JsonNode p = json.readTree(r);
 
-            assertThat(p.get("totalCasos").asInt()).isEqualTo(12);
-            assertThat(p.get("porColor").get("VERDE").asInt()).isEqualTo(2);
-            assertThat(p.get("porColor").get("AMARILLO").asInt()).isEqualTo(4);
+            // v1.0 (etapa 3a): más las 3 partidas matrices (dos verdes y una amarilla por su hipoteca), en borrador.
+            assertThat(p.get("totalCasos").asInt()).isEqualTo(CASOS_CARGA);
+            assertThat(p.get("porColor").get("VERDE").asInt()).isEqualTo(2 + 2);
+            assertThat(p.get("porColor").get("AMARILLO").asInt()).isEqualTo(4 + 1);
             assertThat(p.get("porColor").get("ROJO").asInt()).isEqualTo(2);
             assertThat(p.get("porColor").get("GRIS").asInt()).isEqualTo(4);
             assertThat(p.get("porEstadoPublicacion").get("PUBLICADO").asInt()).isEqualTo(12);
-            assertThat(p.get("porEstadoPublicacion").get("BORRADOR").asInt()).isZero();
+            assertThat(p.get("porEstadoPublicacion").get("BORRADOR").asInt()).isEqualTo(MATRICES.length);
 
             // Coherencia con el catálogo del gestor: mismos colores y mismos casos con faltantes.
             JsonNode lista = json.readTree(mvc.perform(get("/api/v1/casos").header("Authorization", gestor()))

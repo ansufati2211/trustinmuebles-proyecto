@@ -54,7 +54,11 @@ final class CasoDtos {
     record InmueblePublico(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
             String origen, String fuente, LocalDate fechaConsulta, String fuenteUrl, EstadoTecnico estadoTecnico,
             ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado, PredioDto predio,
-            List<String> tiposAlerta, TitularidadComercial titularidadComercial) {}
+            List<String> tiposAlerta, TitularidadComercial titularidadComercial,
+            /* v1.0 (etapa 3a): CASO o LOTE_PROYECTO; el código del proyecto y la clave del lote («A-7», solo en un lote);
+               de dónde sale el indicador A (PROPIO, PARTIDA_MATRIZ o SIN_EVALUACION) y su rótulo. */
+            String clase, String proyectoCodigo, String lote, ProyectoDtos.FuenteIndicadorA fuenteIndicadorA,
+            String rotuloIndicadorA) {}
 
     /** v1.0: valores para los selectores de filtro del catálogo público. */
     record OpcionesFiltro(List<String> proyectos, List<String> distritos,
@@ -84,7 +88,21 @@ final class CasoDtos {
             BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota,
             /* v1.0: precio referencial entre el área del terreno (null si falta alguno); informativo. */
             BigDecimal precioPorM2, String proyecto, EstadoComercial estadoComercial, String estadoComercialEtiqueta,
-            Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion) {}
+            Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion,
+            /* v1.0 (etapa 3a): zonificación del lote de un proyecto (por ejemplo, RDM); null si no consta. Código del
+               proyecto (para enlazar su página); null si el inmueble no es de uno. */
+            String zonificacion, String proyectoCodigo) {
+
+        /** Sin zonificación ni código de proyecto (forma anterior a la etapa 3a). */
+        PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
+                BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota,
+                BigDecimal precioPorM2, String proyecto, EstadoComercial estadoComercial, String estadoComercialEtiqueta,
+                Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion) {
+            this(tipoInmueble, tipoInmuebleEtiqueta, distrito, areaM2, areaConstruidaInscrita, precioReferencial, moneda,
+                    precioNota, precioPorM2, proyecto, estadoComercial, estadoComercialEtiqueta, independizacion,
+                    independizacionEtiqueta, independizacionExplicacion, null, null);
+        }
+    }
 
     /** v1.0: datos comerciales del caso que el asesor puede corregir. Los que no vienen quedan como estaban. */
     record DatosComercialesRequest(@Size(max = 120) String proyecto, EstadoComercial estadoComercial,

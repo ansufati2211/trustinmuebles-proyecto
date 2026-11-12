@@ -58,11 +58,16 @@ class ExpedienteService {
     private final RutasRegularizacion rutas;
     private final SemaforoGestion gestion;
     private final HistorialAutorizacionRepository autorizaciones;
+    private final LoteProyectoRepository lotes;
+    private final VinculoProyecto vinculo;
 
     ExpedienteService(ExpedienteRepository expedientes, CasoLoteRepository casos, ClasificacionService clasificacion,
             ChecklistService checklist, GlosarioService glosario, AlmacenamientoService almacenamiento,
             InspeccionService inspeccion, AuthService identidad, DocumentosPdf documentosPdf,
-            RutasRegularizacion rutas, SemaforoGestion gestion, HistorialAutorizacionRepository autorizaciones) {
+            RutasRegularizacion rutas, SemaforoGestion gestion, HistorialAutorizacionRepository autorizaciones,
+            LoteProyectoRepository lotes, VinculoProyecto vinculo) {
+        this.lotes = lotes;
+        this.vinculo = vinculo;
         this.expedientes = expedientes;
         this.casos = casos;
         this.clasificacion = clasificacion;
@@ -382,7 +387,26 @@ class ExpedienteService {
      */
     @Transactional(readOnly = true)
     DocumentoPlano documentoLote(String codigo, DocumentoLote tipo) {
-        Expediente e = buscarVisible(codigo);
+        return documentoLoteDe(buscarVisible(codigo), tipo);
+    }
+
+    /**
+     * v1.0 (etapa 3a): documento de la partida matriz de un proyecto para su página pública. Quien lo llama ya
+     * comprobó que el proyecto se puede ver sin sesión (ProyectoService).
+     */
+    @Transactional(readOnly = true)
+    DocumentoPlano documentoLoteDeMatriz(String codigo, DocumentoLote tipo) {
+        return documentoLoteDe(buscar(codigo), tipo);
+    }
+
+    /** v1.0 (etapa 3a): los cuatro documentos del lote de un caso, como los ve el comprador. */
+    @Transactional(readOnly = true)
+    List<DocumentoLoteDto> documentosLoteDe(String codigo) {
+        return documentosLoteDto(buscar(codigo));
+    }
+
+    private DocumentoPlano documentoLoteDe(Expediente e, DocumentoLote tipo) {
+        String codigo = e.getCaso().getCodigo();
         DocumentoDelLote d = documentoDe(e, tipo);
         if (e.getTipoPredio() != TipoPredio.LOTE || d == null
                 || (d.getEstado() != EstadoPlano.PRESENTADO && d.getEstado() != EstadoPlano.OBSERVADO)) {
@@ -530,6 +554,7 @@ class ExpedienteService {
         caso.setPropietarioCodigo(propietario);
         caso.setTitularidadComercial(titularidad);
         caso.setProyecto(vacioANull(req.proyecto()));
+        vinculo.vincular(caso);
         if (req.estadoComercial() != null) caso.setEstadoComercial(req.estadoComercial());
         if (req.independizacion() != null) caso.setIndependizacion(req.independizacion());
         caso.setAutorizacionFecha(null);
@@ -567,7 +592,7 @@ class ExpedienteService {
                 !hayPrecio ? null : c.getPrecioNota() != null ? c.getPrecioNota() : PRECIO_NOTA,
                 FiltroPublico.precioPorM2(c.getPrecioReferencial(), e.getAreaM2()), c.getProyecto(),
                 c.getEstadoComercial(), c.getEstadoComercial().etiqueta(), c.getIndependizacion(),
-                c.getIndependizacion().etiqueta(), c.getIndependizacion().explicacion());
+                c.getIndependizacion().etiqueta(), c.getIndependizacion().explicacion(), null, c.getProyectoCodigo());
     }
 
     /** Elimina una partida captada (por ejemplo, ante el pedido de un titular). Los casos de demostración no se borran. */
@@ -977,43 +1002,139 @@ class ExpedienteService {
     @Transactional(readOnly = true)
     PaginaPublica listarPublico(int pagina, FiltroPublico filtro) {
         if (pagina < 0) throw new IllegalArgumentException("pagina: debe ser 0 o mayor");
-        List<FiltroPublico.Candidato> candidatos = expedientes.findPublicados().stream()
-                .map(e -> new FiltroPublico.Candidato(e, e.getCaso(), predio(e)))
-                .filter(c -> filtro.aceptaPredio(c.caso(), c.predio()))
-                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+        List<FiltroPublico.Candidato> candidatos = new java.util.ArrayList<>();
+        if (filtro.incluye(FiltroPublico.Clase.CASO)) {
+            expedientes.findPublicados().stream().map(e -> new FiltroPublico.Candidato(e, e.getCaso(), predio(e)))
+                    .filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
+        }
+        // v1.0 (etapa 3a): los lotes de proyecto sin caso propio, en la misma lista y con los mismos filtros.
+        if (filtro.incluye(FiltroPublico.Clase.LOTE_PROYECTO)) {
+            lotesPublicados().stream().filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
+        }
+        // El indicador A de un lote sin caso propio es el de la partida matriz (su expediente va en el candidato).
         Map<Long, EvaluacionDto> evaluaciones = Map.of();
         if (filtro.indicadorA() != null) {
             // El color está en su propia columna: no hace falta leer el detalle de cada evaluación.
             Map<Long, pe.trustinmuebles.clasificacion.EstadoSemaforo> estados = clasificacion.estados(
-                    candidatos.stream().map(c -> c.expediente().getId()).toList());
-            candidatos.removeIf(c -> estados.get(c.expediente().getId()) != filtro.indicadorA());
+                    idsDeExpediente(candidatos));
+            candidatos.removeIf(c -> c.expediente() == null
+                    || estados.get(c.expediente().getId()) != filtro.indicadorA());
         }
         if (filtro.tipoAlerta() != null) {
-            Map<Long, EvaluacionDto> ev = clasificacion.obtenerVarias(
-                    candidatos.stream().map(c -> c.expediente().getId()).toList());
+            Map<Long, EvaluacionDto> ev = clasificacion.obtenerVarias(idsDeExpediente(candidatos));
             evaluaciones = ev;
-            candidatos.removeIf(c -> !RutasRegularizacion.tiposAlerta(ev.get(c.expediente().getId()))
-                    .contains(filtro.tipoAlerta()));
+            candidatos.removeIf(c -> c.expediente() == null || !RutasRegularizacion.tiposAlerta(
+                    ev.get(c.expediente().getId())).contains(filtro.tipoAlerta()));
         }
         candidatos.sort(filtro.comparador());
         int total = candidatos.size();
         int desde = Math.min(pagina * TAMANO_PAGINA_PUBLICA, total);
         int hasta = Math.min(desde + TAMANO_PAGINA_PUBLICA, total);
-        Map<Long, EvaluacionDto> ya = evaluaciones;
+        Map<Long, EvaluacionDto> ya = new java.util.HashMap<>(evaluaciones);
         List<InmueblePublico> items = candidatos.subList(desde, hasta).stream().map(cand -> {
             Expediente e = cand.expediente();
-            EvaluacionDto ev = ya.containsKey(e.getId()) ? ya.get(e.getId())
-                    : clasificacion.obtener(e.getId()).orElse(null);
-            EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
-            CasoLote c = e.getCaso();
-            return new InmueblePublico(c.getCodigo(), c.getDenominacion(), c.getContexto(),
-                    ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(), c.getOrigen().name(),
-                    c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), t.estado(), t.resultado(),
-                    t.riesgoFisicoDetectado(), cand.predio(), RutasRegularizacion.tiposAlerta(ev),
-                    c.getTitularidadComercial());
+            EvaluacionDto ev = e == null ? null : ya.computeIfAbsent(e.getId(),
+                    id -> clasificacion.obtener(id).orElse(null));
+            return cand.lote() != null ? inmuebleDeLote(cand.lote(), cand.predio(), e, ev)
+                    : inmuebleDeCaso(e, cand.predio(), ev);
         }).toList();
         int paginas = (total + TAMANO_PAGINA_PUBLICA - 1) / TAMANO_PAGINA_PUBLICA;
         return new PaginaPublica(items, pagina, TAMANO_PAGINA_PUBLICA, total, paginas);
+    }
+
+    private static List<Long> idsDeExpediente(List<FiltroPublico.Candidato> candidatos) {
+        return candidatos.stream().filter(c -> c.expediente() != null).map(c -> c.expediente().getId()).distinct()
+                .toList();
+    }
+
+    private InmueblePublico inmuebleDeCaso(Expediente e, PredioDto predio, EvaluacionDto ev) {
+        EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
+        CasoLote c = e.getCaso();
+        ProyectoDtos.FuenteIndicadorA fuente = ev == null ? ProyectoDtos.FuenteIndicadorA.SIN_EVALUACION
+                : ProyectoDtos.FuenteIndicadorA.PROPIO;
+        return new InmueblePublico(c.getCodigo(), c.getDenominacion(), c.getContexto(),
+                ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(), c.getOrigen().name(),
+                c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), t.estado(), t.resultado(),
+                t.riesgoFisicoDetectado(), predio, RutasRegularizacion.tiposAlerta(ev), c.getTitularidadComercial(),
+                FiltroPublico.Clase.CASO.name(), c.getProyectoCodigo(), null, fuente, fuente.rotulo());
+    }
+
+    /**
+     * v1.0 (etapa 3a): un lote de proyecto sin caso propio en el catálogo. Lleva el indicador A de la partida matriz,
+     * rotulado así, o «sin evaluación documental»; la inspección técnica (B) no aplica a un lote sin construir.
+     */
+    private InmueblePublico inmuebleDeLote(LoteProyecto l, PredioDto predio, Expediente matriz, EvaluacionDto ev) {
+        Proyecto p = l.getProyecto();
+        ProyectoDtos.FuenteIndicadorA fuente = matriz != null && ev != null
+                ? ProyectoDtos.FuenteIndicadorA.PARTIDA_MATRIZ : ProyectoDtos.FuenteIndicadorA.SIN_EVALUACION;
+        return new InmueblePublico(l.codigo(), denominacionDe(l), contextoDe(p),
+                ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(), ORIGEN_PROYECTO, null, null, null,
+                EstadoTecnico.NO_SOLICITADA, null, false, predio,
+                ev == null ? List.of() : RutasRegularizacion.tiposAlerta(ev), TitularidadComercial.INMOBILIARIA,
+                FiltroPublico.Clase.LOTE_PROYECTO.name(), p.getCodigo(), l.clave(), fuente, fuente.rotulo());
+    }
+
+    /** Origen que se informa para un lote de proyecto (no es una partida transcrita ni un caso de demostración). */
+    static final String ORIGEN_PROYECTO = "PROYECTO";
+
+    static String denominacionDe(LoteProyecto l) {
+        return "Mz. " + l.getManzana() + " Lote " + l.getNumero() + " · " + l.getProyecto().getNombre() + " · "
+                + contextoDe(l.getProyecto());
+    }
+
+    static String contextoDe(Proyecto p) {
+        return p.getDistrito() == null ? "Ica" : p.getDistrito() + ", Ica";
+    }
+
+    /** Datos del predio de un lote de proyecto, con la misma forma que los de un caso. */
+    static PredioDto predioDeLote(LoteProyecto l, EstadoComercial estado) {
+        boolean hayPrecio = l.getPrecio() != null;
+        TipoInmueble tipo = TipoInmueble.LOTE_URBANO;
+        return new PredioDto(tipo, tipo.etiqueta(), l.getProyecto().getDistrito(), l.getAreaM2(), null, l.getPrecio(),
+                hayPrecio ? l.getMoneda() : null, hayPrecio ? PRECIO_NOTA : null,
+                FiltroPublico.precioPorM2(l.getPrecio(), l.getAreaM2()), l.getProyecto().getNombre(), estado,
+                estado.etiqueta(), l.getIndependizacion(), l.getIndependizacion().etiqueta(),
+                l.getIndependizacion().explicacion(), l.getZonificacion(), l.getProyecto().getCodigo());
+    }
+
+    /**
+     * v1.0 (etapa 3a): lotes de proyecto sin caso propio que se ofrecen en el catálogo. Un lote se ofrece si está
+     * marcado como publicado y la partida matriz de su proyecto tiene una autorización vigente registrada (I14): sin
+     * partida matriz o sin autorización, no se publica. Cada candidato lleva el expediente de la partida matriz.
+     */
+    @Transactional(readOnly = true)
+    List<FiltroPublico.Candidato> lotesPublicados() {
+        List<LoteProyecto> marcados = lotes.findPublicadosSinCaso();
+        Map<String, Expediente> matrices = matricesDe(marcados.stream().map(LoteProyecto::getProyecto).toList());
+        List<FiltroPublico.Candidato> salida = new java.util.ArrayList<>();
+        for (LoteProyecto l : marcados) {
+            Expediente m = matrices.get(l.getProyecto().getCasoMatrizCodigo());
+            if (!autorizaLotes(m)) continue;
+            salida.add(FiltroPublico.Candidato.deLote(l, m, predioDeLote(l, l.getEstadoComercial())));
+        }
+        return salida;
+    }
+
+    /** ¿La partida matriz permite ofrecer los lotes sin caso propio? Debe existir y tener autorización vigente. */
+    static boolean autorizaLotes(Expediente matriz) {
+        return matriz != null && matriz.getCaso().getAutorizacionFecha() != null;
+    }
+
+    /** Expedientes de las partidas matrices de los proyectos dados, por código de caso. */
+    @Transactional(readOnly = true)
+    Map<String, Expediente> matricesDe(java.util.Collection<Proyecto> proyectos) {
+        Set<String> codigos = new HashSet<>();
+        for (Proyecto p : proyectos) if (p.getCasoMatrizCodigo() != null) codigos.add(p.getCasoMatrizCodigo());
+        Map<String, Expediente> salida = new java.util.HashMap<>();
+        if (codigos.isEmpty()) return salida;
+        for (Expediente e : expedientes.findConCasoEntre(codigos)) salida.put(e.getCaso().getCodigo(), e);
+        return salida;
+    }
+
+    /** v1.0 (etapa 3a): la evaluación vigente de un expediente (la de una partida matriz, para un proyecto). */
+    @Transactional(readOnly = true)
+    EvaluacionDto evaluacionDe(Expediente e) {
+        return e == null ? null : clasificacion.obtener(e.getId()).orElse(null);
     }
 
     /** v1.0: valores que ofrecen los selectores de filtro: proyectos y distritos de los inmuebles publicados. */
@@ -1025,6 +1146,11 @@ class ExpedienteService {
             if (e.getCaso().getProyecto() != null) proyectos.add(e.getCaso().getProyecto());
             if (e.getCaso().getDistrito() != null) distritos.add(e.getCaso().getDistrito());
         }
+        // v1.0 (etapa 3a): también los proyectos y distritos de los lotes de proyecto que se ofrecen.
+        for (FiltroPublico.Candidato c : lotesPublicados()) {
+            if (c.predio().proyecto() != null) proyectos.add(c.predio().proyecto());
+            if (c.predio().distrito() != null) distritos.add(c.predio().distrito());
+        }
         return new OpcionesFiltro(List.copyOf(proyectos), List.copyOf(distritos), clasificacion.tiposDeAlerta());
     }
 
@@ -1033,7 +1159,10 @@ class ExpedienteService {
     DetalleCaso actualizarComerciales(String codigo, DatosComercialesRequest req) {
         Expediente e = buscar(codigo);
         CasoLote c = e.getCaso();
-        if (req.proyecto() != null) c.setProyecto(vacioANull(req.proyecto()));
+        if (req.proyecto() != null) {
+            c.setProyecto(vacioANull(req.proyecto()));
+            vinculo.vincular(c);
+        }
         if (req.estadoComercial() != null) c.setEstadoComercial(req.estadoComercial());
         if (req.independizacion() != null) c.setIndependizacion(req.independizacion());
         casos.save(c);

@@ -19,15 +19,27 @@ import pe.trustinmuebles.expediente.CasoDtos.PredioDto;
 record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, EstadoComercial estadoComercial,
         String moneda, BigDecimal precioMin, BigDecimal precioMax, BigDecimal precioM2Min, BigDecimal precioM2Max,
         BigDecimal areaMin, BigDecimal areaMax, EstadoSemaforo indicadorA, String tipoAlerta, Orden orden,
-        boolean descendente) {
+        boolean descendente, Clase clase) {
 
     enum Orden { NOVEDAD, PRECIO, PRECIO_M2, AREA }
+
+    /** v1.0 (etapa 3a): el catálogo une casos y lotes de proyecto sin caso propio; {@code clase} limita a unos u otros. */
+    enum Clase { CASO, LOTE_PROYECTO }
 
     static final Set<String> MONEDAS = Set.of("PEN", "USD");
 
     static FiltroPublico de(String proyecto, String distrito, String tipo, String estadoComercial, String moneda,
             String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
             String indicadorA, String tipoAlerta, String orden, String sentido, Set<String> tiposAlertaValidos) {
+        return de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax, precioM2Min, precioM2Max,
+                areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, null, tiposAlertaValidos);
+    }
+
+    /** v1.0 (etapa 3a): con {@code clase} (CASO o LOTE_PROYECTO); sin ella, el catálogo completo. */
+    static FiltroPublico de(String proyecto, String distrito, String tipo, String estadoComercial, String moneda,
+            String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
+            String indicadorA, String tipoAlerta, String orden, String sentido, String clase,
+            Set<String> tiposAlertaValidos) {
         String alerta = vacio(tipoAlerta) == null ? null : vacio(tipoAlerta).toUpperCase(Locale.ROOT);
         if (alerta != null && !tiposAlertaValidos.contains(alerta)) {
             throw new IllegalArgumentException("tipoAlerta: valor no válido «" + tipoAlerta + "». Usa uno de: "
@@ -66,15 +78,29 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         }
         return new FiltroPublico(vacio(proyecto), vacio(distrito), tipoInmueble(tipo),
                 valor("estadoComercial", estadoComercial, EstadoComercial.class), mon, pMin, pMax, mMin, mMax, aMin,
-                aMax, valor("indicadorA", indicadorA, EstadoSemaforo.class), alerta, o, desc);
+                aMax, valor("indicadorA", indicadorA, EstadoSemaforo.class), alerta, o, desc,
+                valor("clase", clase, Clase.class));
+    }
+
+    /** ¿Entran los inmuebles de esta clase? */
+    boolean incluye(Clase c) {
+        return clase == null || clase == c;
     }
 
     /** Filtros que salen de los datos del caso (todos menos el indicador A y la alerta). */
     boolean aceptaPredio(CasoLote c, PredioDto p) {
-        if (proyecto != null && !proyecto.equalsIgnoreCase(c.getProyecto())) return false;
-        if (distrito != null && !distrito.equalsIgnoreCase(c.getDistrito())) return false;
+        return aceptaPredio(p);
+    }
+
+    /**
+     * v1.0 (etapa 3a): los mismos filtros sobre los datos del predio, que valen igual para un caso que para un lote de
+     * proyecto (el proyecto, el distrito y el estado comercial del caso ya vienen en su PredioDto).
+     */
+    boolean aceptaPredio(PredioDto p) {
+        if (proyecto != null && !proyecto.equalsIgnoreCase(p.proyecto())) return false;
+        if (distrito != null && !distrito.equalsIgnoreCase(p.distrito())) return false;
         if (tipo != null && p.tipoInmueble() != tipo) return false;
-        if (estadoComercial != null && c.getEstadoComercial() != estadoComercial) return false;
+        if (estadoComercial != null && p.estadoComercial() != estadoComercial) return false;
         if (moneda != null && (p.precioReferencial() == null || !moneda.equals(p.moneda()))) return false;
         if (hay(precioMin, precioMax) && !dentro(p.precioReferencial(), precioMin, precioMax)) return false;
         if (hay(precioM2Min, precioM2Max) && !dentro(p.precioPorM2(), precioM2Min, precioM2Max)) return false;
@@ -85,14 +111,17 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
     Comparator<Candidato> comparador() {
         Comparator<Candidato> principal = switch (orden) {
             case NOVEDAD -> {
-                Comparator<Candidato> porId = Comparator.comparing(c -> c.caso().getId());
-                yield descendente ? porId.reversed() : porId;
+                // v1.0 (etapa 3a): por fecha de alta, común a casos y lotes; empata por clase y por id.
+                Comparator<Candidato> porAlta = Comparator.comparing(Candidato::alta,
+                        Comparator.nullsFirst(Comparator.<java.time.Instant>naturalOrder()))
+                        .thenComparing(Candidato::clase).thenComparingLong(Candidato::id);
+                yield descendente ? porAlta.reversed() : porAlta;
             }
             case PRECIO -> conNulosAlFinal(c -> c.predio().precioReferencial(), true);
             case PRECIO_M2 -> conNulosAlFinal(c -> c.predio().precioPorM2(), true);
             case AREA -> conNulosAlFinal(c -> c.predio().areaM2(), false);
         };
-        return principal.thenComparing(x -> x.caso().getCodigo());
+        return principal.thenComparing(Candidato::codigo);
     }
 
     // Sin dato → al final en los dos sentidos: el sentido solo invierte a los que sí tienen dato.
@@ -110,8 +139,25 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         };
     }
 
-    /** Un caso del catálogo con sus datos ya calculados, antes de ordenar y paginar. */
-    record Candidato(Expediente expediente, CasoLote caso, PredioDto predio) {}
+    /**
+     * Un inmueble del catálogo con sus datos ya calculados, antes de ordenar y paginar: un caso (con su expediente) o,
+     * desde la etapa 3a, un lote de proyecto sin caso propio (con el expediente de la partida matriz, si la hay).
+     */
+    record Candidato(Expediente expediente, CasoLote caso, LoteProyecto lote, PredioDto predio, String codigo,
+            java.time.Instant alta, Clase clase, long id) {
+
+        /** Un caso. */
+        Candidato(Expediente expediente, CasoLote caso, PredioDto predio) {
+            this(expediente, caso, null, predio, caso.getCodigo(), caso.getCreadoEn(), Clase.CASO,
+                    caso.getId() == null ? 0 : caso.getId());
+        }
+
+        /** Un lote de proyecto; {@code matriz} es el expediente de la partida matriz o null. */
+        static Candidato deLote(LoteProyecto lote, Expediente matriz, PredioDto predio) {
+            return new Candidato(matriz, null, lote, predio, lote.codigo(), lote.getCreadoEn(), Clase.LOTE_PROYECTO,
+                    lote.getId() == null ? 0 : lote.getId());
+        }
+    }
 
     /** Precio por m²: el precio referencial entre el área del terreno, con dos decimales; null si falta alguno. */
     static BigDecimal precioPorM2(BigDecimal precio, BigDecimal area) {

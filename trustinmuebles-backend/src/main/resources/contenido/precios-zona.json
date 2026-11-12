@@ -1,0 +1,16 @@
+{
+  "moneda": "PEN",
+  "nota": "Precio referencial por m² de los lotes de proyectos de urbanización, por distrito. Son valores redondos iniciales que la inmobiliaria ajusta; el precio de cada lote es su área por este valor, redondeado a la centena.",
+  "precioPorM2": {
+    "Ica": 450,
+    "Parcona": 350,
+    "La Tinguiña": 300,
+    "Subtanjalla": 250,
+    "Los Aquijes": 250,
+    "Pueblo Nuevo": 300,
+    "Salas": 200,
+    "Santiago": 200,
+    "Pachacútec": 250,
+    "San José de los Molinos": 150
+  }
+}

@@ -140,7 +140,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
     void conteosDelPanel() throws Exception {
         Map<String, Long> porEstado = new HashMap<>();
         Map<String, Long> celdas = new HashMap<>();
-        for (String codigo : SEMILLA) {
+        for (String codigo : conMatrices(SEMILLA)) { // v1.0 (etapa 3a): el panel también cuenta las partidas matrices
             JsonNode d = leerComo(codigo, gestor());
             String estado = d.get("gestion").get("estado").asString();
             porEstado.merge(estado, 1L, Long::sum);
@@ -155,7 +155,7 @@ class GestionInmobiliariaTest extends BaseApiTest {
             assertThat(p.get("porEstadoGestion").get(e).asLong()).as(e).isEqualTo(porEstado.getOrDefault(e, 0L));
             suma += p.get("porEstadoGestion").get(e).asLong();
         }
-        assertThat(suma).isEqualTo(12);
+        assertThat(suma).isEqualTo(CASOS_CARGA);
         for (JsonNode fila : p.get("matrizGestion")) {
             String tipo = fila.get("codigo").asString();
             fila.get("porEstadoGestion").properties().forEach(c -> assertThat(c.getValue().asLong())

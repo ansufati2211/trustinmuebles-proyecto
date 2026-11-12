@@ -22,7 +22,7 @@ export type VerificacionCampo = "CONFORME" | "OBSERVADO" | "NO_VERIFICADO";
 export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
 /** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
-export type Origen = "SINTETICO" | "TRANSCRITA";
+export type Origen = "SINTETICO" | "TRANSCRITA" | "PROYECTO";
 /** Origen que el revisor elige al captar una partida (ETP-1). */
 export type OrigenCaptacion = "TRANSCRITA_CONOCE_AQUI" | "SIMULADA_DEMOSTRACION";
 export type Completitud = "COMPLETA" | "INCOMPLETA" | "DESCONOCIDA";
@@ -49,6 +49,8 @@ export interface Predio {
   estadoComercial?: EstadoComercial; estadoComercialEtiqueta?: string;
   /** v1.0 (etapa 2): independización del lote, con su etiqueta y una línea de explicación. No cambia el indicador A. */
   independizacion?: Independizacion; independizacionEtiqueta?: string; independizacionExplicacion?: string;
+  /** v1.0 (etapa 3a): zonificación del lote de un proyecto (por ejemplo, RDM) y código del proyecto para su página. */
+  zonificacion?: string | null; proyectoCodigo?: string | null;
 }
 
 export type EstadoComercial = "DISPONIBLE" | "SEPARADO" | "VENDIDO";
@@ -81,6 +83,49 @@ export interface InmueblePublico {
   origen: Origen; fuente: string | null; fechaConsulta: string | null; fuenteUrl?: string | null;
   estadoTecnico: EstadoTecnico; resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean;
   predio: Predio; tiposAlerta?: string[]; titularidadComercial?: TitularidadComercial;
+  /**
+   * v1.0 (etapa 3a): CASO o LOTE_PROYECTO (un lote de proyecto sin caso propio), el código del proyecto, la clave del
+   * lote («A-7») y de dónde sale el indicador A, con su rótulo.
+   */
+  clase?: ClaseInmueble; proyectoCodigo?: string | null; lote?: string | null;
+  fuenteIndicadorA?: FuenteIndicadorA; rotuloIndicadorA?: string;
+}
+
+export type ClaseInmueble = "CASO" | "LOTE_PROYECTO";
+export type FuenteIndicadorA = "PROPIO" | "PARTIDA_MATRIZ" | "SIN_EVALUACION";
+export type EstadoHito = "COMPLETADO" | "EN_PROCESO" | "PENDIENTE";
+
+/** v1.0 (etapa 3a): un lote del plano de un proyecto. Sin publicar, no trae precio. */
+export interface LoteProyecto {
+  codigo: string; clave: string; manzana: string; numero: number; areaM2: number; precio: number | null;
+  moneda: string | null; precioPorM2: number | null; estadoComercial: EstadoComercial; estadoComercialEtiqueta: string;
+  independizacion: Independizacion; independizacionEtiqueta: string; zonificacion: string | null; publicado: boolean;
+  /** Si el lote tiene un caso propio publicado, su ficha es la de ese caso. */
+  casoCodigo: string | null;
+}
+
+export interface HitoProyecto { orden: number; nombre: string; estado: EstadoHito; estadoEtiqueta: string; fecha: string | null }
+
+/** Indicador A que acompaña a un lote sin caso propio: el de la partida matriz (rotulado así) o «sin evaluación». */
+export interface IndicadorAProyecto {
+  fuente: FuenteIndicadorA; rotulo: string; casoCodigo: string | null; evaluacion: Evaluacion | null;
+}
+
+export interface DocumentoProyecto {
+  tipo: DocumentoLoteTipo; tipoEtiqueta: string; estado: EstadoPlano; resumen: string | null; disponible: boolean;
+}
+
+/** v1.0 (etapa 3a): página pública de un proyecto (GET /publico/proyectos/{codigo}). */
+export interface ProyectoPublico {
+  codigo: string; nombre: string; distrito: string | null; descripcion: string | null; recorridoUrl: string | null;
+  hitos: HitoProyecto[]; lotes: LoteProyecto[]; conteo: { disponibles: number; separados: number; vendidos: number };
+  indicadorA: IndicadorAProyecto; documentos: DocumentoProyecto[]; inmueblesPublicados: number;
+}
+
+/** v1.0 (etapa 3a): ficha pública de un lote de proyecto (GET /publico/proyectos/{codigo}/lotes/{clave}). */
+export interface LotePublico {
+  codigo: string; denominacion: string; proyectoCodigo: string; proyectoNombre: string; lote: LoteProyecto;
+  predio: Predio; indicadorA: IndicadorAProyecto;
 }
 
 /** v1.0: una página del catálogo público (la primera es la 0; 24 por página). */

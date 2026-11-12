@@ -96,7 +96,7 @@ class CicloCarteraTest extends BaseApiTest {
         String json = MediaType.APPLICATION_JSON_VALUE;
 
         // Base nueva y aislada: solo el contenido de demostración, sin nada de otras pruebas.
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(12);
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(CASOS_CARGA);
         assertThat(jdbc.queryForObject("select count(*) from solicitud_contacto", Integer.class)).isZero();
 
         // 1. El REVISOR crea el expediente indicando el propietario. Nace en BORRADOR y sin autorización.
@@ -250,8 +250,9 @@ class CicloCarteraTest extends BaseApiTest {
         mvc.perform(get("/api/v1/cartera/panel").header("Authorization", comprador)).andExpect(status().isForbidden());
         JsonNode panel = this.json.readTree(mvc.perform(get("/api/v1/cartera/panel").header("Authorization", gestor))
                 .andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
-        assertThat(panel.get("totalCasos").asInt()).isEqualTo(13);
-        assertThat(panel.get("porColor").get("VERDE").asInt()).isEqualTo(3);
+        // v1.0 (etapa 3a): más las 3 partidas matrices (dos verdes), que siguen en borrador.
+        assertThat(panel.get("totalCasos").asInt()).isEqualTo(13 + MATRICES.length);
+        assertThat(panel.get("porColor").get("VERDE").asInt()).isEqualTo(3 + 2);
         assertThat(panel.get("porEstadoPublicacion").get("PUBLICADO").asInt()).isEqualTo(13);
         assertThat(panel.get("contactosPendientes")).isEmpty();
         assertThat(panel.get("inspecciones").toString()).doesNotContain(CASO);

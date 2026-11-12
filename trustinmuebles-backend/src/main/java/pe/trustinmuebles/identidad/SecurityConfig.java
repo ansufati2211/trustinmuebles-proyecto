@@ -101,6 +101,10 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/decision-captacion").hasAnyRole("GESTOR", "ASESOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/decisiones-captacion")
                         .hasAnyRole("GESTOR", "REVISOR", "ASESOR")
+                        // v1.0 (etapa 3a): proyectos. Leer, el equipo; publicar o cambiar un lote, el gestor y el asesor.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/proyectos", "/api/v1/proyectos/**")
+                        .hasAnyRole("REVISOR", "GESTOR", "ASESOR")
+                        .requestMatchers("/api/v1/proyectos", "/api/v1/proyectos/**").hasAnyRole("GESTOR", "ASESOR")
                         // Historial de evaluaciones: solo lectura y nunca para el comprador.
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/historial")
                                 .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO", "ASESOR")

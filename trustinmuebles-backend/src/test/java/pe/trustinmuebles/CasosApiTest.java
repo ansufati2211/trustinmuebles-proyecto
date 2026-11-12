@@ -29,9 +29,13 @@ class CasosApiTest extends BaseApiTest {
     @Test
     @DisplayName("Contenido v0.5 cargado: 10 casos simulados y 2 lotes de la SBN, 57 términos, 10 reglas (3 prioritarias), las cuentas")
     void contenidoCargado() {
-        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(12);
+        // v1.0 (etapa 3a): más las 3 partidas matrices de los proyectos (sintéticas, de la inmobiliaria, en borrador).
+        assertThat(jdbc.queryForObject("select count(*) from caso_lote", Integer.class)).isEqualTo(CASOS_CARGA);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where sintetico = true", Integer.class))
-                .isEqualTo(10);
+                .isEqualTo(10 + MATRICES.length);
+        assertThat(jdbc.queryForList("select codigo from caso_lote where titularidad_comercial = 'INMOBILIARIA' "
+                + "and estado_publicacion = 'BORRADOR' and propietario_codigo is null and autorizacion_fecha is not null",
+                String.class)).containsExactlyInAnyOrder(MATRICES);
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo like 'SIM-%'",
                 Integer.class)).as("ninguna partida del catálogo lleva el prefijo SIM-").isZero();
         // v0.9: las dos partidas reales son de la subasta de la SBN: transcritas, con fuente, fecha y enlace oficial.

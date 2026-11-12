@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { MouseEvent } from "react";
 import { Link, NavLink, useLocation } from "react-router";
-import { User, LogOut } from "lucide-react";
+import { User, LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { LogoMark } from "@/components/layout/Logo";
 import { claveDeRuta, navegacion } from "@/lib/permisos";
@@ -29,14 +29,20 @@ function BotonAcceder() {
   };
 
   return (
+    // v1.0 (etapa 3a): por debajo de 400 px el botón queda solo con su ícono (y su nombre para lectores de pantalla),
+    // para que el nombre del sitio y «Inmuebles» quepan sin encimarse a 390 px.
     <Link
       ref={ref}
       to="/login"
       onMouseMove={mover}
       onMouseLeave={salir}
-      className="btn-glint inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 sm:px-6 text-sm font-bold text-white shadow-md shadow-primary/25 transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:shadow-primary/35 active:scale-[0.97]"
+      aria-label="Ingresar"
+      title="Ingresar"
+      data-boton-ingresar
+      className="btn-glint inline-flex h-10 w-10 min-[400px]:w-auto shrink-0 items-center justify-center rounded-full bg-primary px-0 min-[400px]:px-5 sm:px-6 text-sm font-bold text-white shadow-md shadow-primary/25 transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:shadow-primary/35 active:scale-[0.97]"
     >
-      Ingresar
+      <LogIn className="size-4 min-[400px]:hidden" aria-hidden="true" />
+      <span className="max-[399px]:sr-only">Ingresar</span>
     </Link>
   );
 }
@@ -146,7 +152,7 @@ export function Navbar() {
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
       <header className="w-full max-w-6xl pointer-events-auto">
         <div
-          className={`rounded-full border px-3 sm:px-5 h-16 flex items-center justify-between backdrop-blur-xl transition-all duration-300 ${
+          className={`rounded-full border px-3 sm:px-5 h-16 flex items-center justify-between gap-2 backdrop-blur-xl transition-all duration-300 ${
             conScroll
               ? "bg-white/90 border-gray-200 shadow-lg shadow-gray-300/40"
               : "bg-white/75 border-white/60 shadow-md shadow-gray-200/40"
@@ -156,11 +162,12 @@ export function Navbar() {
             <Link
               to="/"
               onClick={irAlInicio}
-              className="flex items-center gap-2.5 group shrink-0"
+              className="flex min-w-0 items-center gap-2 sm:gap-2.5 group"
               aria-label="Trustinmuebles, ir al inicio"
+              data-marca
             >
-              <LogoMark className="w-10 h-10 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3" />
-              <span className="text-lg sm:text-xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
+              <LogoMark className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3" />
+              <span className="truncate text-base min-[400px]:text-lg sm:text-xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
                 Trustinmuebles
               </span>
             </Link>
@@ -222,7 +229,7 @@ export function Navbar() {
               <NavLink
                 to={principal.ruta}
                 className={({ isActive }) =>
-                  `md:hidden px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
+                  `md:hidden shrink-0 px-2.5 min-[400px]:px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
                     isActive
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-foreground"

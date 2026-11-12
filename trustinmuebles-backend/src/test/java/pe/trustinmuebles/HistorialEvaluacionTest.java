@@ -100,7 +100,7 @@ class HistorialEvaluacionTest extends BaseApiTest {
     void inicialUnaVezPorCaso() throws Exception {
         assertThat(jdbc.queryForList("select count(*) from historial_evaluacion h join expediente e on e.id = h.expediente_id "
                 + "join caso_lote c on c.id = e.caso_id where c.sintetico = true and h.origen = 'CARGA_INICIAL' "
-                + "group by h.expediente_id", Integer.class)).hasSize(10).containsOnly(1);
+                + "group by h.expediente_id", Integer.class)).hasSize(10 + MATRICES.length).containsOnly(1);
         JsonNode primera = filas(PARCONA).get(0);
         assertThat(primera.get("origen").asString()).isEqualTo("CARGA_INICIAL");
         assertThat(primera.get("estadoAnterior").isNull()).isTrue();

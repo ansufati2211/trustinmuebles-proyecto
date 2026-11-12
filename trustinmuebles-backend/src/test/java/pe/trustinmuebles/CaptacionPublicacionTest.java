@@ -249,7 +249,8 @@ class CaptacionPublicacionTest extends BaseApiTest {
             mvc.perform(post("/api/v1/casos/" + SANTIAGO + "/inspeccion/solicitud").header("Authorization", comprador()))
                     .andExpect(status().isNotFound());
             for (String auth : new String[] {revisor(), gestor(), especialista()}) {
-                assertThat(codigos(auth)).hasSize(13).contains(BORRADOR, SANTIAGO);
+                // v1.0 (etapa 3a): el equipo también ve las 3 partidas matrices (en borrador); el comprador, no.
+                assertThat(codigos(auth)).hasSize(13 + MATRICES.length).contains(BORRADOR, SANTIAGO).contains(MATRICES);
                 mvc.perform(get("/api/v1/casos/" + SANTIAGO).header("Authorization", auth)).andExpect(status().isOk())
                         .andExpect(jsonPath("$.publicacion.estado").value("RETIRADO"));
             }

@@ -9,6 +9,7 @@ import { ChipGestion } from "@/components/PanelGestion";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { resaltadoA } from "@/lib/resaltado";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
+import { enlaceInmueble, nombreLote } from "@/lib/proyectos";
 import type { EstadoComercial, InmueblePublico, ResumenCaso } from "@/lib/types";
 
 const TONO_COMERCIAL: Record<EstadoComercial, TonoBadge> = { DISPONIBLE: "marca", SEPARADO: "arena", VENDIDO: "info" };
@@ -22,8 +23,11 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
   c: ResumenCaso | InmueblePublico; conPublicacion?: boolean; publico?: boolean;
 }) {
   const p = c.predio;
-  const enlace = publico ? `/inmuebles/${c.codigo}` : `/casos/${c.codigo}`;
   const interno = "pendientes" in c ? c : null;
+  // v1.0 (etapa 3a): un lote de proyecto sin caso propio enlaza a su ficha dentro del proyecto.
+  const comoPublico = "pendientes" in c ? null : c;
+  const loteProyecto = comoPublico?.clase === "LOTE_PROYECTO" && comoPublico.lote ? comoPublico : null;
+  const enlace = !publico ? `/casos/${c.codigo}` : comoPublico ? enlaceInmueble(comoPublico) : `/inmuebles/${c.codigo}`;
   const sinPendientes = interno?.pendientes === 0;
   const resaltado = resaltadoA(c.estado);
 
@@ -65,7 +69,7 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
             <p className="text-base font-bold text-white/90">Precio a consultar</p>
           )}
           <span className="cifras rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
-            N.° {c.codigo}
+            {loteProyecto?.lote ? nombreLote(loteProyecto.lote) : `N.° ${c.codigo}`}
           </span>
         </div>
       </Link>
@@ -105,7 +109,13 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
             </Badge>
           )}
           <IndicadorA estado={c.estado} tamano="sm" />
-          <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
+          {loteProyecto ? (
+            <p className="text-[11px] font-semibold text-tinta-2" data-fuente-indicador={loteProyecto.fuenteIndicadorA}>
+              {loteProyecto.rotuloIndicadorA}
+            </p>
+          ) : (
+            <IndicadorB estado={c.estadoTecnico} resultado={c.resultadoTecnico} tamano="sm" />
+          )}
           {conPublicacion && interno?.estadoPublicacion && <InsigniaPublicacion estado={interno.estadoPublicacion} tamano="sm" />}
           {interno?.gestion && (
             <div className="flex flex-wrap gap-1.5">

@@ -9,6 +9,8 @@ import MisInmuebles from "@/pages/MisInmuebles";
 import Login from "@/pages/Login";
 import Inmuebles from "@/pages/Inmuebles";
 import FichaPublica from "@/pages/FichaPublica";
+import Proyecto from "@/pages/Proyecto";
+import FichaLote from "@/pages/FichaLote";
 import Interesados from "@/pages/Interesados";
 import { RequireAuth, RequireVista } from "@/lib/auth";
 
@@ -22,6 +24,9 @@ export const router = createHashRouter([
       // v1.0: portal público, sin sesión. Solo inmuebles publicados (el servidor da 404 a los demás).
       { path: "inmuebles", Component: Inmuebles },
       { path: "inmuebles/:codigo", Component: FichaPublica },
+      // v1.0 (etapa 3a): página pública de un proyecto (plano de lotes) y ficha de un lote sin caso propio.
+      { path: "proyectos/:codigo", Component: Proyecto },
+      { path: "proyectos/:codigo/lotes/:lote", Component: FichaLote },
       { path: "casos", element: <RequireVista vista="casos"><Casos /></RequireVista> },
       { path: "casos/nueva", element: <RequireVista vista="registrar"><RegistrarPartida /></RequireVista> },
       // El detalle lo abre cualquier rol con sesión; el servidor decide qué caso puede ver (404 si no le corresponde).

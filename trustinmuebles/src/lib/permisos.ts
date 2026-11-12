@@ -75,7 +75,8 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
 /** Qué enlace del menú resaltar según la ruta. El detalle de un expediente cuenta como «Expedientes». */
 export function claveDeRuta(ruta: string): Vista | null {
   if (ruta === "/") return "inicio";
-  if (ruta.startsWith("/inmuebles")) return "inmuebles";
+  // v1.0 (etapa 3a): la página de un proyecto y la ficha de un lote son parte del catálogo público.
+  if (ruta.startsWith("/inmuebles") || ruta.startsWith("/proyectos")) return "inmuebles";
   if (ruta.startsWith("/interesados")) return "interesados";
   if (ruta.startsWith("/cartera")) return "cartera";
   if (ruta.startsWith("/mis-inmuebles")) return "mis-inmuebles";

@@ -40,13 +40,13 @@ class PanelTiposAlertaTest extends BaseApiTest {
     void conteosDeLaSemilla() throws Exception {
         Map<String, Long> tipos = new HashMap<>();
         Map<String, Long> esfuerzos = new HashMap<>();
-        for (String codigo : SEMILLA) {
+        for (String codigo : conMatrices(SEMILLA)) { // v1.0 (etapa 3a): el panel también cuenta las partidas matrices
             JsonNode r = ruta(codigo);
             r.get("tiposAlerta").forEach(t -> tipos.merge(t.asString(), 1L, Long::sum));
             esfuerzos.merge(r.get("esfuerzo").isNull() ? "SIN_PASOS" : r.get("esfuerzo").asString(), 1L, Long::sum);
         }
         JsonNode p = panel();
-        assertThat(p.get("totalCasos").asInt()).isEqualTo(12);
+        assertThat(p.get("totalCasos").asInt()).isEqualTo(CASOS_CARGA);
         for (JsonNode t : p.get("porTipoAlerta")) {
             assertThat(t.get("casos").asLong()).as(t.get("codigo").asString())
                     .isEqualTo(tipos.getOrDefault(t.get("codigo").asString(), 0L));
@@ -58,7 +58,7 @@ class PanelTiposAlertaTest extends BaseApiTest {
             assertThat(p.get("porEsfuerzo").get(e).asLong()).as(e).isEqualTo(esfuerzos.getOrDefault(e, 0L));
             suma += p.get("porEsfuerzo").get(e).asLong();
         }
-        assertThat(suma).isEqualTo(12);
+        assertThat(suma).isEqualTo(CASOS_CARGA);
         // Casos conocidos: Parcona sin pasos, La Tinguiña MEDIO, Pueblo Nuevo ALTO.
         assertThat(p.get("porEsfuerzo").get("SIN_PASOS").asLong()).isGreaterThanOrEqualTo(1);
         assertThat(p.get("avisoPriorizacion").asString())
@@ -91,7 +91,8 @@ class PanelTiposAlertaTest extends BaseApiTest {
     void filtroPorTipoDeAlerta() throws Exception {
         String revisor = revisor();
         List<String> esperados = new ArrayList<>();
-        for (String codigo : SEMILLA) if (ruta(codigo).get("tiposAlerta").toString().contains("\"RV-02\"")) esperados.add(codigo);
+        // v1.0 (etapa 3a): el revisor también ve las partidas matrices (la de Rinconada del Lúcumo tiene hipoteca vigente).
+        for (String codigo : conMatrices(SEMILLA)) if (ruta(codigo).get("tiposAlerta").toString().contains("\"RV-02\"")) esperados.add(codigo);
         assertThat(esperados).contains(TINGUINA);
         assertThat(codigos("/api/v1/casos?tipoAlerta=RV-02", revisor)).containsExactlyInAnyOrderElementsOf(esperados);
         assertThat(codigos("/api/v1/casos?tipoAlerta=rp-01", revisor)).contains(PUEBLO_NUEVO).doesNotContain(PARCONA);

@@ -1,0 +1,136 @@
+{
+  "codigo": "11112001",
+  "denominacion": "Partida matriz · Altos de Ventisca · Subtanjalla, Ica",
+  "contexto": "Subtanjalla, Ica",
+  "distrito": "Subtanjalla",
+  "precioReferencial": null,
+  "proyecto": "Altos de Ventisca",
+  "titularidadComercial": "INMOBILIARIA",
+  "estadoPublicacion": "BORRADOR",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-11-10",
+    "nota": "Partida matriz del proyecto: los lotes que aún no tienen partida propia muestran su indicador A.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Terreno matriz del proyecto Altos de Ventisca, distrito de Subtanjalla, provincia y departamento de Ica.",
+    "areaM2": 13200.0,
+    "linderos": "Frente: con la vía de acceso principal, en 120.00 ml. Derecha: con terreno de terceros, en 110.00 ml. Izquierda: con terreno de terceros, en 110.00 ml. Fondo: con una vía proyectada del plano, en 120.00 ml.",
+    "antecedenteDominial": "El terreno proviene de la acumulación de dos predios rústicos, inscrita en esta partida a favor de la empresa.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2024-06-24",
+        "tituloNumero": "2024-00052318",
+        "fechaPresentacion": "2024-06-10",
+        "texto": "Desarrollos Ventisca S.A.C. adquiere el terreno matriz por compraventa, con el área, linderos y medidas perimétricas que figuran en la descripción del inmueble.",
+        "canceloNumero": null,
+        "titulares": "Desarrollos Ventisca S.A.C. (100 %)"
+      },
+      {
+        "referencia": "D00001",
+        "tipoActo": "HIPOTECA",
+        "estado": "CANCELADA",
+        "fechaInscripcion": "2024-07-15",
+        "tituloNumero": "2024-00058804",
+        "fechaPresentacion": "2024-07-05",
+        "texto": "Hipoteca a favor de Banco Ejemplo del Pacífico S.A. hasta por S/ 400,000.00 para financiar las obras del proyecto.",
+        "canceloNumero": null,
+        "titulares": null
+      },
+      {
+        "referencia": "E00001",
+        "tipoActo": "CANCELACION",
+        "estado": null,
+        "fechaInscripcion": "2025-12-02",
+        "tituloNumero": "2025-00091127",
+        "fechaPresentacion": "2025-11-24",
+        "texto": "Se cancela la hipoteca inscrita en el asiento D00001 por pago total de la deuda.",
+        "canceloNumero": "D00001",
+        "titulares": null
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida matriz",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Resolución de habilitación urbana",
+        "estado": "REVISADO",
+        "observacion": null
+      },
+      {
+        "nombre": "Plano de lotización del proyecto",
+        "estado": "REVISADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento referencial",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Independización",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación",
+      "Hipoteca"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Terreno matriz de 120.00 m de frente por 110.00 m de fondo: vértices A a D y perímetro de 460.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Describe el terreno matriz con los linderos de la partida: área de 13200.00 m². Incluye el cuadro de áreas de lotes, vías y aportes.",
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Zonificación RDM (residencial de densidad media) en las manzanas A, B y C; las manzanas D y E siguen el uso residencial del plano aprobado. Vías locales de 12.00 m, sin afectación vial sobre los lotes.",
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Valor comercial del terreno por comparación con lotes de proyectos cercanos del mismo distrito.",
+        "archivo": null
+      }
+    ]
+  }
+}
