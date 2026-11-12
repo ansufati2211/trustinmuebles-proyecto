@@ -85,6 +85,20 @@ class CasoLote {
     @Column(name = "titularidad_comercial", nullable = false)
     private TitularidadComercial titularidadComercial = TitularidadComercial.PARTICULAR;
 
+    /** v1.0: proyecto o urbanización del lote; null si el inmueble no pertenece a uno. */
+    @Column(length = 120)
+    private String proyecto;
+
+    /** v1.0: disponibilidad comercial. Informativa: no interviene en el semáforo. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "estado_comercial", nullable = false)
+    private EstadoComercial estadoComercial = EstadoComercial.DISPONIBLE;
+
+    /** v1.0: independización del lote. Informativa: no cambia el indicador A. */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Independizacion independizacion = Independizacion.NO_CONSTA;
+
     /** ¿Entró por «Registrar partida»? Toda partida captada lleva fuente; los casos de demostración, no. */
     boolean esCaptado() {
         return fuente != null;

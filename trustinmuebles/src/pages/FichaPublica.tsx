@@ -2,6 +2,7 @@ import { Link, useParams } from "react-router";
 import { ArrowLeft, Building2, CalendarCheck, FileText, Info, MapPin, Ruler } from "lucide-react";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
+import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
@@ -72,6 +73,8 @@ export default function FichaPublica() {
                 <li className="cifras flex items-center gap-1.5"><Ruler className="size-4 text-primary" aria-hidden="true" />{m2(p.areaM2)} de terreno</li>
               )}
               <li>{p.tipoInmuebleEtiqueta}</li>
+              {p.proyecto && <li>Proyecto {p.proyecto}</li>}
+              {p.estadoComercial && p.estadoComercial !== "DISPONIBLE" && <li>{p.estadoComercialEtiqueta}</li>}
               {deLaInmobiliaria && (
                 <li className="flex items-center gap-1.5"><Building2 className="size-4 text-primary" aria-hidden="true" />Venta directa de la inmobiliaria</li>
               )}
@@ -81,8 +84,12 @@ export default function FichaPublica() {
                 {p.precioReferencial != null ? precio(p.precioReferencial, p.moneda, true) : "Precio a consultar"}
               </p>
               {p.precioNota && <p className="mt-1 text-xs text-tinta-2">{p.precioNota}</p>}
+              {p.precioPorM2 != null && (
+                <p className="cifras mt-1 text-sm font-semibold text-tinta-2">{precio(p.precioPorM2, p.moneda)} por m²</p>
+              )}
               <p className="cifras mt-1 text-xs font-semibold text-tinta-2">Partida N.° {d.codigo}</p>
             </div>
+            <LineaIndependizacion predio={p} />
 
             <div className={`${tarjeta} space-y-4 !p-5`}>
               <p className="flex items-center gap-2 font-bold text-foreground">

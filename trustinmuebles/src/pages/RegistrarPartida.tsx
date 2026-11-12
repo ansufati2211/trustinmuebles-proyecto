@@ -16,7 +16,9 @@ import { disociar } from "@/lib/disociar";
 import { abrirExterno, CONOCE_AQUI, normalizarNumero, numeroValidoParaOrigen, VISOR_BGR } from "@/lib/fuentes";
 import { leerPartida } from "@/lib/leerPartida";
 import { ETIQUETA_COMPLETITUD } from "@/lib/semaforo";
-import type { Completitud, DetalleCaso, OrigenCaptacion, TitularidadComercial } from "@/lib/types";
+import type { Completitud, DetalleCaso, EstadoComercial, Independizacion, OrigenCaptacion, TitularidadComercial } from "@/lib/types";
+import { OPCIONES_INDEPENDIZACION } from "@/components/PanelDatosComerciales";
+import { OPCIONES_ESTADO_COMERCIAL } from "@/lib/filtrosPublico";
 
 const CONDICIONES = [
   "Lote urbano inscrito en el Registro de Predios.",
@@ -78,6 +80,10 @@ export default function RegistrarPartida() {
   const [propietario, setPropietario] = useState("");
   // v1.0: un inmueble de la inmobiliaria no exige cuenta de propietario; su autorización la registra el asesor.
   const [titularidad, setTitularidad] = useState<TitularidadComercial>("PARTICULAR");
+  // v1.0 (etapa 2): datos comerciales opcionales; el asesor puede corregirlos después en el expediente.
+  const [proyecto, setProyecto] = useState("");
+  const [estadoComercial, setEstadoComercial] = useState<EstadoComercial>("DISPONIBLE");
+  const [independizacion, setIndependizacion] = useState<Independizacion>("NO_CONSTA");
   const exigePropietario = titularidad === "PARTICULAR";
   const [fechaConsulta, setFechaConsulta] = useState(hoy());
   const [condicion, setCondicion] = useState(CONDICIONES[0]);
@@ -166,6 +172,9 @@ export default function RegistrarPartida() {
       confirmaSinDatosPersonales: confirmo,
       propietarioCodigo: propietario.trim() || null,
       titularidadComercial: titularidad,
+      proyecto: proyecto.trim() || null,
+      estadoComercial,
+      independizacion,
     };
     try {
       const nuevo = await post<DetalleCaso>("/casos", cuerpo);
@@ -273,6 +282,29 @@ export default function RegistrarPartida() {
                 {(p) => (
                   <input {...p} className={claseCampo} maxLength={255} placeholder="Mz. D Lote 5 · Hab. Urb. Los Sauces · Ica"
                     value={denominacion} onChange={(e) => setDenominacion(e.target.value)} />
+                )}
+              </Campo>
+            </div>
+
+            <div className="grid gap-5 sm:grid-cols-3">
+              <Campo etiqueta="Proyecto (opcional)">
+                {(p) => <input {...p} className={claseCampo} maxLength={120} placeholder="Sin proyecto" value={proyecto}
+                  onChange={(e) => setProyecto(e.target.value)} />}
+              </Campo>
+              <Campo etiqueta="Estado comercial">
+                {(p) => (
+                  <select {...p} className={claseCampo} value={estadoComercial}
+                    onChange={(e) => setEstadoComercial(e.target.value as EstadoComercial)}>
+                    {OPCIONES_ESTADO_COMERCIAL.map((o) => <option key={o.valor} value={o.valor}>{o.etiqueta}</option>)}
+                  </select>
+                )}
+              </Campo>
+              <Campo etiqueta="Independización del lote">
+                {(p) => (
+                  <select {...p} className={claseCampo} value={independizacion}
+                    onChange={(e) => setIndependizacion(e.target.value as Independizacion)}>
+                    {OPCIONES_INDEPENDIZACION.map((o) => <option key={o.valor} value={o.valor}>{o.etiqueta}</option>)}
+                  </select>
                 )}
               </Campo>
             </div>

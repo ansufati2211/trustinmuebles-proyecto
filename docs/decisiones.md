@@ -616,3 +616,35 @@ propietario ni las cuentas del solicitante o del especialista asignado. Cualquie
 Los PDF siguen exigiendo sesión. El inicio explica el recorrido en 5 pasos (Registrar, Evaluar y completar, Publicar, Buscar,
 Solicitar cita).
 **Pruebas:** `PortalPublicoTest`, `TitularidadComercialTest`, `lib/publico.test.ts`.
+
+## D62. v1.0 (etapa 2): filtros, orden e independización del catálogo público (V18)
+
+**Qué:** `GET /api/v1/publico/inmuebles` acepta filtros combinables con «y»: `proyecto`, `distrito` (sin distinguir mayúsculas),
+`tipo` (`LOTE` o `VIVIENDA`, también los nombres completos), `estadoComercial`, `moneda` con `precioMin` y `precioMax`,
+`precioM2Min` y `precioM2Max`, `areaMin` y `areaMax`, `indicadorA` y `tipoAlerta`; y orden: `orden` (`novedad`, `precio`,
+`precioM2`, `area`) con `sentido` (`asc` o `desc`). Sin orden, lo más nuevo primero. El servidor filtra, ordena y pagina (24 por
+página): el `total` es el de lo filtrado. Un valor no válido, un número negativo o un mínimo mayor que el máximo dan 400 con el
+parámetro y los valores aceptados. `GET /api/v1/publico/filtros` da los proyectos, distritos y tipos de alerta para los
+selectores. En la interfaz, los filtros y el orden viven en la URL (`/#/inmuebles?tipo=LOTE&orden=precio`) y la página va como
+`?pagina=2`; cambiar un filtro vuelve a la primera.
+**Precios y monedas:** el precio referencial puede estar en soles o en dólares (lotes de la SBN), así que nunca se comparan
+entre sí: un filtro de precio o de precio por m² sin `moneda` se entiende en soles, y el orden por precio sin moneda pone los
+soles antes que los dólares. El precio por m² es el precio referencial entre el área del terreno, con dos decimales; es
+informativo. Un inmueble sin precio o sin área no cumple un filtro numérico y va al final del orden, en los dos sentidos.
+**Campos nuevos del caso (V18, aditiva):** `proyecto` (opcional), `estado_comercial` (`DISPONIBLE`, `SEPARADO`, `VENDIDO`) e
+`independizacion` (`PARTIDA_PROPIA`, `EN_PARTIDA_MATRIZ`, `NO_CONSTA`). Los tres son informativos: ninguno interviene en el
+motor de reglas ni cambia el indicador A, y editarlos no recalcula ni agrega historial de evaluación. Se piden al registrar
+la partida (opcionales) y los corrige el asesor o el revisor con `PUT /casos/{c}/datos-comerciales`. El estado comercial no usa los
+colores del semáforo para no confundirse con el indicador A.
+**Precarga (`CasosSeeder`, también en una base existente si no se tocaron):** el proyecto sale de la denominación («Hab. Urb.
+Santa Elvira» → «Santa Elvira»; los dos lotes de la SBN no tienen proyecto); la independización sale del antecedente dominial del
+propio expediente (de la que «se independizó» → partida propia; «a independizar» → en partida matriz; sin dato → no consta);
+Pueblo Nuevo y Pachacútec están separados y el resto, disponible.
+**Rendimiento:** el filtro por datos del caso usa una sola consulta de los publicados (`findPublicados`, con el caso ya cargado);
+el indicador A se filtra con su columna de estado y el tipo de alerta lee las evaluaciones en bloques de 500; solo los 24 de la
+página arman su tarjeta completa. Se filtra y ordena en memoria, lo que es adecuado a miles de lotes pero no a cientos de miles.
+**Generador de carga:** `GeneradorCarga` solo corre con `--app.carga.lotes=N` (no es parte de la semilla): crea N lotes ficticios
+publicados `SIM-9xxxxxxx` (empresa inventada, sin datos personales), repartidos entre 20 proyectos y 10 distritos, en soles y
+dólares. Es determinista e idempotente. `CargaCatalogoTest` lo usa con 1000 lotes y exige menos de 2 s por consulta.
+**Pruebas:** `FiltrosCatalogoTest` (cada filtro y orden contra un oráculo independiente, 400, selectores, independización y
+edición), `FiltroPublicoTest`, `CargaCatalogoTest`, `lib/filtrosPublico.test.ts`.

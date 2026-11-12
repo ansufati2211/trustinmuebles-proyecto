@@ -125,6 +125,7 @@ class CasosSeeder implements ApplicationRunner {
         caso.setAutorizacionFecha(java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         caso.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
         // v1.0: los lotes de la inmobiliaria llevan su autorización registrada por el asesor en su nombre.
+        precargarComerciales(caso, c);
         if (DE_LA_INMOBILIARIA.contains(c.codigo())) {
             caso.setTitularidadComercial(TitularidadComercial.INMOBILIARIA);
             HistorialAutorizacion h = new HistorialAutorizacion();
@@ -163,6 +164,36 @@ class CasosSeeder implements ApplicationRunner {
      * como de la inmobiliaria, y los casos 1 a 4 del estudio no se tocan.
      */
     static final java.util.Set<String> DE_LA_INMOBILIARIA = java.util.Set.of("11081204");
+
+    /** v1.0 (etapa 2): casos de la carga que ya están separados por un comprador; el resto está disponible. */
+    static final java.util.Map<String, EstadoComercial> ESTADO_COMERCIAL = java.util.Map.of(
+            "11075836", EstadoComercial.SEPARADO, "11098467", EstadoComercial.SEPARADO);
+
+    /**
+     * v1.0 (etapa 2): el proyecto sale de la denominación («Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica» →
+     * «Santa Elvira»); un caso de una publicación oficial no pertenece a un proyecto. La independización sale del
+     * antecedente dominial del propio caso, de modo que coincide con lo que ya dice su expediente.
+     */
+    private static void precargarComerciales(CasoLote caso, CasoJson c) {
+        if (!c.esDeFuentePublica()) caso.setProyecto(proyectoDe(c.denominacion()));
+        caso.setIndependizacion(independizacionDe(c.expediente().antecedenteDominial()));
+        caso.setEstadoComercial(ESTADO_COMERCIAL.getOrDefault(c.codigo(), EstadoComercial.DISPONIBLE));
+    }
+
+    static String proyectoDe(String denominacion) {
+        String[] partes = denominacion.split(" · ");
+        if (partes.length < 3) return null;
+        String p = partes[1].trim();
+        return p.startsWith("Hab. Urb. ") ? p.substring("Hab. Urb. ".length()) : p;
+    }
+
+    static Independizacion independizacionDe(String antecedente) {
+        if (antecedente == null) return Independizacion.NO_CONSTA;
+        String t = antecedente.toLowerCase(java.util.Locale.ROOT);
+        if (t.contains("a independizar")) return Independizacion.EN_PARTIDA_MATRIZ;
+        if (t.contains("independiz")) return Independizacion.PARTIDA_PROPIA;
+        return Independizacion.NO_CONSTA;
+    }
 
     /** Reparto de los casos de demostración entre los dos propietarios. Es el mismo que aplica la migración V6. */
     static final java.util.Set<String> DEL_PROPIETARIO_02 = java.util.Set.of("11052690", "11070419",
@@ -207,6 +238,9 @@ class CasosSeeder implements ApplicationRunner {
         // Solo rellena el propietario si falta; el estado de publicación y la autorización no se tocan.
         if (caso.getPropietarioCodigo() == null) caso.setPropietarioCodigo(propietarioDe(c));
         if (caso.getFuenteUrl() == null && c.esDeFuentePublica()) caso.setFuenteUrl(c.fuenteUrl());
+        // v1.0 (etapa 2): una base anterior recibe proyecto, estado comercial e independización, solo si no se tocaron.
+        if (caso.getProyecto() == null && caso.getEstadoComercial() == EstadoComercial.DISPONIBLE
+                && caso.getIndependizacion() == Independizacion.NO_CONSTA) precargarComerciales(caso, c);
         Expediente e = expedientes.findByCasoCodigo(c.codigo()).orElseThrow();
         var actuales = checklist.listar(e.getId());
         java.util.Set<String> nombres = new java.util.HashSet<>();

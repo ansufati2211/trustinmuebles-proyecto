@@ -135,6 +135,36 @@ public class ClasificacionService {
                 ev.getExpedienteVersion()));
     }
 
+    /** v1.0: el indicador A de varios expedientes, sin leer el detalle de la evaluación (filtrar es barato). */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, EstadoSemaforo> estados(java.util.Collection<Long> expedienteIds) {
+        java.util.Map<Long, EstadoSemaforo> mapa = new java.util.HashMap<>();
+        java.util.List<Long> ids = new java.util.ArrayList<>(expedienteIds);
+        for (int i = 0; i < ids.size(); i += 500) {
+            for (Object[] fila : evaluaciones.estadosDe(ids.subList(i, Math.min(i + 500, ids.size())))) {
+                mapa.put((Long) fila[0], (EstadoSemaforo) fila[1]);
+            }
+        }
+        return mapa;
+    }
+
+    /** v1.0: las evaluaciones vigentes de varios expedientes en una sola consulta (por id de expediente). */
+    @Transactional(readOnly = true)
+    public java.util.Map<Long, EvaluacionDto> obtenerVarias(java.util.Collection<Long> expedienteIds) {
+        java.util.Map<Long, EvaluacionDto> mapa = new java.util.HashMap<>();
+        if (expedienteIds.isEmpty()) return mapa;
+        // En lotes: una lista IN muy larga no es buena idea en ninguna base.
+        java.util.List<Long> ids = new java.util.ArrayList<>(expedienteIds);
+        for (int i = 0; i < ids.size(); i += 500) {
+            for (var ev : evaluaciones.findByExpedienteIdIn(ids.subList(i, Math.min(i + 500, ids.size())))) {
+                mapa.put(ev.getExpedienteId(), EvaluacionDto.de(
+                        json.readValue(ev.getDetalle(), ResultadoClasificacion.class), ev.getCalculadaEn(),
+                        ev.getExpedienteVersion()));
+            }
+        }
+        return mapa;
+    }
+
     /** True si falta la evaluación, usa otra versión de reglas o quedó atrás del expediente. */
     @Transactional(readOnly = true)
     public boolean necesitaRecalculo(Long expedienteId, Long expedienteVersion) {

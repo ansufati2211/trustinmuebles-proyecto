@@ -42,7 +42,20 @@ export interface Sesion { token: string; usuario: Usuario }
 export interface Predio {
   tipoInmueble: TipoInmueble; tipoInmuebleEtiqueta: string; distrito: string | null; areaM2: number | null;
   areaConstruidaInscrita: number | null; precioReferencial: number | null; moneda: string | null; precioNota: string | null;
+  /** v1.0 (etapa 2): precio referencial entre el área del terreno; null si falta alguno. Informativo. */
+  precioPorM2?: number | null;
+  /** v1.0 (etapa 2): proyecto o urbanización; null si el inmueble no es de uno. */
+  proyecto?: string | null;
+  estadoComercial?: EstadoComercial; estadoComercialEtiqueta?: string;
+  /** v1.0 (etapa 2): independización del lote, con su etiqueta y una línea de explicación. No cambia el indicador A. */
+  independizacion?: Independizacion; independizacionEtiqueta?: string; independizacionExplicacion?: string;
 }
+
+export type EstadoComercial = "DISPONIBLE" | "SEPARADO" | "VENDIDO";
+export type Independizacion = "PARTIDA_PROPIA" | "EN_PARTIDA_MATRIZ" | "NO_CONSTA";
+
+/** v1.0 (etapa 2): valores de los selectores de filtro del catálogo público (GET /publico/filtros). */
+export interface OpcionesFiltro { proyectos: string[]; distritos: string[]; tiposAlerta: TipoAlerta[] }
 
 export interface ResumenCaso {
   codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;

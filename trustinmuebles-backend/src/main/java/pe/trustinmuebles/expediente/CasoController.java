@@ -50,6 +50,12 @@ class CasoController {
         return ResponseEntity.status(201).body(servicio.registrar(req));
     }
 
+    /** v1.0: el asesor corrige el proyecto, el estado comercial o la independización del lote. */
+    @PutMapping("/{codigo}/datos-comerciales")
+    DetalleCaso datosComerciales(@PathVariable String codigo, @Valid @RequestBody DatosComercialesRequest req) {
+        return servicio.actualizarComerciales(codigo, req);
+    }
+
     @DeleteMapping("/{codigo}")
     ResponseEntity<Void> eliminar(@PathVariable String codigo) {
         servicio.eliminar(codigo);

@@ -529,6 +529,9 @@ class ExpedienteService {
         // Etapa 1 (captación): el caso nace en borrador y sin autorización; solo el propietario puede otorgarla.
         caso.setPropietarioCodigo(propietario);
         caso.setTitularidadComercial(titularidad);
+        caso.setProyecto(vacioANull(req.proyecto()));
+        if (req.estadoComercial() != null) caso.setEstadoComercial(req.estadoComercial());
+        if (req.independizacion() != null) caso.setIndependizacion(req.independizacion());
         caso.setAutorizacionFecha(null);
         caso.setEstadoPublicacion(EstadoPublicacion.BORRADOR);
         casos.save(caso);
@@ -561,7 +564,10 @@ class ExpedienteService {
         boolean hayPrecio = c.getPrecioReferencial() != null;
         return new PredioDto(tipo, tipo.etiqueta(), c.getDistrito(), e.getAreaM2(), e.getAreaConstruidaInscrita(),
                 c.getPrecioReferencial(), hayPrecio ? c.getMoneda() : null,
-                !hayPrecio ? null : c.getPrecioNota() != null ? c.getPrecioNota() : PRECIO_NOTA);
+                !hayPrecio ? null : c.getPrecioNota() != null ? c.getPrecioNota() : PRECIO_NOTA,
+                FiltroPublico.precioPorM2(c.getPrecioReferencial(), e.getAreaM2()), c.getProyecto(),
+                c.getEstadoComercial(), c.getEstadoComercial().etiqueta(), c.getIndependizacion(),
+                c.getIndependizacion().etiqueta(), c.getIndependizacion().explicacion());
     }
 
     /** Elimina una partida captada (por ejemplo, ante el pedido de un titular). Los casos de demostración no se borran. */
@@ -952,24 +958,86 @@ class ExpedienteService {
      */
     @Transactional(readOnly = true)
     PaginaPublica listarPublico(int pagina) {
+        return listarPublico(pagina, FiltroPublico.de(null, null, null, null, null, null, null, null, null, null, null,
+                null, null, null, null, java.util.Set.of()));
+    }
+
+    /** Códigos de alerta válidos para el filtro (las reglas y «información insuficiente»). */
+    java.util.Set<String> codigosDeAlerta() {
+        java.util.Set<String> tipos = new HashSet<>();
+        clasificacion.tiposDeAlerta().forEach(t -> tipos.add(t.codigo()));
+        return tipos;
+    }
+
+    /**
+     * v1.0 (etapa 2): catálogo público con filtros, orden y página resueltos en el servidor. Primero se filtra por los
+     * datos del caso; la evaluación solo se lee (de una vez, en una consulta) si se filtra por indicador A o alerta, y
+     * los detalles de cada tarjeta se arman únicamente para los 24 inmuebles de la página.
+     */
+    @Transactional(readOnly = true)
+    PaginaPublica listarPublico(int pagina, FiltroPublico filtro) {
         if (pagina < 0) throw new IllegalArgumentException("pagina: debe ser 0 o mayor");
-        List<Expediente> publicados = expedientes.findAllByOrderByCasoCodigoAsc().stream()
-                .filter(e -> e.getCaso().getEstadoPublicacion() == EstadoPublicacion.PUBLICADO).toList();
-        int total = publicados.size();
+        List<FiltroPublico.Candidato> candidatos = expedientes.findPublicados().stream()
+                .map(e -> new FiltroPublico.Candidato(e, e.getCaso(), predio(e)))
+                .filter(c -> filtro.aceptaPredio(c.caso(), c.predio()))
+                .collect(java.util.stream.Collectors.toCollection(java.util.ArrayList::new));
+        Map<Long, EvaluacionDto> evaluaciones = Map.of();
+        if (filtro.indicadorA() != null) {
+            // El color está en su propia columna: no hace falta leer el detalle de cada evaluación.
+            Map<Long, pe.trustinmuebles.clasificacion.EstadoSemaforo> estados = clasificacion.estados(
+                    candidatos.stream().map(c -> c.expediente().getId()).toList());
+            candidatos.removeIf(c -> estados.get(c.expediente().getId()) != filtro.indicadorA());
+        }
+        if (filtro.tipoAlerta() != null) {
+            Map<Long, EvaluacionDto> ev = clasificacion.obtenerVarias(
+                    candidatos.stream().map(c -> c.expediente().getId()).toList());
+            evaluaciones = ev;
+            candidatos.removeIf(c -> !RutasRegularizacion.tiposAlerta(ev.get(c.expediente().getId()))
+                    .contains(filtro.tipoAlerta()));
+        }
+        candidatos.sort(filtro.comparador());
+        int total = candidatos.size();
         int desde = Math.min(pagina * TAMANO_PAGINA_PUBLICA, total);
         int hasta = Math.min(desde + TAMANO_PAGINA_PUBLICA, total);
-        List<InmueblePublico> items = publicados.subList(desde, hasta).stream().map(e -> {
-            EvaluacionDto ev = clasificacion.obtener(e.getId()).orElse(null);
+        Map<Long, EvaluacionDto> ya = evaluaciones;
+        List<InmueblePublico> items = candidatos.subList(desde, hasta).stream().map(cand -> {
+            Expediente e = cand.expediente();
+            EvaluacionDto ev = ya.containsKey(e.getId()) ? ya.get(e.getId())
+                    : clasificacion.obtener(e.getId()).orElse(null);
             EvaluacionTecnicaDto t = inspeccion.obtener(e.getId());
             CasoLote c = e.getCaso();
             return new InmueblePublico(c.getCodigo(), c.getDenominacion(), c.getContexto(),
                     ev == null ? null : ev.estado(), ev == null ? null : ev.etiqueta(), c.getOrigen().name(),
                     c.getFuente(), c.getFechaConsulta(), c.getFuenteUrl(), t.estado(), t.resultado(),
-                    t.riesgoFisicoDetectado(), predio(e), RutasRegularizacion.tiposAlerta(ev),
+                    t.riesgoFisicoDetectado(), cand.predio(), RutasRegularizacion.tiposAlerta(ev),
                     c.getTitularidadComercial());
         }).toList();
         int paginas = (total + TAMANO_PAGINA_PUBLICA - 1) / TAMANO_PAGINA_PUBLICA;
         return new PaginaPublica(items, pagina, TAMANO_PAGINA_PUBLICA, total, paginas);
+    }
+
+    /** v1.0: valores que ofrecen los selectores de filtro: proyectos y distritos de los inmuebles publicados. */
+    @Transactional(readOnly = true)
+    OpcionesFiltro opcionesFiltro() {
+        java.util.TreeSet<String> proyectos = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        java.util.TreeSet<String> distritos = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        for (Expediente e : expedientes.findPublicados()) {
+            if (e.getCaso().getProyecto() != null) proyectos.add(e.getCaso().getProyecto());
+            if (e.getCaso().getDistrito() != null) distritos.add(e.getCaso().getDistrito());
+        }
+        return new OpcionesFiltro(List.copyOf(proyectos), List.copyOf(distritos), clasificacion.tiposDeAlerta());
+    }
+
+    /** v1.0: el asesor corrige el proyecto, el estado comercial o la independización. Ninguno cambia el indicador A. */
+    @Transactional
+    DetalleCaso actualizarComerciales(String codigo, DatosComercialesRequest req) {
+        Expediente e = buscar(codigo);
+        CasoLote c = e.getCaso();
+        if (req.proyecto() != null) c.setProyecto(vacioANull(req.proyecto()));
+        if (req.estadoComercial() != null) c.setEstadoComercial(req.estadoComercial());
+        if (req.independizacion() != null) c.setIndependizacion(req.independizacion());
+        casos.save(c);
+        return aDetalle(e);
     }
 
     /** v1.0: ficha pública de un caso PUBLICADO. Un borrador, uno retirado o uno inexistente dan 404. */
