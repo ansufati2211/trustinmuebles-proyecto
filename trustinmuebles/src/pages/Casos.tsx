@@ -108,6 +108,13 @@ export default function Casos() {
                 Proyectos y carga de lotes por CSV
               </Link>
             )}
+            {/* v1.0 (etapa 4): el gestor no tiene «Interesados» en su menú; llega a la bandeja desde aquí. */}
+            {actuaComoGestor(usuario?.rol) && (
+              <Link to="/interesados" style={retraso(360)}
+                className="anim-enter ml-3 mt-5 inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-4 py-2 text-sm font-bold text-white backdrop-blur-md hover:bg-white/20">
+                Interesados y citas
+              </Link>
+            )}
           </div>
 
           <dl style={retraso(380)} className="anim-enter grid grid-cols-2 gap-3 sm:min-w-[320px]">

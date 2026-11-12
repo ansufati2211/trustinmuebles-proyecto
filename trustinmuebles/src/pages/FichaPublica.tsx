@@ -4,6 +4,7 @@ import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { PredioImagen } from "@/components/base/PredioImagen";
+import { SolicitarCita } from "@/components/SolicitarCita";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
 import { m2, precio } from "@/lib/formato";
@@ -102,14 +103,16 @@ export default function FichaPublica() {
               <p className="flex items-center gap-2 font-bold text-foreground">
                 <CalendarCheck className="size-5 text-primary" aria-hidden="true" /> ¿Te interesa este inmueble?
               </p>
+              {/* v1.0 (etapa 4): cita o consulta sin cuenta. El contacto de los compradores con cuenta sigue igual. */}
+              <SolicitarCita destino={{ casoCodigo: d.codigo, nombre: d.denominacion, referencia: d.codigo }} />
               {!usuario ? (
-                <>
-                  <p className="text-sm text-tinta-2">Ingresa con tu cuenta para pedir que un asesor te contacte.</p>
-                  <Link to="/login" state={{ from: `/casos/${d.codigo}` }}
-                    className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white">Ingresar</Link>
-                </>
+                <p className="text-sm text-tinta-2">
+                  ¿Tienes cuenta de comprador?{" "}
+                  <Link to="/login" state={{ from: `/casos/${d.codigo}` }} className="font-bold text-primary hover:underline">Ingresa</Link>{" "}
+                  para ver el expediente y pedir que un asesor te contacte.
+                </p>
               ) : (
-                <Link to={`/casos/${d.codigo}`} className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white">
+                <Link to={`/casos/${d.codigo}`} className="inline-flex text-sm font-bold text-primary hover:underline">
                   {usuario.rol === "COMPRADOR" ? "Ver el expediente y solicitar contacto" : "Abrir el expediente"}
                 </Link>
               )}

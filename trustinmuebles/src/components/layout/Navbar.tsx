@@ -96,6 +96,8 @@ export function Navbar() {
 
   const enlaces = navegacion(usuario?.rol);
   const principal = enlaces.find((e) => e.clave !== "inicio") ?? null;
+  // v1.0 (etapa 4): el menú del asesor tiene cinco enlaces; entre 768 y 1024 px no caben y queda el enlace principal.
+  const menuLargo = enlaces.length > 4;
   const claveBase = claveDeRuta(location.pathname);
 
   const claveActiva =
@@ -174,7 +176,7 @@ export function Navbar() {
 
             <nav
               aria-label="Principal"
-              className="relative hidden md:flex items-center gap-1 bg-gray-50/70 p-1 rounded-full border border-gray-100"
+              className={`relative hidden ${menuLargo ? "lg:flex" : "md:flex"} items-center gap-1 bg-gray-50/70 p-1 rounded-full border border-gray-100`}
             >
               <span
                 ref={pildoraRef}
@@ -229,7 +231,7 @@ export function Navbar() {
               <NavLink
                 to={principal.ruta}
                 className={({ isActive }) =>
-                  `md:hidden shrink-0 px-2.5 min-[400px]:px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
+                  `${menuLargo ? "lg:hidden" : "md:hidden"} shrink-0 px-2.5 min-[400px]:px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
                     isActive
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-foreground"

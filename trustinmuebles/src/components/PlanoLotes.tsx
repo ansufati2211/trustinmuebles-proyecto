@@ -8,6 +8,7 @@ import {
   siguienteIndice, type EstadoPlano,
 } from "@/lib/proyectos";
 import type { LoteProyecto } from "@/lib/types";
+import { SolicitarCita } from "@/components/SolicitarCita";
 
 /**
  * v1.0 (etapa 3a): plano del proyecto por manzanas, en SVG propio. Cada lote muestra su número y el color de su estado
@@ -149,10 +150,17 @@ export function PanelLote({ proyectoCodigo, lote, cerrar }: {
         <Dato termino="Independización">{lote.independizacionEtiqueta}</Dato>
       </dl>
       {lote.publicado ? (
-        <Link to={enlaceLote(proyectoCodigo, lote)}
-          className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">
-          Ver ficha del lote <ArrowRight className="size-4" aria-hidden="true" />
-        </Link>
+        <div className="space-y-3">
+          <Link to={enlaceLote(proyectoCodigo, lote)}
+            className="inline-flex items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white">
+            Ver ficha del lote <ArrowRight className="size-4" aria-hidden="true" />
+          </Link>
+          {/* v1.0 (etapa 4): cita desde el plano. Un lote con caso propio la pide desde la ficha de su caso. */}
+          {!lote.casoCodigo && (
+            <SolicitarCita compacto key={lote.clave}
+              destino={{ proyectoCodigo, lote: lote.clave, nombre: `Mz. ${lote.manzana} Lote ${lote.numero}`, referencia: lote.codigo }} />
+          )}
+        </div>
       ) : (
         <p className="text-xs text-tinta-2">Este lote no se ofrece en línea. Consulta por él con un asesor.</p>
       )}

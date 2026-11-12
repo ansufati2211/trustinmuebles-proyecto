@@ -58,11 +58,13 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
   const inicio: EnlaceNav = { clave: "inicio", etiqueta: "Inicio", ruta: "/" };
   // v1.0: sin sesión, el inicio y el catálogo público; el personal entra con «Ingresar».
   if (!rol) return [inicio, { clave: "inmuebles", etiqueta: "Inmuebles", ruta: "/inmuebles" }];
-  // v1.0: el asesor trabaja con su menú propio. «Proyectos» abre la lista completa de expedientes de la cartera.
+  // v1.0: el asesor trabaja con su menú propio. Etapa 4: «Proyectos» abre la lista de proyectos (etapa 3b),
+  // «Expedientes» conserva la lista completa de expedientes e «Interesados» abre la bandeja del CRM.
   if (rol === "ASESOR") {
     return [
       { clave: "registrar", etiqueta: "Registrar", ruta: "/casos/nueva" },
-      { clave: "casos", etiqueta: "Proyectos", ruta: "/casos" },
+      { clave: "proyectos", etiqueta: "Proyectos", ruta: "/proyectos" },
+      { clave: "casos", etiqueta: "Expedientes", ruta: "/casos" },
       { clave: "cartera", etiqueta: "Cartera", ruta: "/cartera" },
       { clave: "interesados", etiqueta: "Interesados", ruta: "/interesados" },
     ];
