@@ -341,3 +341,27 @@ export interface DecisionCaptacion {
   id: number; casoCodigo: string; decision: DecisionCaptacionTipo; decisionEtiqueta: string; motivo: MotivoDecision;
   motivoEtiqueta: string; cuentaCodigo: string; registradaEn: string;
 }
+
+// ------------------------------------------------------------------------- carga masiva de lotes (v1.0, etapa 3b)
+
+export type AccionFilaCarga = "NUEVO" | "ACTUALIZA" | "SIN_CAMBIOS" | "ERROR";
+
+/** Una fila del CSV en la vista previa. `fila` es la línea del archivo (el encabezado es la 1). */
+export interface FilaCarga {
+  fila: number; manzana: string | null; lote: number | null; clave: string | null; accion: AccionFilaCarga;
+  cambios: string[]; errores: string[];
+}
+
+/** Resultado de revisar el archivo sin guardar nada. `valida`: se puede confirmar (ni un solo error). */
+export interface VistaPreviaCarga {
+  proyectoCodigo: string; bytes: number; totalFilas: number; nuevas: number; actualizadas: number; sinCambios: number;
+  conErrores: number; erroresGenerales: string[]; valida: boolean; filas: FilaCarga[];
+}
+
+export interface ResultadoCarga { cargaId: string; proyectoCodigo: string; creados: number; actualizados: number; sinCambios: number }
+
+/** Un proyecto en el panel del equipo (GET /proyectos). */
+export interface ResumenProyecto {
+  codigo: string; nombre: string; distrito: string | null; casoMatrizCodigo: string | null; autorizacionVigente: boolean;
+  lotes: number; publicados: number; conteo: { disponibles: number; separados: number; vendidos: number };
+}

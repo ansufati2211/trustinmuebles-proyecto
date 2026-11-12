@@ -247,9 +247,9 @@ class CarteraTest extends BaseApiTest {
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsString();
             JsonNode p = json.readTree(r);
 
-            // v1.0 (etapa 3a): más las 3 partidas matrices (dos verdes y una amarilla por su hipoteca), en borrador.
+            // v1.0 (etapas 3a y 3b): más las 4 partidas matrices (tres verdes y una amarilla por su hipoteca), en borrador.
             assertThat(p.get("totalCasos").asInt()).isEqualTo(CASOS_CARGA);
-            assertThat(p.get("porColor").get("VERDE").asInt()).isEqualTo(2 + 2);
+            assertThat(p.get("porColor").get("VERDE").asInt()).isEqualTo(2 + 3);
             assertThat(p.get("porColor").get("AMARILLO").asInt()).isEqualTo(4 + 1);
             assertThat(p.get("porColor").get("ROJO").asInt()).isEqualTo(2);
             assertThat(p.get("porColor").get("GRIS").asInt()).isEqualTo(4);

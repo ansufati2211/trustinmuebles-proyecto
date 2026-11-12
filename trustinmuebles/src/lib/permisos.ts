@@ -28,7 +28,7 @@ export const puedeEditarExpediente = (rol: Rol | undefined) => actuaComoRevisor(
 
 // ------------------------------------------------------------------ navegación (v0.7)
 
-export type Vista = "inicio" | "inmuebles" | "casos" | "cartera" | "mis-inmuebles" | "registrar" | "interesados";
+export type Vista = "inicio" | "inmuebles" | "casos" | "cartera" | "mis-inmuebles" | "registrar" | "interesados" | "proyectos";
 
 export interface EnlaceNav { clave: Vista; etiqueta: string; ruta: string }
 
@@ -39,6 +39,8 @@ const ROLES_POR_VISTA: Record<Exclude<Vista, "inicio" | "inmuebles">, Rol[]> = {
   "mis-inmuebles": ["PROPIETARIO"],
   registrar: ["REVISOR", "ASESOR"],
   interesados: ["GESTOR", "ASESOR"],
+  // v1.0 (etapa 3b): proyectos y carga masiva de lotes.
+  proyectos: ["GESTOR", "ASESOR"],
 };
 
 /**
@@ -75,6 +77,8 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
 /** Qué enlace del menú resaltar según la ruta. El detalle de un expediente cuenta como «Expedientes». */
 export function claveDeRuta(ruta: string): Vista | null {
   if (ruta === "/") return "inicio";
+  // v1.0 (etapa 3b): el panel de proyectos y la carga de lotes son del equipo (gestor y asesor).
+  if (ruta === "/proyectos" || /^\/proyectos\/[^/]+\/carga\/?$/.test(ruta)) return "proyectos";
   // v1.0 (etapa 3a): la página de un proyecto y la ficha de un lote son parte del catálogo público.
   if (ruta.startsWith("/inmuebles") || ruta.startsWith("/proyectos")) return "inmuebles";
   if (ruta.startsWith("/interesados")) return "interesados";

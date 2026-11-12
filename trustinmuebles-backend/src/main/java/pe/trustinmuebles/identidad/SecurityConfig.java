@@ -102,6 +102,9 @@ class SecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/decisiones-captacion")
                         .hasAnyRole("GESTOR", "REVISOR", "ASESOR")
                         // v1.0 (etapa 3a): proyectos. Leer, el equipo; publicar o cambiar un lote, el gestor y el asesor.
+                        // Etapa 3b: la plantilla del CSV es de quien carga lotes (gestor y asesor), no del revisor.
+                        .requestMatchers(HttpMethod.GET, "/api/v1/proyectos/*/lotes/plantilla.csv")
+                        .hasAnyRole("GESTOR", "ASESOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/proyectos", "/api/v1/proyectos/**")
                         .hasAnyRole("REVISOR", "GESTOR", "ASESOR")
                         .requestMatchers("/api/v1/proyectos", "/api/v1/proyectos/**").hasAnyRole("GESTOR", "ASESOR")

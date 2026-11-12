@@ -690,3 +690,39 @@ ajustar), redondeado a la centena; las esquinas tienen 1.50 m más de frente. Si
 la inmobiliaria y no se inventa uno. Los casos pasan de 12 a 15 (las 3 matrices); las pruebas de conteo suman las matrices.
 **Pruebas:** `ProyectosApiTest`, `MigracionProyectosTest`, `ProyectosUnidadTest`, `lib/proyectos.test.ts`,
 `pages/proyectos.test.tsx`.
+
+## D64. v1.0 (etapa 3b): carga masiva de lotes por CSV (V20)
+
+**Qué:** el asesor o el gestor cargan o actualizan los lotes de un proyecto con un CSV (`manzana`, `lote`, `area_m2`, `precio`,
+`moneda`, `estado`, `independizacion`, `zonificacion`, `codigo_caso`). Obligatorias: manzana, lote y area_m2; las demás pueden
+faltar o ir vacías. Máximo 2000 filas y 1 MB (413 si lo pasa; más filas, error del archivo). Lector de CSV propio (`LectorCsv`),
+sin librerías: coma o punto y coma (el de la primera línea), comillas, saltos de línea dentro de comillas, BOM, UTF-8 o
+Windows-1252, y coma decimal (`140,5`) como la que guarda Excel en español.
+**Dos pasos, sin estado en el servidor:** `POST /proyectos/{c}/lotes/carga/vista-previa` revisa el archivo entero y no guarda nada
+(por fila: NUEVO, ACTUALIZA, SIN_CAMBIOS o ERROR, con lo que cambiaría y sus errores; más errores generales del archivo);
+`POST /proyectos/{c}/lotes/carga` vuelve a revisar el mismo archivo y lo aplica **solo si no tiene ni un error**, en una sola
+transacción (todo o nada; con algún error, 422 y no se guarda nada). `GET /proyectos/{c}/lotes/plantilla.csv` da la plantilla.
+Los tres son solo de ASESOR y GESTOR (`SecurityConfig`; el revisor puede leer `GET /proyectos` pero no la plantilla).
+**Validación por fila:** manzana de 1 a 4 letras o números (se guarda en mayúscula); lote entero de 1 a 9999; área y precio
+positivos, con hasta 2 decimales; moneda PEN o USD; estado e independización con los valores del sistema (sin distinguir
+mayúsculas); zonificación de hasta 20 caracteres; un lote repetido en el archivo es error en su segunda aparición;
+`codigo_caso` debe existir, no ser la partida matriz, ser de este proyecto (o de ninguno) y no estar ya en otro lote ni en otra
+fila. Un archivo sin lotes o con el encabezado mal hecho se rechaza entero.
+**Actualizar:** un lote existente (misma manzana y número) se actualiza con lo que el archivo trae; una **celda vacía deja el
+valor como estaba** (no sirve para borrar un precio). Un lote sin cambios no escribe nada. Con caso propio, el estado comercial
+vive en el caso y se actualiza ahí (como en 3a). Cada lote creado o actualizado agrega una fila al **historial** de solo adición
+(`historial_lote_proyecto`: acción, qué cambió con el valor anterior y el nuevo, cuenta, fecha y un identificador de carga);
+`GET /proyectos/{c}/lotes/{A-7}/historial` lo lee (equipo, no el comprador).
+**Publicación (I14):** un lote nuevo queda publicado solo si la partida matriz del proyecto tiene una autorización vigente
+registrada; si no, se guarda sin publicar. Cargar lotes no recalcula nada: el indicador A de la partida matriz no cambia.
+**Interfaz:** `#/proyectos` (lista del equipo) y `#/proyectos/{c}/carga` (plantilla, selector de archivo, vista previa con los
+errores por fila y «Ver solo las filas con errores», confirmar o cancelar). Se llega con el enlace «Proyectos y carga de lotes
+por CSV» de la cartera (el menú de la etapa 1 no cambia). La vista previa dibuja a lo sumo 200 filas a la vez.
+**Precarga:** cuarto proyecto, *Horizonte de Los Aquijes* (Los Aquijes), sin lotes y con su partida matriz `11112004`
+(verde, en borrador, autorización registrada por `asesor-01`; empresa inventada). Al cargar el kit sus lotes aparecen al
+instante en el catálogo y en `#/proyectos/horizonte-de-los-aquijes`. Los casos pasan de 15 a 16.
+**Kit (`docs/demo/kit/`):** `proyecto-nuevo-80-lotes.csv` (80 lotes en 8 manzanas, 60 % disponibles, 25 % separados, 15 %
+vendidos, a S/ 250 por m²) y `proyecto-con-errores.csv` (11 filas; las filas 8, 10 y 12 tienen un área negativa, un estado
+inválido y un lote duplicado). Sin datos personales.
+**Pruebas:** `CargaLotesApiTest` (válidas, inválidas, duplicadas, límites, permisos, historial y los dos archivos del kit),
+`LectorCsvTest`, `MigracionHistorialLotesTest`, `lib/cargaLotes.test.ts`, `pages/cargaLotes.test.tsx`.
