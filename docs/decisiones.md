@@ -726,3 +726,50 @@ vendidos, a S/ 250 por m²) y `proyecto-con-errores.csv` (11 filas; las filas 8,
 inválido y un lote duplicado). Sin datos personales.
 **Pruebas:** `CargaLotesApiTest` (válidas, inválidas, duplicadas, límites, permisos, historial y los dos archivos del kit),
 `LectorCsvTest`, `MigracionHistorialLotesTest`, `lib/cargaLotes.test.ts`, `pages/cargaLotes.test.tsx`.
+
+## D65. v1.0 (etapa 4): interés, citas y CRM del asesor (V21)
+
+**Qué:** módulo nuevo `interes` con tres tablas (V21, aditiva): `interes` (fecha; a qué se refiere, por valor: caso publicado,
+lote de proyecto, proyecto o búsqueda general; zona, tipo, presupuesto mínimo y máximo con moneda, área deseada, forma de pago
+`CONTADO`, `FINANCIADO` o `POR_DEFINIR`, mensaje de hasta 300 caracteres; nombre de pila, medio `CELULAR` o `CORREO` y su dato;
+consentimiento con la versión del texto aceptado y su fecha; etapa `NUEVO`, `CONTACTADO`, `CITA_AGENDADA`, `VISITA_REALIZADA`,
+`SEPARACION`, `VENTA` o `DESCARTADO`; responsable; próxima acción con fecha), `nota_interes` (solo se agregan: entidad
+`@Immutable` y repositorio sin editar ni borrar) y `cita`. Ningún dato de este módulo interviene en el motor de reglas.
+**Portal público:** `POST /api/v1/publico/interes` es la única escritura sin sesión. Consentimiento obligatorio (`true`) y con
+la versión vigente (`2026-11-v1`; si el texto cambia, cambia la versión y un envío con la anterior da 400). Campo trampa
+`sitioWeb`: si llega con algo se responde 201 igual y no se guarda nada. Límite de 10 envíos por hora por IP
+(`app.interes.limite-por-hora`, en memoria; el 11.º da 429). Nunca DNI: un campo desconocido da 400 (como I11) y un número de
+8 dígitos seguidos en el mensaje también. El celular se guarda normalizado (9 dígitos que empiezan con 9). El destino debe
+estar publicado: un caso en borrador, un lote que no se ofrece o un proyecto no visible dan 404, como en el catálogo.
+`GET /api/v1/publico/contacto` da el texto de consentimiento y el WhatsApp.
+**Cita:** `VISITA_AL_LOTE`, `REUNION_EN_OFICINA` o `LLAMADA`, con una o dos fechas propuestas (desde mañana y hasta 90 días)
+con franja `MANANA` o `TARDE`. Nace `SOLICITADA`; el asesor la confirma con una de las dos fechas (`CONFIRMADA`), acuerda otra
+(`REPROGRAMADA`) o la rechaza con motivo (`RECHAZADA`). Al confirmarla o reprogramarla, un interesado en Nuevo o Contactado
+pasa a Cita agendada. Una visita al lote exige un lote o inmueble. Sin pagos.
+**Lote sin caso propio:** la ficha del lote y el panel del plano tienen «Solicitar cita»; el interés queda vinculado al lote
+(`lote_clave`) y a su proyecto (`proyecto_codigo`). Si el lote tiene caso propio publicado, el interés se vincula al caso. La
+ficha pública de un caso también ofrece la cita sin cuenta; el contacto de los compradores con cuenta (v0.7) sigue igual.
+**Bandeja (ASESOR y GESTOR, `/api/v1/interesados` y `/api/v1/citas`):** filtros por etapa, proyecto y responsable
+(`SIN_ASIGNAR` para los que no tienen); vencidos (próxima acción con fecha pasada y etapa no cerrada) primero y resaltados;
+cambiar etapa (deja una nota con el cambio; la misma etapa da 409); responsable (debe ser cuenta de asesor o de gestor) y
+próxima acción; notas; eliminar el registro a pedido (se van sus notas y citas, por `on delete cascade`). En Separación o Venta,
+con un lote o inmueble vinculado, el asesor puede marcarlo SEPARADO o VENDIDO (acción explícita, `PUT .../estado-lote`; en un
+lote con caso propio se cambia el del caso, como en 3a); no cambia el indicador A. Resumen de demanda de los activos (sin
+descartados) por zona, tipo, rango de presupuesto (soles y dólares por separado) y proyecto. Agenda de 7 días, lista por día:
+las acordadas en su fecha y las por confirmar en cada fecha propuesta.
+**WhatsApp:** `app.contacto.whatsapp` (variable `APP_CONTACTO_WHATSAPP`), vacía por defecto: el botón no se muestra. Con
+número, abre `wa.me` con «Hola, me interesa <lote o inmueble> (ref. <código>)». No hay ningún número en el repositorio.
+**Menú (interfaz):** el asesor ve Registrar, Proyectos (`#/proyectos`, la lista de la etapa 3b), Expedientes (`#/casos`),
+Cartera e Interesados (la bandeja nueva, con pestañas Interesados, Agenda de citas y Demanda; al final siguen las
+solicitudes de los compradores con cuenta). Con cinco enlaces, el menú completo se muestra desde 1024 px. El gestor conserva
+su menú y llega a Interesados desde la lista de expedientes. Cambia la prueba del menú del asesor (etiquetas y rutas nuevas);
+sigue verificando que cada enlace es una vista que el rol puede abrir y que los demás roles no abren proyectos ni interesados.
+**Precarga (`InteresSeeder`, una sola vez, marcada en `interes_semilla`):** 15 interesados con nombres de pila comunes y correos
+`@example.com` (sin apellidos, celulares ni DNI) en las 7 etapas, sobre lotes disponibles de los tres proyectos con lotes, un
+caso publicado, un proyecto y dos búsquedas generales; con notas, tres próximas acciones vencidas y 4 citas en los próximos 7
+días (una por confirmar, dos confirmadas y una reprogramada). Las fechas de lo precargado se guardan como días respecto del
+arranque (`semilla_desfase`) y se recalculan en cada arranque, así que nunca quedan en el pasado; en cuanto una persona toca
+el registro o la cita, deja de moverse. Los lotes de los interesados en Separación y Venta siguen disponibles hasta que el
+asesor los marque.
+**Pruebas:** `InteresApiTest` (validaciones, consentimiento, nunca DNI, trampa, límite, destinos, permisos, precarga, filtros,
+etapas, notas, citas, marcar lote y eliminar), `InteresUnidadTest`, `lib/interes.test.ts`, `pages/interes.test.tsx`.

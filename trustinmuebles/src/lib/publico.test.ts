@@ -84,10 +84,18 @@ describe("rol asesor (v1.0)", () => {
     expect(puedeRetirarAutorizacion(asesor, { ...inmobiliaria, autorizada: true })).toBe(true);
   });
 
-  it("menú del asesor: Registrar, Proyectos, Cartera, Interesados", () => {
+  it("menú del asesor: Registrar, Proyectos, Expedientes, Cartera, Interesados", () => {
     const enlaces = navegacion("ASESOR");
-    expect(enlaces.map((e) => e.etiqueta)).toEqual(["Registrar", "Proyectos", "Cartera", "Interesados"]);
+    // Etapa 4: «Proyectos» lleva a la lista de proyectos, «Interesados» a la bandeja nueva y «Expedientes» conserva /casos.
+    expect(enlaces.map((e) => e.etiqueta)).toEqual(["Registrar", "Proyectos", "Expedientes", "Cartera", "Interesados"]);
+    expect(enlaces.map((e) => e.ruta)).toEqual(["/casos/nueva", "/proyectos", "/casos", "/cartera", "/interesados"]);
+    expect(claveDeRuta("/proyectos")).toBe("proyectos");
     for (const e of enlaces) expect(puedeAbrirVista("ASESOR", e.clave)).toBe(true);
+    // Cada rol ve solo sus vistas: el comprador, el revisor y el propietario no abren proyectos ni interesados.
+    for (const rol of ["COMPRADOR", "REVISOR", "ESPECIALISTA", "PROPIETARIO"] as const) {
+      expect(puedeAbrirVista(rol, "proyectos")).toBe(false);
+      expect(puedeAbrirVista(rol, "interesados")).toBe(false);
+    }
     expect(puedeAbrirVista("COMPRADOR", "interesados")).toBe(false);
     expect(puedeAbrirVista("GESTOR", "interesados")).toBe(true);
   });

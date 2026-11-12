@@ -85,6 +85,12 @@ class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
                         // v1.0: portal público de solo lectura. Escribir ahí sin sesión da 401 (regla final).
                         .requestMatchers(HttpMethod.GET, "/api/v1/publico", "/api/v1/publico/**").permitAll()
+                        // v1.0 (etapa 4): la única escritura pública es el interés con cita opcional (consentimiento
+                        // obligatorio, campo trampa y límite por IP en el servicio).
+                        .requestMatchers(HttpMethod.POST, "/api/v1/publico/interes").permitAll()
+                        // Etapa 4: bandeja de interesados, notas y agenda de citas, del asesor y del gestor.
+                        .requestMatchers("/api/v1/interesados", "/api/v1/interesados/**", "/api/v1/citas/**")
+                        .hasAnyRole("GESTOR", "ASESOR")
                         // Inspección técnica: cualquier usuario con sesión la solicita; solo el especialista emite el informe.
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/inspeccion/solicitud").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion").hasRole("ESPECIALISTA")

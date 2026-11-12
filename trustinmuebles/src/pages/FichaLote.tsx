@@ -5,6 +5,7 @@ import { PredioImagen } from "@/components/base/PredioImagen";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { IndicadorProyecto } from "@/components/IndicadorProyecto";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
+import { SolicitarCita } from "@/components/SolicitarCita";
 import { m2, precio } from "@/lib/formato";
 import { enlaceProyecto, rutaLotePublico } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
@@ -91,7 +92,9 @@ export default function FichaLote() {
               <p className="text-sm text-tinta-2">
                 Un asesor de la inmobiliaria puede mostrarte el proyecto y el lote, y responder tus dudas sobre sus documentos.
               </p>
-              <Link to={enlaceProyecto(d.proyectoCodigo)} className="inline-flex rounded-xl bg-primary px-5 py-2.5 text-sm font-bold text-white">
+              {/* v1.0 (etapa 4): la cita queda vinculada a este lote y a su proyecto, aunque el lote no tenga caso propio. */}
+              <SolicitarCita destino={{ proyectoCodigo: d.proyectoCodigo, lote: d.lote.clave, nombre: d.denominacion, referencia: d.codigo }} />
+              <Link to={enlaceProyecto(d.proyectoCodigo)} className="inline-flex text-sm font-bold text-primary hover:underline">
                 Ver el proyecto y su avance
               </Link>
             </div>
