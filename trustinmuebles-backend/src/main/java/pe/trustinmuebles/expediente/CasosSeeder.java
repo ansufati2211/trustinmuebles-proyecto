@@ -44,12 +44,14 @@ class CasosSeeder implements ApplicationRunner {
     private final AuthService auth;
     private final InspeccionService inspeccion;
     private final ObjectMapper json;
+    private final HistorialAutorizacionRepository autorizaciones;
     private final boolean habilitado;
     private final String version;
 
     CasosSeeder(CasoLoteRepository casos, ExpedienteRepository expedientes, ExpedienteService servicio,
             ClasificacionService clasificacion, ChecklistService checklist, GlosarioService glosario,
             AuthService auth, InspeccionService inspeccion, ObjectMapper json,
+            HistorialAutorizacionRepository autorizaciones,
             @Value("${app.seed.enabled}") boolean habilitado,
             @Value("${app.reglas.version}") String version) {
         this.casos = casos;
@@ -61,6 +63,7 @@ class CasosSeeder implements ApplicationRunner {
         this.auth = auth;
         this.inspeccion = inspeccion;
         this.json = json;
+        this.autorizaciones = autorizaciones;
         this.habilitado = habilitado;
         this.version = version;
     }
@@ -121,6 +124,17 @@ class CasosSeeder implements ApplicationRunner {
         caso.setPropietarioCodigo(propietarioDe(c));
         caso.setAutorizacionFecha(java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
         caso.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        // v1.0: los lotes de la inmobiliaria llevan su autorización registrada por el asesor en su nombre.
+        if (DE_LA_INMOBILIARIA.contains(c.codigo())) {
+            caso.setTitularidadComercial(TitularidadComercial.INMOBILIARIA);
+            HistorialAutorizacion h = new HistorialAutorizacion();
+            h.setCasoCodigo(c.codigo());
+            h.setAccion(HistorialAutorizacion.Accion.OTORGADA);
+            h.setEnNombreDe(TitularidadComercial.INMOBILIARIA);
+            h.setCuentaCodigo(ASESOR_DEMO);
+            h.setRegistradaEn(caso.getAutorizacionFecha());
+            autorizaciones.save(h);
+        }
         casos.save(caso);
 
         Expediente e = servicio.crear(caso, c.datos());
@@ -141,6 +155,14 @@ class CasosSeeder implements ApplicationRunner {
 
     static final String COMPRADOR_DEMO = "comprador-01";
     static final String ESPECIALISTA_DEMO = "especialista-01";
+    static final String ASESOR_DEMO = "asesor-01";
+
+    /**
+     * v1.0: lotes que la inmobiliaria comercializa por cuenta propia (titularidad INMOBILIARIA), igual que en la
+     * migración V17. Solo el lote de Santiago: los dos lotes de la subasta de la SBN son del Estado y no se ofrecen
+     * como de la inmobiliaria, y los casos 1 a 4 del estudio no se tocan.
+     */
+    static final java.util.Set<String> DE_LA_INMOBILIARIA = java.util.Set.of("11081204");
 
     /** Reparto de los casos de demostración entre los dos propietarios. Es el mismo que aplica la migración V6. */
     static final java.util.Set<String> DEL_PROPIETARIO_02 = java.util.Set.of("11052690", "11070419",

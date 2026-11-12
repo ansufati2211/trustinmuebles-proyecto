@@ -36,7 +36,7 @@ function BotonAcceder() {
       onMouseLeave={salir}
       className="btn-glint inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 sm:px-6 text-sm font-bold text-white shadow-md shadow-primary/25 transition-[transform,box-shadow] duration-200 hover:shadow-lg hover:shadow-primary/35 active:scale-[0.97]"
     >
-      Iniciar Sesion
+      Ingresar
     </Link>
   );
 }

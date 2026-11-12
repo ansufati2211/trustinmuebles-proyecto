@@ -71,9 +71,9 @@ public abstract class BaseApiTest {
 
     /**
      * v0.7: comprador, revisor, especialista-01, gestor-01, propietario-01, propietario-02 y especialista-02. v0.9:
-     * propietario-03 (lotes de la subasta de la SBN).
+     * propietario-03 (lotes de la subasta de la SBN). v1.0: asesor-01.
      */
-    protected static final int CUENTAS_DEMO = 8;
+    protected static final int CUENTAS_DEMO = 9;
 
     protected String gestor() throws Exception {
         return token("gestor-01");

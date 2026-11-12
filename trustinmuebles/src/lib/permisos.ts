@@ -19,26 +19,34 @@ export const puedeEmitirInforme = (rol: Rol | undefined, estado: EstadoTecnico, 
   cuenta?: string | null) =>
   rol === "ESPECIALISTA" && estado !== "NO_SOLICITADA" && !!asignado && asignado === cuenta;
 
-/** Solo el revisor edita la partida, los planos y el checklist. */
-export const puedeEditarExpediente = (rol: Rol | undefined) => rol === "REVISOR";
+/** v1.0: el asesor reúne los permisos del revisor y del gestor (igual que Rol.incluye en el servidor). */
+export const actuaComoRevisor = (rol: Rol | undefined) => rol === "REVISOR" || rol === "ASESOR";
+export const actuaComoGestor = (rol: Rol | undefined) => rol === "GESTOR" || rol === "ASESOR";
+
+/** Solo el revisor (o el asesor) edita la partida, los planos y el checklist. */
+export const puedeEditarExpediente = (rol: Rol | undefined) => actuaComoRevisor(rol);
 
 // ------------------------------------------------------------------ navegación (v0.7)
 
-export type Vista = "inicio" | "casos" | "cartera" | "mis-inmuebles" | "registrar";
+export type Vista = "inicio" | "inmuebles" | "casos" | "cartera" | "mis-inmuebles" | "registrar" | "interesados";
 
 export interface EnlaceNav { clave: Vista; etiqueta: string; ruta: string }
 
 /** Vistas protegidas y los roles que pueden abrirlas. Las demás rutas solo exigen sesión. */
-const ROLES_POR_VISTA: Record<Exclude<Vista, "inicio">, Rol[]> = {
-  casos: ["COMPRADOR", "REVISOR", "ESPECIALISTA", "GESTOR", "PROPIETARIO"],
-  cartera: ["GESTOR"],
+const ROLES_POR_VISTA: Record<Exclude<Vista, "inicio" | "inmuebles">, Rol[]> = {
+  casos: ["COMPRADOR", "REVISOR", "ESPECIALISTA", "GESTOR", "PROPIETARIO", "ASESOR"],
+  cartera: ["GESTOR", "ASESOR"],
   "mis-inmuebles": ["PROPIETARIO"],
-  registrar: ["REVISOR"],
+  registrar: ["REVISOR", "ASESOR"],
+  interesados: ["GESTOR", "ASESOR"],
 };
 
-/** ¿Puede el rol abrir la vista? Lo usa la guarda de rutas: escribir la URL a mano no basta para entrar. */
+/**
+ * ¿Puede el rol abrir la vista? Lo usa la guarda de rutas: escribir la URL a mano no basta para entrar. El inicio y el
+ * catálogo público (v1.0) se abren sin sesión.
+ */
 export const puedeAbrirVista = (rol: Rol | undefined, vista: Vista) =>
-  vista === "inicio" || (!!rol && ROLES_POR_VISTA[vista].includes(rol));
+  vista === "inicio" || vista === "inmuebles" || (!!rol && ROLES_POR_VISTA[vista].includes(rol));
 
 /**
  * Enlaces del menú principal según el rol. El propietario ve «Mis inmuebles» en lugar de la cartera completa; el gestor
@@ -46,7 +54,17 @@ export const puedeAbrirVista = (rol: Rol | undefined, vista: Vista) =>
  */
 export function navegacion(rol: Rol | undefined): EnlaceNav[] {
   const inicio: EnlaceNav = { clave: "inicio", etiqueta: "Inicio", ruta: "/" };
-  if (!rol) return [inicio];
+  // v1.0: sin sesión, el inicio y el catálogo público; el personal entra con «Ingresar».
+  if (!rol) return [inicio, { clave: "inmuebles", etiqueta: "Inmuebles", ruta: "/inmuebles" }];
+  // v1.0: el asesor trabaja con su menú propio. «Proyectos» abre la lista completa de expedientes de la cartera.
+  if (rol === "ASESOR") {
+    return [
+      { clave: "registrar", etiqueta: "Registrar", ruta: "/casos/nueva" },
+      { clave: "casos", etiqueta: "Proyectos", ruta: "/casos" },
+      { clave: "cartera", etiqueta: "Cartera", ruta: "/cartera" },
+      { clave: "interesados", etiqueta: "Interesados", ruta: "/interesados" },
+    ];
+  }
   if (rol === "PROPIETARIO") return [inicio, { clave: "mis-inmuebles", etiqueta: "Mis inmuebles", ruta: "/mis-inmuebles" }];
   const enlaces: EnlaceNav[] = [inicio, { clave: "casos", etiqueta: "Expedientes", ruta: "/casos" }];
   if (rol === "GESTOR") enlaces.push({ clave: "cartera", etiqueta: "Cartera", ruta: "/cartera" });
@@ -57,6 +75,8 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
 /** Qué enlace del menú resaltar según la ruta. El detalle de un expediente cuenta como «Expedientes». */
 export function claveDeRuta(ruta: string): Vista | null {
   if (ruta === "/") return "inicio";
+  if (ruta.startsWith("/inmuebles")) return "inmuebles";
+  if (ruta.startsWith("/interesados")) return "interesados";
   if (ruta.startsWith("/cartera")) return "cartera";
   if (ruta.startsWith("/mis-inmuebles")) return "mis-inmuebles";
   if (ruta === "/casos/nueva") return "registrar";
@@ -68,22 +88,32 @@ export function claveDeRuta(ruta: string): Vista | null {
 
 /** Solo el gestor publica, y solo con autorización vigente y si no está ya publicado (I14). No mira el color de A (I10). */
 export const puedePublicar = (rol: Rol | undefined, p: Publicacion | null | undefined) =>
-  rol === "GESTOR" && !!p && p.autorizada && p.estado !== "PUBLICADO";
+  actuaComoGestor(rol) && !!p && p.autorizada && p.estado !== "PUBLICADO";
 
 /** Solo el gestor retira, y solo lo que está publicado. */
 export const puedeRetirarPublicacion = (rol: Rol | undefined, p: Publicacion | null | undefined) =>
-  rol === "GESTOR" && !!p && p.estado === "PUBLICADO";
+  actuaComoGestor(rol) && !!p && p.estado === "PUBLICADO";
 
 /** ¿Es el propietario de este caso? El código viene del servidor; el comprador lo recibe en null. */
 export const esPropietarioDe = (usuario: Usuario | null | undefined, p: Publicacion | null | undefined) =>
   usuario?.rol === "PROPIETARIO" && !!p?.propietarioCodigo && p.propietarioCodigo === usuario.codigoCuenta;
 
-/** El propietario autoriza su propio caso cuando no hay autorización vigente (I13). El revisor nunca. */
+/** v1.0: ¿el inmueble es de la inmobiliaria? Sin el dato, se trata como de un particular. */
+export const esDeLaInmobiliaria = (p: Publicacion | null | undefined) => p?.titularidadComercial === "INMOBILIARIA";
+
+/**
+ * ¿Quién registra la autorización? En un caso de un particular, solo su propietario (I13); en uno de la inmobiliaria
+ * (v1.0), el asesor o el gestor en su nombre. El revisor nunca.
+ */
+const registraAutorizacion = (usuario: Usuario | null | undefined, p: Publicacion | null | undefined) =>
+  esDeLaInmobiliaria(p) ? actuaComoGestor(usuario?.rol) : esPropietarioDe(usuario, p);
+
+/** Se autoriza cuando no hay autorización vigente. */
 export const puedeAutorizar = (usuario: Usuario | null | undefined, p: Publicacion | null | undefined) =>
-  esPropietarioDe(usuario, p) && !p!.autorizada;
+  registraAutorizacion(usuario, p) && !p!.autorizada;
 
 export const puedeRetirarAutorizacion = (usuario: Usuario | null | undefined, p: Publicacion | null | undefined) =>
-  esPropietarioDe(usuario, p) && p!.autorizada;
+  registraAutorizacion(usuario, p) && p!.autorizada;
 
 // ------------------------------------------------------------------ cartera (v0.7)
 
@@ -93,8 +123,8 @@ export const puedeSolicitarContacto = (rol: Rol | undefined, estado: EstadoPubli
 
 /** El gestor asigna una inspección solicitada o en curso; emitida o sin solicitud, no. */
 export const puedeAsignarEspecialista = (rol: Rol | undefined, estado: EstadoTecnico) =>
-  rol === "GESTOR" && (estado === "SOLICITADA" || estado === "EN_INSPECCION");
+  actuaComoGestor(rol) && (estado === "SOLICITADA" || estado === "EN_INSPECCION");
 
 /** El historial lo consultan el equipo y el propietario (de su caso: el servidor da 404 en otro). El comprador, no. */
 export const puedeVerHistorial = (rol: Rol | undefined) =>
-  rol === "REVISOR" || rol === "GESTOR" || rol === "ESPECIALISTA" || rol === "PROPIETARIO";
+  rol === "REVISOR" || rol === "GESTOR" || rol === "ESPECIALISTA" || rol === "PROPIETARIO" || rol === "ASESOR";

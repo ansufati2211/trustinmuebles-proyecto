@@ -31,9 +31,9 @@ public class SemaforoGestion {
         }
     }
 
-    /** I15: solo el gestor y el revisor ven el semáforo de gestión. */
+    /** I15: solo el gestor, el revisor y el asesor (v1.0, que reúne a ambos) ven el semáforo de gestión. */
     public static boolean puedeVer(Rol rol) {
-        return rol == Rol.GESTOR || rol == Rol.REVISOR;
+        return rol.incluye(Rol.GESTOR) || rol.incluye(Rol.REVISOR);
     }
 
     public static EstadoGestion estadoDe(RutaRegularizacion ruta) {

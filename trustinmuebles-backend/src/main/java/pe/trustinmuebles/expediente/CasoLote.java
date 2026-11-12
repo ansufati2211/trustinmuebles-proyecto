@@ -80,6 +80,11 @@ class CasoLote {
     @Column(name = "estado_publicacion", nullable = false)
     private EstadoPublicacion estadoPublicacion = EstadoPublicacion.BORRADOR;
 
+    /** v1.0: INMOBILIARIA (autoriza el asesor o el gestor en su nombre) o PARTICULAR (solo el propietario). */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "titularidad_comercial", nullable = false)
+    private TitularidadComercial titularidadComercial = TitularidadComercial.PARTICULAR;
+
     /** ¿Entró por «Registrar partida»? Toda partida captada lleva fuente; los casos de demostración, no. */
     boolean esCaptado() {
         return fuente != null;

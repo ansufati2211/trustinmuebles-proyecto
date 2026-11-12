@@ -34,7 +34,9 @@ class DemoUsuariosSeeder implements ApplicationRunner {
             new Cuenta("gestor-01", Rol.GESTOR), new Cuenta("propietario-01", Rol.PROPIETARIO),
             new Cuenta("propietario-02", Rol.PROPIETARIO), new Cuenta("especialista-02", Rol.ESPECIALISTA),
             // v0.9: propietaria de demostración de los dos lotes de la subasta de la SBN. No representa a la SBN.
-            new Cuenta("propietario-03", Rol.PROPIETARIO));
+            new Cuenta("propietario-03", Rol.PROPIETARIO),
+            // v1.0: asesor de la inmobiliaria (permisos de revisor y de gestor).
+            new Cuenta("asesor-01", Rol.ASESOR));
 
     static final String ESPECIALISTA_02_NOMBRE = "Arq. Valeria Sofía Paredes Rojas";
     static final String ESPECIALISTA_02_ESPECIALIDAD = "Arquitecto";
@@ -45,6 +47,7 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
 
     static final String FUNCION_GESTOR = "Asesor comercial";
+    static final String FUNCION_ASESOR = "Asesor inmobiliario";
 
     @Override
     public void run(ApplicationArguments args) {
@@ -55,6 +58,7 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         auth.completarPerfilProfesional("especialista-02", ESPECIALISTA_02_NOMBRE, ESPECIALISTA_02_ESPECIALIDAD,
                 ESPECIALISTA_02_COLEGIATURA);
         auth.completarFuncion("gestor-01", FUNCION_GESTOR);
+        auth.completarFuncion("asesor-01", FUNCION_ASESOR);
     }
 
     private void crearCuentasQueFalten() {

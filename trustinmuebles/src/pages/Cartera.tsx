@@ -31,7 +31,7 @@ const tarjeta = "rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta 
 const OPCIONES_COLOR = COLORES.map((c) => ({ valor: c, etiqueta: `${ESTADOS[c].nombre} · ${ESTADOS[c].resumen}` }));
 const OPCIONES_PUBLICACION = ESTADOS_PUBLICACION.map((e) => ({ valor: e, etiqueta: ETIQUETA_PUBLICACION[e] }));
 
-function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
+export function BandejaContactos({ alCambiar }: { alCambiar: () => void }) {
   const { data, loading, error, reload } = useApi<Contacto[]>("/contactos?estado=PENDIENTE");
   const [enviando, setEnviando] = useState<number | null>(null);
   const [mensaje, setMensaje] = useState<{ tipo: "ok" | "error"; texto: string } | null>(null);

@@ -43,14 +43,34 @@ final class CasoDtos {
             /* v0.8: códigos de las reglas aplicadas y, si el caso es gris, INFORMACION_INSUFICIENTE. */
             List<String> tiposAlerta,
             /* v0.8 (I15): semáforo de gestión; solo para GESTOR y REVISOR. Para los demás no viene en la respuesta. */
-            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion) {}
+            @JsonInclude(JsonInclude.Include.NON_NULL) GestionInmobiliaria gestion,
+            /* v1.0: INMOBILIARIA o PARTICULAR. */
+            TitularidadComercial titularidadComercial) {}
+
+    /**
+     * v1.0: un inmueble del catálogo público. Es lo que ve el comprador, sin semáforo de gestión, decisiones de
+     * captación, código del propietario ni estado de publicación (todos los que se listan están publicados).
+     */
+    record InmueblePublico(String codigo, String denominacion, String contexto, EstadoSemaforo estado, String etiqueta,
+            String origen, String fuente, LocalDate fechaConsulta, String fuenteUrl, EstadoTecnico estadoTecnico,
+            ResultadoTecnico resultadoTecnico, boolean riesgoFisicoDetectado, PredioDto predio,
+            List<String> tiposAlerta, TitularidadComercial titularidadComercial) {}
+
+    /** v1.0: una página del catálogo público (la primera es la 0). */
+    record PaginaPublica(List<InmueblePublico> items, int pagina, int tamano, int total, int totalPaginas) {}
 
     /**
      * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se
      * muestra al comprador. {@code autorizada} es verdadero si hay una autorización vigente.
      */
     record PublicacionDto(EstadoPublicacion estado, String propietarioCodigo, boolean autorizada,
-            java.time.Instant autorizacionFecha) {}
+            java.time.Instant autorizacionFecha,
+            /* v1.0: INMOBILIARIA (autoriza el asesor o el gestor en su nombre) o PARTICULAR (solo el propietario). */
+            TitularidadComercial titularidadComercial) {}
+
+    /** v1.0: una fila del historial de autorizaciones: OTORGADA o RETIRADA, en nombre de quién, por qué cuenta y cuándo. */
+    record AutorizacionDto(String accion, TitularidadComercial enNombreDe, String cuentaCodigo,
+            java.time.Instant registradaEn) {}
 
     /**
      * Datos del predio para el catálogo. El área es la del terreno inscrita en la partida y el precio es referencial
@@ -206,10 +226,13 @@ final class CasoDtos {
             @DecimalMin("0.01") @Digits(integer = 8, fraction = 2) BigDecimal areaConstruidaInscrita,
             @Size(max = 4) List<@Valid @NotNull PlanoRequest> planos,
             @NotNull Boolean confirmaSinDatosPersonales,
-            /* v0.7: cuenta PROPIETARIO del caso. El caso nace en BORRADOR y sin autorización. */
-            @NotBlank @Size(max = 40) String propietarioCodigo,
+            /* v0.7: cuenta PROPIETARIO del caso. El caso nace en BORRADOR y sin autorización. v1.0: obligatoria solo
+               si la titularidad comercial es PARTICULAR (lo comprueba el servicio). */
+            @Size(max = 40) String propietarioCodigo,
             /* Opcional, en soles. Es informativo y no interviene en el semáforo. */
-            @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal precioReferencial) {
+            @DecimalMin("0.01") @Digits(integer = 10, fraction = 2) BigDecimal precioReferencial,
+            /* v1.0: INMOBILIARIA o PARTICULAR; si no se indica, PARTICULAR. */
+            TitularidadComercial titularidadComercial) {
 
         DatosExpediente datos() {
             return new DatosExpediente(condicionRepresentada, completitud, fechaConsulta, nota, zonaRegistral,

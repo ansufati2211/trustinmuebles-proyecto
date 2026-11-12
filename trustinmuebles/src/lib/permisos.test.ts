@@ -48,7 +48,8 @@ describe("navegación por rol (v0.7)", () => {
   const claves = (rol: Rol | undefined) => navegacion(rol).map((e) => e.clave);
 
   it("cada rol ve solo sus vistas", () => {
-    expect(claves(undefined)).toEqual(["inicio"]);
+    // v1.0: sin sesión se suma el catálogo público, que no exige cuenta.
+    expect(claves(undefined)).toEqual(["inicio", "inmuebles"]);
     expect(claves("COMPRADOR")).toEqual(["inicio", "casos"]);
     expect(claves("ESPECIALISTA")).toEqual(["inicio", "casos"]);
     expect(claves("REVISOR")).toEqual(["inicio", "casos", "registrar"]);

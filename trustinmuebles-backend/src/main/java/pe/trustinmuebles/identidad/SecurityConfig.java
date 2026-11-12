@@ -83,29 +83,32 @@ class SecurityConfig {
                         .requestMatchers("/error").permitAll()
                         .requestMatchers("/api/v1/auth/login").permitAll()
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
+                        // v1.0: portal público de solo lectura. Escribir ahí sin sesión da 401 (regla final).
+                        .requestMatchers(HttpMethod.GET, "/api/v1/publico", "/api/v1/publico/**").permitAll()
                         // Inspección técnica: cualquier usuario con sesión la solicita; solo el especialista emite el informe.
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/inspeccion/solicitud").hasRole("COMPRADOR")
                         .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion").hasRole("ESPECIALISTA")
                         // v0.7: el propietario solo otorga o retira su autorización (I13); el gestor publica o retira.
-                        .requestMatchers("/api/v1/casos/*/autorizacion").hasRole("PROPIETARIO")
-                        .requestMatchers("/api/v1/casos/*/publicacion").hasRole("GESTOR")
+                        // v1.0: en un caso de la inmobiliaria la registra el asesor o el gestor; el servicio decide.
+                        .requestMatchers("/api/v1/casos/*/autorizacion").hasAnyRole("PROPIETARIO", "GESTOR", "ASESOR")
+                        .requestMatchers("/api/v1/casos/*/publicacion").hasAnyRole("GESTOR", "ASESOR")
                         // F3: asignación de inspecciones, contactos y panel de cartera.
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion/asignacion").hasRole("GESTOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/*/inspeccion/asignacion").hasAnyRole("GESTOR", "ASESOR")
                         .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/contactos").hasRole("COMPRADOR")
-                        .requestMatchers("/api/v1/contactos", "/api/v1/contactos/**").hasRole("GESTOR")
-                        .requestMatchers("/api/v1/cartera/**").hasRole("GESTOR")
+                        .requestMatchers("/api/v1/contactos", "/api/v1/contactos/**").hasAnyRole("GESTOR", "ASESOR")
+                        .requestMatchers("/api/v1/cartera/**").hasAnyRole("GESTOR", "ASESOR")
                         // v0.8 (I15): decisión de captación, interna de la inmobiliaria.
-                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/decision-captacion").hasRole("GESTOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/*/decision-captacion").hasAnyRole("GESTOR", "ASESOR")
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/decisiones-captacion")
-                        .hasAnyRole("GESTOR", "REVISOR")
+                        .hasAnyRole("GESTOR", "REVISOR", "ASESOR")
                         // Historial de evaluaciones: solo lectura y nunca para el comprador.
                         .requestMatchers(HttpMethod.GET, "/api/v1/casos/*/historial")
-                                .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO")
+                                .hasAnyRole("REVISOR", "GESTOR", "ESPECIALISTA", "PROPIETARIO", "ASESOR")
                         // PA4: solo el revisor modifica. El rol se verifica aquí, en el servidor, no solo en la interfaz.
-                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/**").hasRole("REVISOR")
-                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/**").hasRole("REVISOR")
-                        .requestMatchers(HttpMethod.PATCH, "/api/v1/casos/**").hasRole("REVISOR")
-                        .requestMatchers(HttpMethod.DELETE, "/api/v1/casos/**").hasRole("REVISOR")
+                        .requestMatchers(HttpMethod.PUT, "/api/v1/casos/**").hasAnyRole("REVISOR", "ASESOR")
+                        .requestMatchers(HttpMethod.POST, "/api/v1/casos/**").hasAnyRole("REVISOR", "ASESOR")
+                        .requestMatchers(HttpMethod.PATCH, "/api/v1/casos/**").hasAnyRole("REVISOR", "ASESOR")
+                        .requestMatchers(HttpMethod.DELETE, "/api/v1/casos/**").hasAnyRole("REVISOR", "ASESOR")
                         .anyRequest().authenticated())
                 .oauth2ResourceServer(o -> o.jwt(j -> j.jwtAuthenticationConverter(converter)))
                 .exceptionHandling(e -> e.authenticationEntryPoint(new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED)));

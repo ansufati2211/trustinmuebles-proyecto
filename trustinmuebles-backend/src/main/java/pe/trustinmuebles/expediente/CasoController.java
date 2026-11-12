@@ -103,7 +103,10 @@ class CasoController {
 
     // ---------------------------------------------------- captación y publicación (v0.7)
 
-    /** Solo el PROPIETARIO del caso otorga su autorización (I13). */
+    /**
+     * Solo el PROPIETARIO del caso otorga su autorización (I13). v1.0: en un caso de la INMOBILIARIA la registran el
+     * asesor o el gestor en su nombre.
+     */
     @PutMapping("/{codigo}/autorizacion")
     PublicacionDto autorizar(@PathVariable String codigo) {
         return servicio.autorizar(codigo);
@@ -124,6 +127,12 @@ class CasoController {
     @DeleteMapping("/{codigo}/publicacion")
     PublicacionDto retirarPublicacion(@PathVariable String codigo) {
         return servicio.retirarPublicacion(codigo);
+    }
+
+    /** v1.0: historial de autorizaciones (autor, en nombre de quién y fecha). Solo lectura; nunca el comprador. */
+    @GetMapping("/{codigo}/autorizaciones")
+    List<AutorizacionDto> autorizaciones(@PathVariable String codigo) {
+        return servicio.autorizaciones(codigo);
     }
 
     // ---------------------------------------------------- inspección técnica y planos

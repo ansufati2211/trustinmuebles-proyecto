@@ -1,6 +1,11 @@
 // DTOs que devuelve el backend (trustinmuebles-backend).
 
-export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA" | "GESTOR" | "PROPIETARIO";
+export type Rol = "COMPRADOR" | "REVISOR" | "ESPECIALISTA" | "GESTOR" | "PROPIETARIO" | "ASESOR";
+/**
+ * v1.0: quién comercializa el inmueble. INMOBILIARIA: la autorización la registran el asesor o el gestor en su nombre.
+ * PARTICULAR: solo su propietario autoriza.
+ */
+export type TitularidadComercial = "INMOBILIARIA" | "PARTICULAR";
 /** Estado comercial del caso (v0.7). Es independiente del color del indicador A. */
 export type EstadoPublicacion = "BORRADOR" | "PUBLICADO" | "RETIRADO";
 export type TipoPredio = "LOTE" | "VIVIENDA";
@@ -50,6 +55,29 @@ export interface ResumenCaso {
   tiposAlerta?: string[];
   /** v0.8 (I15): solo para gestor y revisor; para los demás el campo no viene. */
   gestion?: GestionInmobiliaria;
+  /** v1.0 */
+  titularidadComercial?: TitularidadComercial;
+}
+
+/**
+ * v1.0: un inmueble del catálogo público (GET /publico/inmuebles). Es lo que ve el comprador: sin semáforo de gestión,
+ * decisiones de captación ni código del propietario.
+ */
+export interface InmueblePublico {
+  codigo: string; denominacion: string; contexto: string; estado: EstadoSemaforo | null; etiqueta: string | null;
+  origen: Origen; fuente: string | null; fechaConsulta: string | null; fuenteUrl?: string | null;
+  estadoTecnico: EstadoTecnico; resultadoTecnico: ResultadoTecnico | null; riesgoFisicoDetectado: boolean;
+  predio: Predio; tiposAlerta?: string[]; titularidadComercial?: TitularidadComercial;
+}
+
+/** v1.0: una página del catálogo público (la primera es la 0; 24 por página). */
+export interface PaginaPublica {
+  items: InmueblePublico[]; pagina: number; tamano: number; total: number; totalPaginas: number;
+}
+
+/** v1.0: una fila del historial de autorizaciones (GET /casos/{codigo}/autorizaciones). */
+export interface RegistroAutorizacion {
+  accion: "OTORGADA" | "RETIRADA"; enNombreDe: TitularidadComercial; cuentaCodigo: string; registradaEn: string;
 }
 
 /** v0.8: un tipo de alerta (GET /casos/tipos-alerta): código y nombre de la regla, o información insuficiente. */
@@ -58,6 +86,8 @@ export interface TipoAlerta { codigo: string; nombre: string }
 /** Captación y publicación (v0.7). El comprador recibe propietarioCodigo en null (I11). */
 export interface Publicacion {
   estado: EstadoPublicacion; propietarioCodigo: string | null; autorizada: boolean; autorizacionFecha: string | null;
+  /** v1.0: si no viene, se trata como PARTICULAR. */
+  titularidadComercial?: TitularidadComercial;
 }
 
 /** Condiciones del servicio de inspección. El costo lo fija el backend (configuración), no la interfaz. */

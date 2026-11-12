@@ -6,6 +6,7 @@ import type { Rol } from "@/lib/types";
 
 const ROL: Record<Rol, string> = {
   COMPRADOR: "Comprador", REVISOR: "Revisor", ESPECIALISTA: "Especialista", GESTOR: "Gestor", PROPIETARIO: "Propietario",
+  ASESOR: "Asesor",
 };
 
 const enlace = (activo: boolean) =>
