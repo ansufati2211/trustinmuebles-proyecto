@@ -20,13 +20,17 @@ import tools.jackson.databind.JsonNode;
  * v1.0 (etapa 2): filtros, orden e independización del catálogo público. Cada filtro se comprueba contra un oráculo
  * independiente: se lee el catálogo completo sin filtros y se aplica la misma condición en la prueba. Además hay valores
  * conocidos de los casos de la carga. Base H2 propia porque una prueba modifica y restaura datos comerciales.
+ *
+ * <p>v1.0 (etapa 3a): el catálogo también ofrece los lotes de los proyectos. Estas pruebas verifican los filtros sobre los
+ * casos de la carga, así que piden {@code clase=CASO}; los mismos filtros sobre la lista unida (casos y lotes) se
+ * verifican en ProyectosApiTest.
  */
 @TestPropertySource(properties = "spring.datasource.url=jdbc:h2:mem:filtros-${random.uuid};MODE=PostgreSQL;"
         + "DATABASE_TO_LOWER=TRUE;DEFAULT_NULL_ORDERING=HIGH;DB_CLOSE_DELAY=-1")
 class FiltrosCatalogoTest extends BaseApiTest {
 
     JsonNode lista(String... parametros) throws Exception {
-        MockHttpServletRequestBuilder req = get("/api/v1/publico/inmuebles");
+        MockHttpServletRequestBuilder req = get("/api/v1/publico/inmuebles").param("clase", "CASO");
         for (int i = 0; i < parametros.length; i += 2) req.param(parametros[i], parametros[i + 1]);
         return json.readTree(mvc.perform(req).andExpect(status().isOk()).andReturn().getResponse().getContentAsString());
     }

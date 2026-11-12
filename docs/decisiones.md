@@ -648,3 +648,45 @@ publicados `SIM-9xxxxxxx` (empresa inventada, sin datos personales), repartidos 
 dólares. Es determinista e idempotente. `CargaCatalogoTest` lo usa con 1000 lotes y exige menos de 2 s por consulta.
 **Pruebas:** `FiltrosCatalogoTest` (cada filtro y orden contra un oráculo independiente, 400, selectores, independización y
 edición), `FiltroPublicoTest`, `CargaCatalogoTest`, `lib/filtrosPublico.test.ts`.
+
+## D63. v1.0 (etapa 3a): proyectos, plano de lotes y catálogo unido (V19)
+
+**Qué:** tablas `proyecto` (código, nombre, distrito, descripción, enlace de recorrido o video, código opcional del caso de
+la partida matriz), `hito_proyecto` (COMPLETADO, EN_PROCESO o PENDIENTE, fecha opcional) y `lote_proyecto` (manzana,
+número, área, precio, moneda, estado comercial, independización, zonificación opcional, código de caso opcional,
+publicado). El código del proyecto es su nombre en minúsculas, sin tildes y con guiones (`CodigoProyecto`).
+**Texto a referencia (V18 → V19):** `caso_lote.proyecto_codigo` apunta a `proyecto.codigo`. V19 crea un proyecto por cada
+nombre distinto que ya tenían los casos y los vincula; el texto `proyecto` se conserva como nombre visible y para los
+filtros. Un caso nuevo o editado se vincula al guardar (`VinculoProyecto`; si el nombre no existe, se crea el proyecto).
+**Estado comercial sin duplicar:** si un lote tiene caso propio, su estado comercial vigente es el del caso (cambiarlo desde
+el lote cambia el del caso) y en el catálogo aparece como ese caso, no como un lote aparte.
+**Catálogo unido:** `GET /publico/inmuebles` lista casos publicados y lotes de proyecto sin caso propio con los mismos
+filtros y orden; cada item trae `clase` (CASO o LOTE_PROYECTO), `proyectoCodigo`, `lote` y `fuenteIndicadorA` con su rótulo.
+Un lote lleva el indicador A de la partida matriz («Indicador A de la partida matriz del proyecto») o «Sin evaluación
+documental». La novedad usa `creado_en` (nuevo en `caso_lote`; los existentes reciben la fecha de V19). Nuevo parámetro
+`clase`; `FiltrosCatalogoTest` lo usa (`clase=CASO`) para seguir verificando lo mismo sobre los casos de la carga.
+**Publicación (I14):** un lote sin caso propio se ofrece solo si está marcado como publicado **y** la partida matriz de su
+proyecto tiene una autorización vigente registrada. Sin partida matriz no hay autorización registrada, así que el lote no se
+publica (en el plano sale «No publicado en línea», sin precio). Retirar la autorización de la partida matriz retira sus
+lotes del catálogo. Publicar o retirar un lote no recalcula nada (A no cambia); los hitos son informativos.
+**Partidas matrices:** casos de la inmobiliaria, sin cuenta de propietario, en **borrador** (no se ofrecen como inmueble y no
+tienen ficha pública de caso) y con su autorización registrada por `asesor-01`. Sus 4 documentos del lote se generan (con
+marca de agua, sin sellos ni firmas) y la página del proyecto los muestra sin sesión
+(`GET /publico/proyectos/{c}/documentos/{tipo}`), solo si el proyecto es visible. Usan la condición contemplada «Lote urbano
+inscrito en el Registro de Predios.» (con otra, las reglas v0.5 darían gris por condición no contemplada).
+**API:** `GET /publico/proyectos/{codigo}` (404 si no ofrece lotes ni tiene inmuebles publicados),
+`GET /publico/proyectos/{codigo}/lotes/{A-7}`; para el equipo `GET /proyectos` (revisor, gestor, asesor) y
+`POST|DELETE /proyectos/{c}/lotes/{l}/publicacion`, `PUT /proyectos/{c}/lotes/{l}/estado-comercial` (gestor, asesor).
+**Interfaz:** `#/proyectos/{codigo}` con plano SVG propio por manzanas (número y color por estado con patrón y leyenda en
+texto, sin colores del semáforo; una parada de Tab, flechas, Inicio/Fin y Enter), panel del lote, recorrido solo si hay
+enlace (YouTube siempre desde youtube-nocookie.com; otro enlace https, como botón), hitos y documentos;
+`#/proyectos/{codigo}/lotes/{A-7}` para la ficha del lote. Barra de navegación: a menos de 400 px «Ingresar» queda como
+botón con ícono (nombre accesible «Ingresar») y el nombre del sitio usa `text-base`; a 390 px ya no se encima con «Inmuebles».
+**Precarga:** Altos de Ventisca (Subtanjalla, 56 lotes, matriz 11112001, verde), Rinconada del Lúcumo (La Tinguiña, 44,
+matriz 11112002, amarilla por hipoteca vigente) y Terrazas de Sauzal (Salas, 68, matriz 11112003, verde). Nombres y
+empresas inventados. Estados 15 % vendidos, 25 % separados y el resto disponibles, con semilla fija; zonificación RDM o CV
+en parte de las manzanas; precio = área × `contenido/precios-zona.json` (S/ por m² por distrito, valores redondos para
+ajustar), redondeado a la centena; las esquinas tienen 1.50 m más de frente. Sin enlace de video: no hay un video real de
+la inmobiliaria y no se inventa uno. Los casos pasan de 12 a 15 (las 3 matrices); las pruebas de conteo suman las matrices.
+**Pruebas:** `ProyectosApiTest`, `MigracionProyectosTest`, `ProyectosUnidadTest`, `lib/proyectos.test.ts`,
+`pages/proyectos.test.tsx`.

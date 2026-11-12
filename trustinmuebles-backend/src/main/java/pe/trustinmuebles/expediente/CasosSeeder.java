@@ -121,12 +121,13 @@ class CasosSeeder implements ApplicationRunner {
         caso.setPrecioNota(c.precioNota());
         caso.setResponsableId(responsableId);
         // v0.7: los casos de demostración nacen publicados, con la autorización de su propietario (I14).
-        caso.setPropietarioCodigo(propietarioDe(c));
+        // v1.0 (etapa 3a): una partida matriz es de la inmobiliaria (sin cuenta de propietario) y queda en borrador.
+        caso.setPropietarioCodigo(c.esDeLaInmobiliaria() ? null : propietarioDe(c));
         caso.setAutorizacionFecha(java.time.Instant.now().truncatedTo(java.time.temporal.ChronoUnit.MILLIS));
-        caso.setEstadoPublicacion(EstadoPublicacion.PUBLICADO);
+        caso.setEstadoPublicacion(c.estadoPublicacion() != null ? c.estadoPublicacion() : EstadoPublicacion.PUBLICADO);
         // v1.0: los lotes de la inmobiliaria llevan su autorización registrada por el asesor en su nombre.
         precargarComerciales(caso, c);
-        if (DE_LA_INMOBILIARIA.contains(c.codigo())) {
+        if (DE_LA_INMOBILIARIA.contains(c.codigo()) || c.esDeLaInmobiliaria()) {
             caso.setTitularidadComercial(TitularidadComercial.INMOBILIARIA);
             HistorialAutorizacion h = new HistorialAutorizacion();
             h.setCasoCodigo(c.codigo());
@@ -175,7 +176,7 @@ class CasosSeeder implements ApplicationRunner {
      * antecedente dominial del propio caso, de modo que coincide con lo que ya dice su expediente.
      */
     private static void precargarComerciales(CasoLote caso, CasoJson c) {
-        if (!c.esDeFuentePublica()) caso.setProyecto(proyectoDe(c.denominacion()));
+        if (!c.esDeFuentePublica()) caso.setProyecto(c.proyecto() != null ? c.proyecto() : proyectoDe(c.denominacion()));
         caso.setIndependizacion(independizacionDe(c.expediente().antecedenteDominial()));
         caso.setEstadoComercial(ESTADO_COMERCIAL.getOrDefault(c.codigo(), EstadoComercial.DISPONIBLE));
     }
@@ -236,7 +237,7 @@ class CasosSeeder implements ApplicationRunner {
         if (caso.getDistrito() == null) caso.setDistrito(c.distrito());
         if (caso.getPrecioReferencial() == null) caso.setPrecioReferencial(c.precioReferencial());
         // Solo rellena el propietario si falta; el estado de publicación y la autorización no se tocan.
-        if (caso.getPropietarioCodigo() == null) caso.setPropietarioCodigo(propietarioDe(c));
+        if (caso.getPropietarioCodigo() == null && !c.esDeLaInmobiliaria()) caso.setPropietarioCodigo(propietarioDe(c));
         if (caso.getFuenteUrl() == null && c.esDeFuentePublica()) caso.setFuenteUrl(c.fuenteUrl());
         // v1.0 (etapa 2): una base anterior recibe proyecto, estado comercial e independización, solo si no se tocaron.
         if (caso.getProyecto() == null && caso.getEstadoComercial() == EstadoComercial.DISPONIBLE

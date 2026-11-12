@@ -99,6 +99,22 @@ class CasoLote {
     @Column(nullable = false)
     private Independizacion independizacion = Independizacion.NO_CONSTA;
 
+    /**
+     * v1.0 (etapa 3a): código del proyecto al que pertenece (referencia a {@code proyecto.codigo}). El texto
+     * {@code proyecto} se conserva como nombre visible y para los filtros; los dos se mantienen juntos.
+     */
+    @Column(name = "proyecto_codigo", length = 80)
+    private String proyectoCodigo;
+
+    /** v1.0 (etapa 3a): fecha de alta, para ordenar por novedad junto con los lotes de proyecto. */
+    @Column(name = "creado_en", nullable = false, updatable = false)
+    private java.time.Instant creadoEn;
+
+    @PrePersist
+    void alCrear() {
+        if (creadoEn == null) creadoEn = java.time.Instant.now();
+    }
+
     /** ¿Entró por «Registrar partida»? Toda partida captada lleva fuente; los casos de demostración, no. */
     boolean esCaptado() {
         return fuente != null;

@@ -63,10 +63,18 @@ final class ContenidoCaso {
      */
     record CasoJson(String codigo, String denominacion, String contexto, String distrito, BigDecimal precioReferencial,
             String moneda, String precioNota, String propietario, CasoLote.Origen origen, String fuente,
-            String fuenteUrl, LocalDate fechaConsulta, ExpedienteJson expediente) {
+            String fuenteUrl, LocalDate fechaConsulta, ExpedienteJson expediente,
+            /* v1.0 (etapa 3a), opcionales: nombre del proyecto (si no, sale de la denominación), titularidad
+               (PARTICULAR por omisión) y estado de publicación (PUBLICADO por omisión). Una partida matriz es de la
+               inmobiliaria y queda en borrador: no se ofrece como un inmueble, pero su autorización queda registrada. */
+            String proyecto, TitularidadComercial titularidadComercial, EstadoPublicacion estadoPublicacion) {
 
         boolean esDeFuentePublica() {
             return origen == CasoLote.Origen.TRANSCRITA;
+        }
+
+        boolean esDeLaInmobiliaria() {
+            return titularidadComercial == TitularidadComercial.INMOBILIARIA;
         }
 
         List<DocumentoLoteJson> documentosLote() {

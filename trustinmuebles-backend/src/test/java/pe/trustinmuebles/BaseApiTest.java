@@ -49,6 +49,35 @@ public abstract class BaseApiTest {
     protected static final String[] DEMOSTRACION = {PARCONA, TINGUINA, SUBTANJALLA, LOS_AQUIJES, PUEBLO_NUEVO, SANTIAGO,
             SALAS, MOLINOS, PACHACUTEC, ICA};
 
+    /**
+     * v1.0 (etapa 3a): partidas matrices de los tres proyectos precargados. Son de la inmobiliaria, quedan en borrador
+     * (no se ofrecen como inmuebles) y tienen su autorización registrada: sus lotes sin caso propio se publican con ella.
+     */
+    protected static final String MATRIZ_VENTISCA = "11112001";
+    protected static final String MATRIZ_LUCUMO = "11112002";
+    protected static final String MATRIZ_SAUZAL = "11112003";
+    protected static final String[] MATRICES = {MATRIZ_VENTISCA, MATRIZ_LUCUMO, MATRIZ_SAUZAL};
+    /** Casos de la carga: los 12 de siempre (10 de demostración y 2 de la SBN) más las 3 partidas matrices. */
+    protected static final int CASOS_CARGA = 15;
+
+    /**
+     * v1.0 (etapa 3a): cuántos inmuebles ofrece el catálogo público, contados en la base: los casos publicados más los
+     * lotes de proyecto publicados, sin caso propio y con la partida matriz de su proyecto autorizada.
+     */
+    protected int ofrecidosEnCatalogo() {
+        return jdbc.queryForObject("select count(*) from caso_lote where estado_publicacion = 'PUBLICADO'", Integer.class)
+                + jdbc.queryForObject("select count(*) from lote_proyecto l join proyecto p on p.id = l.proyecto_id "
+                        + "join caso_lote m on m.codigo = p.caso_matriz_codigo where l.publicado = true "
+                        + "and l.caso_codigo is null and m.autorizacion_fecha is not null", Integer.class);
+    }
+
+    /** Los códigos dados seguidos de las tres partidas matrices. */
+    protected static String[] conMatrices(String... codigos) {
+        String[] todos = java.util.Arrays.copyOf(codigos, codigos.length + MATRICES.length);
+        System.arraycopy(MATRICES, 0, todos, codigos.length, MATRICES.length);
+        return todos;
+    }
+
     @Autowired protected MockMvc mvc;
     @Autowired protected ObjectMapper json;
     @Autowired protected JdbcTemplate jdbc;

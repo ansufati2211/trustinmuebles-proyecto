@@ -44,14 +44,16 @@ class GeneradorCarga implements ApplicationRunner {
             "Salas", "Santiago", "Pachacútec", "San José de los Molinos"};
 
     private final CasoLoteRepository casos;
+    private final VinculoProyecto vinculo;
     private final ExpedienteService servicio;
     private final ClasificacionService clasificacion;
     private final AuthService auth;
     private final int cantidad;
 
-    GeneradorCarga(CasoLoteRepository casos, ExpedienteService servicio, ClasificacionService clasificacion,
-            AuthService auth, @Value("${app.carga.lotes}") int cantidad) {
+    GeneradorCarga(CasoLoteRepository casos, VinculoProyecto vinculo, ExpedienteService servicio,
+            ClasificacionService clasificacion, AuthService auth, @Value("${app.carga.lotes}") int cantidad) {
         this.casos = casos;
+        this.vinculo = vinculo;
         this.servicio = servicio;
         this.clasificacion = clasificacion;
         this.auth = auth;
@@ -75,6 +77,7 @@ class GeneradorCarga implements ApplicationRunner {
             caso.setSintetico(true);
             caso.setDistrito(g.distrito());
             caso.setProyecto(g.proyecto());
+            vinculo.vincular(caso);
             caso.setPrecioReferencial(g.precio());
             caso.setMoneda(g.moneda());
             caso.setEstadoComercial(g.estadoComercial());

@@ -38,8 +38,8 @@ class CargaCatalogoTest extends BaseApiTest {
     @Test
     @DisplayName("Con 1000 lotes el catálogo, con filtros y orden, responde en menos de 2 s")
     void milLotes() throws Exception {
-        int publicados = jdbc.queryForObject("select count(*) from caso_lote where estado_publicacion = 'PUBLICADO'",
-                Integer.class);
+        // v1.0 (etapa 3a): los casos publicados más los lotes de proyecto que se ofrecen.
+        int publicados = ofrecidosEnCatalogo();
         assertThat(publicados).isGreaterThanOrEqualTo(1000);
 
         // La primera consulta es la «en frío»: sin caché ni JIT calentado.

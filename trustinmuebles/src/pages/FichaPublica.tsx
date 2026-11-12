@@ -8,6 +8,7 @@ import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
 import { m2, precio } from "@/lib/formato";
 import { rutaFichaPublica } from "@/lib/publico";
+import { enlaceProyecto } from "@/lib/proyectos";
 import { ETIQUETA_ESTADO_PLANO } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
 import type { DetalleCaso } from "@/lib/types";
@@ -73,7 +74,13 @@ export default function FichaPublica() {
                 <li className="cifras flex items-center gap-1.5"><Ruler className="size-4 text-primary" aria-hidden="true" />{m2(p.areaM2)} de terreno</li>
               )}
               <li>{p.tipoInmuebleEtiqueta}</li>
-              {p.proyecto && <li>Proyecto {p.proyecto}</li>}
+              {p.proyecto && (
+                <li>
+                  {p.proyectoCodigo ? (
+                    <Link to={enlaceProyecto(p.proyectoCodigo)} className="text-primary hover:underline">Proyecto {p.proyecto}</Link>
+                  ) : <>Proyecto {p.proyecto}</>}
+                </li>
+              )}
               {p.estadoComercial && p.estadoComercial !== "DISPONIBLE" && <li>{p.estadoComercialEtiqueta}</li>}
               {deLaInmobiliaria && (
                 <li className="flex items-center gap-1.5"><Building2 className="size-4 text-primary" aria-hidden="true" />Venta directa de la inmobiliaria</li>

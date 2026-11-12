@@ -1,0 +1,113 @@
+{
+  "codigo": "11112003",
+  "denominacion": "Partida matriz · Terrazas de Sauzal · Salas, Ica",
+  "contexto": "Salas, Ica",
+  "distrito": "Salas",
+  "precioReferencial": null,
+  "proyecto": "Terrazas de Sauzal",
+  "titularidadComercial": "INMOBILIARIA",
+  "estadoPublicacion": "BORRADOR",
+  "expediente": {
+    "condicionRepresentada": "Lote urbano inscrito en el Registro de Predios.",
+    "completitud": "COMPLETA",
+    "fechaReferencial": "2026-11-10",
+    "nota": "Partida matriz del proyecto: los lotes que aún no tienen partida propia muestran su indicador A.",
+    "zonaRegistral": "Zona Registral N.° XI - Sede Ica",
+    "oficinaRegistral": "Oficina Registral de Ica",
+    "ubicacion": "Terreno matriz del proyecto Terrazas de Sauzal, distrito de Salas, provincia y departamento de Ica.",
+    "areaM2": 17500.0,
+    "linderos": "Frente: con la carretera de acceso a Salas, en 140.00 ml. Derecha: con terreno de terceros, en 125.00 ml. Izquierda: con terreno de terceros, en 125.00 ml. Fondo: con una vía proyectada del plano, en 140.00 ml.",
+    "antecedenteDominial": "El terreno proviene de la acumulación de dos predios rústicos, inscrita en esta partida a favor de la empresa.",
+    "asientos": [
+      {
+        "referencia": "C00001",
+        "tipoActo": "COMPRAVENTA",
+        "estado": null,
+        "fechaInscripcion": "2023-10-02",
+        "tituloNumero": "2023-00071652",
+        "fechaPresentacion": "2023-09-18",
+        "texto": "Promotora Sauzal del Sur S.A.C. adquiere el terreno matriz por compraventa, con el área, linderos y medidas perimétricas que figuran en la descripción del inmueble.",
+        "canceloNumero": null,
+        "titulares": "Promotora Sauzal del Sur S.A.C. (100 %)"
+      }
+    ],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida matriz",
+        "estado": "REVISADO"
+      },
+      {
+        "nombre": "Resolución de habilitación urbana",
+        "estado": "REVISADO",
+        "observacion": null
+      },
+      {
+        "nombre": "Plano de lotización del proyecto",
+        "estado": "REVISADO"
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento referencial",
+      "Rubro",
+      "Asiento",
+      "Título archivado",
+      "Zona registral",
+      "Antecedente dominial",
+      "Descripción del inmueble",
+      "Linderos",
+      "Titular",
+      "Titularidad",
+      "Compraventa",
+      "Independización",
+      "Gravámenes y cargas",
+      "Cancelación",
+      "Vigente",
+      "Cancelada",
+      "Condición representada",
+      "Checklist",
+      "Pendiente",
+      "Revisado",
+      "Semáforo informativo",
+      "Plano perimétrico",
+      "Memoria descriptiva",
+      "Certificado de zonificación y vías",
+      "Tasación"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": [
+      {
+        "tipo": "PLANO_PERIMETRICO",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Terreno matriz de 140.00 m de frente por 125.00 m de fondo: vértices A a D y perímetro de 530.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "MEMORIA_DESCRIPTIVA",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Describe el terreno matriz con los linderos de la partida: área de 17500.00 m². Incluye el cuadro de áreas de lotes, vías y aportes.",
+        "archivo": null
+      },
+      {
+        "tipo": "CERTIFICADO_ZONIFICACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Zonificación RDM (residencial de densidad media) en las manzanas A y B, y CV (comercio vecinal) en la manzana F. Las demás manzanas siguen el uso residencial del plano aprobado. Vía principal de 15.00 m y vías locales de 12.00 m.",
+        "archivo": null
+      },
+      {
+        "tipo": "TASACION",
+        "estado": "PRESENTADO",
+        "observacion": null,
+        "resumen": "Valor comercial del terreno por comparación con lotes de proyectos cercanos del mismo distrito.",
+        "archivo": null
+      }
+    ]
+  }
+}

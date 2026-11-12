@@ -1,0 +1,80 @@
+{
+  "proyectos": [
+    {
+      "codigo": "altos-de-ventisca",
+      "nombre": "Altos de Ventisca",
+      "distrito": "Subtanjalla",
+      "descripcion": "Lotización residencial de 56 lotes en cinco manzanas, con calles de 12 m, un área de parque y una manzana frente a la vía principal. Lotes de 8 m de frente, pensados para vivienda familiar.",
+      "recorridoUrl": null,
+      "casoMatriz": "11112001",
+      "semilla": 3101,
+      "independizacion": "EN_PARTIDA_MATRIZ",
+      "manzanas": [
+        { "manzana": "A", "lotes": 12, "frente": 8.0, "fondo": 17.5, "zonificacion": "RDM" },
+        { "manzana": "B", "lotes": 12, "frente": 8.0, "fondo": 17.5, "zonificacion": "RDM" },
+        { "manzana": "C", "lotes": 14, "frente": 8.0, "fondo": 18.0, "zonificacion": "RDM" },
+        { "manzana": "D", "lotes": 10, "frente": 8.5, "fondo": 18.0 },
+        { "manzana": "E", "lotes": 8, "frente": 9.0, "fondo": 18.0 }
+      ],
+      "hitos": [
+        { "nombre": "Compra del terreno matriz", "estado": "COMPLETADO", "fecha": "2024-06-10" },
+        { "nombre": "Aprobación de la habilitación urbana", "estado": "COMPLETADO", "fecha": "2025-02-20" },
+        { "nombre": "Trazado de calles y lotización", "estado": "COMPLETADO", "fecha": "2025-05-30" },
+        { "nombre": "Redes de agua potable y desagüe", "estado": "EN_PROCESO", "fecha": null },
+        { "nombre": "Red eléctrica y alumbrado público", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Independización de los lotes en el Registro de Predios", "estado": "EN_PROCESO", "fecha": null }
+      ]
+    },
+    {
+      "codigo": "rinconada-del-lucumo",
+      "nombre": "Rinconada del Lúcumo",
+      "distrito": "La Tinguiña",
+      "descripcion": "Proyecto de 44 lotes en cuatro manzanas, entre chacras y a pocas cuadras de la vía de acceso al distrito. Una manzana está destinada a comercio vecinal.",
+      "recorridoUrl": null,
+      "casoMatriz": "11112002",
+      "semilla": 3202,
+      "independizacion": "EN_PARTIDA_MATRIZ",
+      "manzanas": [
+        { "manzana": "A", "lotes": 10, "frente": 7.5, "fondo": 16.0, "zonificacion": "RDM" },
+        { "manzana": "B", "lotes": 10, "frente": 7.5, "fondo": 16.0, "zonificacion": "RDM" },
+        { "manzana": "C", "lotes": 12, "frente": 8.0, "fondo": 18.0, "zonificacion": "CV" },
+        { "manzana": "D", "lotes": 12, "frente": 8.0, "fondo": 17.0 }
+      ],
+      "hitos": [
+        { "nombre": "Compra del terreno matriz", "estado": "COMPLETADO", "fecha": "2024-11-04" },
+        { "nombre": "Aprobación de la habilitación urbana", "estado": "EN_PROCESO", "fecha": null },
+        { "nombre": "Trazado de calles y lotización", "estado": "COMPLETADO", "fecha": "2025-08-15" },
+        { "nombre": "Redes de agua potable y desagüe", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Red eléctrica y alumbrado público", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Independización de los lotes en el Registro de Predios", "estado": "PENDIENTE", "fecha": null }
+      ]
+    },
+    {
+      "codigo": "terrazas-de-sauzal",
+      "nombre": "Terrazas de Sauzal",
+      "distrito": "Salas",
+      "descripcion": "Urbanización de 68 lotes en seis manzanas, desarrollada por etapas. Las manzanas A, B y C ya tienen sus lotes independizados; las demás forman la segunda etapa.",
+      "recorridoUrl": null,
+      "casoMatriz": "11112003",
+      "semilla": 3303,
+      "independizacion": "EN_PARTIDA_MATRIZ",
+      "manzanas": [
+        { "manzana": "A", "lotes": 14, "frente": 8.0, "fondo": 20.0, "zonificacion": "RDM", "independizacion": "PARTIDA_PROPIA" },
+        { "manzana": "B", "lotes": 14, "frente": 8.0, "fondo": 20.0, "zonificacion": "RDM", "independizacion": "PARTIDA_PROPIA" },
+        { "manzana": "C", "lotes": 12, "frente": 8.0, "fondo": 20.0, "independizacion": "PARTIDA_PROPIA" },
+        { "manzana": "D", "lotes": 12, "frente": 8.5, "fondo": 19.0 },
+        { "manzana": "E", "lotes": 10, "frente": 8.5, "fondo": 19.0 },
+        { "manzana": "F", "lotes": 6, "frente": 10.0, "fondo": 20.0, "zonificacion": "CV" }
+      ],
+      "hitos": [
+        { "nombre": "Compra del terreno matriz", "estado": "COMPLETADO", "fecha": "2023-09-18" },
+        { "nombre": "Aprobación de la habilitación urbana", "estado": "COMPLETADO", "fecha": "2024-07-02" },
+        { "nombre": "Trazado de calles y lotización", "estado": "COMPLETADO", "fecha": "2024-10-21" },
+        { "nombre": "Redes de agua potable y desagüe (primera etapa)", "estado": "COMPLETADO", "fecha": "2025-06-30" },
+        { "nombre": "Independización de los lotes de la primera etapa", "estado": "COMPLETADO", "fecha": "2025-09-12" },
+        { "nombre": "Red eléctrica y alumbrado público", "estado": "EN_PROCESO", "fecha": null },
+        { "nombre": "Independización de los lotes de la segunda etapa", "estado": "PENDIENTE", "fecha": null }
+      ]
+    }
+  ]
+}

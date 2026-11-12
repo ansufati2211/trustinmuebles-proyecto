@@ -51,8 +51,8 @@ class PortalPublicoTest extends BaseApiTest {
     @Test
     @DisplayName("Sin sesión se lista solo lo publicado, en páginas de 24, sin datos internos")
     void listaPublica() throws Exception {
-        int publicados = jdbc.queryForObject("select count(*) from caso_lote where estado_publicacion = 'PUBLICADO'",
-                Integer.class);
+        // v1.0 (etapa 3a): los casos publicados más los lotes de proyecto que se ofrecen.
+        int publicados = ofrecidosEnCatalogo();
         JsonNode p = pagina(0);
         assertThat(p.get("tamano").asInt()).isEqualTo(24);
         assertThat(p.get("pagina").asInt()).isZero();
@@ -69,7 +69,7 @@ class PortalPublicoTest extends BaseApiTest {
         String crudo = json.writeValueAsString(p);
         assertThat(crudo).doesNotContain("propietario-0").doesNotContain("comprador-0").doesNotContain("gestion");
         // Una página más allá del final viene vacía; una negativa es 400.
-        assertThat(pagina(5).get("items")).isEmpty();
+        assertThat(pagina(p.get("totalPaginas").asInt()).get("items")).isEmpty();
         mvc.perform(get("/api/v1/publico/inmuebles").param("pagina", "-1")).andExpect(status().isBadRequest());
     }
 
