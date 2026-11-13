@@ -178,11 +178,11 @@ class RegistrarPartidaTest extends BaseApiTest {
     @DisplayName("El prefijo debe corresponder al origen: SIM- con transcrita y un número sin SIM- con simulada dan 400")
     void prefijoSegunElOrigen() throws Exception {
         registrar(partida(SIMULADA), revisor()).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail", containsString("se reserva a las partidas simuladas")));
+                .andExpect(jsonPath("$.detail", containsString("se reservan a los registros internos de cartera")));
         ObjectNode sinPrefijo = simulada();
         sinPrefijo.put("numero", NUMERO);
         registrar(sinPrefijo, revisor()).andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.detail", containsString("debe llevar el prefijo SIM-")));
+                .andExpect(jsonPath("$.detail", containsString("debe llevar el prefijo INT-")));
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo in (?, ?)", Integer.class, NUMERO,
                 SIMULADA)).isZero();
     }
@@ -195,12 +195,12 @@ class RegistrarPartidaTest extends BaseApiTest {
                     .andExpect(jsonPath("$.codigo").value(SIMULADA))
                     .andExpect(jsonPath("$.origen").value("SINTETICO"))
                     .andExpect(jsonPath("$.sintetico").value(true))
-                    .andExpect(jsonPath("$.fuente").value("Partida simulada para demostración"))
+                    .andExpect(jsonPath("$.fuente").value("Registro interno de cartera"))
                     .andExpect(jsonPath("$.evaluacion.estado").value("GRIS"));
             byte[] pdf = mvc.perform(get("/api/v1/casos/" + SIMULADA + "/documento").header("Authorization", revisor()))
                     .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
             try (PDDocument doc = Loader.loadPDF(pdf)) {
-                assertThat(new PDFTextStripper().getText(doc)).contains("COPIA LITERAL DE PARTIDA REGISTRAL").doesNotContain("Conoce Aquí");
+                assertThat(new PDFTextStripper().getText(doc)).contains("FICHA REGISTRAL DEL INMUEBLE").doesNotContain("Conoce Aquí");
             }
             ObjectNode edicion = peticion(leerComo(SIMULADA, revisor()));
             ((ObjectNode) ((ArrayNode) edicion.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");
@@ -212,6 +212,34 @@ class RegistrarPartidaTest extends BaseApiTest {
         ((ObjectNode) ((ArrayNode) conDni.get("asientos")).get(0)).put("texto", "Titular con DNI 12345678");
         registrar(conDni, revisor()).andExpect(status().isBadRequest());
         mvc.perform(get("/api/v1/casos/" + SIMULADA).header("Authorization", revisor())).andExpect(status().isNotFound());
+    }
+
+    @Test
+    @DisplayName("v1.0 (etapa 6): el registro interno de cartera acepta INT-########, con su rótulo y su ficha registral")
+    void registroInternoConInt() throws Exception {
+        String interno = "INT-99000404";
+        ObjectNode p = partida(interno);
+        p.put("origen", "SIMULADA_DEMOSTRACION");
+        try {
+            registrar(p, revisor()).andExpect(status().isCreated())
+                    .andExpect(jsonPath("$.codigo").value(interno))
+                    .andExpect(jsonPath("$.origen").value("SINTETICO"))
+                    .andExpect(jsonPath("$.fuente").value("Registro interno de cartera"));
+            byte[] pdf = mvc.perform(get("/api/v1/casos/" + interno + "/documento").header("Authorization", revisor()))
+                    .andExpect(status().isOk()).andReturn().getResponse().getContentAsByteArray();
+            try (PDDocument doc = Loader.loadPDF(pdf)) {
+                assertThat(new PDFTextStripper().getText(doc)).contains("FICHA REGISTRAL DEL INMUEBLE",
+                        "Partida N.° " + interno);
+            }
+        } finally {
+            borrar(interno);
+        }
+        // INT- no se admite como transcrita, y un INT- mal formado no pasa la validación.
+        ObjectNode transcrita = partida(interno);
+        registrar(transcrita, revisor()).andExpect(status().isBadRequest());
+        ObjectNode corto = partida("INT-1234");
+        corto.put("origen", "SIMULADA_DEMOSTRACION");
+        registrar(corto, revisor()).andExpect(status().isBadRequest());
     }
 
     String origenesDelHistorial(String codigo) throws Exception {

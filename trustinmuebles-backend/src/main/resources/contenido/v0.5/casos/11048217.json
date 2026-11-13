@@ -23,9 +23,9 @@
         "fechaInscripcion": "2018-03-22",
         "tituloNumero": "2018-00012345",
         "fechaPresentacion": "2018-03-15",
-        "texto": "Por escritura pública de fecha 14 de marzo de 2018, otorgada ante notario público de Ica, Inmobiliaria Santa Elvira S.A.C. transfirió en compraventa el predio a favor de Rosa Elena Cárdenas Vilca, de estado civil soltera. Precio: S/ 64,000.00.",
+        "texto": "Por escritura pública de fecha 14 de marzo de 2018, otorgada ante notario público de Ica, Inmobiliaria Santa Elvira S.A.C. transfirió en compraventa el predio a favor de una persona natural (datos reservados). Precio: S/ 64,000.00.",
         "canceloNumero": null,
-        "titulares": "Rosa Elena Cárdenas Vilca (100 %)"
+        "titulares": "Persona natural (datos reservados) (100 %)"
       },
       {
         "referencia": "D00001",
@@ -158,7 +158,7 @@
       "verifElectricas": "CONFORME",
       "verifSanitarias": "CONFORME",
       "observaciones": "Sin deficiencias físicas detectadas en la inspección visual. Muros, tablero eléctrico y red sanitaria en buen estado aparente.",
-      "conclusiones": "Las conclusiones se sustentan en la inspección visual e instrumental: verificación del tablero y la llave diferencial, continuidad del pozo a tierra y prueba de presión de la red de agua.",
+      "conclusiones": "Las conclusiones se sustentan en la inspección visual e instrumental: verificación del tablero y la llave diferencial, continuidad del pozo a tierra y ensayo de presión de la red de agua.",
       "estudiosAdicionales": "Ninguno requerido por el momento."
     }
   }

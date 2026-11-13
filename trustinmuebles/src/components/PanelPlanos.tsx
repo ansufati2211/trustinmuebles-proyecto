@@ -116,7 +116,7 @@ function TarjetaPlano({ codigo, plano, especialidad, inscrita, esRevisor, alCamb
   const Icono = ICONO[especialidad];
   const hay = hayPlano(estado);
   const ruta = `/casos/${codigo}/planos/${especialidad}/documento`;
-  // v0.8: «Ver lámina» solo si hay un archivo (subido o lámina generada de un caso de demostración).
+  // v0.8: «Ver lámina» solo si hay un archivo (subido o lámina generada de un caso precargado).
   const conArchivo = hay && plano?.documento?.origen !== "FALTA";
 
   return (

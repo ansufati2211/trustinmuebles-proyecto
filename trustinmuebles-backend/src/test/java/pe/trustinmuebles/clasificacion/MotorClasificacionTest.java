@@ -50,7 +50,7 @@ class MotorClasificacionTest {
     @Test
     @DisplayName("CP-05a sin alertas vigentes y con datos completos: VERDE con alcance limitado")
     void verde() {
-        var r = evaluar(caso(CONDICION, "Rosa Elena Cárdenas Vilca (100 %)", Completitud.COMPLETA,
+        var r = evaluar(caso(CONDICION, "Persona natural (datos reservados) (100 %)", Completitud.COMPLETA,
                 acto("D00001", EstadoAnotacion.CANCELADA, TipoActo.HIPOTECA)));
         assertThat(r.estado()).isEqualTo(EstadoSemaforo.VERDE);
         assertThat(r.alertas()).isEmpty();
@@ -89,7 +89,7 @@ class MotorClasificacionTest {
     @Test
     @DisplayName("Un embargo cancelado no alerta y la copropiedad tampoco")
     void canceladoYCopropiedadNoAlertan() {
-        var r = evaluar(caso(CONDICION, "Marco Antonio Quispe Huamaní (50 %) y Lucía Fernanda Torres Gutiérrez (50 %)",
+        var r = evaluar(caso(CONDICION, "Persona natural (datos reservados) (50 %) y Persona natural (datos reservados) (50 %)",
                 Completitud.COMPLETA, acto("D00001", EstadoAnotacion.CANCELADA, TipoActo.EMBARGO)));
         assertThat(r.estado()).isEqualTo(EstadoSemaforo.VERDE);
         assertThat(r.alertas()).isEmpty();

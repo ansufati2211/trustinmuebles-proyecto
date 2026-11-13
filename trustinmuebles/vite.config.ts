@@ -13,6 +13,8 @@ export default defineConfig({
     // En desarrollo, /api se reenvía al backend de Spring Boot (evita CORS)
     proxy: {
       '/api': 'http://localhost:8080',
+      // v1.0 (etapa 6): robots.txt lo arma el servidor según app.sitio.indexable.
+      '/robots.txt': 'http://localhost:8080',
     },
   },
   resolve: {

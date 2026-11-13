@@ -32,7 +32,8 @@ import pe.trustinmuebles.clasificacion.Especialidad;
  */
 final class LaminaPdf {
     static final String MARCA_DE_AGUA = "DOCUMENTO TÉCNICO REFERENCIAL";
-    static final String ROTULO = "DOCUMENTO TÉCNICO REFERENCIAL DEL EXPEDIENTE · SIN SELLO NI FIRMA";
+    /** v1.0 (etapa 6): rotulado de la inmobiliaria; no imita el rótulo de un plano municipal ni de un colegio. */
+    static final String ROTULO = "TRUSTINMUEBLES · DOCUMENTO TÉCNICO REFERENCIAL · SIN SELLO NI FIRMA";
 
     /** Datos del predio que la lámina dibuja. Todo es opcional: sin medidas se usa un terreno tipo y se avisa. */
     record Datos(String partida, String denominacion, BigDecimal areaTerreno, String linderos,
@@ -154,7 +155,8 @@ final class LaminaPdf {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle("Lámina referencial " + seguro(especialidad.etiqueta()) + " " + seguro(d.partida()));
             info.setSubject("Documento técnico referencial. Sin sello ni firma.");
-            info.setCreator("Trustinmuebles");
+            info.setCreator(RotuloInmobiliaria.NOMBRE);
+            info.setAuthor(RotuloInmobiliaria.NOMBRE);
             doc.setDocumentInformation(info);
 
             PDPage pagina = new PDPage(PDRectangle.A4);
@@ -557,7 +559,7 @@ final class LaminaPdf {
         texto(cs, "Especialidad: " + seguro(e.etiqueta()) + " · Partida N.° " + seguro(d.partida()), normal, 8f, IZQ + 6f, 99f);
         texto(cs, "Proyectista: no consigna (documento referencial) · Fecha: "
                 + (d.fecha() == null ? "no consta" : d.fecha().format(FECHA)), normal, 8f, IZQ + 6f, 88f);
-        texto(cs, "Esquema técnico referencial del expediente. No reemplaza el plano aprobado por la municipalidad.", normal, 7.5f, IZQ + 6f, 77f);
+        texto(cs, "Esquema técnico referencial de la inmobiliaria. No reemplaza el plano aprobado por la municipalidad.", normal, 7.5f, IZQ + 6f, 77f);
         texto(cs, "LÁMINA", normal, 7f, DER - 56f, 108f);
         texto(cs, codigo, negrita, 16f, DER - 63f, 86f);
     }
@@ -604,7 +606,9 @@ final class LaminaPdf {
     static String seguro(String s) {
         if (s == null) return "";
         StringBuilder sb = new StringBuilder();
-        s.codePoints().forEach(cp -> sb.append(cp >= 32 && cp < 256 && !(cp >= 127 && cp < 160) ? (char) cp : '?'));
+        // v1.0 (etapa 6): también «•», que se usa para ocultar parte del número de partida (la fuente lo tiene).
+        s.codePoints().forEach(cp -> sb.append(cp == 0x2022 || (cp >= 32 && cp < 256 && !(cp >= 127 && cp < 160))
+                ? (char) cp : '?'));
         return sb.toString();
     }
 }

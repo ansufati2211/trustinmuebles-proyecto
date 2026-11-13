@@ -19,7 +19,10 @@ import pe.trustinmuebles.expediente.CasoDtos.PredioDto;
 record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, EstadoComercial estadoComercial,
         String moneda, BigDecimal precioMin, BigDecimal precioMax, BigDecimal precioM2Min, BigDecimal precioM2Max,
         BigDecimal areaMin, BigDecimal areaMax, EstadoSemaforo indicadorA, String tipoAlerta, Orden orden,
-        boolean descendente, Clase clase) {
+        boolean descendente, Clase clase,
+        /* v1.0 (etapa 6): zonificaciones de la guía de usos (null = sin filtro), uso pedido y si entran los inmuebles sin
+           zonificación (o con una que la guía no conoce) cuando se filtra por zonificación o por uso. */
+        Set<String> zonificaciones, UsosLote.Categoria uso, boolean incluirSinZonificacion) {
 
     enum Orden { NOVEDAD, PRECIO, PRECIO_M2, AREA }
 
@@ -40,6 +43,20 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
             String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
             String indicadorA, String tipoAlerta, String orden, String sentido, String clase,
             Set<String> tiposAlertaValidos) {
+        return de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax, precioM2Min, precioM2Max,
+                areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, null, null, null, tiposAlertaValidos);
+    }
+
+    /**
+     * v1.0 (etapa 6): con {@code zonificacion} (códigos de la guía de usos separados por coma, como RDM o CV, sin
+     * distinguir mayúsculas; un alias como R4 vale por su zona), {@code uso} (CASA, NEGOCIO, ALQUILAR o ALMACEN: la
+     * zonificación debe soler permitirlo con el área del inmueble) e {@code incluirSinZonificacion} (true o false; por
+     * omisión false).
+     */
+    static FiltroPublico de(String proyecto, String distrito, String tipo, String estadoComercial, String moneda,
+            String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
+            String indicadorA, String tipoAlerta, String orden, String sentido, String clase, String zonificacion,
+            String uso, String incluirSinZonificacion, Set<String> tiposAlertaValidos) {
         String alerta = vacio(tipoAlerta) == null ? null : vacio(tipoAlerta).toUpperCase(Locale.ROOT);
         if (alerta != null && !tiposAlertaValidos.contains(alerta)) {
             throw new IllegalArgumentException("tipoAlerta: valor no válido «" + tipoAlerta + "». Usa uno de: "
@@ -79,7 +96,45 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         return new FiltroPublico(vacio(proyecto), vacio(distrito), tipoInmueble(tipo),
                 valor("estadoComercial", estadoComercial, EstadoComercial.class), mon, pMin, pMax, mMin, mMax, aMin,
                 aMax, valor("indicadorA", indicadorA, EstadoSemaforo.class), alerta, o, desc,
-                valor("clase", clase, Clase.class));
+                valor("clase", clase, Clase.class), zonificaciones(zonificacion),
+                valor("uso", uso, UsosLote.Categoria.class), booleano("incluirSinZonificacion", incluirSinZonificacion));
+    }
+
+    /** Códigos de zona pedidos, ya resueltos a la zona de la guía; un código que la guía no conoce da 400. */
+    private static Set<String> zonificaciones(String texto) {
+        String v = vacio(texto);
+        if (v == null) return null;
+        Set<String> salida = new java.util.TreeSet<>();
+        for (String parte : v.split(",")) {
+            if (parte.isBlank()) continue;
+            UsosLote.Zona z = UsosLote.buscar(parte);
+            if (z == null) {
+                throw new IllegalArgumentException("zonificacion: valor no válido «" + parte.trim() + "». Usa uno de: "
+                        + String.join(", ", UsosLote.codigos()));
+            }
+            salida.add(z.codigo());
+        }
+        return salida.isEmpty() ? null : Set.copyOf(salida);
+    }
+
+    private static boolean booleano(String parametro, String texto) {
+        String v = vacio(texto);
+        if (v == null) return false;
+        if (v.equalsIgnoreCase("true")) return true;
+        if (v.equalsIgnoreCase("false")) return false;
+        throw new IllegalArgumentException(parametro + ": valor no válido «" + v + "». Usa true o false");
+    }
+
+    /**
+     * v1.0 (etapa 6): filtro por zonificación y por uso, con la guía de usos del lote. Un inmueble sin zonificación (o
+     * con una que la guía no conoce) solo entra si el comprador lo pidió con {@code incluirSinZonificacion}.
+     */
+    boolean aceptaZonificacion(PredioDto p) {
+        if (zonificaciones == null && uso == null) return true;
+        UsosLote.Zona zona = UsosLote.buscar(p.zonificacion());
+        if (zona == null) return incluirSinZonificacion;
+        if (zonificaciones != null && !zonificaciones.contains(zona.codigo())) return false;
+        return uso == null || UsosLote.permite(zona, uso, p.areaM2());
     }
 
     /** ¿Entran los inmuebles de esta clase? */
@@ -104,7 +159,8 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         if (moneda != null && (p.precioReferencial() == null || !moneda.equals(p.moneda()))) return false;
         if (hay(precioMin, precioMax) && !dentro(p.precioReferencial(), precioMin, precioMax)) return false;
         if (hay(precioM2Min, precioM2Max) && !dentro(p.precioPorM2(), precioM2Min, precioM2Max)) return false;
-        return !hay(areaMin, areaMax) || dentro(p.areaM2(), areaMin, areaMax);
+        if (hay(areaMin, areaMax) && !dentro(p.areaM2(), areaMin, areaMax)) return false;
+        return aceptaZonificacion(p);
     }
 
     /** Orden elegido; los que no tienen el dato van siempre al final. Empata por código. */

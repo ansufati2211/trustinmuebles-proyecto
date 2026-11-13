@@ -11,10 +11,14 @@ import type { InmueblePublico, OpcionesFiltro } from "./types";
  * documentos, nunca una promesa sobre la compra.
  */
 
-export type ClaveEtiqueta = "tipo" | "proyecto" | "distrito" | "precio" | "precioM2" | "area" | "indicadorA" | "orden" | "uso";
+export type ClaveEtiqueta = "tipo" | "proyecto" | "distrito" | "precio" | "precioM2" | "area" | "indicadorA" | "orden" | "uso"
+  | "zonificacion";
 export interface Etiqueta { clave: ClaveEtiqueta; texto: string }
 
-/** Lo que el asistente entendió de una frase: solo los filtros que reconoció, más el uso deseado (no es un filtro). */
+/**
+ * Lo que el asistente entendió de una frase: solo los filtros que reconoció, más el uso deseado. v1.0 (etapa 6): la
+ * página aplica el uso como filtro del catálogo (`uso` en la URL, según usos-lote.json); la interpretación lo deja aparte.
+ */
 export interface Interpretacion {
   filtros: Partial<FiltrosPublico>;
   uso: CategoriaUso | null;
@@ -250,6 +254,8 @@ const numero = (n: string) => Number(n).toLocaleString("es-PE", { maximumFractio
 /** Etiquetas de lo entendido, leídas de los filtros vigentes: si se cambia un filtro a mano, las etiquetas lo siguen. */
 export function etiquetasDe(f: FiltrosPublico, uso: CategoriaUso | null): Etiqueta[] {
   const e: Etiqueta[] = [];
+  // v1.0 (etapa 6): el uso también puede venir de la URL (filtro `uso`).
+  const usoVigente = uso ?? (f.uso || null);
   if (f.tipo) e.push({ clave: "tipo", texto: f.tipo === "LOTE" ? "Lotes o terrenos" : "Casas" });
   if (f.proyecto) e.push({ clave: "proyecto", texto: `Proyecto ${f.proyecto}` });
   if (f.distrito) e.push({ clave: "distrito", texto: `En ${f.distrito}` });
@@ -265,7 +271,13 @@ export function etiquetasDe(f: FiltrosPublico, uso: CategoriaUso | null): Etique
     : f.orden === "area" && f.sentido === "desc" ? "Más grande primero"
     : f.orden === "precioM2" && f.sentido === "asc" ? "Menor precio por m² primero" : null;
   if (orden) e.push({ clave: "orden", texto: orden });
-  if (uso) e.push({ clave: "uso", texto: etiquetaUso(uso) });
+  if (f.zonificacion) {
+    e.push({ clave: "zonificacion", texto: `Zonificación ${f.zonificacion.split(",").join(", ")}`
+      + (f.incluirSinZonificacion && !usoVigente ? " (y los que no la registran)" : "") });
+  }
+  if (usoVigente) {
+    e.push({ clave: "uso", texto: etiquetaUso(usoVigente) + (f.incluirSinZonificacion ? " (y los sin zonificación)" : "") });
+  }
   return e;
 }
 
@@ -281,7 +293,14 @@ export function quitarEtiqueta(f: FiltrosPublico, uso: CategoriaUso | null, clav
     case "area": g.areaMin = ""; g.areaMax = ""; break;
     case "indicadorA": g.indicadorA = ""; break;
     case "orden": g.orden = "novedad"; g.sentido = "desc"; break;
-    case "uso": return { filtros: g, uso: null };
+    case "zonificacion":
+      delete g.zonificacion;
+      if (!g.uso) delete g.incluirSinZonificacion;
+      break;
+    case "uso":
+      delete g.uso;
+      if (!g.zonificacion) delete g.incluirSinZonificacion;
+      return { filtros: g, uso: null };
   }
   if (!g.precioMin && !g.precioMax && !g.precioM2Min && !g.precioM2Max) g.moneda = "";
   return { filtros: g, uso };
@@ -303,14 +322,50 @@ export function sugerencias(contexto: Contexto): { texto: string; frase: string 
 
 // ------------------------------------------------------------------------------------------------------ recomendación
 
-export interface Recomendacion { inmueble: InmueblePublico; puntaje: number; motivos: string[] }
+/**
+ * v1.0 (etapa 6): lo que se necesita de un inmueble para recomendarlo. Lo cumplen las tarjetas del catálogo y la forma
+ * compacta de GET /publico/inmuebles/recomendables (todos los que cumplen el filtro, no solo una página).
+ */
+export type Recomendable = Pick<InmueblePublico, "codigo" | "denominacion" | "estado" | "predio" | "clase"
+  | "proyectoCodigo" | "lote" | "fuenteIndicadorA">;
+
+export interface Recomendacion { inmueble: Recomendable; puntaje: number; motivos: string[] }
+
+/** Proyecto (o el propio inmueble si no es de uno) y manzana, para variar las recomendaciones. */
+function grupoDe(c: Recomendable): { proyecto: string; manzana: string | null } {
+  const proyecto = c.proyectoCodigo ?? c.predio.proyectoCodigo ?? c.predio.proyecto ?? c.codigo;
+  const manzana = c.lote ? c.lote.split("-")[0] : null;
+  return { proyecto, manzana };
+}
+
+/**
+ * v1.0 (etapa 6): elige `cuantos` de una lista ya ordenada por puntaje. Entre los que empatan con el mejor puntaje que
+ * queda, prefiere uno de otro proyecto; si no hay, uno de otra manzana; si tampoco, el primero. Nunca deja pasar a uno
+ * de menor puntaje por variar.
+ */
+function elegirConVariedad(ordenados: Recomendacion[], cuantos: number): Recomendacion[] {
+  const quedan = [...ordenados];
+  const elegidos: Recomendacion[] = [];
+  while (elegidos.length < cuantos && quedan.length > 0) {
+    const tope = quedan[0].puntaje;
+    const empatados = quedan.filter((r) => r.puntaje === tope);
+    const proyectos = new Set(elegidos.map((r) => grupoDe(r.inmueble).proyecto));
+    const manzanas = new Set(elegidos.map((r) => { const g = grupoDe(r.inmueble); return `${g.proyecto}|${g.manzana}`; }));
+    const elegido = empatados.find((r) => !proyectos.has(grupoDe(r.inmueble).proyecto))
+      ?? empatados.find((r) => { const g = grupoDe(r.inmueble); return !manzanas.has(`${g.proyecto}|${g.manzana}`); })
+      ?? empatados[0];
+    elegidos.push(elegido);
+    quedan.splice(quedan.indexOf(elegido), 1);
+  }
+  return elegidos;
+}
 
 /**
  * Los 3 mejores de los resultados, con su motivo. Suma puntos por: indicador A en verde, estar disponible, que la
  * zonificación suela permitir el uso pedido, el precio por m² más bajo y lo que pidió en el orden (el más barato o el
  * más grande). Los vendidos no se recomiendan.
  */
-export function recomendar(items: InmueblePublico[], f: FiltrosPublico, uso: CategoriaUso | null, cuantos = 3): Recomendacion[] {
+export function recomendar(items: Recomendable[], f: FiltrosPublico, uso: CategoriaUso | null, cuantos = 3): Recomendacion[] {
   const candidatos = items.filter((c) => c.predio.estadoComercial !== "VENDIDO");
   // El más barato y el más grande se buscan entre los disponibles (un separado no puede ser «el más barato» que se ofrece).
   const disponibles = candidatos.filter((c) => c.predio.estadoComercial !== "SEPARADO");
@@ -363,11 +418,11 @@ export function recomendar(items: InmueblePublico[], f: FiltrosPublico, uso: Cat
     return { inmueble: c, puntaje, motivos };
   });
 
-  return evaluados
+  const ordenados = evaluados
     .sort((x, y) => y.puntaje - x.puntaje
       || (x.inmueble.predio.precioReferencial ?? Infinity) - (y.inmueble.predio.precioReferencial ?? Infinity)
-      || x.inmueble.codigo.localeCompare(y.inmueble.codigo))
-    .slice(0, cuantos);
+      || x.inmueble.codigo.localeCompare(y.inmueble.codigo));
+  return elegirConVariedad(ordenados, cuantos);
 }
 
 // ------------------------------------------------------------------------------------------------------- cita

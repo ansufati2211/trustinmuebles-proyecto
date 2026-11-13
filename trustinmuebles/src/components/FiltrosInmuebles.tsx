@@ -8,6 +8,7 @@ import {
 } from "@/lib/filtrosPublico";
 import { nombreTipoAlerta } from "@/lib/cartera";
 import type { OpcionesFiltro } from "@/lib/types";
+import { CATEGORIAS_USO, etiquetaUso, USOS_LOTE, type CategoriaUso } from "@/lib/usosLote";
 
 const etiqueta = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-tinta-2";
 const campo = `${claseCampo} !h-11`;
@@ -72,6 +73,22 @@ export function FiltrosInmuebles({ filtros, opciones, cambiar, limpiar, total }:
         <Lista id="f-alerta" nombre="Tipo de alerta" valor={filtros.tipoAlerta} todos="Cualquiera"
           opciones={(opciones?.tiposAlerta ?? []).map((x) => ({ valor: x.codigo, etiqueta: nombreTipoAlerta(x.codigo, opciones?.tiposAlerta) }))}
           alCambiar={(v) => cambiar({ tipoAlerta: v })} />
+
+        {/* v1.0 (etapa 6): zonificación y uso según la guía de usos del lote (usos-lote.json). */}
+        <Lista id="f-zonificacion" nombre="Zonificación" valor={filtros.zonificacion ?? ""} todos="Cualquiera"
+          opciones={USOS_LOTE.zonas.map((z) => ({ valor: z.codigo, etiqueta: `${z.codigo} · ${z.nombre}` }))}
+          alCambiar={(v) => cambiar({ zonificacion: v || undefined })} />
+        <Lista id="f-uso" nombre="Uso que buscas" valor={filtros.uso ?? ""} todos="Cualquiera"
+          opciones={CATEGORIAS_USO.map((c) => ({ valor: c, etiqueta: etiquetaUso(c) }))}
+          alCambiar={(v) => cambiar({ uso: (v || undefined) as CategoriaUso | undefined })} />
+        <div className="flex items-end sm:col-span-2">
+          <label htmlFor="f-sin-zonificacion" className={`flex min-h-11 items-center gap-2.5 text-sm font-semibold ${filtros.zonificacion || filtros.uso ? "text-foreground" : "text-tinta-2/60"}`}>
+            <input id="f-sin-zonificacion" type="checkbox" className="size-4 accent-primary"
+              disabled={!filtros.zonificacion && !filtros.uso} checked={!!filtros.incluirSinZonificacion}
+              onChange={(e) => cambiar({ incluirSinZonificacion: e.target.checked || undefined })} />
+            Incluir también los inmuebles sin zonificación registrada
+          </label>
+        </div>
       </div>
 
       {rango && <p role="alert" className="mt-3 text-sm font-semibold text-sem-rojo-tinta">{rango}</p>}

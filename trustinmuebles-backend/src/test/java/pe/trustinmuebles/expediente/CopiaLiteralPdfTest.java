@@ -22,8 +22,8 @@ class CopiaLiteralPdfTest {
     static DatosCopia partida(int cantidadAsientos, boolean parcial) {
         List<AsientoCopia> asientos = new ArrayList<>();
         String largo = "Por escritura pública de fecha 14 de marzo de 2018, otorgada ante notario público de Ica, "
-                + "Inmobiliaria Santa Elvira S.A.C. transfirió en compraventa el predio a favor de Rosa Elena "
-                + "Cárdenas Vilca, de estado civil soltera, con intervención de su apoderado, y declaró haber "
+                + "Inmobiliaria Santa Elvira S.A.C. transfirió en compraventa el predio a favor de una persona natural "
+                + "(datos reservados), con intervención de su apoderado, y declaró haber "
                 + "recibido la totalidad del precio pactado a su entera satisfacción en el acto de la firma.";
         for (int i = 1; i <= cantidadAsientos; i++) {
             asientos.add(new AsientoCopia(String.format("D%05d", i), "Hipoteca", largo, LocalDate.of(2018, 4, 2),
@@ -52,23 +52,26 @@ class CopiaLiteralPdfTest {
             assertThat(n).isGreaterThan(1);
             for (int i = 0; i < n; i++) {
                 List<String> textos = textosDibujados(doc, i);
-                assertThat(textos).as("pie en la página " + (i + 1)).anyMatch(t -> t.contains("Copia informativa del expediente"));
+                assertThat(textos).as("pie en la página " + (i + 1)).anyMatch(t -> t.contains("Documento informativo elaborado por la inmobiliaria"));
                 assertThat(textos).as("numeración en la página " + (i + 1)).contains("Página " + (i + 1) + " de " + n);
             }
         }
     }
 
     @Test
-    @DisplayName("Tiene la estructura de una copia literal: encabezado, descripción, antecedente y rubros con sus asientos")
+    @DisplayName("Tiene la estructura de una ficha registral: rótulo de la inmobiliaria, datos registrales, descripción, antecedente y rubros")
     void estructuraRegistral() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
             String texto = new PDFTextStripper().getText(doc);
-            assertThat(texto).contains("ZONA REGISTRAL N.° XI - SEDE ICA", "OFICINA REGISTRAL DE ICA", "REGISTRO DE PREDIOS",
-                    "Partida N.° SIM-11048217", "COPIA LITERAL DE PARTIDA REGISTRAL",
+            // v1.0 (etapa 6): la zona y la oficina siguen en el documento, como datos registrales y no como encabezado.
+            assertThat(texto).contains("Zona Registral N.° XI - Sede Ica", "Oficina Registral de Ica", "DATOS REGISTRALES",
+                    "TRUSTINMUEBLES · INMOBILIARIA EN ICA", "Partida N.° SIM-11048217", "FICHA REGISTRAL DEL INMUEBLE",
                     "DESCRIPCIÓN DEL INMUEBLE", "Área: 160.00 m²", "ANTECEDENTE DOMINIAL", "TÍTULOS DE DOMINIO",
                     "GRAVÁMENES Y CARGAS", "CANCELACIONES", "OTROS", "D00001 · HIPOTECA", "Título archivado N.° SIM-2018-00011",
-                    "presentado el 26/03/2018", "inscrito el 02/04/2018", "Rosa Elena Cárdenas Vilca");
-            assertThat(doc.getDocumentInformation().getTitle()).isEqualTo("Copia literal referencial SIM-11048217");
+                    "presentado el 26/03/2018", "inscrito el 02/04/2018", "persona natural (datos reservados)");
+            assertThat(texto).doesNotContain("COPIA LITERAL DE PARTIDA REGISTRAL", "REGISTRO DE PREDIOS ·");
+            assertThat(doc.getDocumentInformation().getTitle()).isEqualTo("Ficha registral del inmueble SIM-11048217");
+            assertThat(doc.getDocumentInformation().getAuthor()).isEqualTo("Trustinmuebles");
         }
     }
 
@@ -77,7 +80,8 @@ class CopiaLiteralPdfTest {
     void sinElementosOficiales() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(3, false)))) {
             String texto = new PDFTextStripper().getText(doc).toLowerCase();
-            assertThat(texto).contains("sin firma ni sello", "no está firmado", "no tiene valor legal");
+            assertThat(texto).contains("sin firma ni sello", "no está firmado", "no tiene valor legal",
+                    "documento informativo elaborado por la inmobiliaria; no reemplaza la copia literal que emite sunarp");
             assertThat(texto).doesNotContain("código de verificación", "codigo de verificacion", "código qr", "registrador",
                     "firma digital", "firmado digitalmente");
             assertThat(doc.getPage(0).getResources().getXObjectNames()).as("sin imágenes: ni logo, ni escudo, ni QR").isEmpty();
@@ -136,16 +140,20 @@ class CopiaLiteralPdfTest {
             assertThat(texto).contains("TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL", "Fecha de la consulta",
                     "Fin de la transcripción referencial", "17/10/2026");
             assertThat(texto.toLowerCase()).doesNotContain("simulad");
-            assertThat(doc.getDocumentInformation().getTitle()).startsWith("Transcripción referencial");
+            assertThat(doc.getDocumentInformation().getTitle()).startsWith("Ficha registral del inmueble (transcripción referencial)");
+            assertThat(texto.replaceAll("\\s+", " ")).contains("no reemplaza la copia literal que emite SUNARP");
         }
     }
 
     @Test
-    @DisplayName("Una partida sintética imprime el cierre registral de cada asiento; una transcrita, solo lo transcrito")
+    @DisplayName("Una partida interna imprime la hora derivada de cada presentación; una transcrita, solo lo transcrito")
     void cierreRegistralSoloEnLasFicticias() throws Exception {
         try (PDDocument doc = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
             String texto = new PDFTextStripper().getText(doc);
-            assertThat(texto).contains("Tomo Diario ", "Derechos cobrados: S/", "Recibo N.° ", "horas");
+            // v1.0 (etapa 6): el tomo del diario, los derechos cobrados y el recibo imitaban a SUNARP y ya no se imprimen;
+            // la hora de presentación derivada del asiento se conserva.
+            assertThat(texto).contains(" a las ", "horas");
+            assertThat(texto).doesNotContain("Tomo Diario", "Derechos cobrados", "Recibo N.°");
             // El mismo asiento da siempre los mismos datos: el PDF no cambia entre dos generaciones.
             try (PDDocument otra = Loader.loadPDF(CopiaLiteralPdf.generar(partida(2, false)))) {
                 assertThat(new PDFTextStripper().getText(otra)).isEqualTo(texto);
@@ -160,7 +168,7 @@ class CopiaLiteralPdfTest {
     }
 
     @Test
-    @DisplayName("Los asientos en Courier quedan justificados y los 12 casos del contenido generan su copia literal")
+    @DisplayName("Los asientos en Courier quedan justificados y los casos del contenido generan su ficha registral")
     void losDiezCasosGeneranSuCopia() throws Exception {
         var mapa = new tools.jackson.databind.ObjectMapper();
         var dir = java.nio.file.Path.of("src/main/resources/contenido/v0.5/casos");
@@ -176,7 +184,7 @@ class CopiaLiteralPdfTest {
                     assertThat(texto).as(caso.codigo()).contains("Partida N.° " + caso.codigo(), "DESCRIPCIÓN DEL INMUEBLE");
                     for (int i = 0; i < doc.getNumberOfPages(); i++) {
                         assertThat(textosDibujados(doc, i)).as(caso.codigo() + " p." + (i + 1))
-                                .anyMatch(t -> t.contains("Copia informativa del expediente"));
+                                .anyMatch(t -> t.contains("Documento informativo elaborado por la inmobiliaria"));
                     }
                 }
                 n++;

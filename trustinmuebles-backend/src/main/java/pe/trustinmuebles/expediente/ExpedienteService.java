@@ -220,29 +220,67 @@ class ExpedienteService {
             if (a.getTituloNumero() != null) a.setTituloNumero(a.getTituloNumero().replace("SIM-", ""));
             if (a.getTexto() != null) a.setTexto(a.getTexto().replace("SIM-", ""));
         }
-        if (e.isDocumentoGenerado()) {
-            String viejo = e.getDocumentoArchivoId();
-            String partida = e.getCaso().getCodigo();
-            List<AsientoCopia> lista = e.getAsientos().stream().map(a -> {
-                boolean fabrica = a.getTipoActo() == pe.trustinmuebles.clasificacion.TipoActo.OTRO
-                        && a.getTexto() != null && a.getTexto().toLowerCase().startsWith("declaratoria de fábrica");
-                String acto = fabrica ? "Declaratoria de fábrica" : a.getTipoActo().etiqueta();
-                return new AsientoCopia(a.getReferencia(), acto, a.getTexto(), a.getFechaInscripcion(),
-                        a.getTituloNumero(), a.getFechaPresentacion());
-            }).toList();
-            DatosCopia copia = new DatosCopia(partida,
-                    e.getZonaRegistral() == null ? "Zona registral no informada" : e.getZonaRegistral(),
-                    e.getOficinaRegistral() == null ? "Oficina registral no informada" : e.getOficinaRegistral(),
-                    e.getUbicacion(), e.getAreaM2(), e.getLinderos(), e.getAntecedenteDominial(),
-                    e.getCompletitud() != pe.trustinmuebles.clasificacion.Completitud.COMPLETA,
-                    e.getFechaReferencial(), lista);
-            byte[] pdf = CopiaLiteralPdf.generar(copia, procedencia(e.getCaso()));
-            e.setDocumentoArchivoId(almacenamiento.guardar(partida + ".pdf", "application/pdf", pdf, false).id());
+        regenerarFicha(e);
+    }
+
+    /**
+     * Vuelve a generar la ficha registral de un caso cuyo PDF genera el sistema (y guarda). Sin PDF generado, solo guarda.
+     */
+    private void regenerarFicha(Expediente e) {
+        if (!e.isDocumentoGenerado()) {
             expedientes.saveAndFlush(e);
-            if (viejo != null) almacenamiento.eliminar(viejo);
-        } else {
-            expedientes.saveAndFlush(e);
+            return;
         }
+        String viejo = e.getDocumentoArchivoId();
+        String partida = e.getCaso().getCodigo();
+        byte[] pdf = CopiaLiteralPdf.generar(copiaDeExpediente(e, partida), procedencia(e.getCaso()));
+        e.setDocumentoArchivoId(almacenamiento.guardar(partida + ".pdf", "application/pdf", pdf, false).id());
+        expedientes.saveAndFlush(e);
+        if (viejo != null) almacenamiento.eliminar(viejo);
+    }
+
+    /** Datos de la ficha registral de un expediente; {@code partida} es el número que se imprime. */
+    private static DatosCopia copiaDeExpediente(Expediente e, String partida) {
+        List<AsientoCopia> lista = e.getAsientos().stream().map(a -> {
+            boolean fabrica = a.getTipoActo() == pe.trustinmuebles.clasificacion.TipoActo.OTRO
+                    && a.getTexto() != null && a.getTexto().toLowerCase().startsWith("declaratoria de fábrica");
+            String acto = fabrica ? "Declaratoria de fábrica" : a.getTipoActo().etiqueta();
+            return new AsientoCopia(a.getReferencia(), acto, a.getTexto(), a.getFechaInscripcion(),
+                    a.getTituloNumero(), a.getFechaPresentacion());
+        }).toList();
+        DatosCopia copia = new DatosCopia(partida,
+                e.getZonaRegistral() == null ? "Zona registral no informada" : e.getZonaRegistral(),
+                e.getOficinaRegistral() == null ? "Oficina registral no informada" : e.getOficinaRegistral(),
+                e.getUbicacion(), e.getAreaM2(), e.getLinderos(), e.getAntecedenteDominial(),
+                e.getCompletitud() != pe.trustinmuebles.clasificacion.Completitud.COMPLETA,
+                e.getFechaReferencial(), lista);
+        return copia;
+    }
+
+    /**
+     * v1.0 (etapa 6): en una base anterior, un caso precargado recibe los textos nuevos de sus asientos (titulares como
+     * «Persona natural (datos reservados)») si nadie editó su expediente, y su ficha registral se vuelve a generar con el
+     * rótulo nuevo. La titularidad solo se mira para saber si consta, así que el indicador A no cambia.
+     */
+    @Transactional
+    void ajustarContenidoPrecargado(String codigo, List<AsientoDatos> asientosDelContenido) {
+        Expediente e = expedientes.findByCasoCodigo(codigo).orElse(null);
+        if (e == null || e.getCaso().esCaptado()) return;
+        boolean editado = clasificacion.historial(e.getId()).stream()
+                .anyMatch(h -> h.origen() == OrigenEvaluacion.EDICION);
+        if (!editado && asientosDelContenido != null) {
+            NormalizadorAsientos.Resultado n = NormalizadorAsientos.normalizar(asientosDelContenido);
+            Map<String, AsientoDatos> porReferencia = new java.util.HashMap<>();
+            n.asientos().forEach(a -> porReferencia.put(a.referencia(), a));
+            for (Asiento a : e.getAsientos()) {
+                AsientoDatos nuevo = porReferencia.get(a.getReferencia());
+                if (nuevo == null) continue;
+                if (!java.util.Objects.equals(a.getTexto(), nuevo.texto())) a.setTexto(nuevo.texto());
+                if (!java.util.Objects.equals(a.getTitulares(), nuevo.titulares())) a.setTitulares(nuevo.titulares());
+            }
+            if (n.titularidad() != null && !n.titularidad().equals(e.getTitularidad())) e.setTitularidad(n.titularidad());
+        }
+        regenerarFicha(e);
     }
 
     private Expediente crear(CasoLote caso, DatosExpediente datos, boolean exigirArchivo) {
@@ -321,12 +359,18 @@ class ExpedienteService {
     /** El PDF que subió el revisor o, si no hay, una lámina 2D referencial generada con los datos del plano. */
     @Transactional(readOnly = true)
     DocumentoPlano planoDocumento(String codigo, Especialidad especialidad) {
-        Expediente e = buscarVisible(codigo);
+        return planoDocumentoDe(buscarVisible(codigo), codigo, especialidad, codigo + "-");
+    }
+
+    /** El PDF de un plano; {@code partidaVisible} es el número que se imprime en una lámina generada. */
+    private DocumentoPlano planoDocumentoDe(Expediente e, String partidaVisible, Especialidad especialidad,
+            String prefijoArchivo) {
+        String codigo = partidaVisible;
         PlanoTecnico p = planoDe(e, especialidad);
         if (p == null || (p.getEstado() != EstadoPlano.PRESENTADO && p.getEstado() != EstadoPlano.OBSERVADO)) {
             throw new NoEncontradoException("Plano", especialidad.etiqueta());
         }
-        String nombre = codigo + "-" + especialidad.name().toLowerCase() + ".pdf";
+        String nombre = prefijoArchivo + especialidad.name().toLowerCase() + ".pdf";
         if (p.getArchivoId() != null) return new DocumentoPlano(almacenamiento.leer(p.getArchivoId()).datos(), nombre);
         // v0.8: solo los casos de la carga de contenido tienen lámina generada; a una partida captada le falta el archivo.
         if (e.getCaso().esCaptado()) throw new NoEncontradoException("Archivo del plano", especialidad.etiqueta());
@@ -390,6 +434,49 @@ class ExpedienteService {
         return documentoLoteDe(buscarVisible(codigo), tipo);
     }
 
+    // ------------------------------------------------- v1.0 (etapa 6): PDF de los casos publicados, sin sesión
+
+    /**
+     * Número de partida parcialmente oculto para el portal público: los primeros 4 caracteres y «••••». El personal
+     * autenticado lo ve completo en el expediente.
+     */
+    static String partidaOculta(String codigo) {
+        if (codigo == null) return null;
+        return codigo.substring(0, Math.min(4, codigo.length())) + "••••";
+    }
+
+    /** Un caso PUBLICADO; un borrador, uno retirado o uno inexistente dan 404, como su ficha pública. */
+    private Expediente buscarPublicado(String codigo) {
+        Expediente e = buscar(codigo);
+        if (e.getCaso().getEstadoPublicacion() != EstadoPublicacion.PUBLICADO) throw new NoEncontradoException("Caso", codigo);
+        return e;
+    }
+
+    /**
+     * Ficha registral de un caso publicado, generada al momento con el número de partida parcialmente oculto. Se arma
+     * siempre con los datos del expediente (nunca se entrega un PDF subido), así que no puede traer nombres de personas.
+     */
+    @Transactional(readOnly = true)
+    DocumentoPlano fichaRegistralPublica(String codigo) {
+        Expediente e = buscarPublicado(codigo);
+        byte[] pdf = CopiaLiteralPdf.generar(copiaDeExpediente(e, partidaOculta(codigo)), procedencia(e.getCaso()));
+        return new DocumentoPlano(pdf, "ficha-registral.pdf");
+    }
+
+    /** Lámina o plano de un caso publicado; una lámina generada lleva el número de partida parcialmente oculto. */
+    @Transactional(readOnly = true)
+    DocumentoPlano planoDocumentoPublico(String codigo, Especialidad especialidad) {
+        return planoDocumentoDe(buscarPublicado(codigo), partidaOculta(codigo), especialidad, "plano-");
+    }
+
+    /** Documento del lote de un caso publicado; uno generado lleva el número de partida parcialmente oculto. */
+    @Transactional(readOnly = true)
+    DocumentoPlano documentoLotePublico(String codigo, DocumentoLote tipo) {
+        Expediente e = buscarPublicado(codigo);
+        DocumentoPlano d = documentoLoteDe(e, tipo, partidaOculta(codigo));
+        return new DocumentoPlano(d.datos(), nombreDeArchivo(tipo) + ".pdf");
+    }
+
     /**
      * v1.0 (etapa 3a): documento de la partida matriz de un proyecto para su página pública. Quien lo llama ya
      * comprobó que el proyecto se puede ver sin sesión (ProyectoService).
@@ -406,7 +493,11 @@ class ExpedienteService {
     }
 
     private DocumentoPlano documentoLoteDe(Expediente e, DocumentoLote tipo) {
-        String codigo = e.getCaso().getCodigo();
+        return documentoLoteDe(e, tipo, e.getCaso().getCodigo());
+    }
+
+    private DocumentoPlano documentoLoteDe(Expediente e, DocumentoLote tipo, String partidaVisible) {
+        String codigo = partidaVisible;
         DocumentoDelLote d = documentoDe(e, tipo);
         if (e.getTipoPredio() != TipoPredio.LOTE || d == null
                 || (d.getEstado() != EstadoPlano.PRESENTADO && d.getEstado() != EstadoPlano.OBSERVADO)) {
@@ -508,8 +599,8 @@ class ExpedienteService {
             "Pendiente", "Semáforo informativo");
 
     /**
-     * Capta una partida: transcrita de una consulta pública (sin el prefijo SIM-) o simulada para la demostración (con
-     * él). En ambos casos se rechazan los datos personales reconocibles. Todo ocurre en una sola transacción.
+     * Capta una partida: transcrita de una consulta pública (sin prefijo) o registro interno de cartera (con INT- o,
+     * como antes, SIM-). En ambos casos se rechazan los datos personales reconocibles. Todo ocurre en una sola transacción.
      */
     DetalleCaso registrar(RegistrarPartidaRequest req) {
         if (!Boolean.TRUE.equals(req.confirmaSinDatosPersonales())) {
@@ -517,10 +608,11 @@ class ExpedienteService {
                     "confirmaSinDatosPersonales: debes confirmar que la transcripción no contiene datos de personas naturales");
         }
         boolean simulada = req.origen() == OrigenCaptacion.SIMULADA_DEMOSTRACION;
-        if (simulada != req.numero().startsWith(PREFIJO_SIMULADO)) {
+        // v1.0 (etapa 6): el registro interno de cartera usa INT-########; SIM- se sigue aceptando.
+        if (simulada != esCodigoInterno(req.numero())) {
             throw new IllegalArgumentException(simulada
-                    ? "numero: una partida simulada debe llevar el prefijo SIM-"
-                    : "numero: el prefijo SIM- se reserva a las partidas simuladas");
+                    ? "numero: un registro interno de cartera debe llevar el prefijo INT- (por ejemplo INT-99000404)"
+                    : "numero: los prefijos INT- y SIM- se reservan a los registros internos de cartera");
         }
         if (casos.existsByCodigo(req.numero())) {
             throw new ConflictoException("La partida " + req.numero() + " ya está registrada");
@@ -570,8 +662,15 @@ class ExpedienteService {
     }
 
     static final String FUENTE_CONOCE_AQUI = "Conoce Aquí – SUNARP";
-    static final String FUENTE_SIMULADA = "Partida simulada para demostración";
+    /** v1.0 (etapa 6): rótulo del origen interno (antes «Partida simulada para demostración»). */
+    static final String FUENTE_SIMULADA = "Registro interno de cartera";
     static final String PREFIJO_SIMULADO = "SIM-";
+    static final String PREFIJO_INTERNO = "INT-";
+
+    /** ¿El número es un código interno de cartera (INT- o, como antes, SIM-)? */
+    static boolean esCodigoInterno(String numero) {
+        return numero != null && (numero.startsWith(PREFIJO_INTERNO) || numero.startsWith(PREFIJO_SIMULADO));
+    }
 
     /** El distrito de una partida captada es la primera parte del contexto («Parcona, Ica» → «Parcona»). */
     static String distritoDe(String contexto) {
@@ -1002,31 +1101,8 @@ class ExpedienteService {
     @Transactional(readOnly = true)
     PaginaPublica listarPublico(int pagina, FiltroPublico filtro) {
         if (pagina < 0) throw new IllegalArgumentException("pagina: debe ser 0 o mayor");
-        List<FiltroPublico.Candidato> candidatos = new java.util.ArrayList<>();
-        if (filtro.incluye(FiltroPublico.Clase.CASO)) {
-            expedientes.findPublicados().stream().map(e -> new FiltroPublico.Candidato(e, e.getCaso(), predio(e)))
-                    .filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
-        }
-        // v1.0 (etapa 3a): los lotes de proyecto sin caso propio, en la misma lista y con los mismos filtros.
-        if (filtro.incluye(FiltroPublico.Clase.LOTE_PROYECTO)) {
-            lotesPublicados().stream().filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
-        }
-        // El indicador A de un lote sin caso propio es el de la partida matriz (su expediente va en el candidato).
-        Map<Long, EvaluacionDto> evaluaciones = Map.of();
-        if (filtro.indicadorA() != null) {
-            // El color está en su propia columna: no hace falta leer el detalle de cada evaluación.
-            Map<Long, pe.trustinmuebles.clasificacion.EstadoSemaforo> estados = clasificacion.estados(
-                    idsDeExpediente(candidatos));
-            candidatos.removeIf(c -> c.expediente() == null
-                    || estados.get(c.expediente().getId()) != filtro.indicadorA());
-        }
-        if (filtro.tipoAlerta() != null) {
-            Map<Long, EvaluacionDto> ev = clasificacion.obtenerVarias(idsDeExpediente(candidatos));
-            evaluaciones = ev;
-            candidatos.removeIf(c -> c.expediente() == null || !RutasRegularizacion.tiposAlerta(
-                    ev.get(c.expediente().getId())).contains(filtro.tipoAlerta()));
-        }
-        candidatos.sort(filtro.comparador());
+        Map<Long, EvaluacionDto> evaluaciones = new java.util.HashMap<>();
+        List<FiltroPublico.Candidato> candidatos = candidatosFiltrados(filtro, evaluaciones);
         int total = candidatos.size();
         int desde = Math.min(pagina * TAMANO_PAGINA_PUBLICA, total);
         int hasta = Math.min(desde + TAMANO_PAGINA_PUBLICA, total);
@@ -1040,6 +1116,69 @@ class ExpedienteService {
         }).toList();
         int paginas = (total + TAMANO_PAGINA_PUBLICA - 1) / TAMANO_PAGINA_PUBLICA;
         return new PaginaPublica(items, pagina, TAMANO_PAGINA_PUBLICA, total, paginas);
+    }
+
+    /** v1.0 (etapa 6): tope de inmuebles que se entregan al asistente para recomendar. */
+    static final int MAXIMO_RECOMENDABLES = 2000;
+
+    /**
+     * v1.0 (etapa 6): todos los que cumplen los filtros, sin vendidos y en forma compacta (el color de A sale de su
+     * columna, sin leer cada evaluación), para que el asistente recomiende sobre el total y no solo sobre una página.
+     */
+    @Transactional(readOnly = true)
+    Recomendables recomendables(FiltroPublico filtro) {
+        List<FiltroPublico.Candidato> candidatos = candidatosFiltrados(filtro, new java.util.HashMap<>());
+        candidatos.removeIf(c -> c.predio().estadoComercial() == EstadoComercial.VENDIDO);
+        int total = candidatos.size();
+        List<FiltroPublico.Candidato> parte = candidatos.subList(0, Math.min(total, MAXIMO_RECOMENDABLES));
+        Map<Long, pe.trustinmuebles.clasificacion.EstadoSemaforo> estados = clasificacion.estados(idsDeExpediente(parte));
+        List<InmuebleRecomendable> items = parte.stream().map(c -> {
+            var estado = c.expediente() == null ? null : estados.get(c.expediente().getId());
+            ProyectoDtos.FuenteIndicadorA fuente = estado == null ? ProyectoDtos.FuenteIndicadorA.SIN_EVALUACION
+                    : c.lote() != null ? ProyectoDtos.FuenteIndicadorA.PARTIDA_MATRIZ
+                    : ProyectoDtos.FuenteIndicadorA.PROPIO;
+            return c.lote() != null
+                    ? new InmuebleRecomendable(c.lote().codigo(), denominacionDe(c.lote()),
+                            FiltroPublico.Clase.LOTE_PROYECTO.name(), c.lote().getProyecto().getCodigo(),
+                            c.lote().clave(), estado, fuente, c.predio())
+                    : new InmuebleRecomendable(c.caso().getCodigo(), c.caso().getDenominacion(),
+                            FiltroPublico.Clase.CASO.name(), c.caso().getProyectoCodigo(), null, estado, fuente,
+                            c.predio());
+        }).toList();
+        return new Recomendables(items, total, total > MAXIMO_RECOMENDABLES);
+    }
+
+    /**
+     * Los candidatos del catálogo que cumplen el filtro, ya ordenados. Si se filtra por tipo de alerta, deja en
+     * {@code evaluaciones} las que tuvo que leer, para no leerlas dos veces.
+     */
+    private List<FiltroPublico.Candidato> candidatosFiltrados(FiltroPublico filtro,
+            Map<Long, EvaluacionDto> evaluaciones) {
+        List<FiltroPublico.Candidato> candidatos = new java.util.ArrayList<>();
+        if (filtro.incluye(FiltroPublico.Clase.CASO)) {
+            expedientes.findPublicados().stream().map(e -> new FiltroPublico.Candidato(e, e.getCaso(), predio(e)))
+                    .filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
+        }
+        // v1.0 (etapa 3a): los lotes de proyecto sin caso propio, en la misma lista y con los mismos filtros.
+        if (filtro.incluye(FiltroPublico.Clase.LOTE_PROYECTO)) {
+            lotesPublicados().stream().filter(c -> filtro.aceptaPredio(c.predio())).forEach(candidatos::add);
+        }
+        // El indicador A de un lote sin caso propio es el de la partida matriz (su expediente va en el candidato).
+        if (filtro.indicadorA() != null) {
+            // El color está en su propia columna: no hace falta leer el detalle de cada evaluación.
+            Map<Long, pe.trustinmuebles.clasificacion.EstadoSemaforo> estados = clasificacion.estados(
+                    idsDeExpediente(candidatos));
+            candidatos.removeIf(c -> c.expediente() == null
+                    || estados.get(c.expediente().getId()) != filtro.indicadorA());
+        }
+        if (filtro.tipoAlerta() != null) {
+            Map<Long, EvaluacionDto> ev = clasificacion.obtenerVarias(idsDeExpediente(candidatos));
+            evaluaciones.putAll(ev);
+            candidatos.removeIf(c -> c.expediente() == null || !RutasRegularizacion.tiposAlerta(
+                    ev.get(c.expediente().getId())).contains(filtro.tipoAlerta()));
+        }
+        candidatos.sort(filtro.comparador());
+        return candidatos;
     }
 
     private static List<Long> idsDeExpediente(List<FiltroPublico.Candidato> candidatos) {

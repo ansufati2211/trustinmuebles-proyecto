@@ -10,18 +10,20 @@ import { m2, precio } from "@/lib/formato";
 import { enlaceInmueble } from "@/lib/proyectos";
 import type { FiltrosPublico } from "@/lib/filtrosPublico";
 import type { CategoriaUso } from "@/lib/usosLote";
-import type { InmueblePublico, OpcionesFiltro } from "@/lib/types";
+import type { OpcionesFiltro } from "@/lib/types";
+import type { Recomendable } from "@/lib/asistente";
 
 const EJEMPLO = "Ej.: lote en Subtanjalla de al menos 120 m², hasta 60 mil soles, para casa";
 
 /**
  * v1.0 (etapa 5): asistente de búsqueda del catálogo público. El comprador escribe lo que busca; el asistente (reglas,
  * sin IA) lo convierte en filtros, muestra lo entendido como etiquetas que se pueden quitar, recomienda los 3 mejores
- * resultados con su motivo y al final ofrece solicitar una cita. Si no entiende, lo dice y ofrece búsquedas de ejemplo.
+ * resultados con su motivo y al final ofrece solicitar una cita. Si no entiende, lo dice y ofrece búsquedas sugeridas.
+ * v1.0 (etapa 6): `resultados` son todos los que cumplen los filtros (no solo la página visible).
  */
 export function AsistenteBusqueda({ opciones, filtros, uso, activo, resultados, cargando, alBuscar, alQuitar, alCerrar }: {
   opciones: OpcionesFiltro | null; filtros: FiltrosPublico; uso: CategoriaUso | null; activo: boolean;
-  resultados: InmueblePublico[] | null; cargando: boolean;
+  resultados: Recomendable[] | null; cargando: boolean;
   alBuscar: (filtros: FiltrosPublico, uso: CategoriaUso | null) => void;
   alQuitar: (clave: ClaveEtiqueta) => void; alCerrar: () => void;
 }) {
@@ -36,7 +38,7 @@ export function AsistenteBusqueda({ opciones, filtros, uso, activo, resultados, 
   };
 
   const etiquetas = etiquetasDe(filtros, uso);
-  const recomendados = resultados ? recomendar(resultados, filtros, uso) : [];
+  const recomendados = resultados ? recomendar(resultados, filtros, uso ?? (filtros.uso || null)) : [];
   const proyecto = filtros.proyecto && resultados?.find((c) => c.predio.proyecto === filtros.proyecto);
   const proyectoCodigo = proyecto ? proyecto.proyectoCodigo ?? proyecto.predio.proyectoCodigo ?? undefined : undefined;
 
@@ -62,7 +64,7 @@ export function AsistenteBusqueda({ opciones, filtros, uso, activo, resultados, 
         <div role="status" className="mt-4 space-y-3 rounded-2xl border border-border bg-superficie p-4">
           <p className="flex items-start gap-2 text-sm font-semibold text-foreground">
             <HelpCircle className="mt-0.5 size-4 shrink-0 text-primary" aria-hidden="true" />
-            No entendí qué buscas. Prueba con el tipo (lote o casa), una zona, un precio o un área, o elige una de estas búsquedas:
+            No entendí qué buscas. Intenta con el tipo (lote o casa), una zona, un precio o un área, o elige una de estas búsquedas:
           </p>
           <div className="flex flex-wrap gap-2">
             {sugerencias(contexto).map((s) => (

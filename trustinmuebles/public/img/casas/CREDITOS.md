@@ -1,21 +1,36 @@
-# Créditos de las fotografías de los inmuebles (casa-1 a casa-9 y lotes)
+# Créditos de las imágenes
 
-Fotografías reales de viviendas y parajes del Perú obtenidas de [Wikimedia Commons](https://commons.wikimedia.org) bajo licencias libres (Creative Commons / CC0), seleccionadas para corresponder con la ubicación y descripción técnica de cada expediente del prototipo:
+El sitio solo muestra fotografías con licencia libre. La lista completa, con enlaces, está en la página
+«Créditos de imágenes» del sitio (`#/creditos`, enlazada en el pie) y en `src/lib/creditos.ts`.
 
-- Para las **subastas reales de la SBN** (`11045763` en Playa La Pocita, Huarmey, y `80194645` en el valle de Supe), se muestran fotografías reales de la ubicación geográfica exacta.
-- Para los **expedientes sintéticos de demostración** (`SIM-*`), se muestran fotografías reales de viviendas y lotes peruanos que coinciden con las características físicas y observaciones técnicas del caso (por ejemplo: vivienda de 1 piso con reja y cochera, vivienda tradicional de adobe con humedad basal, vivienda en valle seco preandino, vivienda con segundo piso en ladrillo en construcción no declarado, vivienda en esquina de avenida en San Isidro con retiro frontal y lote urbano cercado en costa peruana).
+## Fotografías de las fichas de inmuebles (Wikimedia Commons)
 
-| Archivo | Caso | Ubicación / Descripción en el expediente | Fotografía original en Wikimedia Commons | Licencia |
+Fotografías de viviendas y parajes del Perú, elegidas porque se parecen a lo que describe cada expediente. Son
+**imágenes referenciales**: no muestran el inmueble ofrecido, y la ficha lo dice con el rótulo «Imagen referencial».
+
+| Archivo | Caso | Descripción | Obra original | Licencia |
 |---|---|---|---|---|
-| `casa-1.jpg` | `SIM-11048217` | Hab. Urb. Santa Elvira · Parcona, Ica (vivienda de 1 piso en buen estado, con reja y cochera) | [File:383 La Retama, Surquillo.jpg](https://commons.wikimedia.org/wiki/File:383_La_Retama,_Surquillo.jpg) | CC0 1.0 |
-| `casa-2.jpg` | `SIM-11052690` | Hab. Urb. Rincón del Sauce · La Tinguiña, Ica (vivienda urbana de ladrillo con reja y cochera) | [File:Urbanizacion Zamacola - panoramio.jpg](https://commons.wikimedia.org/wiki/File:Urbanizacion_Zamacola_-_panoramio.jpg) | CC BY 3.0 |
-| `casa-3.jpg` | `SIM-11061555` | Hab. Urb. Mirador del Sol · Subtanjalla, Ica (vivienda en Subtanjalla con rejas blancas y retiro frontal) | Vivienda real en Subtanjalla, Ica (anuncio público en Subtanjalla) | Referencial académico |
-| `casa-4.jpg` | `SIM-11070419` | Hab. Urb. Villa del Algarrobo · Los Aquijes, Ica (vivienda de 1 piso con portones de cochera) | [File:CASA EN SAN MIGUEL.jpg](https://commons.wikimedia.org/wiki/File:CASA_EN_SAN_MIGUEL.jpg) | CC BY-SA 4.0 |
-| `casa-5.jpg` | `SIM-11075836` | Hab. Urb. Jardines del Pacae · Pueblo Nuevo, Ica (vivienda residencial urbana con cochera) | [File:Lima, Peru - modern home.jpg](https://commons.wikimedia.org/wiki/File:Lima,_Peru_-_modern_home.jpg) | CC BY 2.0 |
-| `casa-6.jpg` | `SIM-11087751` | Hab. Urb. Los Tamarindos · Salas, Ica (vivienda de 1 piso en Ica con humedad en la base del muro) | Vivienda real de 1 piso en Ica con humedad basal en fachada | Referencial académico |
-| `casa-7.jpg` | `SIM-11093320` | Hab. Urb. Puente Molino · San José de los Molinos, Ica (vivienda de 1 piso en Ica con cerros áridos al fondo) | Vivienda real de 1 piso en Ica ([LaEncontre Ica](https://www.laencontre.com.pe/venta/casas/ica)) | Referencial académico |
-| `casa-8.jpg` | `SIM-11098467` | Hab. Urb. Mirador del Pallar · Pachacútec, Ica (vivienda de 1 piso con 2.° piso en construcción no declarado) | [File:AvUniversitaria.20220409 084831 HDR.jpg](https://commons.wikimedia.org/wiki/File:AvUniversitaria.20220409_084831_HDR.jpg) | CC BY-SA 4.0 |
-| `casa-9.jpg` | `SIM-11104029` | Hab. Urb. Los Laureles del Sur · Ica (vivienda en urbanización de Ica con retiro frontal, cochera y huarango) | Vivienda real en urbanización de Ica ([Mitula Ica](https://casas.mitula.pe/casas/casas-ica)) | Referencial académico |
-| `lote-santiago.jpg` | `SIM-11081204` | Hab. Urb. Campiña del Olivar · Santiago, Ica (lote urbano sin construir cercado en suelo costero) | [File:Huanchaco Peru- new buildings being built near Cerro La Virgen on outskirts.jpg](https://commons.wikimedia.org/wiki/File:Huanchaco_Peru-_new_buildings_being_built_near_Cerro_La_Virgen_on_outskirts.jpg) | CC BY 4.0 |
-| `lote-huarmey.jpg` | `11045763` | Parcela 2 · Playa La Pocita · Huarmey, Áncash (terreno costero frente al mar en Huarmey) | Vista real de terrenos de playa en el litoral de Huarmey ([GRV Huarmey](https://grvcorp.com/blog/especialistas-en-condominios-de-playa/)) | Referencial académico |
-| `lote-supe.jpg` | `80194645` | Parcela 2 · Cerro Purmacana · Supe, Barranca (terreno eriazo del Estado en el valle y cerros de Supe) | [File:Valle del supe.jpg](https://commons.wikimedia.org/wiki/File:Valle_del_supe.jpg) | CC BY-SA 4.0 |
+| `casa-1.jpg` | `11048217` | Vivienda de un piso con reja y cochera (Parcona, Ica) | [File:383 La Retama, Surquillo.jpg](https://commons.wikimedia.org/wiki/File:383_La_Retama,_Surquillo.jpg) | CC0 1.0 |
+| `casa-2.jpg` | `11052690` | Vivienda urbana de ladrillo con reja y cochera (La Tinguiña, Ica) | [File:Urbanizacion Zamacola - panoramio.jpg](https://commons.wikimedia.org/wiki/File:Urbanizacion_Zamacola_-_panoramio.jpg) | CC BY 3.0 |
+| `casa-4.jpg` | `11070419` | Vivienda de un piso con portones de cochera (Los Aquijes, Ica) | [File:CASA EN SAN MIGUEL.jpg](https://commons.wikimedia.org/wiki/File:CASA_EN_SAN_MIGUEL.jpg) | CC BY-SA 4.0 |
+| `casa-5.jpg` | `11075836` | Vivienda residencial urbana con cochera (Pueblo Nuevo, Ica) | [File:Lima, Peru - modern home.jpg](https://commons.wikimedia.org/wiki/File:Lima,_Peru_-_modern_home.jpg) | CC BY 2.0 |
+| `casa-8.jpg` | `11098467` | Vivienda con segundo piso en construcción (Pachacútec, Ica) | [File:AvUniversitaria.20220409 084831 HDR.jpg](https://commons.wikimedia.org/wiki/File:AvUniversitaria.20220409_084831_HDR.jpg) | CC BY-SA 4.0 |
+| `lote-santiago.jpg` | `11081204` | Lote urbano cercado en suelo costero (Santiago, Ica) | [File:Huanchaco Peru- new buildings being built near Cerro La Virgen on outskirts.jpg](https://commons.wikimedia.org/wiki/File:Huanchaco_Peru-_new_buildings_being_built_near_Cerro_La_Virgen_on_outskirts.jpg) | CC BY 4.0 |
+| `lote-supe.jpg` | `80194645` | Terreno eriazo en el valle de Supe (Barranca) | [File:Valle del supe.jpg](https://commons.wikimedia.org/wiki/File:Valle_del_supe.jpg) | CC BY-SA 4.0 |
+
+## Fichas con ilustración
+
+Los casos `11061555`, `11087751`, `11093320`, `11104029` y `11045763` tenían fotos sin licencia libre
+(«Referencial académico»). Se retiraron del sitio y esas fichas muestran la ilustración propia del portal hasta que se
+agreguen fotos de Unsplash. Los lotes de los proyectos también usan ilustraciones.
+
+## Fotografías de las páginas (Unsplash)
+
+Guardadas en `public/img`, con la [licencia de Unsplash](https://unsplash.com/license):
+
+| Archivo | Página | Foto original |
+|---|---|---|
+| `vivienda-moderna-piscina.jpg` | Inicio | [photo-1600596542815-ffad4c1539a9](https://unsplash.com/photos/photo-1600596542815-ffad4c1539a9) |
+| `vivienda-fachada-nocturna.jpg` | Ingreso del personal | [photo-1600585154340-be6161a56a0c](https://unsplash.com/photos/photo-1600585154340-be6161a56a0c) |
+| `maqueta-casa-llaves.jpg` | Expedientes | [photo-1560518883-ce09059eeffa](https://unsplash.com/photos/photo-1560518883-ce09059eeffa) |
+| `firma-documentos.jpg` | Registrar partida | [photo-1450101499163-c8848c66ca85](https://unsplash.com/photos/photo-1450101499163-c8848c66ca85) |

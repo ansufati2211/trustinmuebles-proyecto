@@ -68,6 +68,16 @@ final class CasoDtos {
     record PaginaPublica(List<InmueblePublico> items, int pagina, int tamano, int total, int totalPaginas) {}
 
     /**
+     * v1.0 (etapa 6): un inmueble del catálogo en forma compacta, para que el asistente elija sus recomendaciones sobre
+     * todos los resultados del filtro: código, nombre, clase, proyecto, lote, color de A y de dónde sale, y el predio.
+     */
+    record InmuebleRecomendable(String codigo, String denominacion, String clase, String proyectoCodigo, String lote,
+            EstadoSemaforo estado, ProyectoDtos.FuenteIndicadorA fuenteIndicadorA, PredioDto predio) {}
+
+    /** v1.0 (etapa 6): los recomendables (sin vendidos), cuántos cumplen el filtro y si se cortó la lista. */
+    record Recomendables(List<InmuebleRecomendable> items, int total, boolean truncado) {}
+
+    /**
      * Captación y publicación (v0.7). El propietario se identifica solo por su código de cuenta (I11), que no se
      * muestra al comprador. {@code autorizada} es verdadero si hay una autorización vigente.
      */
@@ -234,10 +244,10 @@ final class CasoDtos {
                 p.areaConstruida(), p.sistemaConstructivo(), p.observacion())).toList();
     }
 
-    /** Captación de una partida. El servicio comprueba que el prefijo SIM- del número corresponda a su origen. */
+    /** Captación de una partida. El servicio comprueba que el prefijo INT- (o SIM-) del número corresponda a su origen. */
     record RegistrarPartidaRequest(
             @NotNull OrigenCaptacion origen,
-            @NotBlank @Pattern(regexp = "SIM-[0-9]{8}|[A-Z]?[0-9]{8}", message = "debe tener ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600), o el prefijo SIM- si es simulada") String numero,
+            @NotBlank @Pattern(regexp = "INT-[0-9]{8}|SIM-[0-9]{8}|[A-Z]?[0-9]{8}", message = "debe tener ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600), o el prefijo INT- si es un registro interno de cartera") String numero,
             @NotBlank @Size(max = 255) String denominacion,
             @NotBlank @Size(max = 255) String contexto,
             @NotNull LocalDate fechaConsulta,

@@ -17,3 +17,14 @@ Para repetir la demostración desde cero, reiniciar la base (`scripts/reiniciar-
 
 `frases-asistente.md` reúne 10 frases probadas para el asistente del catálogo, con las etiquetas, los resultados y lo que
 recomienda cada una, y una frase que no entiende, que muestra los botones de ayuda.
+
+## Registro interno de cartera (etapa 6)
+
+Para registrar en vivo un inmueble que la inmobiliaria tiene en su cartera sin partida transcrita, elegir el origen
+**«Registro interno de cartera»** y escribir el código con el prefijo **`INT-`** y ocho dígitos: **`INT-99000404`** (el
+texto para pegar está en el paso 1 de [GUION-DEMO.md](../GUION-DEMO.md)). El prefijo anterior `SIM-` se sigue aceptando,
+pero ya no se usa en el kit. El caso queda rotulado «Registro interno de cartera» y su PDF es la «Ficha registral del
+inmueble», elaborada por la inmobiliaria.
+
+En el portal público, la ficha del inmueble muestra la partida parcialmente oculta (`INT-••••`) y permite abrir sin
+sesión la ficha registral, las láminas y los documentos del lote; el informe técnico pide ingresar.

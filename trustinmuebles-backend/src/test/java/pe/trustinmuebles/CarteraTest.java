@@ -180,7 +180,7 @@ class CarteraTest extends BaseApiTest {
                     .andExpect(jsonPath("$.evaluacionTecnica.estado").value("EMITIDO"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Arq. Valeria Sofía Paredes Rojas"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesionalEspecialidad").value("Arquitecto"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CAP N.° 19432"));
+                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value(org.hamcrest.Matchers.nullValue())); // etapa 6: sin colegiatura en la cuenta; la del cliente se ignora
             asignar(SANTIAGO, gestor(), "especialista-01") // emitida ya no se reasigna
                     .andExpect(status().isConflict());
 

@@ -6,13 +6,12 @@ import { TarjetaPredio } from "@/components/TarjetaPredio";
 import { FiltrosInmuebles } from "@/components/FiltrosInmuebles";
 import { AsistenteBusqueda } from "@/components/AsistenteBusqueda";
 import { quitarEtiqueta } from "@/lib/asistente";
-import type { CategoriaUso } from "@/lib/usosLote";
 import { useApi } from "@/lib/useApi";
 import { paginaDeLaUrl, paginasVisibles, textoRango, TAMANO_PAGINA } from "@/lib/publico";
 import {
-  contarFiltros, filtrosALaUrl, filtrosDeLaUrl, rutaCatalogoPublico, sinFiltros, type FiltrosPublico,
+  contarFiltros, filtrosALaUrl, filtrosDeLaUrl, rutaCatalogoPublico, rutaRecomendables, sinFiltros, type FiltrosPublico,
 } from "@/lib/filtrosPublico";
-import type { OpcionesFiltro, PaginaPublica } from "@/lib/types";
+import type { OpcionesFiltro, PaginaPublica, Recomendables } from "@/lib/types";
 
 /**
  * v1.0: catálogo público. No exige sesión: muestra solo los inmuebles publicados, en páginas de 24, con lo que ve el
@@ -23,17 +22,19 @@ export default function Inmuebles() {
   const [params, setParams] = useSearchParams();
   const pagina = paginaDeLaUrl(params.get("pagina"));
   const filtros = filtrosDeLaUrl(params);
-  // v1.0 (etapa 5): el asistente de búsqueda escribe los filtros en la URL; el uso deseado no es un filtro y vive aquí.
+  // v1.0 (etapa 5): el asistente de búsqueda escribe los filtros en la URL. Etapa 6: el uso deseado también es un filtro
+  // (`uso`, según usos-lote.json) y las recomendaciones se eligen sobre todos los resultados, no solo esta página.
   const [asistente, setAsistente] = useState(false);
-  const [uso, setUso] = useState<CategoriaUso | null>(null);
+  const uso = filtros.uso || null;
   const conFiltros = contarFiltros(filtros) > 0;
   const { data, loading, error, reload } = useApi<PaginaPublica>(rutaCatalogoPublico(filtros, pagina));
   const opciones = useApi<OpcionesFiltro>("/publico/filtros");
+  const recomendables = useApi<Recomendables>(asistente ? rutaRecomendables(filtros) : null);
 
   /** Cambiar un filtro o el orden vuelve a la primera página; cambiar de página conserva los filtros. */
   const aplicar = (siguientes: FiltrosPublico, nuevaPagina = 0) => setParams(filtrosALaUrl(siguientes, nuevaPagina));
   const cambiar = (parcial: Partial<FiltrosPublico>) => aplicar({ ...filtros, ...parcial });
-  const limpiar = () => { setUso(null); aplicar(sinFiltros(filtros)); };
+  const limpiar = () => aplicar(sinFiltros(filtros));
   const irA = (n: number) => {
     aplicar(filtros, n);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -55,9 +56,10 @@ export default function Inmuebles() {
 
       <div className="mx-auto w-full max-w-7xl px-4 pt-8 sm:px-6 lg:px-8">
         <AsistenteBusqueda opciones={opciones.data} filtros={filtros} uso={uso} activo={asistente}
-          resultados={data && !loading ? data.items : null} cargando={loading}
-          alBuscar={(f, u) => { setUso(u); setAsistente(true); aplicar(f); }}
-          alQuitar={(clave) => { const r = quitarEtiqueta(filtros, uso, clave); setUso(r.uso); aplicar(r.filtros); }}
+          resultados={recomendables.data && !recomendables.loading ? recomendables.data.items : null}
+          cargando={recomendables.loading}
+          alBuscar={(f, u) => { setAsistente(true); aplicar(u ? { ...f, uso: u } : f); }}
+          alQuitar={(clave) => aplicar(quitarEtiqueta(filtros, uso, clave).filtros)}
           alCerrar={() => { setAsistente(false); limpiar(); }} />
         <div className="mt-6">
           <FiltrosInmuebles filtros={filtros} opciones={opciones.data} cambiar={cambiar} limpiar={limpiar}
@@ -84,7 +86,7 @@ export default function Inmuebles() {
                 Limpiar filtros
               </button>
             ) : undefined}>
-            {conFiltros ? "Prueba con menos filtros o con otros valores." : "Vuelve pronto: el catálogo se actualiza cuando se publica un nuevo inmueble."}
+            {conFiltros ? "Intenta con menos filtros o con otros valores." : "Vuelve pronto: el catálogo se actualiza cuando se publica un nuevo inmueble."}
           </Vacio>
         ) : (
           <>

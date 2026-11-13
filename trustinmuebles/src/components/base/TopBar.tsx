@@ -13,8 +13,8 @@ const enlace = (activo: boolean) =>
   `shrink-0 rounded-full px-3.5 py-2 text-sm font-semibold transition-colors ${activo ? "bg-secondary text-secondary-foreground" : "text-tinta-2 hover:bg-muted hover:text-foreground"}`;
 
 /**
- * Barra superior. La franja fina reemplaza al aviso académico anterior sin perder su contenido (PA3, RN-05): es una
- * demostración, las partidas son ficticias o transcritas sin personas, y la información no certifica nada.
+ * Barra superior. La franja fina lleva el aviso legal (PA3, RN-05): la información es referencial, sin datos personales
+ * sensibles, y no certifica nada.
  */
 export function TopBar() {
   const location = useLocation();

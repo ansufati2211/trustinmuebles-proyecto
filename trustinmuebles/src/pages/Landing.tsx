@@ -113,7 +113,7 @@ const CASOS_MUESTRA: {
   },
 ];
 
-// v1.0: cómo funciona en 5 pasos, de la captación del inmueble a la cita (lib/publico.ts, con prueba).
+// v1.0: cómo funciona en 5 pasos, de la captación del inmueble a la cita (lib/publico.ts).
 const PASOS = PASOS_COMO_FUNCIONA;
 
 const FAQS = [

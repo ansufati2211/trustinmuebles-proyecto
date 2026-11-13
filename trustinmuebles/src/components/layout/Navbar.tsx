@@ -4,7 +4,8 @@ import { Link, NavLink, useLocation } from "react-router";
 import { User, LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { LogoMark } from "@/components/layout/Logo";
-import { claveDeRuta, navegacion } from "@/lib/permisos";
+import { claveDeRuta, navegacion, opcionesMenuMovil } from "@/lib/permisos";
+import { BotonMenuMovil, MenuMovil } from "@/components/layout/MenuMovil";
 
 const enlaceBase =
   "relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 select-none";
@@ -51,6 +52,25 @@ export function Navbar() {
   const location = useLocation();
   const { usuario, logout } = useAuth();
   const [conScroll, setConScroll] = useState(false);
+  // v1.0 (etapa 6): menú ☰ de pantallas de menos de 1024 px.
+  const [menuAbierto, setMenuAbierto] = useState(false);
+  const botonMenuRef = useRef<HTMLButtonElement>(null);
+  const cabeceraRef = useRef<HTMLElement>(null);
+  const cerrarMenu = useCallback((devolverFoco: boolean) => {
+    setMenuAbierto(false);
+    if (devolverFoco) botonMenuRef.current?.focus();
+  }, []);
+
+  // Cambiar de ruta cierra el menú; un clic fuera de la barra también.
+  useEffect(() => setMenuAbierto(false), [location.pathname, location.key]);
+  useEffect(() => {
+    if (!menuAbierto) return;
+    const fuera = (e: PointerEvent) => {
+      if (cabeceraRef.current && !cabeceraRef.current.contains(e.target as Node)) setMenuAbierto(false);
+    };
+    document.addEventListener("pointerdown", fuera);
+    return () => document.removeEventListener("pointerdown", fuera);
+  }, [menuAbierto]);
 
   const destinoEstado = (location.state as { desplazarA?: string } | null)?.desplazarA;
   const [enComoFunciona, setEnComoFunciona] = useState(
@@ -96,8 +116,8 @@ export function Navbar() {
 
   const enlaces = navegacion(usuario?.rol);
   const principal = enlaces.find((e) => e.clave !== "inicio") ?? null;
-  // v1.0 (etapa 4): el menú del asesor tiene cinco enlaces; entre 768 y 1024 px no caben y queda el enlace principal.
-  const menuLargo = enlaces.length > 4;
+  // v1.0 (etapa 6): por debajo de 1024 px, para todos los roles, el menú completo está en el botón ☰ y la barra conserva
+  // el enlace principal desde 640 px (antes, el menú del asesor se recortaba entre 768 y 1024 px).
   const claveBase = claveDeRuta(location.pathname);
 
   const claveActiva =
@@ -152,7 +172,7 @@ export function Navbar() {
 
   return (
     <div className="fixed top-4 left-0 right-0 z-50 flex justify-center px-4 pointer-events-none">
-      <header className="w-full max-w-6xl pointer-events-auto">
+      <header ref={cabeceraRef} className="w-full max-w-6xl pointer-events-auto">
         <div
           className={`rounded-full border px-3 sm:px-5 h-16 flex items-center justify-between gap-2 backdrop-blur-xl transition-all duration-300 ${
             conScroll
@@ -176,7 +196,7 @@ export function Navbar() {
 
             <nav
               aria-label="Principal"
-              className={`relative hidden ${menuLargo ? "lg:flex" : "md:flex"} items-center gap-1 bg-gray-50/70 p-1 rounded-full border border-gray-100`}
+              className={`relative hidden lg:flex items-center gap-1 bg-gray-50/70 p-1 rounded-full border border-gray-100`}
             >
               <span
                 ref={pildoraRef}
@@ -231,7 +251,7 @@ export function Navbar() {
               <NavLink
                 to={principal.ruta}
                 className={({ isActive }) =>
-                  `${menuLargo ? "lg:hidden" : "md:hidden"} shrink-0 px-2.5 min-[400px]:px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
+                  `lg:hidden hidden sm:inline-flex shrink-0 px-2.5 min-[400px]:px-3 py-2 text-sm font-semibold rounded-full transition-colors duration-200 ${
                     isActive
                       ? "text-primary bg-primary/10"
                       : "text-muted-foreground hover:text-foreground"
@@ -242,6 +262,7 @@ export function Navbar() {
               </NavLink>
             )}
 
+            <BotonMenuMovil abierto={menuAbierto} alCambiar={() => setMenuAbierto((a) => !a)} botonRef={botonMenuRef} />
             {!usuario ? (
               <BotonAcceder />
             ) : (
@@ -267,6 +288,13 @@ export function Navbar() {
             )}
           </div>
         </div>
+        <MenuMovil abierto={menuAbierto} enlaces={opcionesMenuMovil(usuario?.rol)} claveActiva={claveActiva}
+          alCerrar={cerrarMenu}
+          alElegir={(e) => {
+            if (e.clave === "inicio") irAlInicio();
+            else if (e.clave === "como-funciona") { bloquearScrollSpyTemporalmente(800); setEnComoFunciona(true); }
+            else { bloquearScrollSpyTemporalmente(400); setEnComoFunciona(false); }
+          }} />
       </header>
     </div>
   );

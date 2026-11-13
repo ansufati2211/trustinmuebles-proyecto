@@ -21,16 +21,19 @@ import org.apache.pdfbox.pdmodel.graphics.state.PDExtendedGraphicsState;
 import org.apache.pdfbox.util.Matrix;
 
 /**
- * Documento sintético con forma de copia literal de partida registral (REQ-F03, RN-01).
+ * Ficha registral del inmueble (REQ-F03, RN-01). v1.0 (etapa 6): antes «copia literal referencial».
  *
- * Es realista en su estructura, pero nunca puede confundirse con un documento oficial: no lleva logo, escudo, sello,
- * firma, código de verificación ni código QR; la partida tiene el prefijo SIM-; cada página trae una marca de agua y un
- * pie que dicen que es simulado.
+ * La elabora la inmobiliaria con los datos de la partida y lo dice en su encabezado y en su pie: no imita el formato de
+ * SUNARP (sin zona registral en el encabezado, sin tomo del diario, derechos cobrados ni recibo), no lleva logo, escudo,
+ * sello, firma, código de verificación ni código QR, y cada página trae una marca de agua y el pie «no reemplaza la copia
+ * literal que emite SUNARP».
  */
 final class CopiaLiteralPdf {
-    static final String MARCA_DE_AGUA = "COPIA INFORMATIVA · DOCUMENTO REFERENCIAL · SIN VALOR LEGAL";
+    static final String MARCA_DE_AGUA = "FICHA INFORMATIVA · DOCUMENTO REFERENCIAL · SIN VALOR LEGAL";
     static final String PIE =
-            "Copia informativa del expediente inmobiliario. No es una copia literal emitida por SUNARP, no tiene valor legal y no está firmado.";
+            "Documento informativo elaborado por la inmobiliaria; no reemplaza la copia literal que emite SUNARP. No tiene valor legal y no está firmado.";
+    /** v1.0 (etapa 6): título del documento. */
+    static final String TITULO = "FICHA REGISTRAL DEL INMUEBLE";
     static final String CIERRE = "- Fin del documento referencial. Sin firma ni sello. -";
 
     static final String MARCA_TRANSCRITA = "TRANSCRIPCIÓN REFERENCIAL · NO ES PUBLICIDAD REGISTRAL · SIN VALOR LEGAL";
@@ -48,7 +51,8 @@ final class CopiaLiteralPdf {
             if (!transcrita) return PIE;
             String f = fechaConsulta == null ? "" : " del " + fechaConsulta.format(FECHA_CORTA);
             return "Transcrito a partir de una consulta en " + (fuente == null ? "una fuente pública" : fuente) + f
-                    + ". No es una copia literal emitida por SUNARP, no tiene valor legal y omite los nombres de personas naturales.";
+                    + ". Documento informativo elaborado por la inmobiliaria; no reemplaza la copia literal que emite SUNARP,"
+                    + " no tiene valor legal y omite los nombres de personas naturales.";
         }
     }
 
@@ -90,11 +94,12 @@ final class CopiaLiteralPdf {
 
         try (PDDocument doc = new PDDocument(); ByteArrayOutputStream salida = new ByteArrayOutputStream()) {
             PDDocumentInformation info = new PDDocumentInformation();
-            info.setTitle((p.transcrita() ? "Transcripción referencial " : "Copia literal referencial ")
-                    + limpiar(d.partida(), normal));
+            info.setTitle((p.transcrita() ? "Ficha registral del inmueble (transcripción referencial) "
+                    : "Ficha registral del inmueble ") + limpiar(d.partida(), normal));
             info.setSubject(p.transcrita() ? "Transcripción referencial. No es publicidad registral ni tiene valor legal."
-                    : "Copia informativa de partida registral. Sin valor legal.");
-            info.setCreator("Trustinmuebles");
+                    : "Ficha informativa elaborada por la inmobiliaria. Sin valor legal.");
+            info.setCreator(RotuloInmobiliaria.NOMBRE);
+            info.setAuthor(RotuloInmobiliaria.NOMBRE);
             doc.setDocumentInformation(info);
 
             int total = paginas.size();
@@ -143,7 +148,9 @@ final class CopiaLiteralPdf {
     private static List<Linea> contenido(DatosCopia d, Procedencia p, PDFont normal, PDFont negrita, PDFont mono,
             float ancho) {
         List<Linea> l = new ArrayList<>();
-        titulo(l, p.transcrita() ? "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL" : "COPIA LITERAL DE PARTIDA REGISTRAL", negrita, 13f, 0f, ancho);
+        titulo(l, TITULO, negrita, 13f, 0f, ancho);
+        if (p.transcrita()) titulo(l, "TRANSCRIPCIÓN REFERENCIAL DE PARTIDA REGISTRAL", negrita, 10.5f, 2f, ancho);
+        parrafo(l, RotuloInmobiliaria.ELABORADO, normal, 9.5f, 0f, 2f, ancho);
         if (d.extractoParcial()) {
             titulo(l, "EXTRACTO PARCIAL", negrita, 11f, 4f, ancho);
             parrafo(l, "Este extracto no incluye todos los rubros de la partida.", normal, 9.5f, 0f, 2f, ancho);
@@ -151,6 +158,11 @@ final class CopiaLiteralPdf {
         if (d.fechaReferencial() != null) {
             parrafo(l, (p.transcrita() ? "Fecha de la consulta: " : "Fecha referencial del caso: ") + d.fechaReferencial().format(FECHA_LARGA), normal, 9.5f, 0f, 6f, ancho);
         }
+
+        // v1.0 (etapa 6): los datos registrales van como datos del documento, no como encabezado de una oficina.
+        seccion(l, "DATOS REGISTRALES", negrita, ancho);
+        parrafo(l, "Partida N.° " + d.partida(), normal, 10f, 0f, 3f, ancho);
+        parrafo(l, "Zona y oficina: " + valor(d.zona()) + " · " + valor(d.oficina()), normal, 10f, 0f, 3f, ancho);
 
         seccion(l, "DESCRIPCIÓN DEL INMUEBLE", negrita, ancho);
         parrafo(l, "Ubicación: " + valor(d.ubicacion()), normal, 10f, 0f, 3f, ancho);
@@ -194,11 +206,8 @@ final class CopiaLiteralPdf {
             }
             if (a.fechaInscripcion() != null) datos.add("inscrito el " + a.fechaInscripcion().format(FECHA_CORTA));
             if (!datos.isEmpty()) parrafoGris(l, String.join(" · ", datos), normal, 8.5f, 12f, 3f, ancho);
-            if (pres != null) {
-                String ica = a.fechaInscripcion() == null ? "" : " · Ica, " + a.fechaInscripcion().format(FECHA_LARGA);
-                parrafoGris(l, "Tomo Diario " + pres.tomo() + " · Derechos cobrados: S/ " + pres.derechos()
-                        + " · Recibo N.° " + pres.recibo() + ica, normal, 8.5f, 12f, 0f, ancho);
-            }
+            // v1.0 (etapa 6): ya no se imprimen el tomo del diario, los derechos cobrados ni el recibo, que imitaban el
+            // cierre de una copia literal de SUNARP.
         }
     }
 
@@ -344,9 +353,9 @@ final class CopiaLiteralPdf {
     private static void encabezado(PDPageContentStream cs, DatosCopia d, Procedencia p, PDFont normal, PDFont negrita) throws IOException {
         float arriba = PDRectangle.A4.getHeight() - MARGEN;
         cs.setNonStrokingColor(0f);
-        texto(cs, limpiar(d.zona(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")) + " · "
-                + limpiar(d.oficina(), negrita).toUpperCase(Locale.forLanguageTag("es-PE")), negrita, 8.5f, MARGEN, arriba - 8f);
-        texto(cs, p.transcrita() ? "REGISTRO DE PREDIOS · TRANSCRIPCIÓN REFERENCIAL" : "REGISTRO DE PREDIOS · COPIA LITERAL DE PARTIDA REGISTRAL", normal, 8.5f, MARGEN, arriba - 21f);
+        texto(cs, RotuloInmobiliaria.ENCABEZADO, negrita, 8.5f, MARGEN, arriba - 8f);
+        texto(cs, p.transcrita() ? "Ficha registral del inmueble · Transcripción referencial"
+                : "Ficha registral del inmueble · Documento informativo", normal, 8.5f, MARGEN, arriba - 21f);
         texto(cs, "Partida N.° " + limpiar(d.partida(), negrita), negrita, 11f, MARGEN, arriba - 38f);
         cs.setStrokingColor(0.35f);
         cs.setLineWidth(0.6f);

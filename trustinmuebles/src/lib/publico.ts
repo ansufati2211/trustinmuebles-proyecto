@@ -24,6 +24,47 @@ export const rutaPaginaPublica = (pagina: number) => `/publico/inmuebles?pagina=
 /** Ruta de la API para la ficha pública de un inmueble. */
 export const rutaFichaPublica = (codigo: string) => `/publico/inmuebles/${encodeURIComponent(codigo)}`;
 
+// ------------------------------------------------------------------ v1.0 (etapa 6): realismo del contenido
+
+/** Número de partida en el portal público: los primeros 4 caracteres y «••••». El personal autenticado lo ve completo. */
+export function partidaOculta(codigo: string): string {
+  return `${codigo.slice(0, 4)}••••`;
+}
+
+/** Cómo se muestra la partida en la ficha pública según haya sesión del personal o no. */
+export const partidaVisible = (codigo: string, conSesion: boolean) => (conSesion ? codigo : partidaOculta(codigo));
+
+/** Los especialistas no tienen número de colegiatura en el sistema: se registra al asignar al profesional. */
+export const COLEGIATURA_PENDIENTE = "Colegiatura: se registra al asignar al profesional";
+export const textoColegiatura = (c: string | null | undefined) =>
+  c && c.trim() ? `Colegiatura: ${c.trim()}` : COLEGIATURA_PENDIENTE;
+
+/**
+ * PDF que se abren sin sesión desde la ficha de un caso PUBLICADO: la ficha registral, las láminas de los planos y los
+ * documentos del lote presentados u observados. El informe técnico (B) no está: sigue pidiendo sesión.
+ */
+export interface PdfPublico { clave: string; nombre: string; url: string }
+
+export function pdfsPublicos(d: {
+  codigo: string;
+  expediente: {
+    planos: { especialidad: string; especialidadEtiqueta: string; estado: string }[];
+    documentosLote?: { tipo: string; tipoEtiqueta: string; estado: string }[] | null;
+  };
+}): PdfPublico[] {
+  const base = `/api/v1/publico/inmuebles/${encodeURIComponent(d.codigo)}`;
+  const hay = (estado: string) => estado === "PRESENTADO" || estado === "OBSERVADO";
+  return [
+    { clave: "ficha", nombre: "Ficha registral del inmueble", url: `${base}/documento` },
+    ...(d.expediente.documentosLote ?? []).filter((x) => hay(x.estado))
+      .map((x) => ({ clave: x.tipo, nombre: x.tipoEtiqueta, url: `${base}/documentos-lote/${x.tipo}/documento` })),
+    ...d.expediente.planos.filter((x) => hay(x.estado)).map((x) => ({
+      clave: x.especialidad, nombre: `Plano de ${x.especialidadEtiqueta.toLowerCase()}`,
+      url: `${base}/planos/${x.especialidad}/documento`,
+    })),
+  ];
+}
+
 /** «Mostrando 25–30 de 30 inmuebles», o un texto para una página vacía. */
 export function textoRango(p: Pick<PaginaPublica, "pagina" | "tamano" | "total" | "items">): string {
   if (p.total === 0) return "Todavía no hay inmuebles publicados.";
