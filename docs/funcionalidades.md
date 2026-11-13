@@ -1,5 +1,49 @@
 # Funcionalidades de Trustinmuebles
 
+## Versión 1.0.0
+
+Lo que agrega la 1.0.0 (etapas 1 a 7), por quién lo usa. El resto del documento describe la v0.8 y sigue vigente.
+
+### Visitante, sin cuenta
+
+| Función | Dónde | Notas |
+|---|---|---|
+| Catálogo unido de casos publicados y lotes de proyecto | `#/inmuebles` | 24 por página; filtros por proyecto, distrito, tipo, estado comercial, moneda, precio, precio por m², área, indicador A, tipo de alerta, zonificación y uso; orden por novedad, precio, precio por m² o área; todo en la dirección |
+| Asistente de búsqueda | Arriba del catálogo | Reglas y expresiones regulares, sin IA y sin enviar la frase a ningún servicio. Etiquetas que se pueden quitar y tres recomendaciones con sus motivos |
+| Página del proyecto | `#/proyectos/{c}` | Plano de lotes SVG por manzanas (teclado: flechas, Inicio, Fin, Enter), leyenda en texto, panel del lote, hitos, indicador A de la partida matriz y sus documentos |
+| Ficha del lote | `#/proyectos/{c}/lotes/{A-7}` | Precio, precio por m², zonificación, «Usos que suelen permitirse» (orientativo, con aviso de parámetros urbanísticos) |
+| Ficha pública de un caso | `#/inmuebles/{c}` | Indicadores A y B, usos, documentos para descargar sin sesión (ficha registral, láminas, documentos del lote); partida oculta |
+| Solicitar cita | Ficha, plano o asistente | Visita al lote, reunión en oficina o llamada; una o dos fechas con franja; nombre de pila y un celular o correo; consentimiento; WhatsApp solo si la inmobiliaria lo configura |
+| Créditos de imágenes | `#/creditos` | Solo fotos de licencia libre |
+
+Sin sesión, la partida se muestra con sus primeros 4 caracteres y «••••» en la ficha, la tarjeta, el indicador del proyecto,
+las muestras de la portada y los PDF (etapa 7). Con sesión, completa.
+
+### Asesor (`asesor-01`)
+
+| Función | Dónde |
+|---|---|
+| Registrar un inmueble de la inmobiliaria o de un particular (titularidad comercial, proyecto, estado comercial, independización, precio) | Registrar (`#/casos/nueva`) |
+| Lista de proyectos y carga de lotes por CSV con vista previa, «solo errores», confirmación todo o nada e historial | Proyectos (`#/proyectos`, `#/proyectos/{c}/carga`) |
+| Registrar o retirar la autorización en nombre de la inmobiliaria; publicar y retirar | Expediente |
+| Bandeja de interesados (filtros por etapa, proyecto y responsable; vencidos primero), notas, próxima acción, etapas, marcar el lote separado o vendido, borrar a pedido | Interesados |
+| Agenda de citas de 7 días (confirmar, reprogramar, rechazar) y resumen de demanda | Interesados → pestañas |
+
+### Para la demostración
+
+- Kit en `docs/demo/kit/` ([LEEME-KIT.md](demo/kit/LEEME-KIT.md)): CSV, textos de partida `INT-`, PDF de láminas y documentos
+  del lote, frases del asistente y datos de la cita.
+- `scripts/preparar-demo.mjs`: verifica y completa la precarga por la API, sin borrar nada.
+- Versión visible en el pie: «Trustinmuebles · versión 1.0.0».
+
+### Lo que la 1.0.0 no hace
+
+Pagos en línea, mapas de terceros, IA, consultas en línea a SUNARP o a la municipalidad, envío de correos o mensajes desde
+el sistema (el asesor contacta por fuera), y certificar saneamiento o recomendar comprar.
+
+---
+
+
 > Versión v0.8.0 «Feedback docente»: el plano presentado exige su PDF (con límite de tamaño y optimización automática), ruta de
 > regularización con el plazo del gravamen, panel del gestor por tipo de alerta y esfuerzo, semáforo de gestión interno con
 > decisión de captación y resaltado del color de A (sección 5 ter). Recorrido de 20 pasos en Chrome con los 5 roles

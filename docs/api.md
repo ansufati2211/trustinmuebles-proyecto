@@ -419,3 +419,83 @@ reciente; no hay rutas para editarlo ni borrarlo.
   `APP_SITIO_INDEXABLE`). `GET /api/v1/publico/sitio` → `{ "indexable": false }`.
 - `POST /casos` con origen `SIMULADA_DEMOSTRACION` («Registro interno de cartera») acepta `INT-########` y, como antes,
   `SIM-########`; la fuente del caso es «Registro interno de cartera».
+
+## Versión 1.0.0: resumen de los endpoints nuevos (etapas 1 a 7)
+
+Todas las rutas empiezan por `/api/v1`. Lo que está bajo `/publico` se lee **sin sesión** y solo muestra lo publicado; la
+única escritura sin sesión es `POST /publico/interes`. Ninguna de estas operaciones cambia el color del indicador A.
+
+### Portal público (`/publico`, sin sesión)
+
+| Operación | Ruta | Respuestas |
+|---|---|---|
+| Catálogo unido (casos publicados y lotes de proyecto ofrecidos), 24 por página | `GET /publico/inmuebles?pagina=&proyecto=&distrito=&tipo=LOTE\|VIVIENDA&estadoComercial=&moneda=PEN\|USD&precioMin=&precioMax=&precioM2Min=&precioM2Max=&areaMin=&areaMax=&indicadorA=&tipoAlerta=&orden=&sentido=&clase=CASO\|LOTE_PROYECTO&zonificacion=&uso=&incluirSinZonificacion=` | 200, 400 |
+| Opciones de los filtros (proyectos y distritos con inmuebles) | `GET /publico/filtros` | 200 |
+| Todos los que cumplen el filtro, compactos, para el asistente (tope 2000) | `GET /publico/inmuebles/recomendables` (mismos filtros) | 200, 400 |
+| Ficha pública de un caso publicado (sin semáforo de gestión ni propietario) | `GET /publico/inmuebles/{codigo}` | 200, 404 |
+| Ficha registral del inmueble en PDF, generada al momento con la partida oculta | `GET /publico/inmuebles/{codigo}/documento` | 200, 404 |
+| Lámina de un plano / documento del lote de un caso publicado | `GET /publico/inmuebles/{codigo}/planos/{especialidad}/documento`, `.../documentos-lote/{tipo}/documento` | 200, 400, 404 |
+| Página de un proyecto (plano de lotes, hitos, indicador A de la partida matriz, documentos) | `GET /publico/proyectos/{codigo}` | 200, 404 |
+| Ficha de un lote de proyecto | `GET /publico/proyectos/{codigo}/lotes/{A-7}` | 200, 404 |
+| Documento de la partida matriz del proyecto. **Etapa 7:** sin sesión, la partida sale parcialmente oculta (`1111••••`); con un token válido, completa | `GET /publico/proyectos/{codigo}/documentos/{tipo}` | 200, 400, 404 |
+| Texto de consentimiento vigente y WhatsApp (nulo si no está configurado) | `GET /publico/contacto` | 200 |
+| Interés del visitante con cita opcional | `POST /publico/interes` | 201, 400, 404, 429 |
+| Indexación y versión del sistema (**etapa 7:** `version`) | `GET /publico/sitio` → `{"indexable": false, "version": "1.0.0"}` | 200 |
+| robots.txt | `GET /robots.txt` (fuera de `/api/v1`) | 200 |
+
+`POST /publico/interes` acepta solo estos campos (otro da 400, como I11): `casoCodigo`, `proyectoCodigo`, `lote`, `zona`,
+`tipo`, `presupuestoMin`, `presupuestoMax`, `moneda`, `areaDeseada`, `formaPago` (`CONTADO`, `FINANCIADO`, `POR_DEFINIR`),
+`mensaje` (≤ 300, sin 8 dígitos seguidos), `nombre` (de pila), `medio` (`CELULAR` o `CORREO`), `contacto`,
+`consentimiento` (`true`), `consentimientoVersion`, `sitioWeb` (trampa) y `cita`
+(`{"modalidad": "VISITA_AL_LOTE"|"REUNION_EN_OFICINA"|"LLAMADA", "opciones": [{"fecha": "AAAA-MM-DD", "franja": "MANANA"|"TARDE"}]}`,
+una o dos fechas, desde mañana y hasta 90 días). 10 envíos por hora por IP.
+
+### Expedientes: datos comerciales y autorización (etapas 1 y 2)
+
+| Operación | Ruta | Permiso | Respuestas |
+|---|---|---|---|
+| Registrar una partida con titularidad comercial, proyecto, estado comercial, independización y precio | `POST /casos` (`titularidadComercial`: `INMOBILIARIA` o `PARTICULAR`; `propietarioCodigo` obligatorio solo en PARTICULAR) | REVISOR, ASESOR | 201, 400, 401, 403, 409 |
+| Cambiar los datos comerciales (proyecto, estado comercial, independización, precio) | `PUT /casos/{codigo}/datos-comerciales` | REVISOR, ASESOR | 200, 400, 401, 403, 404 |
+| Autorizar o retirar en nombre de la inmobiliaria (caso INMOBILIARIA) | `PUT` / `DELETE /casos/{codigo}/autorizacion` | GESTOR, ASESOR (en un caso PARTICULAR, solo su PROPIETARIO) | 200, 401, 403, 404 |
+| Historial de autorizaciones (solo adición) | `GET /casos/{codigo}/autorizaciones` | Equipo y propietario del caso | 200, 401, 403, 404 |
+| Publicar o retirar | `POST` / `DELETE /casos/{codigo}/publicacion` | GESTOR, ASESOR | 200, 401, 403, 404, 409, 422 |
+
+El rol **ASESOR** (cuenta `asesor-01`) reúne los permisos del REVISOR y del GESTOR (D59).
+
+### Proyectos y carga por CSV (etapas 3a y 3b)
+
+| Operación | Ruta | Permiso | Respuestas |
+|---|---|---|---|
+| Lista de proyectos del equipo (lotes, publicados, autorización de la matriz, conteo por estado) | `GET /proyectos` | REVISOR, GESTOR, ASESOR | 200, 401, 403 |
+| Publicar o retirar un lote sin caso propio | `POST` / `DELETE /proyectos/{c}/lotes/{A-7}/publicacion` | GESTOR, ASESOR | 200, 401, 403, 404, 422 |
+| Cambiar el estado comercial de un lote | `PUT /proyectos/{c}/lotes/{A-7}/estado-comercial` (`{"estadoComercial"}`) | GESTOR, ASESOR | 200, 400, 401, 403, 404 |
+| Plantilla CSV | `GET /proyectos/{c}/lotes/plantilla.csv` | GESTOR, ASESOR | 200, 401, 403 |
+| Vista previa de la carga (no guarda) | `POST /proyectos/{c}/lotes/carga/vista-previa` (multipart, campo `archivo`) | GESTOR, ASESOR | 200, 400, 401, 403, 404, 413 |
+| Confirmar la carga (todo o nada) | `POST /proyectos/{c}/lotes/carga` (multipart, campo `archivo`) | GESTOR, ASESOR | 200, 400, 401, 403, 404, 413, 422 |
+| Historial de un lote (solo adición) | `GET /proyectos/{c}/lotes/{A-7}/historial` | REVISOR, GESTOR, ASESOR | 200, 401, 403, 404 |
+
+Columnas del CSV: `manzana,lote,area_m2,precio,moneda,estado,independizacion,zonificacion,codigo_caso` (D64).
+
+### Interesados y citas (etapa 4, GESTOR y ASESOR)
+
+| Operación | Ruta | Respuestas |
+|---|---|---|
+| Bandeja, con filtros | `GET /interesados?etapa=&proyecto=&responsable=SIN_ASIGNAR\|<cuenta>&vencidos=true` | 200, 400, 401, 403 |
+| Resumen de demanda | `GET /interesados/resumen` | 200, 401, 403 |
+| Opciones de los filtros | `GET /interesados/opciones` | 200, 401, 403 |
+| Detalle con notas y citas | `GET /interesados/{id}` | 200, 401, 403, 404 |
+| Cambiar la etapa (deja una nota) | `PUT /interesados/{id}/etapa` (`{"etapa"}`) | 200, 400, 401, 403, 404, 409 |
+| Responsable y próxima acción | `PUT /interesados/{id}/seguimiento` (`{"responsable","proximaAccion","proximaAccionFecha"}`) | 200, 400, 401, 403, 404 |
+| Agregar una nota (solo adición) | `POST /interesados/{id}/notas` (`{"texto"}`) | 201, 400, 401, 403, 404 |
+| Marcar el lote o inmueble SEPARADO o VENDIDO (en Separación o Venta) | `PUT /interesados/{id}/estado-lote` (`{"estado"}`) | 200, 400, 401, 403, 404, 409 |
+| Eliminar el registro a pedido (con sus notas y citas) | `DELETE /interesados/{id}` | 204, 401, 403, 404 |
+| Agenda de 7 días | `GET /citas/agenda?desde=AAAA-MM-DD` | 200, 401, 403 |
+| Confirmar una de las fechas propuestas | `PUT /citas/{id}/confirmacion` (`{"opcion": 1\|2}`) | 200, 400, 401, 403, 404, 409 |
+| Reprogramar | `PUT /citas/{id}/reprogramacion` (`{"fecha","franja"}`) | 200, 400, 401, 403, 404, 409 |
+| Rechazar con motivo | `PUT /citas/{id}/rechazo` (`{"motivo"}`) | 200, 400, 401, 403, 404, 409 |
+
+### Etapa 7
+
+- `GET /publico/proyectos/{c}/documentos/{tipo}`: sin sesión, la partida matriz sale como `1111••••`; con sesión, completa.
+- `GET /publico/sitio` agrega `version` (`1.0.0`, tomada del `pom.xml` al compilar: `app.version=@project.version@`).
+- Sin endpoints nuevos de escritura. `scripts/preparar-demo.mjs` usa solo los endpoints de esta página.

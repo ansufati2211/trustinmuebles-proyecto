@@ -9,7 +9,8 @@ import {
 } from "lucide-react";
 import { ESTADOS, PROCEDIMIENTO_INSPECCION } from "@/lib/semaforo";
 import type { EstadoSemaforo, PaginaPublica } from "@/lib/types";
-import { PASOS_COMO_FUNCIONA, rutaPaginaPublica } from "@/lib/publico";
+import { PASOS_COMO_FUNCIONA, partidaVisible, rutaPaginaPublica } from "@/lib/publico";
+import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
 
 const retraso = (ms: number): CSSProperties => ({ "--d": `${ms}ms` } as CSSProperties);
@@ -177,6 +178,8 @@ function Acordeon({ id, pregunta, respuesta }: { id: string; pregunta: string; r
 
 export default function Landing() {
   const location = useLocation();
+  // v1.0 (etapa 7): sin sesión, el número de partida de las muestras sale parcialmente oculto, como en el catálogo.
+  const { usuario } = useAuth();
   const resumenPublico = useApi<PaginaPublica>(rutaPaginaPublica(0));
   const publicados = resumenPublico.data?.total ?? null;
 
@@ -487,7 +490,7 @@ export default function Landing() {
                       <div className="p-7">
                         <div className="flex items-center justify-between gap-2 mb-4">
                           <span className="text-xs font-mono font-bold text-muted-foreground bg-gray-100 px-3 py-1 rounded-full">
-                            {c.codigo}
+                            {partidaVisible(c.codigo, !!usuario)}
                           </span>
                           <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${e.fondo} ${e.borde} ${e.texto}`}>
                             <e.Icono className="w-3.5 h-3.5" /> {e.nombre}

@@ -1,4 +1,48 @@
-# Trustinmuebles — orientación documental precompra (versión actual: v0.9 + «Version real», `d7803f8`)
+# Trustinmuebles — portal inmobiliario con orientación documental precompra (versión 1.0.0)
+
+## Versión 1.0.0 (entrega del 16/11/2026)
+
+Un **portal público** donde el comprador encuentra los lotes y casas de la inmobiliaria sin irse a otra, y un **panel** donde
+el asesor carga inmuebles (uno a uno o por CSV) y sigue a cada interesado como en un CRM. La organización de referencia
+(LedCons) vende sobre todo lotes de proyectos de urbanización en Ica y algunos inmuebles de particulares. **No hay pagos en
+línea.** Lo anterior (expedientes, indicador A, ruta de regularización, semáforo interno, documentos del lote, inspección B)
+se conserva. El reporte de la versión está en [docs/REPORTE-v1.0.md](docs/REPORTE-v1.0.md).
+
+| Para quién | Qué hay | Dónde |
+|---|---|---|
+| Visitante, sin cuenta | Catálogo unido de casos y lotes de proyecto con filtros y orden; asistente de búsqueda por reglas (sin IA); página de cada proyecto con **plano de lotes** SVG, hitos y documentos; ficha del lote con **usos que suelen permitirse** (orientativos); **solicitud de cita** (nombre de pila y un correo o celular, con consentimiento) | `#/inmuebles`, `#/proyectos/{c}`, `#/proyectos/{c}/lotes/{A-7}`, `#/inmuebles/{c}` |
+| Asesor (`asesor-01`, rol ASESOR = revisor + gestor) | Registrar inmuebles (de la inmobiliaria o de un particular), cargar lotes por **CSV** con vista previa, publicar, bandeja de **interesados** con etapas, notas, agenda de citas y demanda | Registrar, Proyectos, Expedientes, Cartera, Interesados |
+| Equipo (revisor, gestor, especialistas, propietarios) | Lo de la v0.9: expedientes, indicador A, planos y documentos del lote, inspección B, autorización y publicación | Igual que antes |
+
+**Lo que no cambia:** el color del indicador A lo calculan las reglas (`v0.5`); publicar no cambia A; B no cambia A; no se
+publica sin autorización vigente registrada; el semáforo de gestión es interno; ningún texto promete compra segura ni
+saneamiento, y ningún PDF se presenta como emitido por SUNARP, una municipalidad o un colegio profesional. Sin sesión, la
+partida se muestra parcialmente oculta (`1105••••`) en la ficha, la tarjeta, el proyecto y sus PDF.
+
+**Datos precargados** (para que la demo funcione sin datos reales): 4 proyectos (Altos de Ventisca 56 lotes, Rinconada del
+Lúcumo 44, Terrazas de Sauzal 68, Horizonte de Los Aquijes sin lotes para cargar el CSV del kit), los 12 casos de antes
+más las 4 partidas matrices, 15 interesados con correos `@example.com` y 4 citas en los próximos 7 días. Titulares
+«Persona natural (datos reservados)» o empresas inventadas; sin DNI, celulares ni colegiaturas.
+
+**Cuentas (9):** las 8 de abajo más `asesor-01` (ASESOR). Contraseña: la de `APP_SEED_PASSWORD`.
+
+**Demo de 15 minutos:** [docs/demo/GUION-DEMO.md](docs/demo/GUION-DEMO.md) con el [kit](docs/demo/kit/LEEME-KIT.md).
+Antes: `scripts/reiniciar-demo.ps1`, arrancar backend e interfaz (abajo) y
+`APP_SEED_PASSWORD=<clave> node scripts/preparar-demo.mjs` (verifica por la API la precarga y completa lo que falte, sin
+borrar nada). Recorrido automático: `node docs/pruebas/uso-v10/recorrido-v10.mjs` (arranca el jar con una base nueva fuera
+del repositorio, la interfaz y Chrome, y apaga todo al final): 13 de 13 pasos el 13/11/2026.
+
+**Pruebas de la 1.0.0:** backend **318** (antes de la etapa 7, 312), interfaz **276** en 30 archivos (antes, 262). La API
+nueva está en [docs/api.md](docs/api.md) («Versión 1.0.0»); las decisiones, en [docs/decisiones.md](docs/decisiones.md)
+(D59 a D69).
+
+**Versión:** `1.0.0` en `trustinmuebles-backend/pom.xml`, `trustinmuebles/package.json`, el pie del sitio y
+`GET /api/v1/publico/sitio`.
+
+---
+
+## Descripción de la v0.9 (se conserva como referencia)
+
 
 > **Modelo de negocio implementado, comprobado contra el código y las pruebas:**
 > [docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md). Este LEEME usa sus mismos identificadores

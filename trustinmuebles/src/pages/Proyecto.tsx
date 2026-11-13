@@ -6,7 +6,9 @@ import { PlanoLotes } from "@/components/PlanoLotes";
 import { IndicadorProyecto } from "@/components/IndicadorProyecto";
 import { useApi } from "@/lib/useApi";
 import { ETIQUETA_ESTADO_PLANO, fecha } from "@/lib/semaforo";
-import { enlaceCatalogoDelProyecto, recorridoDe, rutaProyectoPublico, urlDocumentoProyecto } from "@/lib/proyectos";
+import { enlaceCatalogoDelProyecto, recorridoDe, rutaDocumentoProyecto, rutaProyectoPublico, urlDocumentoProyecto } from "@/lib/proyectos";
+import { useAuth } from "@/lib/auth";
+import { abrirPdf } from "@/lib/api";
 import type { EstadoHito, ProyectoPublico } from "@/lib/types";
 
 const tarjeta = "rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta sm:p-8";
@@ -19,10 +21,13 @@ const ICONO_HITO: Record<EstadoHito, { Icono: LucideIcon; clase: string }> = {
 
 /**
  * v1.0 (etapa 3a): página pública de un proyecto. Plano de lotes por manzanas, recorrido o video (solo si hay enlace),
- * hitos informativos y documentos del proyecto (los de su partida matriz). No exige sesión.
+ * hitos informativos y documentos del proyecto (los de su partida matriz). No exige sesión. v1.0 (etapa 7): sin sesión,
+ * los documentos se abren con un enlace directo y la partida matriz sale parcialmente oculta; con sesión se piden con
+ * ella y la partida sale completa.
  */
 export default function Proyecto() {
   const { codigo = "" } = useParams();
+  const { usuario } = useAuth();
   const { data: p, loading, error, reload } = useApi<ProyectoPublico>(codigo ? rutaProyectoPublico(codigo) : null);
 
   if (loading && !p) return <div className="pt-28"><Cargando texto="Cargando proyecto…" /></div>;
@@ -155,12 +160,17 @@ export default function Proyecto() {
                     <span className="text-tinta-2">{ETIQUETA_ESTADO_PLANO[d.estado]}</span>
                   </div>
                   {d.resumen && <p className="text-tinta-2">{d.resumen}</p>}
-                  {d.disponible && (
+                  {d.disponible && (usuario ? (
+                    <button type="button" data-con-sesion="true" onClick={() => { abrirPdf(rutaDocumentoProyecto(p.codigo, d.tipo)).catch(() => {}); }}
+                      className="inline-flex items-center gap-1 font-bold text-primary hover:underline">
+                      Ver documento (PDF) <ExternalLink className="size-3.5" aria-hidden="true" />
+                    </button>
+                  ) : (
                     <a href={urlDocumentoProyecto(p.codigo, d.tipo)} target="_blank" rel="noopener noreferrer"
                       className="inline-flex items-center gap-1 font-bold text-primary hover:underline">
                       Ver documento (PDF) <ExternalLink className="size-3.5" aria-hidden="true" />
                     </a>
-                  )}
+                  ))}
                 </li>
               ))}
             </ul>

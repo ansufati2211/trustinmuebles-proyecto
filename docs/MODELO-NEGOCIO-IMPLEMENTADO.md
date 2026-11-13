@@ -1,4 +1,61 @@
-# Modelo de negocio implementado — Trustinmuebles, versión actual (v0.9 + «Version real», `d7803f8`)
+# Modelo de negocio implementado — Trustinmuebles, versión 1.0.0
+
+## Versión 1.0.0 (etapas 1 a 7, noviembre de 2026)
+
+Esta sección resume lo que la 1.0.0 agrega al modelo. Las secciones 0 a 16 describen la v0.9 y siguen vigentes en lo que no
+se contradiga aquí. Detalle técnico en [api.md](api.md) y decisiones D59 a D69 en [decisiones.md](decisiones.md); estado y
+pruebas en [REPORTE-v1.0.md](REPORTE-v1.0.md).
+
+### Propuesta de valor 1.0
+
+- **Para el comprador:** encontrar en un solo portal los lotes de los proyectos de la inmobiliaria y sus inmuebles de
+  particulares, compararlos con filtros, orden y un asistente, ver el plano de lotes y los usos que suele permitir la
+  zonificación, y **pedir una cita sin crear cuenta**. Ve el indicador A de cada inmueble (o el de la partida matriz del
+  proyecto, rotulado así) sin que nada prometa una compra segura.
+- **Para la inmobiliaria:** cargar más de 400 lotes al mes por CSV con vista previa, publicar solo lo autorizado y seguir a
+  cada interesado por etapas (Nuevo → Contactado → Cita agendada → Visita realizada → Separación → Venta, o Descartado), con
+  agenda de citas y resumen de demanda.
+
+### Actores nuevos o cambiados
+
+| ID | Actor | Rol | Qué hace en la 1.0 |
+|---|---|---|---|
+| ACT-00 | Visitante | Sin cuenta | Busca, filtra, abre planos y fichas, pide cita (nombre de pila y un medio de contacto, con consentimiento) |
+| ACT-10 | Asesor inmobiliario | ASESOR (`asesor-01`) | Permisos de revisor y gestor: registra, carga CSV, publica, registra la autorización en nombre de la inmobiliaria, atiende interesados y citas |
+| ACT-05 | Propietario | PROPIETARIO | Sin cambios: autoriza sus inmuebles **particulares**. Los de la inmobiliaria los autoriza el asesor o el gestor (D60) |
+
+### Flujo 1.0
+
+| Paso | Qué pasa | Pantalla | Regla que se mantiene |
+|---|---|---|---|
+| 1 | El asesor carga los lotes de un proyecto por CSV (todo o nada, con historial) o registra un inmueble | `#/proyectos/{c}/carga`, `#/casos/nueva` | Un lote se ofrece solo si la partida matriz tiene autorización vigente (I14) |
+| 2 | El motor calcula A del inmueble o de la partida matriz | Expediente | El color lo calculan las reglas `v0.5` |
+| 3 | Autorización (asesor en nombre de la inmobiliaria, o el propietario particular) y publicación | Expediente | Publicar no cambia A |
+| 4 | El visitante busca (asistente, filtros, plano) y pide una cita | Portal | Sin pagos en línea; sin DNI |
+| 5 | El asesor confirma o reprograma la cita y mueve al interesado por etapas; en Separación o Venta marca el lote | `#/interesados` | Marcar el lote no cambia A |
+| 6 | Verificación jurídica con abogado o notario | Fuera del sistema | — |
+
+### Datos y privacidad en la 1.0
+
+- **Excepción acotada a I11 (D68):** el interés guarda un nombre de pila y un medio de contacto, con consentimiento
+  versionado; se borra a pedido. Ningún otro dato personal.
+- **Contenido realista (D67):** titulares «Persona natural (datos reservados)» o empresas inventadas, partida parcial en el
+  portal (`1105••••`, también en la tarjeta, el proyecto y los PDF de la partida matriz desde la etapa 7), ficha registral
+  propia de la inmobiliaria (no copia literal), especialistas sin colegiatura registrada y sitio no indexable por omisión.
+
+### Ingresos (hipótesis no validada, sin cambios)
+
+La inmobiliaria paga el sistema; la inspección B mantiene su costo referencial sin pasarela de pago.
+
+### Verificación 1.0.0
+
+Backend 318 pruebas y interfaz 276, todas aprobadas; recorrido de 15 minutos en Chrome con el kit: 13 de 13 pasos
+(`docs/pruebas/uso-v10/`). Catálogo con 1000 lotes: la consulta más lenta, 248 ms (límite 2 s, `CargaCatalogoTest`).
+
+---
+
+## Modelo de negocio de la v0.9 (se conserva)
+
 
 Este documento describe lo que el **código y las pruebas** hacen hoy. Cuando la documentación anterior dice otra cosa, manda
 el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No verificado**. Los cambios de los tres últimos commits

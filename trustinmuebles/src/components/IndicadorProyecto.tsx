@@ -1,12 +1,16 @@
 import { Info } from "lucide-react";
 import { IndicadorA } from "@/components/base/Indicadores";
 import type { IndicadorAProyecto } from "@/lib/types";
+import { useAuth } from "@/lib/auth";
+import { partidaVisible } from "@/lib/publico";
 
 /**
  * v1.0 (etapa 3a): indicador A que acompaña a un lote sin caso propio. Es el de la partida matriz del proyecto y se
  * rotula así; sin partida matriz evaluada dice «sin evaluación documental». No lo cambian los hitos ni la publicación.
+ * v1.0 (etapa 7): sin sesión, el número de la partida matriz sale parcialmente oculto, como en la ficha pública.
  */
 export function IndicadorProyecto({ indicador, titulo = "h2" }: { indicador: IndicadorAProyecto; titulo?: "h2" | "h3" }) {
+  const { usuario } = useAuth();
   const ev = indicador.evaluacion;
   const Titulo = titulo;
   return (
@@ -17,7 +21,7 @@ export function IndicadorProyecto({ indicador, titulo = "h2" }: { indicador: Ind
           <IndicadorA estado={ev.estado} conResumen tamano="lg" />
           <p className="text-sm text-tinta-2">
             Los lotes que todavía no tienen partida propia forman parte de la partida matriz del proyecto
-            {indicador.casoCodigo ? ` (N.° ${indicador.casoCodigo})` : ""}: este indicador resume lo que se encontró en ella.
+            {indicador.casoCodigo ? ` (N.° ${partidaVisible(indicador.casoCodigo, !!usuario)})` : ""}: este indicador resume lo que se encontró en ella.
           </p>
           {ev.motivos.length > 0 && (
             <ul className="space-y-2 text-sm text-foreground">

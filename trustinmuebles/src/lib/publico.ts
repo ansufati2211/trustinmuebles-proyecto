@@ -59,10 +59,18 @@ export function pdfsPublicos(d: {
     ...(d.expediente.documentosLote ?? []).filter((x) => hay(x.estado))
       .map((x) => ({ clave: x.tipo, nombre: x.tipoEtiqueta, url: `${base}/documentos-lote/${x.tipo}/documento` })),
     ...d.expediente.planos.filter((x) => hay(x.estado)).map((x) => ({
-      clave: x.especialidad, nombre: `Plano de ${x.especialidadEtiqueta.toLowerCase()}`,
+      clave: x.especialidad, nombre: nombrePlano(x.especialidadEtiqueta),
       url: `${base}/planos/${x.especialidad}/documento`,
     })),
   ];
+}
+
+/**
+ * v1.0 (etapa 7): nombre de un plano en el portal. La etiqueta del servidor ya empieza con «Plano» («Plano
+ * arquitectónico»): se usa tal cual; si no, se antepone «Plano de». Antes salía «Plano de plano arquitectónico».
+ */
+export function nombrePlano(etiqueta: string): string {
+  return /^plano\b/i.test(etiqueta.trim()) ? etiqueta.trim() : `Plano de ${etiqueta.trim().toLowerCase()}`;
 }
 
 /** «Mostrando 25–30 de 30 inmuebles», o un texto para una página vacía. */

@@ -479,11 +479,15 @@ class ExpedienteService {
 
     /**
      * v1.0 (etapa 3a): documento de la partida matriz de un proyecto para su página pública. Quien lo llama ya
-     * comprobó que el proyecto se puede ver sin sesión (ProyectoService).
+     * comprobó que el proyecto se puede ver sin sesión (ProyectoService). v1.0 (etapa 7): sin sesión, un documento
+     * generado lleva el número de partida parcialmente oculto, igual que la ficha pública; con sesión, completo.
      */
     @Transactional(readOnly = true)
     DocumentoPlano documentoLoteDeMatriz(String codigo, DocumentoLote tipo) {
-        return documentoLoteDe(buscar(codigo), tipo);
+        Expediente e = buscar(codigo);
+        if (UsuarioActual.haySesion()) return documentoLoteDe(e, tipo);
+        DocumentoPlano d = documentoLoteDe(e, tipo, partidaOculta(codigo));
+        return new DocumentoPlano(d.datos(), nombreDeArchivo(tipo) + ".pdf");
     }
 
     /** v1.0 (etapa 3a): los cuatro documentos del lote de un caso, como los ve el comprador. */

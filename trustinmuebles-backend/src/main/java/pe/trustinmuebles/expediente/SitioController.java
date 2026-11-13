@@ -14,9 +14,11 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 class SitioController {
     private final boolean indexable;
+    private final String version;
 
-    SitioController(@Value("${app.sitio.indexable:false}") boolean indexable) {
+    SitioController(@Value("${app.sitio.indexable:false}") boolean indexable, @Value("${app.version:1.0.0}") String version) {
         this.indexable = indexable;
+        this.version = version;
     }
 
     @GetMapping(value = "/robots.txt", produces = MediaType.TEXT_PLAIN_VALUE)
@@ -24,10 +26,10 @@ class SitioController {
         return ResponseEntity.ok().contentType(MediaType.TEXT_PLAIN).body(robotsTxt(indexable));
     }
 
-    /** Lo que la interfaz necesita saber del sitio: si se puede indexar. */
+    /** Lo que la interfaz necesita saber del sitio: si se puede indexar y (v1.0, etapa 7) la versión del sistema. */
     @GetMapping("/api/v1/publico/sitio")
     Map<String, Object> sitio() {
-        return Map.of("indexable", indexable);
+        return Map.of("indexable", indexable, "version", version);
     }
 
     static String robotsTxt(boolean indexable) {

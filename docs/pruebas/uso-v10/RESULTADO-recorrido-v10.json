@@ -1,0 +1,139 @@
+{
+  "fecha": "2026-11-13T16:24:20.355Z",
+  "version": "1.0.0",
+  "totalSegundos": 130,
+  "correctos": 13,
+  "pasos": 13,
+  "erroresConsola": [],
+  "respuestas409o500": [],
+  "datos": {
+    "arranqueBackendS": "48.6",
+    "baseDatos": "carpeta temporal nueva (fuera del repositorio)",
+    "preparar": {
+      "codigo": 0,
+      "salida": "Preparando la demostración contra http://127.0.0.1:8080/api/v1…\n\nResumen:\n  [OK      ] Proyecto · Altos de Ventisca                   56 lotes, 56 publicados, autorización vigente\n  [OK      ] Proyecto · Rinconada del Lúcumo                44 lotes, 44 publicados, autorización vigente\n  [OK      ] Proyecto · Terrazas de Sauzal                  68 lotes, 68 publicados, autorización vigente\n  [OK      ] Proyecto · Horizonte de Los Aquijes            0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Interesados · Precarga (correos @example.com)  15 de 15\n  [INFO    ] Interesados · Por etapa                        Nuevo 3, Contactado 3, Visita realizada 2, Cita agendada 3, Separación 2, Venta 1, Descartado 1\n  [OK      ] Citas · Agenda 2026-11-13 a 2026-11-19         4 citas (se esperan al menos 4): Confirmada 2, Por confirmar 1, Reprogramada 1\n  [OK      ] Catálogo · Inmuebles publicados                180 en el portal público\n  [INFO    ] Sistema · Versión                              1.0.0 · indexable: no\n\nLa base está lista para la demostración. No se borró nada.\n"
+    },
+    "asistenteResultados": 56,
+    "fechaCita": "2026-11-15",
+    "interesadoId": 16
+  },
+  "detalle": [
+    {
+      "n": 1,
+      "quien": "visitante",
+      "esperado": "El asistente entiende «lote en Subtanjalla de menos de 50 mil soles» y recomienda lotes",
+      "obtenido": "etiqueta «Lotes o terrenos»; etiqueta «En Subtanjalla»; etiqueta «Hasta S/ 50,000»; 56 resultados; URL: #/inmuebles?distrito=Subtanjalla&tipo=LOTE&moneda=PEN&precioMax=50000; ningún texto promete compra segura ni saneamiento",
+      "ok": true,
+      "captura": "01-asistente.png",
+      "segundos": "11.9"
+    },
+    {
+      "n": 2,
+      "quien": "visitante",
+      "esperado": "Filtra por estado Disponible y ordena por precio; las tarjetas no muestran la partida completa",
+      "obtenido": "hay orden «Precio: de menor a mayor»; orden: «Precio: de menor a mayor»; Mostrando 1–24 de 34 inmuebles; filtro y orden quedan en la URL; 24 tarjetas, todas disponibles; 9 tarjetas de casos, 0 con la partida completa; ejemplo: «N.° 1110••••»",
+      "ok": true,
+      "captura": "02-filtros.png",
+      "segundos": "4.7"
+    },
+    {
+      "n": 3,
+      "quien": "visitante",
+      "esperado": "Abre el plano de Altos de Ventisca y elige un lote disponible",
+      "obtenido": "plano de lotes; la partida matriz se ve oculta («1111••••»); lote elegido: C-12; el panel muestra precio y área; Mz. C · Lote 12 · Área · 144.00 m² · Estado · Disponible · Precio; el PDF de la partida matriz, sin sesión, oculta el número",
+      "ok": true,
+      "captura": "03-plano.png",
+      "segundos": "2.5"
+    },
+    {
+      "n": 4,
+      "quien": "visitante",
+      "esperado": "Abre la ficha del lote: precio, usos que suelen permitirse y documentos",
+      "obtenido": "usos del lote; aviso de parámetros urbanísticos; indicador A rotulado como de la partida matriz; botón «Solicitar cita»; S/ 36,000",
+      "ok": true,
+      "captura": "04-ficha-lote.png",
+      "segundos": "1.1"
+    },
+    {
+      "n": 5,
+      "quien": "visitante",
+      "esperado": "Solicita una visita al lote con los datos de datos-cita.md (Carla, correo @example.com)",
+      "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-15, mañana",
+      "ok": true,
+      "captura": "05-solicitar-cita.png",
+      "segundos": "4.3"
+    },
+    {
+      "n": 6,
+      "quien": "asesor-01",
+      "esperado": "Carga el CSV del kit (80 lotes) en Horizonte de Los Aquijes: vista previa sin errores y confirmación",
+      "obtenido": "80 lotes nuevos · 0 por actualizar · 0 sin cambios · 0 filas con errores; el proyecto tiene 80 lotes (80 publicados); la página pública del proyecto muestra 80 lotes",
+      "ok": true,
+      "captura": "06-carga-csv.png",
+      "segundos": "5.1"
+    },
+    {
+      "n": 7,
+      "quien": "asesor-01",
+      "esperado": "Registra el particular INT-99000611 pegando el texto del kit (propietario-02, vivienda); nace en borrador y gris",
+      "obtenido": "la lectura no deja avisos; la vista previa no detecta nombres de personas; borrador y sin autorización; propietario-02; A = GRIS (sin planos); 2 asientos leídos",
+      "ok": true,
+      "captura": "07-registro-particular.png",
+      "segundos": "10.4"
+    },
+    {
+      "n": 8,
+      "quien": "asesor-01",
+      "esperado": "Sube las 4 láminas del kit en el expediente; el indicador A pasa a verde",
+      "obtenido": "los 4 planos quedan presentados; A = VERDE",
+      "ok": true,
+      "captura": "08-laminas-kit.png",
+      "segundos": "7.6"
+    },
+    {
+      "n": 9,
+      "quien": "propietario-02",
+      "esperado": "El propietario autoriza la publicación de su inmueble",
+      "obtenido": "autorizado y todavía en borrador",
+      "ok": true,
+      "captura": "09-propietario-autoriza.png",
+      "segundos": "6.0"
+    },
+    {
+      "n": 10,
+      "quien": "asesor-01",
+      "esperado": "Publica; el inmueble aparece en el portal con la partida oculta y A no cambia",
+      "obtenido": "publicado; A sigue en VERDE; la ficha pública muestra «INT-••••»; la ficha registral pública no trae el número completo",
+      "ok": true,
+      "captura": "10-publica.png",
+      "segundos": "8.1"
+    },
+    {
+      "n": 11,
+      "quien": "asesor-01",
+      "esperado": "Abre a Carla en Interesados y confirma su cita: pasa a «Cita agendada»",
+      "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-15; total de interesados: 16",
+      "ok": true,
+      "captura": "11-confirma-cita.png",
+      "segundos": "5.4"
+    },
+    {
+      "n": 12,
+      "quien": "asesor-01",
+      "esperado": "Lo lleva a «Visita realizada» y «Separación» y marca el lote como separado",
+      "obtenido": "etapa: Separación; 5 notas automáticas de los cambios; el lote C-12 aparece Separado en el plano; el indicador A de la partida matriz sigue en VERDE",
+      "ok": true,
+      "captura": "12-separacion.png",
+      "segundos": "3.3"
+    },
+    {
+      "n": 13,
+      "quien": "visitante",
+      "esperado": "Pie con el aviso legal y la versión 1.0.0",
+      "obtenido": "«No certifica saneamiento.»; «No recomienda comprar.»; «No reemplaza asesoría legal.»; versión 1.0.0 en el pie; /publico/sitio: versión 1.0.0, indexable false",
+      "ok": true,
+      "captura": "13-pie-version.png",
+      "segundos": "6.7"
+    }
+  ]
+}

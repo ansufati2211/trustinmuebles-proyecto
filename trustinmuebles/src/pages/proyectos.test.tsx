@@ -18,7 +18,8 @@ const respuesta: { data: unknown } = { data: null };
 vi.mock("@/lib/useApi", () => ({
   useApi: () => ({ data: respuesta.data, loading: false, error: null, reload: () => {} }),
 }));
-vi.mock("@/lib/auth", () => ({ useAuth: () => ({ usuario: null, logout: () => {} }) }));
+const sesion: { usuario: { codigo: string; rol: string } | null } = { usuario: null };
+vi.mock("@/lib/auth", () => ({ useAuth: () => ({ usuario: sesion.usuario, logout: () => {} }) }));
 
 function lote(manzana: string, numero: number, extra: Partial<LoteProyecto> = {}): LoteProyecto {
   const estado: EstadoComercial = extra.estadoComercial ?? "DISPONIBLE";
@@ -135,7 +136,9 @@ describe("página del proyecto (#/proyectos/{codigo})", () => {
     expect(html).toContain("Subtanjalla, Ica");
     expect(html).toContain("Plano de lotes");
     expect(html).toContain("Indicador A de la partida matriz del proyecto");
-    expect(html).toContain("(N.° 11112001)");
+    // v1.0 (etapa 7): sin sesión, la partida matriz sale parcialmente oculta (antes, completa).
+    expect(html).toContain("(N.° 1111••••)");
+    expect(html).not.toContain("11112001");
     expect(html).toContain("Compra del terreno matriz");
     expect(html).toContain('data-hito="EN_PROCESO"');
     expect(html).toContain("El avance es informativo y no cambia el indicador A.");
@@ -143,6 +146,20 @@ describe("página del proyecto (#/proyectos/{codigo})", () => {
     expect(html).not.toContain("/documentos/TASACION");
     expect(html).toContain('href="/inmuebles?proyecto=Altos+de+Ventisca"');
     expect(html).not.toMatch(/compra segura|saneado|garantizad/i);
+  });
+
+  it("con sesión, la partida matriz se ve completa y los documentos se piden con la sesión (etapa 7)", () => {
+    respuesta.data = PROYECTO;
+    try {
+      sesion.usuario = { codigo: "asesor-01", rol: "ASESOR" };
+      const html = enRuta("/proyectos/altos-de-ventisca", "/proyectos/:codigo", <Proyecto />);
+      expect(html).toContain("(N.° 11112001)");
+      expect(html).toContain('data-con-sesion="true"');
+      expect(html).not.toContain('href="/api/v1/publico/proyectos/altos-de-ventisca/documentos/PLANO_PERIMETRICO"');
+      expect(html).toContain("Ver documento (PDF)");
+    } finally {
+      sesion.usuario = null;
+    }
   });
 
   it("sin enlace no hay sección de recorrido; con un video de YouTube se incrusta desde youtube-nocookie.com", () => {
@@ -212,13 +229,27 @@ describe("tarjeta de un lote de proyecto en el catálogo", () => {
     expect(html).toContain("Venta directa");
   });
 
-  it("un caso sigue enlazando a su ficha y mostrando su número de partida", () => {
+  // v1.0 (etapa 7): sin sesión la tarjeta muestra la partida parcialmente oculta, como la ficha pública; con sesión,
+  // completa. El enlace sigue usando el código en los dos casos.
+  it("un caso sigue enlazando a su ficha y mostrando su número de partida (oculto sin sesión, completo con sesión)", () => {
     const caso: InmueblePublico = { ...item, codigo: "11048217", clase: "CASO", lote: null, origen: "SINTETICO",
       fuenteIndicadorA: "PROPIO", rotuloIndicadorA: "Indicador A del inmueble" };
-    const html = conRouter(<TarjetaPredio c={caso} publico />);
-    expect(html).toContain('href="/inmuebles/11048217"');
-    expect(html).toContain("N.° 11048217");
-    expect(html).toContain("Técnico:");
+    try {
+      sesion.usuario = null;
+      const sinSesion = conRouter(<TarjetaPredio c={caso} publico />);
+      expect(sinSesion).toContain('href="/inmuebles/11048217"');
+      expect(sinSesion).toContain("N.° 1104••••");
+      expect(sinSesion).not.toContain("N.° 11048217");
+      expect(sinSesion).toContain("Técnico:");
+
+      sesion.usuario = { codigo: "comprador-01", rol: "COMPRADOR" };
+      const conSesion = conRouter(<TarjetaPredio c={caso} publico />);
+      expect(conSesion).toContain('href="/inmuebles/11048217"');
+      expect(conSesion).toContain("N.° 11048217");
+      expect(conSesion).toContain("Técnico:");
+    } finally {
+      sesion.usuario = null;
+    }
   });
 });
 

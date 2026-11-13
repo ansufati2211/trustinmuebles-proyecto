@@ -433,10 +433,19 @@ class ProyectosApiTest extends BaseApiTest {
                     .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_PDF))
                     .andExpect(header().string("X-Content-Type-Options", "nosniff"))
                     .andReturn().getResponse().getContentAsByteArray();
+            // v1.0 (etapa 7): sin sesión, la partida matriz sale parcialmente oculta, como en la ficha pública.
             try (PDDocument doc = Loader.loadPDF(pdf)) {
                 String texto = new PDFTextStripper().getText(doc);
-                assertThat(texto).as(tipo).contains("Partida N.° " + MATRIZ_LUCUMO);
+                assertThat(texto).as(tipo).contains("Partida N.° " + MATRIZ_LUCUMO.substring(0, 4) + "••••")
+                        .doesNotContain(MATRIZ_LUCUMO);
                 assertThat(doc.getDocumentInformation().getSubject()).contains("referencial");
+            }
+            // Con sesión, el mismo documento lleva la partida completa.
+            byte[] conSesion = mvc.perform(get("/api/v1/publico/proyectos/" + LUCUMO + "/documentos/" + tipo)
+                    .header("Authorization", comprador())).andExpect(status().isOk())
+                    .andReturn().getResponse().getContentAsByteArray();
+            try (PDDocument doc = Loader.loadPDF(conSesion)) {
+                assertThat(new PDFTextStripper().getText(doc)).as(tipo).contains("Partida N.° " + MATRIZ_LUCUMO);
             }
         }
         mvc.perform(get("/api/v1/publico/proyectos/" + LUCUMO + "/documentos/OTRO")).andExpect(status().isBadRequest());
