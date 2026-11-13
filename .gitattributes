@@ -1,0 +1,2 @@
+# v1.0 (etapa 7): los PDF del kit no deben pasar por la conversión de fin de línea.
+*.pdf binary

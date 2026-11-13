@@ -868,3 +868,48 @@ solo la cambia si es indexable. Vite y nginx reenvían `/robots.txt` al servidor
 `CasosApiTest`, `RegistrarPartidaTest`, `MotorClasificacionTest` (titulares), `CatalogoYServiciosTest`, `CarteraTest` y
 `CicloCarteraTest` (la colegiatura que manda el cliente se sigue ignorando; ahora queda vacía), `CargaCatalogoTest`
 (empresa del generador).
+
+## D68. v1.0 (etapa 7): excepción acotada a I11 para el interés del portal (precisa D65)
+
+**Revisión de las decisiones de la v1.0.** Las etapas 1 a 6 quedaron registradas en D59 a D67: rol ASESOR (D59),
+titularidad comercial (D60), portal público (D61), filtros (D62), **proyectos, plano y catálogo unido (D63)**, **carga por
+CSV (D64)**, **interés, citas y CRM (D65)**, **asistente por reglas y usos orientativos (D66)** y **contenido realista
+(D67: titulares reservados, partida parcial, ficha registral propia, colegiatura vacía, no indexar)**. No se renumera
+nada. Solo faltaba nombrar como tal la excepción a I11 que D65 aplica; se registra aquí.
+**Qué:** I11 dice que el sistema no guarda nombres, DNI ni teléfonos de propietarios o compradores. El formulario público de
+interés (`POST /publico/interes`) es una **excepción acotada**: guarda **solo un nombre de pila** (hasta 40 caracteres) y
+**un medio de contacto** (un celular o un correo, no los dos), y únicamente con **consentimiento expreso** (casilla
+obligatoria, versión del texto aceptado y fecha). No se piden apellidos, DNI ni domicilio: un campo desconocido da 400 y un
+número de 8 dígitos seguidos en el mensaje también. El registro se **borra a pedido** (`DELETE /interesados/{id}`, con sus
+notas y citas). Las cuentas, los casos y los PDF siguen sin datos personales. La precarga, el kit y las pruebas usan
+nombres de pila comunes y correos `@example.com`, sin celulares.
+**Por qué:** sin un nombre y un medio de contacto el asesor no puede devolver la llamada; es el mínimo para el CRM.
+
+## D69. v1.0 (etapa 7): kit de respaldo, partida oculta en tarjeta y matriz, preparar-demo y versión 1.0.0
+
+**Partida oculta (pendiente de la etapa 6).** Sin sesión, la tarjeta del catálogo, el indicador A del proyecto (página del
+proyecto y ficha del lote), las muestras de la portada y los PDF de la partida matriz
+(`GET /publico/proyectos/{c}/documentos/{tipo}`) muestran los primeros 4 caracteres y «••••», igual que la ficha pública.
+Con sesión, completos: la interfaz pide esos PDF con el token (`abrirPdf`) y el servidor, si la petición trae un JWT válido
+(`UsuarioActual.haySesion()`), entrega la partida completa. Las direcciones siguen usando el código. Se ajustaron dos
+aserciones de la etapa 3a conservando lo que verifican: la tarjeta (`pages/proyectos.test.tsx`) y los documentos del
+proyecto (`ProyectosApiTest.documentosDelProyecto`) exigen ahora oculto sin sesión y completo con sesión.
+**Corrección de texto:** la ficha pública decía «Plano de plano arquitectónico»; `nombrePlano` usa la etiqueta tal cual si
+ya empieza con «Plano».
+**Kit (`docs/demo/kit/`, ver `LEEME-KIT.md`).** Tres textos de partida para pegar con código `INT-` y sin nombres de
+personas: `INT-99000611` (vivienda sin cargas: gris sin planos y verde con sus 4 láminas), `INT-99000612` (lote con
+hipoteca vigente: amarillo por RV-02) e `INT-99000613` (lote con embargo: rojo por RP-01). `scripts/generar-pdf-demo.mjs`
+genera además, sin dependencias, las 4 láminas y los 4 documentos del lote de cada partida en `docs/demo/kit/pdf/`, con el
+rótulo y el autor de la inmobiliaria, marca de agua «REFERENCIAL» y sin sellos, firmas, colegiaturas ni códigos de
+verificación; la de zonificación es un «Resumen» que remite al certificado municipal y la tasación es «referencial».
+`datos-cita.md` (nombre `Carla`, correo `@example.com`). El color lo sigue calculando el motor: el kit solo aporta datos.
+**`scripts/preparar-demo.mjs`.** Solo por la API y sin borrar: comprueba los 4 proyectos (lotes según `proyectos.json`), los
+15 interesados (por su correo) y las 4 citas precargadas; si faltan lotes en un proyecto existente los carga por CSV (como
+disponibles), y si faltan interesados los envía por el formulario público con su cita y los lleva a su etapa (respeta el
+límite de 10 por hora: si lo alcanza, lo dice). Un proyecto inexistente no se puede crear por la API: lo informa.
+**Versión 1.0.0** en `pom.xml`, `package.json`, `lib/version.ts` (pie: «Trustinmuebles · versión 1.0.0») y
+`GET /publico/sitio` (`app.version=@project.version@`).
+**Recorrido:** `docs/pruebas/uso-v10/recorrido-v10.mjs` arranca el jar con una base nueva en una carpeta temporal, la
+interfaz y Chrome, corre `preparar-demo`, recorre el guion de 15 minutos con el kit y apaga todo.
+**Pruebas:** `KitDemoTest` (6), `lib/kit.test.ts` (12), una de versión en `lib/limitesLegales.test.tsx`, una de la
+página del proyecto con sesión en `pages/proyectos.test.tsx`.

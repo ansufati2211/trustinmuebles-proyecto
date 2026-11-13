@@ -16,6 +16,12 @@ public record UsuarioActual(Long id, String codigoCuenta, Rol rol) {
                 Rol.valueOf(jwt.getClaimAsString("rol")));
     }
 
+    /** v1.0 (etapa 7): si la petición trae una sesión válida (un JWT), aunque la ruta sea pública. */
+    public static boolean haySesion() {
+        Authentication a = SecurityContextHolder.getContext().getAuthentication();
+        return a != null && a.getPrincipal() instanceof Jwt;
+    }
+
     public boolean esRevisor() {
         return rol == Rol.REVISOR;
     }

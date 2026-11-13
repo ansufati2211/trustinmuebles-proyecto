@@ -9,7 +9,7 @@ import { UsosDelLote } from "@/components/UsosDelLote";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
 import { m2, precio } from "@/lib/formato";
-import { partidaVisible, pdfsPublicos, rutaFichaPublica } from "@/lib/publico";
+import { nombrePlano, partidaVisible, pdfsPublicos, rutaFichaPublica } from "@/lib/publico";
 import { enlaceProyecto } from "@/lib/proyectos";
 import { ETIQUETA_ESTADO_PLANO } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
@@ -52,7 +52,7 @@ export default function FichaPublica() {
   const deLaInmobiliaria = d.publicacion?.titularidadComercial === "INMOBILIARIA";
   const documentos = [
     ...(x.documentosLote ?? []).map((doc) => ({ nombre: doc.tipoEtiqueta, estado: doc.estado })),
-    ...x.planos.map((pl) => ({ nombre: `Plano de ${pl.especialidadEtiqueta.toLowerCase()}`, estado: pl.estado })),
+    ...x.planos.map((pl) => ({ nombre: nombrePlano(pl.especialidadEtiqueta), estado: pl.estado })),
   ];
 
   return (

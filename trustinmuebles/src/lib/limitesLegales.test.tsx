@@ -24,4 +24,10 @@ describe("límites legales del pie (I7)", () => {
     expect(html).toContain("especialista colegiado de la inmobiliaria");
     expect(html).not.toContain("independiente");
   });
+
+  it("v1.0 (etapa 7): el pie muestra la versión 1.0.0 junto al aviso legal", () => {
+    const html = renderToStaticMarkup(<MemoryRouter><Footer /></MemoryRouter>);
+    expect(html).toContain("Trustinmuebles · versión 1.0.0");
+    for (const limite of LIMITES_LEGALES) expect(html).toContain(limite);
+  });
 });

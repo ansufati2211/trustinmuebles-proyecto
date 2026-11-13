@@ -1,4 +1,5 @@
 import { Link } from "react-router";
+import { VERSION } from "@/lib/version";
 import { ArrowUpRight, ArrowUp, MapPin, ShieldCheck, FileCheck2, HardHat } from "lucide-react";
 import { LogoMark } from "@/components/layout/Logo";
 import { CONOCE_AQUI, VISOR_BGR, abrirExterno } from "@/lib/fuentes";
@@ -155,6 +156,7 @@ export function Footer() {
             ))}
           </ul>
         </section>
+        <p className="pt-4 text-[11px] font-medium text-gray-400" data-version={VERSION}>Trustinmuebles · versión {VERSION}</p>
       </div>
     </footer>
   );

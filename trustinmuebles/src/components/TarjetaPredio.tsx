@@ -10,6 +10,8 @@ import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { resaltadoA } from "@/lib/resaltado";
 import { ChipEsfuerzo } from "@/components/RutaRegularizacion";
 import { enlaceInmueble, nombreLote } from "@/lib/proyectos";
+import { partidaVisible } from "@/lib/publico";
+import { useAuth } from "@/lib/auth";
 import type { EstadoComercial, InmueblePublico, ResumenCaso } from "@/lib/types";
 
 const TONO_COMERCIAL: Record<EstadoComercial, TonoBadge> = { DISPONIBLE: "marca", SEPARADO: "arena", VENDIDO: "info" };
@@ -17,11 +19,13 @@ const ICONO_COMERCIAL: Record<EstadoComercial, LucideIcon> = { DISPONIBLE: Tag, 
 
 /**
  * Tarjeta de un inmueble. Con {@code publico} (v1.0) enlaza a la ficha pública y no muestra datos internos (pendientes,
- * publicación ni gestión, que el portal público tampoco recibe).
+ * publicación ni gestión, que el portal público tampoco recibe). v1.0 (etapa 7): en el portal, sin sesión, el número de
+ * partida se muestra parcialmente oculto, igual que en la ficha pública; con sesión, completo. El enlace sigue usando el código.
  */
 export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
   c: ResumenCaso | InmueblePublico; conPublicacion?: boolean; publico?: boolean;
 }) {
+  const { usuario } = useAuth();
   const p = c.predio;
   const interno = "pendientes" in c ? c : null;
   // v1.0 (etapa 3a): un lote de proyecto sin caso propio enlaza a su ficha dentro del proyecto.
@@ -69,7 +73,7 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
             <p className="text-base font-bold text-white/90">Precio a consultar</p>
           )}
           <span className="cifras rounded-full bg-black/40 px-2.5 py-1 text-[11px] font-bold text-white backdrop-blur-md">
-            {loteProyecto?.lote ? nombreLote(loteProyecto.lote) : `N.° ${c.codigo}`}
+            {loteProyecto?.lote ? nombreLote(loteProyecto.lote) : `N.° ${publico ? partidaVisible(c.codigo, !!usuario) : c.codigo}`}
           </span>
         </div>
       </Link>

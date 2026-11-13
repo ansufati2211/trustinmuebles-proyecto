@@ -11,8 +11,12 @@ export const rutaProyectoPublico = (codigo: string) => `/publico/proyectos/${enc
 export const rutaLotePublico = (codigo: string, clave: string) =>
   `/publico/proyectos/${encodeURIComponent(codigo)}/lotes/${encodeURIComponent(clave)}`;
 /** El PDF de un documento del proyecto se abre sin sesión: es un enlace directo a la API. */
-export const urlDocumentoProyecto = (codigo: string, tipo: string) =>
-  `/api/v1/publico/proyectos/${encodeURIComponent(codigo)}/documentos/${encodeURIComponent(tipo)}`;
+/** Ruta de la API (sin «/api/v1») de un documento del proyecto, para abrirlo con la sesión (v1.0, etapa 7). */
+export const rutaDocumentoProyecto = (codigo: string, tipo: string) =>
+  `/publico/proyectos/${encodeURIComponent(codigo)}/documentos/${encodeURIComponent(tipo)}`;
+
+/** Enlace directo, sin sesión: el servidor entrega la partida matriz parcialmente oculta. */
+export const urlDocumentoProyecto = (codigo: string, tipo: string) => `/api/v1${rutaDocumentoProyecto(codigo, tipo)}`;
 
 export const enlaceProyecto = (codigo: string) => `/proyectos/${encodeURIComponent(codigo)}`;
 

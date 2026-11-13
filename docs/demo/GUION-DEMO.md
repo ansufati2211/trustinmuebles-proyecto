@@ -1,4 +1,68 @@
-# Guion de la demo (versión actual, `d7803f8`): 24 pasos con INT-99000404 y los lotes de la v0.9
+# Guion de la demo v1.0.0: recorrido de 15 minutos
+
+Recorrido de la versión 1.0.0 con el [kit de respaldo](kit/LEEME-KIT.md). Un **visitante sin cuenta** busca con el asistente,
+filtra, abre un plano y una ficha y pide una cita; el **asesor** carga el CSV del kit, registra un inmueble de un particular
+con un texto del kit, lo publica, confirma la cita y lleva al interesado hasta la separación.
+
+Los pasos se comprobaron el **13 de noviembre de 2026** con [recorrido-v10.mjs](../pruebas/uso-v10/recorrido-v10.mjs):
+13 de 13 pasos correctos, base nueva fuera del repositorio, Chrome sin ventana, sin errores de consola ni respuestas 409 o
+500 (capturas en [docs/pruebas/uso-v10/capturas](../pruebas/uso-v10/capturas/)). Los minutos son una guía para una
+persona que presenta y explica; el script tarda unos 2 minutos. No se ensayó a mano con público.
+
+## Antes de presentar (5 minutos, antes de que empiece la sesión)
+
+1. Cierra todo backend o interfaz abiertos y reinicia la base:
+   `powershell -ExecutionPolicy Bypass -File scripts\reiniciar-demo.ps1`.
+2. Terminal 1 (backend): `cd trustinmuebles-backend`, `$env:APP_SEED_PASSWORD = '<clave de 8 o más caracteres>'`,
+   `.\mvnw.cmd spring-boot:run`. Terminal 2 (interfaz): `cd trustinmuebles`, `npx pnpm@9 dev`.
+3. Terminal 3, con la misma clave: `node scripts/preparar-demo.mjs`. Debe terminar en «La base está lista para la
+   demostración. No se borró nada.» con 4 proyectos, 15 de 15 interesados y 4 citas.
+4. Ten abiertos `docs/demo/kit/datos-cita.md` y `docs/demo/kit/partidas/INT-99000611-vivienda-sin-cargas.txt`.
+5. Abre `http://localhost:5173` en una ventana sin sesión.
+
+No edites `11048217`, `11052690`, `11061555` ni `11070419`.
+
+## Recorrido
+
+| Min. | Paso | Quién | Qué se hace | Debe verse |
+|---|---|---|---|---|
+| 0–2 | 1. Asistente | Visitante | **Inmuebles** → en «Asistente de búsqueda» escribe `lote en Subtanjalla de menos de 50 mil soles` → **Buscar**. | Etiquetas «Lotes o terrenos», «En Subtanjalla», «Hasta S/ 50,000»; 56 resultados y tres recomendaciones con sus motivos (Altos de Ventisca, Mz. C). |
+| 2–3 | 2. Filtros | Visitante | En los filtros, **Estado comercial: Disponible**; cambia el orden. | El conteo baja y el filtro queda en la dirección. Sin sesión, las tarjetas de casos (por ejemplo, con el filtro Tipo: Viviendas) muestran la partida oculta, como `1110••••`. |
+| 3–5 | 3. Plano y ficha | Visitante | Abre **Altos de Ventisca** (desde una tarjeta o `#/proyectos/altos-de-ventisca`). En el plano elige **Mz. C Lote 12** → **Ver ficha del lote**. | Plano por manzanas con leyenda en texto, indicador A «de la partida matriz del proyecto» con `N.° 1111••••`; en la ficha: S/ 36,000, «Usos que suelen permitirse» con el aviso de parámetros urbanísticos y los documentos del proyecto (sus PDF ocultan la partida). |
+| 5–6 | 4. Cita | Visitante | **Solicitar cita** con [datos-cita.md](kit/datos-cita.md): visita al lote, pasado mañana por la mañana, `Carla`, `carla.visita@example.com`. | «Recibimos tu pedido de cita…». Sin DNI, sin cuenta, sin pagos. |
+| 6–8 | 5. CSV | `asesor-01` | Ingresa → **Proyectos** → **Horizonte de Los Aquijes** → «Cargar lotes (CSV)» → `kit/proyecto-nuevo-80-lotes.csv`. (Opcional: `proyecto-con-errores.csv` antes, para ver que no deja confirmar.) | Vista previa «80 lotes nuevos · 0 filas con errores» → **Confirmar 80 lotes**; el plano del proyecto ya tiene 80 lotes. |
+| 8–10 | 6. Particular | `asesor-01` | **Registrar**: origen «Registro interno de cartera», número `INT-99000611`, precio `285000`, denominación `Mz. K Lote 9 · Urb. Los Viñedos de Ica · Ica`, titularidad **Particular**, propietario `propietario-02`, distrito `Ica, Ica`. Pega el texto del kit → **Leer asientos** → tipo **Vivienda**, área construida `120` → marca la casilla de la vista previa → **Registrar partida**. | Sin avisos de lectura, «No se detectó ningún nombre de persona», 2 asientos. El caso nace en borrador, sin autorización y en **gris** (faltan los planos). |
+| 10–11 | 7. Láminas | `asesor-01` | En el expediente, sube en «Planos» las 4 láminas de `kit/pdf/INT-99000611/`. | Los 4 planos «Presentado» y el indicador A en **verde**. Lo calcula el motor de reglas. |
+| 11–12 | 8. Autorización | `propietario-02` | Ingresa → abre `#/casos/INT-99000611` → **Autorizar publicación**. | «Autorización registrada.»; sigue en borrador. En un caso de la inmobiliaria la registraría el asesor. |
+| 12–13 | 9. Publicar | `asesor-01` | Vuelve a ingresar → el expediente → **Publicar**. Abre `#/inmuebles/INT-99000611` en la ventana sin sesión. | Publicado; el color no cambia. La ficha pública muestra `Partida N.° INT-••••` y «Documentos para descargar». |
+| 13–14 | 10. Confirmar cita | `asesor-01` | **Interesados** → **Carla** («Tiene una cita por confirmar») → **Confirmar … · mañana**. | «Cita confirmada.»; Carla pasa sola a **Cita agendada** y la cita aparece en «Agenda de citas». |
+| 14–15 | 11. Hasta separación | `asesor-01` | En la ficha de Carla, **Etapa**: Visita realizada → Separación → **Marcar el lote separado**. | Una nota por cada cambio; en el plano de Altos de Ventisca la Mz. C Lote 12 sale **Separado**. El indicador A de la partida matriz no cambia. |
+| 15 | Cierre | — | Baja al pie. | «No certifica saneamiento. No recomienda comprar. No reemplaza asesoría legal.» y «Trustinmuebles · versión 1.0.0». |
+
+### Frases de apoyo
+
+- Paso 1: «El asistente funciona con reglas, sin IA y sin enviar la frase a ningún servicio; lo que entiende queda como
+  etiquetas que se pueden quitar».
+- Paso 3: «Los usos son orientativos: siempre remiten al certificado de parámetros de la municipalidad».
+- Paso 6: «El caso nace en borrador: nadie lo ve hasta que haya una autorización vigente y alguien lo publique».
+- Paso 9: «Publicar no cambia el indicador A; el color lo calculan las reglas con los documentos».
+- Paso 11: «Del CRM solo se guardan un nombre de pila y un medio de contacto, con consentimiento; se borra a pedido».
+
+### Si sobra tiempo o algo falla
+
+- Registrar `INT-99000612` (lote con hipoteca vigente) o `INT-99000613` (lote con embargo) con los datos de
+  [LEEME-KIT.md](kit/LEEME-KIT.md) y subir sus 4 documentos del lote: quedan en **amarillo** y en **rojo**.
+- Si el formulario de cita responde que se superó el límite (10 por hora), usa la cita precargada de **María** (por
+  confirmar) en el paso 10.
+- Plan B visual: las capturas `01-asistente.png` a `13-pie-version.png` de `docs/pruebas/uso-v10/capturas/`.
+
+---
+
+# Guion anterior (v0.9, 24 pasos)
+
+Se conserva como referencia de los flujos del expediente, el indicador B y la ruta de regularización.
+
+## Guion de la demo (v0.9, `d7803f8`): 24 pasos con INT-99000404 y los lotes de la v0.9
 
 Guion paso a paso de la versión actual de `main` (v0.9 + fotos + «Version real»). Los códigos, conteos y textos que aparecen en
 «Debe verse» se comprobaron el **9 de noviembre de 2026** con [recorrido-v09.mjs](../pruebas/uso-v09/recorrido-v09.mjs): 27 de 27
