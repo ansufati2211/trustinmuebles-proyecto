@@ -1,6 +1,6 @@
 import { useId } from "react";
 import { cn } from "@/lib/utils";
-import { FOTOS_PREDIO, configPredio, textoAlternativo, type ConfigPredio, type PaletaPredio } from "@/lib/predios";
+import { fotoDePredio, configPredio, textoAlternativo, type ConfigPredio, type PaletaPredio } from "@/lib/predios";
 import type { TipoInmueble } from "@/lib/types";
 
 /*
@@ -179,7 +179,8 @@ export function PredioImagen({ codigo, tipo, className, decorativa = false }: {
 }) {
   const c = configPredio(codigo, tipo);
   const id = useId().replace(/[^a-zA-Z0-9]/g, "");
-  const foto = FOTOS_PREDIO[codigo.replace(/^SIM-/, "")] ?? FOTOS_PREDIO[codigo];
+  // v1.0 (etapa 6): solo fotos con licencia libre (lib/creditos.ts); las demás fichas usan la ilustración.
+  const foto = fotoDePredio(codigo);
   if (foto) {
     // Foto referencial del prototipo (no es el inmueble): siempre lleva su rótulo.
     return (

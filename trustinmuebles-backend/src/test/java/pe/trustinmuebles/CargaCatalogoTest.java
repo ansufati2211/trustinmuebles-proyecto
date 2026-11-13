@@ -85,7 +85,7 @@ class CargaCatalogoTest extends BaseApiTest {
         assertThat(jdbc.queryForObject("select count(*) from caso_lote where codigo like 'SIM-9%' "
                 + "and (propietario_codigo is null or autorizacion_fecha is null)", Integer.class)).isZero();
         // Nada de datos personales: solo la empresa inventada.
-        assertThat(jdbc.queryForObject("select count(*) from asiento where titulares like '%Inmobiliaria Ejemplo del Sur%'",
+        assertThat(jdbc.queryForObject("select count(*) from asiento where titulares like '%Inmobiliaria Arenales del Sur%'",
                 Integer.class)).isEqualTo(1000);
     }
 }

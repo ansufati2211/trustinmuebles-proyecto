@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router";
-import { ArrowLeft, Building2, CalendarCheck, FileText, Info, MapPin, Ruler } from "lucide-react";
+import { ArrowLeft, Building2, CalendarCheck, ExternalLink, FileText, Info, MapPin, Ruler } from "lucide-react";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
@@ -9,7 +9,7 @@ import { UsosDelLote } from "@/components/UsosDelLote";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { useAuth } from "@/lib/auth";
 import { m2, precio } from "@/lib/formato";
-import { rutaFichaPublica } from "@/lib/publico";
+import { partidaVisible, pdfsPublicos, rutaFichaPublica } from "@/lib/publico";
 import { enlaceProyecto } from "@/lib/proyectos";
 import { ETIQUETA_ESTADO_PLANO } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
@@ -96,7 +96,10 @@ export default function FichaPublica() {
               {p.precioPorM2 != null && (
                 <p className="cifras mt-1 text-sm font-semibold text-tinta-2">{precio(p.precioPorM2, p.moneda)} por m²</p>
               )}
-              <p className="cifras mt-1 text-xs font-semibold text-tinta-2">Partida N.° {d.codigo}</p>
+              {/* v1.0 (etapa 6): sin sesión, la partida va parcialmente oculta; el personal la ve completa. */}
+              <p className="cifras mt-1 text-xs font-semibold text-tinta-2" data-partida>
+                Partida N.° {partidaVisible(d.codigo, !!usuario)}
+              </p>
             </div>
             <LineaIndependizacion predio={p} />
 
@@ -145,6 +148,27 @@ export default function FichaPublica() {
 
         {/* v1.0 (etapa 5): usos que suelen permitirse; sin zonificación, «consulta los parámetros». */}
         <div className={`${tarjeta} mt-8`}><UsosDelLote zonificacion={p.zonificacion} areaM2={p.areaM2} /></div>
+
+        {/* v1.0 (etapa 6): PDF que se abren sin sesión (el informe técnico B sigue pidiendo sesión). */}
+        <section aria-labelledby="titulo-pdf" className={`${tarjeta} mt-8 space-y-4`}>
+          <h2 id="titulo-pdf" className="flex items-center gap-2 text-xl font-bold text-foreground">
+            <FileText className="size-5 text-primary" aria-hidden="true" /> Documentos para descargar
+          </h2>
+          <ul className="grid gap-2 sm:grid-cols-2" data-pdf-publicos>
+            {pdfsPublicos(d).map((pdf) => (
+              <li key={pdf.clave}>
+                <a href={pdf.url} target="_blank" rel="noopener noreferrer"
+                  className="flex min-h-11 items-center justify-between gap-3 rounded-xl border border-border bg-superficie px-4 py-2.5 text-sm font-semibold text-foreground transition-colors hover:border-primary/40 hover:text-primary">
+                  {pdf.nombre} <ExternalLink className="size-4 shrink-0" aria-hidden="true" /><span className="sr-only"> (PDF, se abre en otra pestaña)</span>
+                </a>
+              </li>
+            ))}
+          </ul>
+          <p className="text-xs text-tinta-2">
+            Documentos informativos elaborados por la inmobiliaria; no reemplazan la copia literal que emite SUNARP ni los
+            documentos que emite la municipalidad. El informe de la inspección técnica se consulta con una cuenta.
+          </p>
+        </section>
 
         {documentos.length > 0 && (
           <section aria-labelledby="titulo-docs" className={`${tarjeta} mt-8 space-y-4`}>

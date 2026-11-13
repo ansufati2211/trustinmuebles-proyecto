@@ -1,4 +1,5 @@
 import type { EstadoComercial, EstadoSemaforo } from "./types";
+import type { CategoriaUso } from "./usosLote";
 
 /*
  * v1.0 (etapa 2): filtros y orden del catálogo público. La URL usa los mismos nombres que la API
@@ -17,7 +18,16 @@ export interface FiltrosPublico {
   precioMin: string; precioMax: string; precioM2Min: string; precioM2Max: string; areaMin: string; areaMax: string;
   indicadorA: "" | EstadoSemaforo; tipoAlerta: string;
   orden: Orden; sentido: Sentido;
+  /**
+   * v1.0 (etapa 6), opcionales para no cambiar la forma anterior: zonificaciones de la guía de usos separadas por coma
+   * («RDM,CV»), el uso pedido (CASA, NEGOCIO, ALQUILAR o ALMACEN, según usos-lote.json) y si entran los inmuebles sin
+   * zonificación (solo si el comprador lo elige).
+   */
+  zonificacion?: string; uso?: "" | CategoriaUso; incluirSinZonificacion?: boolean;
 }
+
+/** v1.0 (etapa 6): usos que se pueden pedir como filtro (los de usos-lote.json). */
+export const USOS_FILTRO: CategoriaUso[] = ["CASA", "NEGOCIO", "ALQUILAR", "ALMACEN"];
 
 export const FILTROS_PUBLICO_VACIOS: FiltrosPublico = {
   proyecto: "", distrito: "", tipo: "", estadoComercial: "", moneda: "", precioMin: "", precioMax: "", precioM2Min: "",
@@ -86,6 +96,13 @@ export function filtrosDeLaUrl(p: URLSearchParams): FiltrosPublico {
     orden, sentido: sent === "asc" || sent === "desc" ? sent : sentidoPorOmision(orden),
   };
   for (const n of NUMEROS) f[n] = numeroValido(p.get(n));
+  // v1.0 (etapa 6): zonificación (códigos de letras y números), uso y la opción de incluir los sin zonificación.
+  const zon = (p.get("zonificacion") ?? "").toUpperCase().split(",").map((z) => z.trim())
+    .filter((z) => /^[A-Z0-9]{1,6}$/.test(z));
+  if (zon.length) f.zonificacion = [...new Set(zon)].join(",");
+  const uso = (p.get("uso") ?? "").toUpperCase();
+  if ((USOS_FILTRO as string[]).includes(uso)) f.uso = uso as CategoriaUso;
+  if (p.get("incluirSinZonificacion") === "true" && (f.zonificacion || f.uso)) f.incluirSinZonificacion = true;
   return f;
 }
 
@@ -103,6 +120,9 @@ export function filtrosALaUrl(f: FiltrosPublico, pagina = 0): URLSearchParams {
   for (const n of NUMEROS) if (f[n]) p.set(n, f[n]);
   if (f.indicadorA) p.set("indicadorA", f.indicadorA);
   if (f.tipoAlerta) p.set("tipoAlerta", f.tipoAlerta);
+  if (f.zonificacion) p.set("zonificacion", f.zonificacion);
+  if (f.uso) p.set("uso", f.uso);
+  if (f.incluirSinZonificacion && (f.zonificacion || f.uso)) p.set("incluirSinZonificacion", "true");
   if (f.orden !== "novedad") p.set("orden", f.orden);
   if (f.sentido !== sentidoPorOmision(f.orden)) p.set("sentido", f.sentido);
   if (pagina > 0) p.set("pagina", String(pagina + 1));
@@ -132,7 +152,20 @@ export function contarFiltros(f: FiltrosPublico): number {
   if (f.areaMin || f.areaMax) n++;
   if (f.indicadorA) n++;
   if (f.tipoAlerta) n++;
+  if (f.zonificacion) n++;
+  if (f.uso) n++;
   return n;
+}
+
+/**
+ * v1.0 (etapa 6): ruta de la API con todos los inmuebles que cumplen los filtros (sin vendidos, en forma compacta), para
+ * que el asistente elija sus recomendaciones sobre el total y no solo sobre la página que se ve.
+ */
+export function rutaRecomendables(f: FiltrosPublico): string {
+  const p = filtrosALaUrl(f);
+  p.set("orden", f.orden);
+  p.set("sentido", f.sentido);
+  return `/publico/inmuebles/recomendables?${p.toString()}`;
 }
 
 export const hayFiltrosPublico = (f: FiltrosPublico) => contarFiltros(f) > 0;

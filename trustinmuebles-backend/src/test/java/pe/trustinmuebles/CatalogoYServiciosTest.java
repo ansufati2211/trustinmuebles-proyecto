@@ -164,11 +164,12 @@ class CatalogoYServiciosTest extends BaseApiTest {
             emitir(SANTIAGO, especialista(), i).andExpect(status().isOk())
                     .andExpect(jsonPath("$.evaluacionTecnica.profesional").value("Ing. Carlos Alberto Mendoza Quispe"))
                     .andExpect(jsonPath("$.evaluacionTecnica.profesionalEspecialidad").value("Ingeniero Civil"))
-                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value("CIP N.° 248910"));
-            String guardado = jdbc.queryForObject("select profesional || ' | ' || colegiatura from evaluacion_tecnica "
+                                        // v1.0 (etapa 6): la cuenta no tiene colegiatura y la que manda el cliente se ignora.
+                    .andExpect(jsonPath("$.evaluacionTecnica.colegiatura").value(org.hamcrest.Matchers.nullValue()));
+            String guardado = jdbc.queryForObject("select profesional || ' | ' || coalesce(colegiatura, 'sin colegiatura') from evaluacion_tecnica "
                     + "where expediente_id = (select e.id from expediente e join caso_lote c on c.id = e.caso_id "
                     + "where c.codigo = ?)", String.class, SANTIAGO);
-            assertThat(guardado).isEqualTo("Ing. Carlos Alberto Mendoza Quispe | CIP N.° 248910");
+            assertThat(guardado).isEqualTo("Ing. Carlos Alberto Mendoza Quispe | sin colegiatura");
         } finally {
             limpiarInspeccion(SANTIAGO);
         }

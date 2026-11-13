@@ -45,13 +45,14 @@ class CasosSeeder implements ApplicationRunner {
     private final InspeccionService inspeccion;
     private final ObjectMapper json;
     private final HistorialAutorizacionRepository autorizaciones;
+    private final org.springframework.jdbc.core.JdbcTemplate jdbc;
     private final boolean habilitado;
     private final String version;
 
     CasosSeeder(CasoLoteRepository casos, ExpedienteRepository expedientes, ExpedienteService servicio,
             ClasificacionService clasificacion, ChecklistService checklist, GlosarioService glosario,
             AuthService auth, InspeccionService inspeccion, ObjectMapper json,
-            HistorialAutorizacionRepository autorizaciones,
+            HistorialAutorizacionRepository autorizaciones, org.springframework.jdbc.core.JdbcTemplate jdbc,
             @Value("${app.seed.enabled}") boolean habilitado,
             @Value("${app.reglas.version}") String version) {
         this.casos = casos;
@@ -64,6 +65,7 @@ class CasosSeeder implements ApplicationRunner {
         this.inspeccion = inspeccion;
         this.json = json;
         this.autorizaciones = autorizaciones;
+        this.jdbc = jdbc;
         this.habilitado = habilitado;
         this.version = version;
     }
@@ -75,7 +77,9 @@ class CasosSeeder implements ApplicationRunner {
         Long responsable = auth.primerRevisor().orElseThrow(
                 () -> new IllegalStateException("No hay una cuenta con rol REVISOR para registrar los casos")).id();
 
-        for (CasoJson c : leerCasos()) {
+        List<CasoJson> contenido = leerCasos();
+        List<CasoJson> existentes = new ArrayList<>();
+        for (CasoJson c : contenido) {
             if (!casos.existsByCodigo(c.codigo())) {
                 var previo = casos.findByCodigo("SIM-" + c.codigo());
                 if (previo.isPresent()) {
@@ -86,9 +90,14 @@ class CasosSeeder implements ApplicationRunner {
                     servicio.limpiarPrefijoSimulado(expPrevio);
                 }
             }
-            if (casos.existsByCodigo(c.codigo())) completar(c);
-            else crear(c, responsable);
+            if (casos.existsByCodigo(c.codigo())) {
+                completar(c);
+                existentes.add(c);
+            } else {
+                crear(c, responsable);
+            }
         }
+        ajustarContenido(existentes);
         for (Expediente e : expedientes.findAll()) {
             if (clasificacion.necesitaRecalculo(e.getId(), e.getVersion())) {
                 clasificacion.recalcular(e.getId(), e.getVersion(), ExpedienteService.entrada(e),
@@ -97,6 +106,22 @@ class CasosSeeder implements ApplicationRunner {
             // v0.7: una base anterior al historial recibe una fila inicial por caso; si ya la tiene, no se duplica.
             clasificacion.registrarInicialSiFalta(e.getId());
         }
+    }
+
+    /** Marca de los ajustes de la etapa 6 (titulares reservados y ficha registral) en una base existente. */
+    static final String AJUSTE_ETAPA_6 = "v1.0-etapa-6-titulares-y-ficha";
+
+    /**
+     * v1.0 (etapa 6): una sola vez por base. Los casos que ya existían reciben los textos nuevos de sus asientos (si
+     * nadie los editó) y su ficha registral regenerada; una base nueva ya los crea así y solo queda marcada.
+     */
+    private void ajustarContenido(List<CasoJson> existentes) {
+        Integer hecho = jdbc.queryForObject("select count(*) from ajuste_contenido where clave = ?", Integer.class,
+                AJUSTE_ETAPA_6);
+        if (hecho != null && hecho > 0) return;
+        for (CasoJson c : existentes) servicio.ajustarContenidoPrecargado(c.codigo(), c.datos().asientos());
+        jdbc.update("insert into ajuste_contenido (clave, aplicado_en) values (?, ?)", AJUSTE_ETAPA_6,
+                java.sql.Timestamp.from(java.time.Instant.now()));
     }
 
     private void crear(CasoJson c, Long responsableId) {

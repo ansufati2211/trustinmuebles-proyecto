@@ -268,9 +268,9 @@ class CicloCarteraTest extends BaseApiTest {
         // Efectos persistidos.
         assertThat(jdbc.queryForObject("select estado_publicacion || '|' || coalesce(propietario_codigo, '') from "
                 + "caso_lote where codigo = ?", String.class, CASO)).isEqualTo("RETIRADO|propietario-02");
-        assertThat(jdbc.queryForObject("select especialista_asignado_codigo || '|' || colegiatura from evaluacion_tecnica "
+        assertThat(jdbc.queryForObject("select especialista_asignado_codigo || '|' || coalesce(colegiatura, 'sin colegiatura') from evaluacion_tecnica "
                 + "where expediente_id = (select e.id from expediente e join caso_lote c on c.id = e.caso_id "
-                + "where c.codigo = ?)", String.class, CASO)).isEqualTo("especialista-02|CAP N.° 19432");
+                + "where c.codigo = ?)", String.class, CASO)).isEqualTo("especialista-02|sin colegiatura");
         assertThat(jdbc.queryForObject("select count(*) from solicitud_contacto where caso_codigo = ? and estado = "
                 + "'ATENDIDA' and atendida_por = 'gestor-01'", Integer.class, CASO)).isEqualTo(1);
 

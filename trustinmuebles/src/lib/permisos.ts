@@ -76,6 +76,14 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
   return enlaces;
 }
 
+/** v1.0 (etapa 6): una opción del menú ☰ (pantallas de menos de 1024 px): las vistas del rol y «Cómo funciona». */
+export interface OpcionMenu { clave: Vista | "como-funciona"; etiqueta: string; ruta: string }
+
+/** v1.0 (etapa 6): todas las opciones del rol para el menú ☰, en el mismo orden que el menú de escritorio. */
+export function opcionesMenuMovil(rol: Rol | undefined): OpcionMenu[] {
+  return [...navegacion(rol), { clave: "como-funciona", etiqueta: "Cómo funciona", ruta: "/" }];
+}
+
 /** Qué enlace del menú resaltar según la ruta. El detalle de un expediente cuenta como «Expedientes». */
 export function claveDeRuta(ruta: string): Vista | null {
   if (ruta === "/") return "inicio";

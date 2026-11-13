@@ -23,9 +23,9 @@
         "fechaInscripcion": "2019-08-20",
         "tituloNumero": "2019-00041577",
         "fechaPresentacion": "2019-08-12",
-        "texto": "Por escritura pública de fecha 08 de agosto de 2019, otorgada ante notario público de Ica, Inversiones Rincón del Sauce S.R.L. transfirió en compraventa el predio a favor de Marco Antonio Quispe Huamaní y Lucía Fernanda Torres Gutiérrez, en copropiedad por partes iguales. Precio: S/ 78,000.00.",
+        "texto": "Por escritura pública de fecha 08 de agosto de 2019, otorgada ante notario público de Ica, Inversiones Rincón del Sauce S.R.L. transfirió en compraventa el predio a favor de dos personas naturales (datos reservados), en copropiedad por partes iguales. Precio: S/ 78,000.00.",
         "canceloNumero": null,
-        "titulares": "Marco Antonio Quispe Huamaní (50 %) y Lucía Fernanda Torres Gutiérrez (50 %)"
+        "titulares": "Persona natural (datos reservados) (50 %) y Persona natural (datos reservados) (50 %)"
       },
       {
         "referencia": "D00001",
@@ -45,7 +45,7 @@
         "fechaInscripcion": "2020-11-10",
         "tituloNumero": "2020-00019644",
         "fechaPresentacion": "2020-11-03",
-        "texto": "Embargo en forma de inscripción hasta por la suma de S/ 12,000.00 sobre la cuota ideal del 50 % de Marco Antonio Quispe Huamaní, ordenado por el 2.° Juzgado Civil de Ica en el Expediente 2020-00231-0-1401-JR-CI-02, seguido por Comercial Andina del Sur S.A.C., sobre obligación de dar suma de dinero.",
+        "texto": "Embargo en forma de inscripción hasta por la suma de S/ 12,000.00 sobre la cuota ideal del 50 % de uno de los copropietarios (datos reservados), ordenado por el 2.° Juzgado Civil de Ica en el Expediente 2020-00231-0-1401-JR-CI-02, seguido por Comercial Andina del Sur S.A.C., sobre obligación de dar suma de dinero.",
         "canceloNumero": null,
         "titulares": null
       },
@@ -172,7 +172,7 @@
       "verifSanitarias": "OBSERVADO",
       "observaciones": "Aunque el plano arquitectónico coincide con lo construido, en la inspección se detectó cableado antiguo sin llave diferencial en el tablero y una filtración en la red sanitaria de la cocina.",
       "conclusiones": "Las observaciones son subsanables con mantenimiento preventivo. La estructura no presenta fisuras que comprometan su estabilidad a simple vista.",
-      "estudiosAdicionales": "Medición de aislamiento de la instalación eléctrica y prueba de estanqueidad de la red de agua antes de cualquier compra."
+      "estudiosAdicionales": "Medición de aislamiento de la instalación eléctrica y ensayo de estanqueidad de la red de agua antes de cualquier compra."
     }
   }
 }

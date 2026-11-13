@@ -52,7 +52,7 @@ const presentado = (e: EstadoPlano | undefined) => e === "PRESENTADO" || e === "
 
 /**
  * ¿Se puede elegir «Presentado» u «Observado» para este plano? Solo si ya tiene su PDF o si ya estaba presentado (por
- * ejemplo, las láminas generadas de los casos de demostración). Es la misma regla que aplica el servidor (422).
+ * ejemplo, las láminas generadas de los casos precargados). Es la misma regla que aplica el servidor (422).
  */
 export function puedeMarcarPresentado(plano: Pick<Plano, "estado" | "tieneDocumentoPropio"> | null | undefined): boolean {
   return !!plano && (plano.tieneDocumentoPropio || presentado(plano.estado));

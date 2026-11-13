@@ -16,6 +16,7 @@ import { abrirPdf, api, post, put } from "@/lib/api";
 import { useAuth } from "@/lib/auth";
 import { etapasStepper, pasosInspeccion } from "@/lib/etapas";
 import { soles } from "@/lib/formato";
+import { textoColegiatura } from "@/lib/publico";
 import { puedeAsignarEspecialista, puedeEmitirInforme, puedeSolicitarInspeccion, veBotonSolicitar } from "@/lib/permisos";
 import { ETIQUETA_ESPECIALIDAD, ETIQUETA_RESULTADO, ETIQUETA_VERIFICACION, PROCEDIMIENTO_INSPECCION, fecha } from "@/lib/semaforo";
 import type { DetalleCaso, EstadoTecnico, ResultadoTecnico, VerificacionCampo } from "@/lib/types";
@@ -129,12 +130,11 @@ function Credencial({ t }: { t: DetalleCaso["evaluacionTecnica"] }) {
           <p className="mt-0.5 text-xl font-extrabold tracking-tight text-foreground">{t.profesional}</p>
           <p className="mt-1 text-sm font-medium text-tinta-2">{t.profesionalEspecialidad ?? "Especialista de la inmobiliaria"}</p>
         </div>
-        {t.colegiatura && (
-          <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground">
-            <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
-            <span className="cifras">{t.colegiatura}</span>
-          </span>
-        )}
+        {/* v1.0 (etapa 6): sin número de colegiatura inventado; se registra al asignar al profesional. */}
+        <span className="inline-flex items-center gap-2 rounded-2xl border border-primary/20 bg-secondary px-4 py-2.5 text-sm font-bold text-secondary-foreground">
+          <ShieldCheck className="size-5 text-primary" aria-hidden="true" />
+          <span className="cifras">{textoColegiatura(t.colegiatura)}</span>
+        </span>
       </div>
     </div>
   );
@@ -248,7 +248,7 @@ function FormularioInforme({ detalle, alCambiar }: { detalle: DetalleCaso; alCam
         </span>
         <div>
           <h3 className="text-lg font-extrabold tracking-tight text-foreground">Informe técnico</h3>
-          <p className="mt-0.5 text-sm text-tinta-2">Solo el especialista lo llena. Tu nombre, especialidad y colegiatura se toman de tu cuenta.</p>
+          <p className="mt-0.5 text-sm text-tinta-2">Solo el especialista lo llena. Tu nombre y tu especialidad se toman de tu cuenta; la colegiatura se registra al asignar al profesional.</p>
         </div>
       </div>
 

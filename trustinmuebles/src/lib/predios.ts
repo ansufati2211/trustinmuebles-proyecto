@@ -1,3 +1,4 @@
+import { FOTOS_LIBRES } from "./creditos";
 import type { TipoInmueble } from "./types";
 
 /** Variantes de la ilustración del predio. Son dibujos propios (SVG), no fotos: no muestran el inmueble real. */
@@ -69,17 +70,21 @@ export const textoAlternativo = (c: ConfigPredio) =>
  * (Wikimedia Commons, licencias libres CC / dominio público; ver public/img/casas/CREDITOS.md).
  * En la interfaz llevan el rótulo «Imagen referencial».
  */
+/**
+ * v1.0 (etapa 6): la foto de un predio, solo si su licencia es libre (está en FOTOS_LIBRES de lib/creditos.ts). Las que
+ * eran «Referencial académico» ya no se muestran: el predio usa su ilustración hasta que se agreguen fotos de Unsplash.
+ */
+export function fotoDePredio(codigo: string): { archivo: string; descripcion: string } | undefined {
+  const clave = codigo.replace(/^(SIM|INT)-/, "");
+  return FOTOS_LIBRES[clave] ? FOTOS_PREDIO[clave] : undefined;
+}
+
 export const FOTOS_PREDIO: Record<string, { archivo: string; descripcion: string }> = {
   "11048217": { archivo: "casa-1.jpg", descripcion: "vivienda peruana de un piso en buen estado con reja frontal, cochera y árbol en la acera" },
   "11052690": { archivo: "casa-2.jpg", descripcion: "vivienda en urbanización peruana con fachada de ladrillo caravista, reja y portón de cochera" },
-  "11061555": { archivo: "casa-3.jpg", descripcion: "vivienda en Subtanjalla, Ica, de fachada crema con rejas blancas de seguridad y retiro frontal" },
   "11070419": { archivo: "casa-4.jpg", descripcion: "vivienda peruana de fachada clara con borde terracota y dos portones de madera de cochera" },
   "11075836": { archivo: "casa-5.jpg", descripcion: "vivienda urbana peruana de fachada crema y gris con portón de madera y árbol al frente" },
-  "11087751": { archivo: "casa-6.jpg", descripcion: "vivienda de un piso en Ica con humedad por capilaridad en la base del muro frontal y árbol en la acera" },
-  "11093320": { archivo: "casa-7.jpg", descripcion: "vivienda de un piso en Ica con fachada blanca, portón metálico y cerros áridos al fondo" },
   "11098467": { archivo: "casa-8.jpg", descripcion: "vivienda peruana de un piso pintado con ampliación de segundo piso en ladrillo sin tarrajear" },
-  "11104029": { archivo: "casa-9.jpg", descripcion: "vivienda en urbanización de Ica con fachada blanca, reja de ingreso, portón de madera y huarango" },
   "11081204": { archivo: "lote-santiago.jpg", descripcion: "lote urbano cercado con muro de ladrillo sobre terreno costero en habilitación urbana peruana" },
-  "11045763": { archivo: "lote-huarmey.jpg", descripcion: "terrenos costeros frente al mar y cerros desérticos en la zona de playa de Huarmey, Áncash" },
   "80194645": { archivo: "lote-supe.jpg", descripcion: "terreno eriazo arenoso al pie de los cerros y el valle de Supe, Barranca" },
 };

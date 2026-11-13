@@ -273,7 +273,7 @@ export default function RegistrarPartida() {
               <Campo
                 etiqueta="Número de partida"
                 error={numero !== "" && origen !== "" && !numeroValido
-                  ? (simulada ? "Código interno de ocho dígitos." : "Ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600).")
+                  ? (simulada ? "Código interno: INT- y ocho dígitos (por ejemplo INT-99000404)." : "Ocho dígitos, con una letra inicial opcional (por ejemplo 11012345 o P07044600).")
                   : undefined}
               >
                 {(p) => <input {...p} className={claseCampo} maxLength={12} value={numero} onChange={(e) => setNumero(e.target.value.toUpperCase().replace(/\s/g, ""))} />}

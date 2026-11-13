@@ -813,3 +813,58 @@ parámetros urbanísticos de la municipalidad antes de comprar». No interviene 
 recomendaciones) y una frase que no da resultados, para mostrar cómo responde el asistente.
 **Pruebas:** `lib/asistente.test.ts` (45, de las cuales más de 30 son frases), `lib/usosLote.test.ts`,
 `pages/asistente.test.tsx` y casos nuevos en `lib/interes.test.ts`.
+
+## D67. v1.0 (etapa 6): realismo del contenido (V22)
+
+**Palabras de prueba.** Se quitaron de la interfaz y de las semillas «demostración», «prueba», «ficticio», «simulado» y
+«de ejemplo»: los mensajes «Prueba con…» pasan a «Intenta con…» (catálogo, asistente, expedientes); la fuente de un registro
+interno es «Registro interno de cartera» (antes «Partida simulada para demostración»); el generador de carga usa
+«Inmobiliaria Arenales del Sur S.A.C.»; el ejemplo de acreedor es «Banco Andino del Sur S.A.»; los informes precargados dicen
+«ensayo de presión» y «ensayo de estanqueidad»; los comentarios de la interfaz que las usaban se reescribieron. Los nombres
+internos (`SIMULADA_DEMOSTRACION`, `PARTIDA_SIMULADA`, `sintetico`) no se ven y no cambian. `lib/realismo.test.ts` revisa
+todos los archivos de la interfaz y `RealismoContenidoTest` las semillas.
+**Asistente.** (a) Filtros aditivos `zonificacion`, `uso` e `incluirSinZonificacion` en `/publico/inmuebles` y en la URL
+(campos opcionales de `FiltrosPublico`, así la forma anterior no cambia). El uso pedido se aplica con la guía de usos:
+`contenido/usos-lote.json` se copió al servidor (`UsosLote`) y una prueba en cada lado exige que las dos copias sean
+iguales. Un inmueble sin zonificación, o con una que la guía no conoce, solo entra si el comprador marca «Incluir también
+los inmuebles sin zonificación registrada». La página aplica el uso del asistente como filtro `uso`; la interpretación de la
+frase lo sigue dejando aparte (`Interpretacion.uso`). (b) `GET /publico/inmuebles/recomendables` da todos los que cumplen
+el filtro (sin vendidos, compactos, con el color de A leído de su columna; tope 2000) y el asistente recomienda sobre ese
+total, no sobre la página visible. Con empate de puntaje se prefiere otro proyecto y luego otra manzana; la variedad nunca
+deja pasar a uno de menor puntaje.
+**Menú ☰.** Por debajo de 1024 px, para todos los roles, el botón ☰ (`aria-expanded`, `aria-controls`, nombre «Abrir el
+menú»/«Cerrar el menú») despliega todas las opciones del rol y «Cómo funciona». Al abrir, el foco va a la primera opción;
+Escape cierra y devuelve el foco al botón; flechas, Inicio y Fin recorren; elegir una opción, cambiar de ruta o hacer clic
+fuera lo cierra. El menú de escritorio se ve desde 1024 px y el enlace principal sigue en la barra desde 640 px.
+**INT-.** El registro interno de cartera acepta `INT-########` (y `SIM-########`, para no romper lo existente). El kit y
+el guion usan `INT-99000404`; el texto para pegar ya no dice «ficticia» ni «demostración».
+**Titulares.** En los 8 casos precargados con personas, titulares y textos de asientos dicen «Persona natural (datos
+reservados)» (o «dos personas naturales (datos reservados)», etc.). La titularidad solo se mira para saber si consta, así
+que ningún color cambia (11048217 y 11052690 incluidos). En una base existente, `CasosSeeder` aplica el cambio una vez
+(marca en `ajuste_contenido`) a los casos que nadie editó (sin historial de origen EDICION) y regenera su ficha.
+**Ficha pública.** Sin sesión, «Partida N.° 1105••••» (primeros 4 caracteres); con sesión, completa. La tarjeta del
+catálogo y la dirección `#/inmuebles/{código}` siguen usando el código completo (una prueba de la etapa 3a exige la
+tarjeta así).
+**PDF.** La partida pasa a «Ficha registral del inmueble», con el encabezado «TRUSTINMUEBLES · INMOBILIARIA EN ICA», la
+zona y la oficina como datos (no como encabezado de oficina) y el pie «Documento informativo elaborado por la inmobiliaria;
+no reemplaza la copia literal que emite SUNARP». Ya no imprime tomo del diario, derechos cobrados ni recibo (sí la hora de
+presentación derivada). Informe técnico, láminas y documentos del lote llevan el rótulo de la inmobiliaria
+(`RotuloInmobiliaria`) y su autor en los metadatos. Ninguno lleva escudo, sello, firma ni código de verificación.
+**PDF sin sesión.** `GET /publico/inmuebles/{c}/documento`, `.../planos/{e}/documento` y `.../documentos-lote/{t}/documento`
+solo para casos PUBLICADOS (borrador o retirado: 404). La ficha registral pública se genera al momento con la partida
+oculta (nunca se entrega un PDF subido); las láminas y documentos generados también la ocultan. El informe técnico B
+sigue pidiendo sesión. La ficha pública los enlaza en «Documentos para descargar».
+**Especialistas.** V22 vacía la colegiatura de las cuentas de especialista y de los informes guardados; la semilla ya no la
+pone. El perfil profesional exige solo el nombre. La interfaz y el PDF dicen «Colegiatura: se registra al asignar al
+profesional».
+**Fotos.** Solo las de licencia libre de `CREDITOS.md` (7 de Wikimedia Commons y 4 de Unsplash, en `lib/creditos.ts`). Las 5
+«Referencial académico» se retiraron del repositorio y esas fichas muestran la ilustración propia. Página «Créditos de
+imágenes» (`#/creditos`) enlazada en el pie.
+**No indexar.** `app.sitio.indexable=false` por omisión (`APP_SITIO_INDEXABLE`): `GET /robots.txt` da `Disallow: /` y
+`index.html` trae `<meta name="robots" content="noindex, nofollow">`; al cargar, la interfaz consulta `/publico/sitio` y
+solo la cambia si es indexable. Vite y nginx reenvían `/robots.txt` al servidor.
+**Pruebas:** `RealismoContenidoTest`, `RealismoUnidadTest`, `MigracionRealismoTest`, `RegistrarPartidaTest` (INT-),
+`lib/realismo.test.ts`, `pages/realismo.test.tsx`. Ajustadas conservando lo que verifican: `CopiaLiteralPdfTest`,
+`CasosApiTest`, `RegistrarPartidaTest`, `MotorClasificacionTest` (titulares), `CatalogoYServiciosTest`, `CarteraTest` y
+`CicloCarteraTest` (la colegiatura que manda el cliente se sigue ignorando; ahora queda vacía), `CargaCatalogoTest`
+(empresa del generador).

@@ -1,4 +1,4 @@
-# Partida de demostración (FICTICIA): captación en vivo con revisor-01
+# Partida para la demo: captación en vivo con revisor-01
 
 > **Todo en esta partida es inventado**: número, predio, títulos, montos y banco. No corresponde a ningún predio real
 > ni a ninguna persona. No contiene nombres, DNI, teléfonos ni domicilios de personas naturales: el titular figura como
@@ -75,7 +75,7 @@ y luego el gestor publica; el color del indicador A no lo impide.
 ## 2. Texto para copiar
 
 ```text
-PARTIDA N.° 99000404 (FICTICIA, SOLO PARA DEMOSTRACIÓN)
+PARTIDA N.° 99000404 (REGISTRO INTERNO DE CARTERA)
 Zona Registral N.° XI - Sede Ica · Oficina Registral de Ica · Registro de Predios
 
 RUBRO A: ANTECEDENTE DOMINIAL
@@ -96,7 +96,7 @@ COMPRAVENTA. Se inscribe el dominio del predio a favor de persona natural, datos
 
 RUBRO D: GRAVÁMENES Y CARGAS
 D00001
-HIPOTECA. Se constituye hipoteca sobre el predio a favor de BANCO FICTICIO DEL PACÍFICO S.A., hasta por la suma de S/ 90,000.00, en garantía de un préstamo. Título N.° 2015-00040402. Fecha de presentación: 10/03/2015. Fecha de inscripción: 24/03/2015.
+HIPOTECA. Se constituye hipoteca sobre el predio a favor de BANCO ANDINO DEL PACÍFICO S.A., hasta por la suma de S/ 90,000.00, en garantía de un préstamo. Título N.° 2015-00040402. Fecha de presentación: 10/03/2015. Fecha de inscripción: 24/03/2015.
 
 RUBRO E: CANCELACIONES
 E00001

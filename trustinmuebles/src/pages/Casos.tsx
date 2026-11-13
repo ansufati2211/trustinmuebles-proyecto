@@ -309,7 +309,7 @@ export default function Casos() {
               titulo="Ningún inmueble cumple estos filtros"
               accion={<Button onClick={limpiar}><FunnelX aria-hidden="true" /> Limpiar filtros</Button>}
             >
-              Prueba con otro color o estado, o quita algún filtro. Los filtros se combinan: el inmueble debe cumplir todos.
+              Intenta con otro color o estado, o quita algún filtro. Los filtros se combinan: el inmueble debe cumplir todos.
             </Vacio>
           ) : (
             <Vacio icono={FolderOpen} titulo="Todavía no hay inmuebles en la cartera">

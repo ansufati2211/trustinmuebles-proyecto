@@ -26,13 +26,14 @@ import pe.trustinmuebles.inspeccion.VerificacionCampo;
 /**
  * Informe técnico de la inspección presencial (indicador B), en PDF.
  *
- * Es un documento referencial ficticio: el profesional y su colegiatura son de demostración, no lleva sello ni firma, y
- * cada página dice que no es un informe real ni tiene valor legal. Solo se genera cuando el informe fue emitido.
+ * Es un documento referencial con el rotulado de la inmobiliaria: no lleva sello ni firma, no imita el formato de un
+ * colegio profesional, y cada página dice que no tiene valor legal. Solo se genera cuando el informe fue emitido.
  */
 final class InformeTecnicoPdf {
     static final String MARCA_DE_AGUA = "INFORME TÉCNICO REFERENCIAL · SIN FIRMA NI SELLO";
-    static final String PIE = "Informe técnico referencial. No está firmado ni sellado por un profesional y no tiene valor legal.";
+    static final String PIE = "Informe técnico referencial elaborado por la inmobiliaria. No está firmado ni sellado por un profesional y no tiene valor legal.";
     static final String CIERRE = "[Sin firma: documento referencial]";
+    static final String COLEGIATURA_PENDIENTE = "se registra al asignar al profesional";
 
     /** Un plano del expediente tal como lo muestra el informe. */
     record PlanoResumen(String especialidad, String estado, String detalle, VerificacionCampo verificacion) {}
@@ -60,7 +61,8 @@ final class InformeTecnicoPdf {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle("Informe técnico referencial " + limpiar(d.partida(), normal));
             info.setSubject("Informe técnico referencial. Sin firma ni sello. Sin valor legal.");
-            info.setCreator("Trustinmuebles");
+            info.setCreator(RotuloInmobiliaria.NOMBRE);
+            info.setAuthor(RotuloInmobiliaria.NOMBRE);
             doc.setDocumentInformation(info);
 
             int total = paginas.size();
@@ -111,7 +113,9 @@ final class InformeTecnicoPdf {
         if (t.profesionalEspecialidad() != null) {
             parrafo(l, "Especialidad: " + t.profesionalEspecialidad(), normal, 10f, 0f, 2f, ancho, false);
         }
-        parrafo(l, "Colegiatura: " + valor(t.colegiatura()), normal, 10f, 0f, 2f, ancho, false);
+        // v1.0 (etapa 6): sin número de colegiatura inventado; se registra al asignar al profesional.
+        parrafo(l, "Colegiatura: " + (t.colegiatura() == null || t.colegiatura().isBlank() ? COLEGIATURA_PENDIENTE
+                : t.colegiatura()), normal, 10f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección solicitada el: " + fecha(t.fechaSolicitud()), normal, 10f, 0f, 2f, ancho, false);
         parrafo(l, "Inspección presencial realizada el: " + fecha(t.fechaInspeccion()), normal, 10f, 0f, 2f, ancho, false);
 
@@ -253,8 +257,9 @@ final class InformeTecnicoPdf {
     private static void encabezado(PDPageContentStream cs, Datos d, PDFont normal, PDFont negrita) throws IOException {
         float arriba = PDRectangle.A4.getHeight() - MARGEN;
         cs.setNonStrokingColor(0f);
-        texto(cs, "INFORME TÉCNICO DE INSPECCIÓN · REFERENCIAL", negrita, 8.5f, MARGEN, arriba - 8f);
-        texto(cs, "Evaluación técnica presencial · Indicador B", normal, 8.5f, MARGEN, arriba - 21f);
+        // v1.0 (etapa 6): rotulado de la inmobiliaria; no imita el formato de un colegio profesional.
+        texto(cs, RotuloInmobiliaria.ENCABEZADO, negrita, 8.5f, MARGEN, arriba - 8f);
+        texto(cs, "Informe técnico de inspección · referencial · Indicador B", normal, 8.5f, MARGEN, arriba - 21f);
         texto(cs, "Partida N.° " + limpiar(d.partida(), negrita), negrita, 11f, MARGEN, arriba - 40f);
         cs.setStrokingColor(0.35f);
         cs.setLineWidth(0.6f);

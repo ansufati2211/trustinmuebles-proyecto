@@ -101,7 +101,8 @@ public class AuthService {
     }
 
     private static Optional<PerfilProfesional> perfil(Usuario u) {
-        if (u.getNombreCompleto() == null || u.getColegiatura() == null) return Optional.empty();
+        // v1.0 (etapa 6): basta el nombre; la colegiatura puede faltar (se registra al asignar al profesional).
+        if (u.getNombreCompleto() == null) return Optional.empty();
         return Optional.of(new PerfilProfesional(u.getCodigoCuenta(), u.getNombreCompleto(), u.getEspecialidad(),
                 u.getColegiatura()));
     }

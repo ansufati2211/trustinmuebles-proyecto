@@ -40,11 +40,12 @@ class DemoUsuariosSeeder implements ApplicationRunner {
 
     static final String ESPECIALISTA_02_NOMBRE = "Arq. Valeria Sofía Paredes Rojas";
     static final String ESPECIALISTA_02_ESPECIALIDAD = "Arquitecto";
-    static final String ESPECIALISTA_02_COLEGIATURA = "CAP N.° 19432";
+    /** v1.0 (etapa 6): sin número de colegiatura; se registra al asignar al profesional real. */
+    static final String ESPECIALISTA_02_COLEGIATURA = null;
 
     static final String ESPECIALISTA_NOMBRE = "Ing. Carlos Alberto Mendoza Quispe";
     static final String ESPECIALISTA_ESPECIALIDAD = "Ingeniero Civil";
-    static final String ESPECIALISTA_COLEGIATURA = "CIP N.° 248910";
+    static final String ESPECIALISTA_COLEGIATURA = null;
 
     static final String FUNCION_GESTOR = "Asesor comercial";
     static final String FUNCION_ASESOR = "Asesor inmobiliario";
@@ -66,7 +67,7 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         if (faltan.isEmpty()) return;
         if (password == null || password.length() < 8) {
             throw new IllegalStateException(
-                    "Define APP_SEED_PASSWORD (mínimo 8 caracteres) para crear las cuentas de prueba, "
+                    "Define APP_SEED_PASSWORD (mínimo 8 caracteres) para crear las cuentas iniciales, "
                             + "o desactiva la carga con app.seed.enabled=false.");
         }
         faltan.forEach(c -> auth.crearCuentaDePrueba(c.codigo(), password, c.rol()));

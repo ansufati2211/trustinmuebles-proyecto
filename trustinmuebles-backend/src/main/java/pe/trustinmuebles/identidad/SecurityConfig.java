@@ -85,6 +85,8 @@ class SecurityConfig {
                         .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html", "/actuator/health").permitAll()
                         // v1.0: portal público de solo lectura. Escribir ahí sin sesión da 401 (regla final).
                         .requestMatchers(HttpMethod.GET, "/api/v1/publico", "/api/v1/publico/**").permitAll()
+                        // v1.0 (etapa 6): robots.txt, sin sesión.
+                        .requestMatchers(HttpMethod.GET, "/robots.txt").permitAll()
                         // v1.0 (etapa 4): la única escritura pública es el interés con cita opcional (consentimiento
                         // obligatorio, campo trampa y límite por IP en el servicio).
                         .requestMatchers(HttpMethod.POST, "/api/v1/publico/interes").permitAll()

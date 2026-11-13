@@ -81,7 +81,7 @@ public class InspeccionService {
             throw new AccessDeniedException("Esta inspección está asignada a otro especialista");
         }
         PerfilProfesional perfil = identidad.perfilProfesional(especialistaId).orElseThrow(
-                () -> new ReglaNegocioException("Tu cuenta no tiene datos profesionales (nombre y colegiatura) para firmar el informe"));
+                () -> new ReglaNegocioException("Tu cuenta no tiene datos profesionales (nombre y especialidad) para firmar el informe"));
         return guardar(e, d, perfil);
     }
 

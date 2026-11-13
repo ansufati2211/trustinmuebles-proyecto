@@ -81,6 +81,11 @@ export function Footer() {
                   Iniciar sesión
                 </Link>
               </li>
+              <li>
+                <Link to="/creditos" className={enlaceInterno}>
+                  Créditos de imágenes
+                </Link>
+              </li>
             </ul>
           </nav>
 

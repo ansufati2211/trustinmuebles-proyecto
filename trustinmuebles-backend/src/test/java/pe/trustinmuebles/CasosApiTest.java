@@ -79,7 +79,7 @@ class CasosApiTest extends BaseApiTest {
         }
         mvc.perform(get("/api/v1/casos/" + TINGUINA).header("Authorization", comprador()))
                 .andExpect(jsonPath("$.expediente.titularidad",
-                        containsString("Marco Antonio Quispe Huamaní (50 %) y Lucía Fernanda Torres Gutiérrez (50 %)")));
+                        containsString("Persona natural (datos reservados) (50 %) y Persona natural (datos reservados) (50 %)")));
         mvc.perform(get("/api/v1/casos/NO-EXISTE").header("Authorization", comprador()))
                 .andExpect(status().isNotFound());
         mvc.perform(get("/api/v1/casos/..%2Fsecreto").header("Authorization", comprador()))
@@ -169,7 +169,7 @@ class CasosApiTest extends BaseApiTest {
                 .andExpect(jsonPath("$.evaluacion.estado").value("VERDE"))
                 .andExpect(jsonPath("$.evaluacion.alertas", hasSize(0)))
                 .andExpect(jsonPath("$.evaluacion.faltantes", hasSize(0)))
-                .andExpect(jsonPath("$.expediente.titularidad").value("Rosa Elena Cárdenas Vilca (100 %)"))
+                .andExpect(jsonPath("$.expediente.titularidad").value("Persona natural (datos reservados) (100 %)"))
                 .andExpect(jsonPath("$.expediente.asientos", hasSize(4)))
                 .andExpect(jsonPath("$.expediente.asientos[?(@.referencia=='D00001')].estado", contains("CANCELADA")))
                 .andExpect(jsonPath("$.evaluacion.motivos[*].texto",
@@ -378,14 +378,14 @@ class CasosApiTest extends BaseApiTest {
         try {
             ObjectNode p = peticion(original);
             p.put("titularidad", "Persona que no consta en la partida"); // campo que no existe en el contrato: se ignora
-            ((ObjectNode) p.get("asientos").get(0)).put("titulares", "Julia Mariela Ayala Condori (100 %)");
+            ((ObjectNode) p.get("asientos").get(0)).put("titulares", "Comercial Las Dunas S.A.C. (100 %)");
             actualizarExpediente(PARCONA, revisor(), p).andExpect(status().isOk())
-                    .andExpect(jsonPath("$.expediente.titularidad").value("Julia Mariela Ayala Condori (100 %)"));
+                    .andExpect(jsonPath("$.expediente.titularidad").value("Comercial Las Dunas S.A.C. (100 %)"));
         } finally {
             restaurar(PARCONA, original);
         }
         assertThat(leer(PARCONA).get("expediente").get("titularidad").asString())
-                .isEqualTo("Rosa Elena Cárdenas Vilca (100 %)");
+                .isEqualTo("Persona natural (datos reservados) (100 %)");
     }
 
     @Test
@@ -460,7 +460,7 @@ class CasosApiTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Documento: cada caso trae su copia literal simulada, con marca, partida y rubros")
+    @DisplayName("Documento: cada caso trae su ficha registral, con marca, partida y rubros")
     void documentoDelCaso() throws Exception {
         byte[] pdf = mvc.perform(get("/api/v1/casos/" + TINGUINA + "/documento").header("Authorization", comprador()))
                 .andExpect(status().isOk()).andExpect(content().contentType(MediaType.APPLICATION_PDF))
@@ -469,9 +469,10 @@ class CasosApiTest extends BaseApiTest {
                 .andReturn().getResponse().getContentAsByteArray();
         assertThat(new String(pdf, 0, 5, java.nio.charset.StandardCharsets.ISO_8859_1)).isEqualTo("%PDF-");
         String texto = textoDelPdf(TINGUINA);
-        assertThat(texto).contains("Partida N.° 11052690", "COPIA LITERAL DE PARTIDA REGISTRAL", "TÍTULOS DE DOMINIO",
+        assertThat(texto).contains("Partida N.° 11052690", "FICHA REGISTRAL DEL INMUEBLE", "TÍTULOS DE DOMINIO",
                 "GRAVÁMENES Y CARGAS", "CANCELACIONES", "D00001 · HIPOTECA", "D00002 · EMBARGO", "E00001 · CANCELACIÓN",
-                "Marco Antonio Quispe Huamaní", "no está firmado");
+                "dos personas naturales (datos reservados)", "no está firmado",
+                "no reemplaza la copia literal que emite SUNARP");
         mvc.perform(get("/api/v1/casos/" + TINGUINA + "/documento")).andExpect(status().isUnauthorized());
     }
 

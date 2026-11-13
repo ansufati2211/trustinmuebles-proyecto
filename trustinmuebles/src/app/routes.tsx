@@ -14,6 +14,7 @@ import FichaLote from "@/pages/FichaLote";
 import ProyectosEquipo from "@/pages/ProyectosEquipo";
 import CargaLotes from "@/pages/CargaLotes";
 import Interesados from "@/pages/Interesados";
+import Creditos from "@/pages/Creditos";
 import { RequireAuth, RequireVista } from "@/lib/auth";
 
 export const router = createHashRouter([
@@ -26,6 +27,8 @@ export const router = createHashRouter([
       // v1.0: portal público, sin sesión. Solo inmuebles publicados (el servidor da 404 a los demás).
       { path: "inmuebles", Component: Inmuebles },
       { path: "inmuebles/:codigo", Component: FichaPublica },
+      // v1.0 (etapa 6): créditos de las imágenes, enlazados desde el pie.
+      { path: "creditos", Component: Creditos },
       // v1.0 (etapa 3a): página pública de un proyecto (plano de lotes) y ficha de un lote sin caso propio.
       { path: "proyectos/:codigo", Component: Proyecto },
       { path: "proyectos/:codigo/lotes/:lote", Component: FichaLote },

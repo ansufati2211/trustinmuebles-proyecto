@@ -23,14 +23,14 @@ final class ProteccionDatos {
             + "|\\bsociedad\\b|\\bcorporaci[oó]n\\b|\\bempresa\\b|\\basociaci[oó]n\\b|\\bfundaci[oó]n\\b|\\bmivivienda\\b)");
 
     /**
-     * v0.8: el acreedor de un gravamen solo se registra si es una persona jurídica (por ejemplo, «Banco Demo S.A.») o
+     * v0.8: el acreedor de un gravamen solo se registra si es una persona jurídica (por ejemplo, «Banco Andino del Sur S.A.») o
      * como «no consta». Una persona natural no se guarda (I11). Vacío es válido: el campo es opcional.
      */
     static void verificarAcreedor(String acreedor) {
         if (acreedor == null || acreedor.isBlank()) return;
         String a = acreedor.trim();
         if (a.equalsIgnoreCase("no consta") || PERSONA_JURIDICA.matcher(a).find()) return;
-        throw new IllegalArgumentException("acreedor: indica una persona jurídica (por ejemplo, «Banco Demo S.A.» o "
+        throw new IllegalArgumentException("acreedor: indica una persona jurídica (por ejemplo, «Banco Andino del Sur S.A.» o "
                 + "«Caja Municipal …») o «no consta». No se registran personas naturales");
     }
 

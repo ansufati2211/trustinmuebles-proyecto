@@ -36,11 +36,67 @@ class PublicoController {
             @RequestParam(required = false) String areaMin, @RequestParam(required = false) String areaMax,
             @RequestParam(required = false) String indicadorA, @RequestParam(required = false) String tipoAlerta,
             @RequestParam(required = false) String orden, @RequestParam(required = false) String sentido,
-            @RequestParam(required = false) String clase) {
+            @RequestParam(required = false) String clase, @RequestParam(required = false) String zonificacion,
+            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion) {
         FiltroPublico filtro = FiltroPublico.de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax,
-                precioM2Min, precioM2Max, areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase,
-                servicio.codigosDeAlerta());
+                precioM2Min, precioM2Max, areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, zonificacion,
+                uso, incluirSinZonificacion, servicio.codigosDeAlerta());
         return servicio.listarPublico(pagina, filtro);
+    }
+
+    /**
+     * v1.0 (etapa 6): todos los inmuebles que cumplen los filtros (no solo los de una página), en forma compacta, para
+     * que el asistente elija sus recomendaciones sobre el total. Los mismos filtros que el catálogo; sin vendidos; a lo
+     * sumo {@value ExpedienteService#MAXIMO_RECOMENDABLES}, en el orden pedido.
+     */
+    @GetMapping("/inmuebles/recomendables")
+    CasoDtos.Recomendables recomendables(@RequestParam(required = false) String proyecto,
+            @RequestParam(required = false) String distrito, @RequestParam(required = false) String tipo,
+            @RequestParam(required = false) String estadoComercial, @RequestParam(required = false) String moneda,
+            @RequestParam(required = false) String precioMin, @RequestParam(required = false) String precioMax,
+            @RequestParam(required = false) String precioM2Min, @RequestParam(required = false) String precioM2Max,
+            @RequestParam(required = false) String areaMin, @RequestParam(required = false) String areaMax,
+            @RequestParam(required = false) String indicadorA, @RequestParam(required = false) String tipoAlerta,
+            @RequestParam(required = false) String orden, @RequestParam(required = false) String sentido,
+            @RequestParam(required = false) String clase, @RequestParam(required = false) String zonificacion,
+            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion) {
+        FiltroPublico filtro = FiltroPublico.de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax,
+                precioM2Min, precioM2Max, areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, zonificacion,
+                uso, incluirSinZonificacion, servicio.codigosDeAlerta());
+        return servicio.recomendables(filtro);
+    }
+
+    // ------------------------------------------------- v1.0 (etapa 6): PDF de los casos publicados, sin sesión
+
+    /** Ficha registral del inmueble, con el número de partida parcialmente oculto. Borrador o retirado: 404. */
+    @GetMapping("/inmuebles/{codigo}/documento")
+    org.springframework.http.ResponseEntity<byte[]> fichaRegistral(@PathVariable String codigo) {
+        return pdf(servicio.fichaRegistralPublica(codigo));
+    }
+
+    /** Lámina de un plano presentado u observado de un caso publicado. */
+    @GetMapping("/inmuebles/{codigo}/planos/{especialidad}/documento")
+    org.springframework.http.ResponseEntity<byte[]> plano(@PathVariable String codigo,
+            @PathVariable pe.trustinmuebles.clasificacion.Especialidad especialidad) {
+        return pdf(servicio.planoDocumentoPublico(codigo, especialidad));
+    }
+
+    /** Documento del lote de un caso publicado. El informe técnico (B) no se ofrece aquí: sigue pidiendo sesión. */
+    @GetMapping("/inmuebles/{codigo}/documentos-lote/{tipo}/documento")
+    org.springframework.http.ResponseEntity<byte[]> documentoDelLote(@PathVariable String codigo,
+            @PathVariable pe.trustinmuebles.clasificacion.DocumentoLote tipo) {
+        return pdf(servicio.documentoLotePublico(codigo, tipo));
+    }
+
+    private static org.springframework.http.ResponseEntity<byte[]> pdf(ExpedienteService.DocumentoPlano d) {
+        return org.springframework.http.ResponseEntity.ok()
+                .contentType(org.springframework.http.MediaType.APPLICATION_PDF)
+                .header("X-Content-Type-Options", "nosniff")
+                .header("Content-Security-Policy", "default-src 'none'; sandbox")
+                .header("X-Robots-Tag", "noindex")
+                .header("Content-Disposition", "inline; filename=\"" + d.nombre() + "\"")
+                .cacheControl(org.springframework.http.CacheControl.noStore())
+                .body(d.datos());
     }
 
     /** Valores de los selectores de filtro: proyectos, distritos y tipos de alerta. */

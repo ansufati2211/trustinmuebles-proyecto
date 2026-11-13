@@ -21,7 +21,7 @@ export type ResultadoTecnico = "FAVORABLE" | "CON_OBSERVACIONES" | "CON_RIESGO";
 export type VerificacionCampo = "CONFORME" | "OBSERVADO" | "NO_VERIFICADO";
 export type EstadoSemaforo = "VERDE" | "AMARILLO" | "ROJO" | "GRIS";
 export type EstadoAnotacion = "VIGENTE" | "CANCELADA" | "DESCONOCIDO";
-/** SINTETICO: partida ficticia con prefijo SIM-. TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
+/** SINTETICO: registro interno de cartera (INT-, antes SIM-). TRANSCRITA: copiada de una consulta pública, sin personas naturales. */
 export type Origen = "SINTETICO" | "TRANSCRITA" | "PROYECTO";
 /** Origen que el revisor elige al captar una partida (ETP-1). */
 export type OrigenCaptacion = "TRANSCRITA_CONOCE_AQUI" | "SIMULADA_DEMOSTRACION";
@@ -132,6 +132,16 @@ export interface LotePublico {
 export interface PaginaPublica {
   items: InmueblePublico[]; pagina: number; tamano: number; total: number; totalPaginas: number;
 }
+
+/**
+ * v1.0 (etapa 6): GET /publico/inmuebles/recomendables. Todos los que cumplen los filtros (sin vendidos), en forma
+ * compacta, para que el asistente recomiende sobre el total; `truncado` si eran más de 2000.
+ */
+export interface InmuebleRecomendable {
+  codigo: string; denominacion: string; clase: ClaseInmueble; proyectoCodigo: string | null; lote: string | null;
+  estado: EstadoSemaforo | null; fuenteIndicadorA: FuenteIndicadorA; predio: Predio;
+}
+export interface Recomendables { items: InmuebleRecomendable[]; total: number; truncado: boolean }
 
 /** v1.0: una fila del historial de autorizaciones (GET /casos/{codigo}/autorizaciones). */
 export interface RegistroAutorizacion {

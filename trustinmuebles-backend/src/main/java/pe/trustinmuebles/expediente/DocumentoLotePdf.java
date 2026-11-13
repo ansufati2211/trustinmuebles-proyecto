@@ -55,7 +55,8 @@ final class DocumentoLotePdf {
             PDDocumentInformation info = new PDDocumentInformation();
             info.setTitle(seguro(tipo.etiqueta()) + " referencial " + seguro(d.partida()));
             info.setSubject("Documento técnico referencial. Sin sello ni firma.");
-            info.setCreator("Trustinmuebles");
+            info.setCreator(RotuloInmobiliaria.NOMBRE);
+            info.setAuthor(RotuloInmobiliaria.NOMBRE);
             doc.setDocumentInformation(info);
 
             PDPage pagina = new PDPage(PDRectangle.A4);
@@ -305,7 +306,7 @@ final class DocumentoLotePdf {
         texto(cs, seguro("Documento: " + tipo.etiqueta() + " · Partida N.° " + d.partida()), normal, 8f, IZQ + 6f, 99f);
         texto(cs, "Profesional: no consigna (documento referencial) · Fecha: "
                 + (d.fecha() == null ? "no consta" : d.fecha().format(FECHA)), normal, 8f, IZQ + 6f, 88f);
-        texto(cs, "Documento técnico referencial del expediente. No reemplaza el documento que emite la entidad competente.",
+        texto(cs, "Documento referencial de la inmobiliaria. No reemplaza el documento que emite la entidad competente.",
                 normal, 7.5f, IZQ + 6f, 77f);
         texto(cs, "HOJA", normal, 7f, DER - 52f, 108f);
         texto(cs, codigo, negrita, 14f, DER - 66f, 86f);

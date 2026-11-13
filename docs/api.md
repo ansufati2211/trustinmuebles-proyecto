@@ -402,3 +402,20 @@ Decisiones: `CAPTAR`, `CAPTAR_CON_CONDICIONES`, `NO_CAPTAR_POR_AHORA`. Motivos: 
 `{ "id", "casoCodigo", "decision", "decisionEtiqueta", "motivo", "motivoEtiqueta", "cuentaCodigo", "registradaEn" }`. No cambia A ni
 B ni bloquea publicar. `GET /casos/{c}/decisiones-captacion` (GESTOR, REVISOR) devuelve el historial, del más antiguo al más
 reciente; no hay rutas para editarlo ni borrarlo.
+
+## v1.0 (etapa 6): realismo del contenido
+
+- `GET /api/v1/publico/inmuebles` acepta además `zonificacion` (códigos de la guía de usos separados por coma: RDB, RDM,
+  RDA, CV, CZ, I1, I2; un alias como R4 vale por su zona), `uso` (`CASA`, `NEGOCIO`, `ALQUILAR` o `ALMACEN`: la zonificación
+  debe soler permitirlo con el área del inmueble, según `contenido/usos-lote.json`) e `incluirSinZonificacion` (`true` o
+  `false`, por omisión `false`). Un valor no válido da 400 con los aceptados.
+- `GET /api/v1/publico/inmuebles/recomendables` (sin sesión, mismos filtros): todos los que cumplen el filtro, sin vendidos,
+  en forma compacta (`codigo`, `denominacion`, `clase`, `proyectoCodigo`, `lote`, `estado`, `fuenteIndicadorA`, `predio`),
+  con `total` y `truncado` (a lo sumo 2000).
+- PDF sin sesión de un caso PUBLICADO (borrador, retirado o inexistente: 404): `GET /api/v1/publico/inmuebles/{c}/documento`
+  (ficha registral generada al momento, con la partida parcialmente oculta), `.../planos/{especialidad}/documento` y
+  `.../documentos-lote/{tipo}/documento`. El informe técnico B sigue en `GET /casos/{c}/inspeccion/documento`, con sesión.
+- `GET /robots.txt` (sin sesión): `Disallow: /` mientras `app.sitio.indexable` sea `false` (por omisión; variable
+  `APP_SITIO_INDEXABLE`). `GET /api/v1/publico/sitio` → `{ "indexable": false }`.
+- `POST /casos` con origen `SIMULADA_DEMOSTRACION` («Registro interno de cartera») acepta `INT-########` y, como antes,
+  `SIM-########`; la fuente del caso es «Registro interno de cartera».

@@ -1,4 +1,4 @@
-# Guion de la demo (versión actual, `d7803f8`): 24 pasos con SIM-99000404 y los lotes de la v0.9
+# Guion de la demo (versión actual, `d7803f8`): 24 pasos con INT-99000404 y los lotes de la v0.9
 
 Guion paso a paso de la versión actual de `main` (v0.9 + fotos + «Version real»). Los códigos, conteos y textos que aparecen en
 «Debe verse» se comprobaron el **9 de noviembre de 2026** con [recorrido-v09.mjs](../pruebas/uso-v09/recorrido-v09.mjs): 27 de 27
@@ -10,10 +10,10 @@ Este guion reemplaza a [partida-demo.md](partida-demo.md), que está desactualiz
 ## Qué cambió frente al guion de la v0.8
 
 - Los casos de Ica ya no llevan `SIM-`: `11048217` (Parcona), `11052690` (La Tinguiña), `11075836` (Pueblo Nuevo), etc.
-- El catálogo tiene **12 casos** (13 cuando se publica SIM-99000404), todos con foto y el rótulo «Imagen referencial».
+- El catálogo tiene **12 casos** (13 cuando se publica INT-99000404), todos con foto y el rótulo «Imagen referencial».
 - El login **no tiene tarjetas de cuentas**: hay que escribir el código.
-- El origen «Simulada para demostración» ahora se llama **«Registro interno de cartera»**, pero **sigue exigiendo `SIM-`**.
-- El informe lo firma **Arq. Valeria Sofía Paredes Rojas, CAP N.° 19432**, sin «Perfil ficticio de demostración».
+- El origen «Simulada para demostración» ahora se llama **«Registro interno de cartera»**, y desde la v1.0 (etapa 6) usa el prefijo **`INT-`** (`SIM-` se sigue aceptando).
+- El informe lo firma **Arq. Valeria Sofía Paredes Rojas** («Colegiatura: se registra al asignar al profesional»), sin «Perfil ficticio de demostración».
 - El pie y el login ya no dicen «simulado» ni «entorno académico» (paso 15).
 - Pasos nuevos de la v0.9: Santiago (documentos del lote), Huarmey y Supe (lotes de la SBN) y `propietario-03` (pasos 22 a 24).
 
@@ -21,7 +21,7 @@ Este guion reemplaza a [partida-demo.md](partida-demo.md), que está desactualiz
 
 ### 1. Dejar la base limpia
 
-Cierra todas las terminales del backend y de la interfaz. SIM-99000404 solo se puede registrar una vez y el informe del paso 12
+Cierra todas las terminales del backend y de la interfaz. INT-99000404 solo se puede registrar una vez y el informe del paso 12
 no se puede repetir sobre `11075836`: reinicia antes de cada ensayo.
 
 **PowerShell**, desde la raíz del proyecto:
@@ -89,7 +89,7 @@ contraseña y pulsa **Ingresar al sistema**. Cuentas: `comprador-01`, `revisor-0
 
 ### Casos que no se editan
 
-No edites `11048217`, `11052690`, `11061555` ni `11070419` (instrumento del estudio). Todo cambio se hace en SIM-99000404;
+No edites `11048217`, `11052690`, `11061555` ni `11070419` (instrumento del estudio). Todo cambio se hace en INT-99000404;
 `11048217` solo se abre para mirar en el paso 9, y `11075836` recibe la solicitud, el informe y la decisión de captación.
 `11081204`, `11045763` y `80194645` solo se miran.
 
@@ -99,8 +99,8 @@ No edites `11048217`, `11052690`, `11061555` ni `11070419` (instrumento del estu
 |---|---|
 | Origen de la partida | `Registro interno de cartera` |
 | Precio referencial en soles | `150000` |
-| Número de partida | `SIM-99000404` (con `SIM-`; sin él, el campo dice «Código interno de ocho dígitos.» y no deja registrar) |
-| Denominación del predio | `Mz. Z Lote 4 · Hab. Urb. Demostración · Ica` |
+| Número de partida | `INT-99000404` (con `INT-`; sin él, el campo dice «Código interno: INT- y ocho dígitos (por ejemplo INT-99000404).» y no deja registrar; `SIM-` se sigue aceptando) |
+| Denominación del predio | `Mz. Z Lote 4 · Hab. Urb. Brisas del Tacaraca · Ica` |
 | Código de cuenta del propietario | `propietario-02` |
 | Distrito | `Ica, Ica` |
 | Ubicación | `Mz. Z, Lote 4, distrito de Ica.` |
@@ -112,7 +112,7 @@ No edites `11048217`, `11052690`, `11061555` ni `11070419` (instrumento del estu
 | Completitud | `Completa` |
 | Fecha, zona y oficina | Déjalos como vienen |
 
-La titular es una empresa ficticia, Inmobiliaria Demo Sur S.A.C. El perímetro de 56.00 ml solo aparece en este texto.
+La titular es una empresa inventada, Inmobiliaria Arenales del Sur S.A.C. El perímetro de 56.00 ml solo aparece en este texto.
 
 ## Texto para pegar
 
@@ -120,28 +120,28 @@ Copia desde `PARTIDA` hasta la última línea, sin las marcas del bloque. (El re
 con el texto completo verás 4 asientos.)
 
 ```text
-PARTIDA N.° SIM-99000404 (FICTICIA, SOLO PARA DEMOSTRACIÓN)
+PARTIDA N.° INT-99000404 (REGISTRO INTERNO DE CARTERA)
 Zona Registral N.° XI - Sede Ica · Oficina Registral de Ica · Registro de Predios
 
 RUBRO A: ANTECEDENTE DOMINIAL
-Independizado de la partida N.° 40000404, que corresponde al lote matriz de la Habilitación Urbana Demostración.
+Independizado de la partida N.° 40000404, que corresponde al lote matriz de la Habilitación Urbana Brisas del Tacaraca.
 
 RUBRO B: DESCRIPCIÓN DEL INMUEBLE
-Mz. Z Lote 4 de la Habilitación Urbana Demostración, distrito, provincia y departamento de Ica. Vivienda.
+Mz. Z Lote 4 de la Habilitación Urbana Brisas del Tacaraca, distrito, provincia y departamento de Ica. Vivienda.
 Área del terreno: 160.00 m2. Perímetro: 56.00 ml.
 Linderos y medidas perimétricas:
-Por el frente: con la Calle Demostración, en 8.00 ml.
+Por el frente: con la Calle Los Huarangos, en 8.00 ml.
 Por la derecha entrando: con el Lote 5 de la Mz. Z, en 20.00 ml.
 Por la izquierda entrando: con el Lote 3 de la Mz. Z, en 20.00 ml.
 Por el fondo: con el Lote 15 de la Mz. Z, en 8.00 ml.
 
 RUBRO C: TÍTULOS DE DOMINIO
 C00001
-COMPRAVENTA. Se inscribe el dominio del predio a favor de Inmobiliaria Demo Sur S.A.C. (100 %). Precio pactado en soles, pagado según consta en el título. Título N.° 2014-00040401. Fecha de presentación: 03/02/2014. Fecha de inscripción: 17/02/2014.
+COMPRAVENTA. Se inscribe el dominio del predio a favor de Inmobiliaria Arenales del Sur S.A.C. (100 %). Precio pactado en soles, pagado según consta en el título. Título N.° 2014-00040401. Fecha de presentación: 03/02/2014. Fecha de inscripción: 17/02/2014.
 
 RUBRO D: GRAVÁMENES Y CARGAS
 D00001
-HIPOTECA. Se constituye hipoteca sobre el predio a favor de BANCO FICTICIO DEL PACÍFICO S.A., hasta por la suma de S/ 90,000.00, en garantía de un préstamo. Título N.° 2015-00040402. Fecha de presentación: 10/03/2015. Fecha de inscripción: 24/03/2015.
+HIPOTECA. Se constituye hipoteca sobre el predio a favor de BANCO ANDINO DEL PACÍFICO S.A., hasta por la suma de S/ 90,000.00, en garantía de un préstamo. Título N.° 2015-00040402. Fecha de presentación: 10/03/2015. Fecha de inscripción: 24/03/2015.
 
 RUBRO E: CANCELACIONES
 E00001
@@ -155,7 +155,7 @@ DECLARATORIA DE FÁBRICA. Se declara la fábrica de una vivienda de dos pisos co
 ## Orden de la presentación
 
 Pasos 1 a 13 → pasos 16 a 21 (v0.8) → pasos 22 a 24 (v0.9) → pasos 14 y 15 (retirar la autorización y cerrar con los límites).
-Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
+Retirar la autorización va al final porque saca INT-99000404 del catálogo.
 
 ## Recorrido
 
@@ -165,7 +165,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 - **Pantalla:** menú **Registrar partida** (`#/casos/nueva`)
 - **Botones, en orden:**
   1. **Origen de la partida**: `Registro interno de cartera` (las otras opciones: `Transcrita de Conoce Aquí (SUNARP)`).
-  2. Llena el resto de «Datos de la partida». Escribe el número **con** `SIM-`.
+  2. Llena el resto de «Datos de la partida». Escribe el número **con** `INT-`.
   3. Pega el texto en **Texto de la partida** y pulsa **Leer asientos**.
   4. **Tipo de predio** `Vivienda` y **Área construida inscrita (m²)** `90.00`.
   5. Deja los cuatro planos en `No presentado`.
@@ -180,8 +180,8 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 2. El comprador no ve el borrador
 
 - **Cuenta:** `comprador-01`
-- **Pantalla:** menú **Expedientes** (`#/casos`), luego la dirección `#/casos/SIM-99000404`
-- **Debe verse:** **12 casos**, sin SIM-99000404. Por dirección: «No encontramos este expediente en la cartera» (el servidor
+- **Pantalla:** menú **Expedientes** (`#/casos`), luego la dirección `#/casos/INT-99000404`
+- **Debe verse:** **12 casos**, sin INT-99000404. Por dirección: «No encontramos este expediente en la cartera» (el servidor
   responde 404).
 - **Frase:** «Aunque el comprador conozca el número, el servidor no le entrega un caso sin publicar».
 - **Plan B:** `04-comprador-no-ve-borrador.png`. El catálogo con sus 12 fotos está en `02-catalogo-comprador.png`.
@@ -189,7 +189,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 3. Otro propietario tampoco lo ve
 
 - **Cuenta:** `propietario-01`
-- **Pantalla:** **Mis inmuebles** (`#/mis-inmuebles`), luego `#/casos/SIM-99000404`
+- **Pantalla:** **Mis inmuebles** (`#/mis-inmuebles`), luego `#/casos/INT-99000404`
 - **Debe verse:** el caso no está en la lista. Por dirección: «No encontramos este expediente en la cartera».
 - **Frase:** «Cada propietario ve solo sus casos. Este pertenece a propietario-02».
 - **Plan B:** `05-propietario-ajeno.png`.
@@ -197,7 +197,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 4. El gestor no puede publicar sin autorización
 
 - **Cuenta:** `gestor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, panel **Publicación y autorización**
+- **Pantalla:** `#/casos/INT-99000404`, panel **Publicación y autorización**
 - **Debe verse:** no hay botón **Publicar** y dice «No se puede publicar hasta que el propietario autorice el caso». El servidor
   también lo rechaza (422).
 - **Frase:** «El indicador no decide la publicación. Lo que falta es la autorización del propietario».
@@ -206,7 +206,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 5. El propietario autoriza
 
 - **Cuenta:** `propietario-02`
-- **Pantalla:** **Mis inmuebles**, luego `#/casos/SIM-99000404`
+- **Pantalla:** **Mis inmuebles**, luego `#/casos/INT-99000404`
 - **Botón:** **Autorizar publicación**
 - **Debe verse:** el caso en Mis inmuebles y «Autorización registrada.». Sigue en borrador.
 - **Frase:** «Autorizar no publica: solo habilita al gestor. Y no cambia el indicador A».
@@ -215,7 +215,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 6. El revisor ve el indicador A y el historial
 
 - **Cuenta:** `revisor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, indicador A y **Historial de evaluaciones**
+- **Pantalla:** `#/casos/INT-99000404`, indicador A y **Historial de evaluaciones**
 - **Debe verse:** Gris y una sola entrada de historial, rotulada **«Partida interna incorporada»** (antes «Partida simulada
   incorporada»). Los faltantes (plano arquitectónico y de estructuras) y las alertas por los planos de instalaciones
   **(no verificado por el script; sí en la v0.8)**.
@@ -225,7 +225,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 7. El revisor subsana subiendo los PDF de los planos
 
 - **Cuenta:** `revisor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, **Expediente técnico de planos (2D)**
+- **Pantalla:** `#/casos/INT-99000404`, **Expediente técnico de planos (2D)**
 - **Botones:** en la tarjeta **Arquitectura**, elige `plano-chico.pdf` y pulsa **Subir PDF (queda presentado)**; repite en
   **Estructuras**.
 - **Debe verse:** «Archivo guardado.», «Subido por revisor-01 …» en cada tarjeta, el indicador en **amarillo** y una entrada nueva
@@ -236,7 +236,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 8. El gestor publica
 
 - **Cuenta:** `gestor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, panel **Publicación y autorización**
+- **Pantalla:** `#/casos/INT-99000404`, panel **Publicación y autorización**
 - **Botón:** **Publicar**
 - **Debe verse:** «Caso publicado.» y el indicador A sigue en amarillo, idéntico.
 - **Frase:** «Publicar cambia quién puede verlo, no lo que dice el indicador».
@@ -247,7 +247,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 - **Cuenta:** `comprador-01`
 - **Pantalla:** `#/casos`, luego `#/casos/11048217` y `#/casos/11075836`
 - **Botones:**
-  1. En el catálogo (ahora **13 tarjetas**), señala SIM-99000404 con **S/ 150,000**.
+  1. En el catálogo (ahora **13 tarjetas**), señala INT-99000404 con **S/ 150,000**.
   2. En `11048217`, solo para mirar: **Ver lámina** en los planos y el **Glosario** del expediente.
   3. En `11075836`: **Solicitar contacto** → **Enviar solicitud**.
   4. **Solicitar inspección técnica** → **Confirmar solicitud**.
@@ -282,7 +282,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
   ayer; las cuatro verificaciones `Conforme`; **Conclusiones sustentadas por la inspección**: `Sin observaciones físicas en la
   inspección visual.`; **Guardar informe**.
 - **Debe verse:** «Informe emitido. El indicador A (documental) no cambió.», la firma **«Arq. Valeria Sofía Paredes Rojas»**,
-  **Arquitecto**, **CAP N.° 19432**, y el indicador A en **rojo**. La pantalla **ya no dice** «Perfil ficticio de demostración».
+  **Arquitecto**, «Colegiatura: se registra al asignar al profesional», y el indicador A en **rojo**. La pantalla **ya no dice** «Perfil ficticio de demostración».
 - **Frase:** «Aunque el informe sea favorable, el embargo sigue en la partida: B nunca cambia A».
 - **Ojo:** si preguntan por el especialista, es un perfil de la demostración redactado por el equipo (ver el reporte).
 - **Plan B:** `14-especialista-emite.png`.
@@ -300,7 +300,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 16. Subir un PDF pesado: límite y optimización
 
 - **Cuenta:** `revisor-01`
-- **Pantalla:** `#/casos/SIM-99000404`, tarjeta **Instalaciones eléctricas (II.EE.)**
+- **Pantalla:** `#/casos/INT-99000404`, tarjeta **Instalaciones eléctricas (II.EE.)**
 - **Botones:** elige `plano-escaneado-grande.pdf` y pulsa **Subir PDF (queda presentado)**.
 - **Debe verse:** antes de subir, «Se optimizará automáticamente: pesa 5,4 MB y el máximo guardado es 10 MB.»; después,
   «Optimizado: 5,4 MB → 0,1 MB».
@@ -398,7 +398,7 @@ Retirar la autorización va al final porque saca SIM-99000404 del catálogo.
 ### Paso 14. El propietario retira la autorización
 
 - **Cuenta:** `propietario-02`, luego `comprador-01`
-- **Pantalla:** `#/casos/SIM-99000404`; con el comprador, `#/casos` y la misma dirección
+- **Pantalla:** `#/casos/INT-99000404`; con el comprador, `#/casos` y la misma dirección
 - **Botón:** **Retirar autorización**
 - **Debe verse:** «Autorización retirada.» y el caso retirado; el comprador ya no lo ve en el catálogo y, por dirección, recibe
   «No encontramos este expediente en la cartera».
@@ -439,9 +439,9 @@ Plan B: `25-pdf-descargas.png` (solo la pantalla; los PDF no se guardaron en el 
 | Error **409** (conflicto) al guardar, publicar o subir | Reinicia el backend: Ctrl+C en su terminal y vuelve a lanzar `spring-boot:run`. Anota la línea «Caused by» que deja el log. En el recorrido del 9/11/2026 no apareció ningún 409 |
 | «La partida … ya está registrada» | La base no está limpia. Sigue con el plan B y reinicia después de la presentación |
 | Código de cuenta o contraseña incorrectos | Revisa que escribiste el código completo (el login no tiene tarjetas). Si la base es anterior, la contraseña nueva no aplica: plan B |
-| «Código interno de ocho dígitos.» bajo el número | Falta el prefijo: escribe `SIM-99000404` |
+| «Código interno: INT- y ocho dígitos…» bajo el número | Falta el prefijo: escribe `INT-99000404` |
 | Aparece «Avisos de la lectura» | Pegaste el texto incompleto. Vuelve a copiar el bloque y pulsa **Leer asientos** |
-| «No se registró la partida» | Revisa origen, número con `SIM-` y propietario. Si persiste, plan B del paso 1 |
+| «No se registró la partida» | Revisa origen, número con `INT-` y propietario. Si persiste, plan B del paso 1 |
 | Las fotos del catálogo no aparecen | Se cargan al desplazarse; baja por el catálogo. Están en `trustinmuebles/public/img/casas/` y no necesitan internet |
 | El visor del plano perimétrico no abre | Usa el botón **PDF** de la tarjeta (otra pestaña) o el plan B del paso 23 |
 | La aplicación no responde | Continúa todo el recorrido con las capturas |

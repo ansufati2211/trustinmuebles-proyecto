@@ -119,8 +119,8 @@ class GeneradorCarga implements ApplicationRunner {
         DatosExpediente datos() {
             List<AsientoDatos> asientos = new ArrayList<>();
             asientos.add(new AsientoDatos("C00001", TipoActo.COMPRAVENTA, null, LocalDate.of(2024, 3, 12), "2024-00" + codigo.substring(8),
-                    LocalDate.of(2024, 3, 1), "Inmobiliaria Ejemplo del Sur S.A.C. adquirió el lote por compraventa.",
-                    null, "Inmobiliaria Ejemplo del Sur S.A.C. (100 %)"));
+                    LocalDate.of(2024, 3, 1), "Inmobiliaria Arenales del Sur S.A.C. adquirió el lote por compraventa.",
+                    null, "Inmobiliaria Arenales del Sur S.A.C. (100 %)"));
             if (alerta < 3) {
                 asientos.add(new AsientoDatos("D00001", TipoActo.HIPOTECA, EstadoAnotacion.VIGENTE,
                         LocalDate.of(2025, 5, 20), null, LocalDate.of(2025, 5, 10),
