@@ -46,7 +46,7 @@ class RealismoContenidoTest extends BaseApiTest {
     @DisplayName("La ficha registral de un caso publicado se abre sin sesión, con su rótulo y la partida parcialmente oculta")
     void fichaRegistralPublica() throws Exception {
         String t = texto(pdfPublico(TINGUINA + "/documento"));
-        assertThat(t).contains("FICHA REGISTRAL DEL INMUEBLE", "TRUSTINMUEBLES · INMOBILIARIA EN ICA",
+        assertThat(t).contains("FICHA REGISTRAL DEL INMUEBLE", "LEDCONS · INMOBILIARIA Y CONSTRUCTORA",
                 "Partida N.° 1105••••", "no reemplaza la copia literal que emite SUNARP",
                 "dos personas naturales (datos reservados)");
         assertThat(t).doesNotContain("11052690", "COPIA LITERAL DE PARTIDA REGISTRAL", "Tomo Diario", "Derechos cobrados");
@@ -63,9 +63,9 @@ class RealismoContenidoTest extends BaseApiTest {
     @DisplayName("Las láminas y los documentos del lote de un caso publicado se abren sin sesión, rotulados por la inmobiliaria")
     void laminasYDocumentosDelLotePublicos() throws Exception {
         String lamina = texto(pdfPublico(TINGUINA + "/planos/ARQUITECTURA/documento"));
-        assertThat(lamina).contains("TRUSTINMUEBLES · DOCUMENTO TÉCNICO REFERENCIAL", "1105••••").doesNotContain("11052690");
+        assertThat(lamina).contains("LEDCONS · DOCUMENTO TÉCNICO REFERENCIAL", "1105••••").doesNotContain("11052690");
         String perimetro = texto(pdfPublico(SANTIAGO + "/documentos-lote/PLANO_PERIMETRICO/documento"));
-        assertThat(perimetro).contains("TRUSTINMUEBLES", "1108••••").doesNotContain("11081204");
+        assertThat(perimetro).contains("LEDCONS", "1108••••").doesNotContain("11081204");
         // Un plano no presentado no existe ni con sesión ni sin ella.
         mvc.perform(get("/api/v1/publico/inmuebles/" + TINGUINA + "/planos/ELECTRICAS/documento"))
                 .andExpect(status().isNotFound());

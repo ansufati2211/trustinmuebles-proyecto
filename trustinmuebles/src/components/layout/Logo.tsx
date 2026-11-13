@@ -1,37 +1,21 @@
+import { EMPRESA } from "@/lib/empresa";
+
 interface LogoMarkProps {
   className?: string;
 }
 
+/**
+ * v1.0 (etapa 8): el logo de la inmobiliaria (LEDCONS), tal cual, sobre fondo blanco. Es decorativo: el nombre de la
+ * empresa va siempre en texto al lado (o en el aria-label del enlace).
+ */
 export function LogoMark({ className = "w-10 h-10" }: LogoMarkProps) {
   return (
     <span
       aria-hidden="true"
-      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-gradient-to-br from-primary to-[#022C22] shadow-md shadow-primary/30 ${className}`}
+      data-logo-empresa
+      className={`relative inline-flex shrink-0 items-center justify-center overflow-hidden rounded-xl bg-white ring-1 ring-marca-dorado/40 shadow-md shadow-marca-verde/20 ${className}`}
     >
-      <svg viewBox="0 0 32 32" fill="none" className="h-full w-full p-[18%]" xmlns="http://www.w3.org/2000/svg">
-        <path
-          d="M4 15.5 16 5l12 10.5"
-          stroke="white"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="M7.5 14v12.5h17V14"
-          stroke="white"
-          strokeOpacity="0.55"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-        <path
-          d="m11.8 19.6 3.3 3.3 5.4-5.9"
-          stroke="white"
-          strokeWidth="2.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-        />
-      </svg>
+      <img src={EMPRESA.logo} alt="" className="h-full w-full scale-[1.18] object-contain" decoding="async" />
     </span>
   );
 }

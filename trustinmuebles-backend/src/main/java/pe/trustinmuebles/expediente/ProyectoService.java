@@ -139,6 +139,26 @@ class ProyectoService {
         return loteDe(codigo, clave);
     }
 
+    /**
+     * v1.0 (etapa 8): cifras de la portada: proyectos de urbanización que ofrecen lotes en el portal (con al menos un lote
+     * publicado; no cuenta los que solo agrupan casos sueltos) y lotes disponibles que se ofrecen en ellos.
+     */
+    record CifrasProyectos(int proyectos, int lotesDisponibles) {}
+
+    @Transactional(readOnly = true)
+    CifrasProyectos cifrasPublicas() {
+        int visibles = 0;
+        int disponibles = 0;
+        for (Proyecto p : proyectos.findAll()) {
+            Vista v = vista(p.getCodigo());
+            if (v.lotes().stream().noneMatch(LoteDto::publicado)) continue;
+            visibles++;
+            disponibles += (int) v.lotes().stream()
+                    .filter(l -> l.publicado() && l.estadoComercial() == EstadoComercial.DISPONIBLE).count();
+        }
+        return new CifrasProyectos(visibles, disponibles);
+    }
+
     // ------------------------------------------------------------------ cálculo
 
     /** Lo que se necesita para mostrar un proyecto: sus lotes ya resueltos y su partida matriz. */

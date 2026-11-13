@@ -46,6 +46,15 @@ class InteresController {
         return servicio.listar(etapa, proyecto, responsable, vencidos);
     }
 
+    /**
+     * v1.0 (etapa 8): el asesor o el gestor registra a un interesado que llegó por LLAMADA, OFICINA, WHATSAPP o REFERIDO,
+     * con su consentimiento verbal. Mismos campos que el formulario público, sin límite por IP. 201 con el detalle.
+     */
+    @PostMapping("/interesados")
+    ResponseEntity<InteresDetalle> registrar(@RequestBody JsonNode cuerpo) {
+        return ResponseEntity.status(201).body(servicio.registrar(cuerpo));
+    }
+
     @GetMapping("/interesados/resumen")
     ResumenDemanda resumen() {
         return servicio.resumen();

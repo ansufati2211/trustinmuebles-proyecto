@@ -1,4 +1,5 @@
 import { LogoMark } from "@/components/layout/Logo";
+import { EMPRESA } from "@/lib/empresa";
 
 interface PantallaCargaProps {
   mensaje?: string;
@@ -17,7 +18,7 @@ export function PantallaCarga({ mensaje = "Verificando tu sesión", pantallaComp
       <LogoMark className="anim-pulse-soft h-16 w-16 rounded-2xl" />
 
       <div className="text-center">
-        <p className="text-xl font-extrabold tracking-tight text-foreground">Trustinmuebles</p>
+        <p className="text-xl font-extrabold tracking-tight text-marca-verde">{EMPRESA.nombreComercial}</p>
         <p className="mt-1 text-sm font-medium text-muted-foreground">{mensaje}</p>
       </div>
 

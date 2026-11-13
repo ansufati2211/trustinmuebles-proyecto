@@ -7,6 +7,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { LogoMark } from "@/components/layout/Logo";
+import { EMPRESA } from "@/lib/empresa";
 import { useAuth } from "@/lib/auth";
 
 const IMAGEN_FONDO = "/img/vivienda-fachada-nocturna.jpg";
@@ -106,9 +107,9 @@ export default function Login() {
         />
 
         <div style={retraso(0)} className="anim-fade relative z-10 flex items-center justify-between">
-          <Link to="/" className="group flex items-center gap-3.5" aria-label="Trustinmuebles, ir al inicio">
+          <Link to="/" className="group flex items-center gap-3.5" aria-label={EMPRESA.nombreComercial + ", ir al inicio"}>
             <LogoMark className="size-12 border border-white/15 transition-transform duration-500 ease-expo group-hover:-rotate-3 group-hover:scale-105" />
-            <span className="text-2xl font-extrabold tracking-tight text-white">Trustinmuebles</span>
+            <span className="text-2xl font-extrabold tracking-tight text-white">{EMPRESA.nombreComercial}</span>
           </Link>
           <Link
             to="/"
@@ -171,9 +172,9 @@ export default function Login() {
           <img src={IMAGEN_FONDO} alt="" aria-hidden="true" className="absolute inset-0 -z-20 h-full w-full object-cover opacity-60" />
           <div className="absolute inset-0 -z-10 bg-gradient-to-r from-foreground via-foreground/85 to-foreground/50" aria-hidden="true" />
           <div style={retraso(0)} className="anim-fade flex items-center justify-between px-6 py-6 sm:px-12">
-            <Link to="/" className="flex items-center gap-2.5" aria-label="Trustinmuebles, ir al inicio">
+            <Link to="/" className="flex items-center gap-2.5" aria-label={EMPRESA.nombreComercial + ", ir al inicio"}>
               <LogoMark className="size-10" />
-              <span className="text-xl font-extrabold tracking-tight text-white">Trustinmuebles</span>
+              <span className="text-xl font-extrabold tracking-tight text-white">{EMPRESA.nombreComercial}</span>
             </Link>
             <Link
               to="/"

@@ -9,6 +9,31 @@ final class Opciones {
     /** A qué se refiere el interés: un caso publicado, un lote de proyecto, un proyecto o una búsqueda general. */
     enum OrigenInteres { CASO, LOTE, PROYECTO, GENERAL }
 
+    /**
+     * v1.0 (etapa 8): por dónde llegó el interesado. WEB es el formulario público; los demás los registra el asesor o el
+     * gestor desde el panel.
+     */
+    enum CanalInteres {
+        WEB("Formulario web"), LLAMADA("Llamada"), OFICINA("Oficina"), WHATSAPP("WhatsApp"), REFERIDO("Referido");
+
+        final String etiqueta;
+
+        CanalInteres(String etiqueta) {
+            this.etiqueta = etiqueta;
+        }
+    }
+
+    /** v1.0 (etapa 8): cómo dio el interesado su consentimiento. */
+    enum FormaConsentimiento {
+        FORMULARIO("Casilla del formulario web"), VERBAL("Verbal, registrado por el asesor");
+
+        final String etiqueta;
+
+        FormaConsentimiento(String etiqueta) {
+            this.etiqueta = etiqueta;
+        }
+    }
+
     /** Forma de pago que el interesado tiene pensada. No hay pagos en línea. */
     enum FormaPago {
         CONTADO("Al contado"), FINANCIADO("Financiado"), POR_DEFINIR("Por definir");

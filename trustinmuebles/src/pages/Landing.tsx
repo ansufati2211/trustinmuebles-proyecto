@@ -8,8 +8,9 @@ import {
   ClipboardCheck, Eye, FolderOpen, HardHat, Layers, Lock, Plus, Ruler,
 } from "lucide-react";
 import { ESTADOS, PROCEDIMIENTO_INSPECCION } from "@/lib/semaforo";
-import type { EstadoSemaforo, PaginaPublica } from "@/lib/types";
-import { PASOS_COMO_FUNCIONA, partidaVisible, rutaPaginaPublica } from "@/lib/publico";
+import type { EstadoSemaforo } from "@/lib/types";
+import { PASOS_COMO_FUNCIONA, partidaVisible } from "@/lib/publico";
+import { RUTA_SITIO, cifrasPortada, textoCatalogoPortada, type DatosSitio } from "@/lib/sitio";
 import { useAuth } from "@/lib/auth";
 import { useApi } from "@/lib/useApi";
 
@@ -118,7 +119,7 @@ const CASOS_MUESTRA: {
 const PASOS = PASOS_COMO_FUNCIONA;
 
 const FAQS = [
-  { p: "¿Trustinmuebles es una entidad del gobierno?", r: "No. Es una plataforma tecnológica privada (PropTech) diseñada para transparentar los documentos de una cartera inmobiliaria en Ica." },
+  { p: "¿Este portal es una entidad del gobierno?", r: "No. Es el portal privado de la inmobiliaria LEDCONS, con tecnología Trustinmuebles, para ordenar y mostrar los documentos de su cartera en Ica." },
   { p: "¿El semáforo verde garantiza que la compra es segura?", r: "No. El semáforo verde indica únicamente que no se detectaron alertas en los campos evaluados del expediente. Nunca certifica saneamiento ni reemplaza a un abogado." },
   { p: "¿Necesito una cuenta para ver los inmuebles?", r: "No. El catálogo y la ficha de cada inmueble publicado se ven sin iniciar sesión. Para pedir que un asesor te contacte se ingresa con una cuenta." },
   { p: "¿Qué evalúa la inspección presencial (Indicador B)?", r: "Un especialista de la inmobiliaria verifica en campo las 4 especialidades y emite un informe técnico que no altera el color del semáforo documental." },
@@ -180,8 +181,9 @@ export default function Landing() {
   const location = useLocation();
   // v1.0 (etapa 7): sin sesión, el número de partida de las muestras sale parcialmente oculto, como en el catálogo.
   const { usuario } = useAuth();
-  const resumenPublico = useApi<PaginaPublica>(rutaPaginaPublica(0));
-  const publicados = resumenPublico.data?.total ?? null;
+  // v1.0 (etapa 8): las cifras de la portada salen del servidor (GET /publico/sitio), nunca de un número fijo.
+  const sitio = useApi<DatosSitio>(RUTA_SITIO);
+  const cifras = sitio.data?.cifras ?? null;
 
   useEffect(() => {
     const destino = (location.state as { desplazarA?: string } | null)?.desplazarA;
@@ -217,7 +219,7 @@ export default function Landing() {
 
               <h1
                 style={retraso(200)}
-                className="anim-enter text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-foreground leading-[1.06] mb-6"
+                className="anim-enter text-4xl sm:text-5xl xl:text-6xl font-black tracking-tight text-marca-verde leading-[1.06] mb-6"
               >
                 Entiende cada partida y cada plano antes de decidir.
               </h1>
@@ -251,12 +253,8 @@ export default function Landing() {
               </div>
 
               <dl style={retraso(560)} className="anim-enter grid grid-cols-3 gap-4 max-w-md border-t border-gray-200 pt-6">
-                {[
-                  { n: publicados == null ? "—" : String(publicados), t: "inmuebles publicados" },
-                  { n: "4", t: "planos por vivienda" },
-                  { n: "6", t: "pasos de inspección" },
-                ].map((d) => (
-                  <div key={d.t}>
+                {cifrasPortada(cifras).map((d) => (
+                  <div key={d.clave} data-cifra={d.clave}>
                     <dt className="text-3xl font-black text-foreground">{d.n}</dt>
                     <dd className="text-sm text-muted-foreground leading-snug mt-0.5">{d.t}</dd>
                   </div>
@@ -329,7 +327,7 @@ export default function Landing() {
           <div className="grid lg:grid-cols-[auto_1fr] gap-6 lg:gap-14 items-center">
             <Reveal>
               <h2 id="limites-titulo" className="text-xl font-bold tracking-tight">
-                Lo que Trustinmuebles no hace
+                Lo que este portal no hace
               </h2>
             </Reveal>
             <ul className="grid sm:grid-cols-2 xl:grid-cols-4 gap-x-8 gap-y-3">
@@ -357,7 +355,7 @@ export default function Landing() {
                 Una sola inmobiliaria en Ica, con su cartera a la vista
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Trustinmuebles es el sistema de una inmobiliaria que documenta sus propios lotes y viviendas. Lo que ves es lo que el equipo cargó y revisó, no una búsqueda masiva en internet.
+                Este portal es el sistema de LEDCONS, una inmobiliaria que documenta sus propios lotes y viviendas. Lo que ves es lo que el equipo cargó y revisó, no una búsqueda masiva en internet.
               </p>
             </Reveal>
 
@@ -385,7 +383,7 @@ export default function Landing() {
       <section id="servicios" className="py-24 bg-gray-50 border-y border-gray-100 scroll-mt-28">
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-3xl mx-auto mb-14">
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-marca-verde mb-4">
               Dos servicios, dos indicadores independientes
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -456,11 +454,11 @@ export default function Landing() {
         <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <Reveal className="flex flex-col md:flex-row md:items-end justify-between mb-12 gap-6">
             <div className="max-w-2xl">
-              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground">
+              <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-marca-verde">
                 ¿Qué hay dentro de Expedientes?
               </h2>
               <p className="text-muted-foreground text-lg mt-3">
-                El catálogo reúne 12 lotes y viviendas verificados en nuestro portafolio. Estos 3 ejemplos muestran cómo se ve cada estado. Al abrirlos pasarás por el inicio de sesión seguro.
+                {textoCatalogoPortada(cifras)} Estos 3 ejemplos muestran cómo se ve cada estado. Al abrirlos pasarás por el inicio de sesión seguro.
               </p>
             </div>
             <Button
@@ -469,7 +467,7 @@ export default function Landing() {
               className="group rounded-full h-12 px-6 font-bold shrink-0 transition-all duration-300 ease-expo hover:bg-gray-50 hover:border-primary/40 active:scale-[0.98]"
             >
               <Link to="/casos">
-                Abrir los 12 expedientes
+                Abrir los expedientes
                 <ArrowRight className="w-4 h-4 ml-2 transition-transform duration-300 ease-expo group-hover:translate-x-1.5" />
               </Link>
             </Button>
@@ -520,7 +518,7 @@ export default function Landing() {
       <section id="como-funciona" className="py-24 bg-gray-50 border-y border-gray-100 scroll-mt-28">
         <div className="container mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center max-w-3xl mx-auto mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-foreground mb-4">
+            <h2 className="text-3xl md:text-5xl font-extrabold tracking-tight text-marca-verde mb-4">
               ¿Cómo funciona el recorrido?
             </h2>
             <p className="text-lg text-muted-foreground">
@@ -607,7 +605,7 @@ export default function Landing() {
         <div className="container mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <Reveal className="text-center mb-12">
             <h2 className="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">Preguntas frecuentes</h2>
-            <p className="text-muted-foreground text-lg">Respuestas directas sobre el alcance de Trustinmuebles.</p>
+            <p className="text-muted-foreground text-lg">Respuestas directas sobre el alcance de este portal.</p>
           </Reveal>
           <div className="space-y-3">
             {FAQS.map((faq, i) => (

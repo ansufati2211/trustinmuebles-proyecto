@@ -22,6 +22,16 @@ class InteresUnidadTest {
     }
 
     @Test
+    @DisplayName("etapa 8: WhatsApp de APP_CONTACTO_WHATSAPP si está; si está vacía, el de empresa.json; solo dígitos")
+    void numeroWhatsapp() {
+        assertThat(InteresService.numeroWhatsapp("", "51991108224")).isEqualTo("51991108224");
+        assertThat(InteresService.numeroWhatsapp(null, "51 991 108 224")).isEqualTo("51991108224");
+        assertThat(InteresService.numeroWhatsapp("  ", "51991108224")).isEqualTo("51991108224");
+        assertThat(InteresService.numeroWhatsapp("+51 900 000 000", "51991108224")).isEqualTo("51900000000");
+        assertThat(InteresService.numeroWhatsapp("", null)).isEmpty();
+    }
+
+    @Test
     @DisplayName("las citas precargadas se mueven con el día de arranque y nunca quedan en el pasado")
     void fechasRelativas() {
         for (LocalDate hoy : new LocalDate[] {LocalDate.of(2026, 11, 16), LocalDate.of(2027, 3, 1)}) {

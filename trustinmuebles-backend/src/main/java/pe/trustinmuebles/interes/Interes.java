@@ -6,6 +6,8 @@ import java.time.Instant;
 import java.time.LocalDate;
 import lombok.Getter;
 import lombok.Setter;
+import pe.trustinmuebles.interes.Opciones.CanalInteres;
+import pe.trustinmuebles.interes.Opciones.FormaConsentimiento;
 import pe.trustinmuebles.interes.Opciones.FormaPago;
 import pe.trustinmuebles.interes.Opciones.MedioContacto;
 import pe.trustinmuebles.interes.Opciones.OrigenInteres;
@@ -90,6 +92,20 @@ class Interes {
 
     @Column(name = "consentimiento_en", nullable = false, updatable = false)
     private Instant consentimientoEn;
+
+    /** v1.0 (etapa 8): por dónde llegó (WEB: el formulario público). */
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, updatable = false)
+    private CanalInteres canal = CanalInteres.WEB;
+
+    /** v1.0 (etapa 8): la casilla del formulario o de palabra ante el asesor. */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "consentimiento_forma", nullable = false, updatable = false)
+    private FormaConsentimiento consentimientoForma = FormaConsentimiento.FORMULARIO;
+
+    /** v1.0 (etapa 8): cuenta que registró el consentimiento verbal (null si vino del formulario). */
+    @Column(name = "consentimiento_registrado_por", updatable = false)
+    private String consentimientoRegistradoPor;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

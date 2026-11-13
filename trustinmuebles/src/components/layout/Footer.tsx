@@ -1,6 +1,7 @@
 import { Link } from "react-router";
 import { VERSION } from "@/lib/version";
-import { ArrowUpRight, ArrowUp, MapPin, ShieldCheck, FileCheck2, HardHat } from "lucide-react";
+import { ArrowUpRight, ArrowUp, MapPin, ShieldCheck, FileCheck2, HardHat, Phone, MessageCircle, Building2 } from "lucide-react";
+import { EMPRESA, enlaceTelefono, enlaceWhatsappEmpresa, whatsappLegible } from "@/lib/empresa";
 import { LogoMark } from "@/components/layout/Logo";
 import { CONOCE_AQUI, VISOR_BGR, abrirExterno } from "@/lib/fuentes";
 import { LIMITES_LEGALES } from "@/lib/limitesLegales";
@@ -12,7 +13,7 @@ export function Footer() {
   const irArriba = () => window.scrollTo({ top: 0, behavior: "smooth" });
 
   return (
-    <footer className="relative bg-[#022C22] text-white overflow-hidden border-t border-emerald-500/15">
+    <footer className="relative bg-marca-verde-oscuro text-white overflow-hidden border-t border-marca-dorado/25">
       <div
         aria-hidden="true"
         className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 w-[700px] h-48 bg-emerald-500/15 rounded-full blur-[110px]"
@@ -28,18 +29,50 @@ export function Footer() {
             <Link
               to="/"
               className="inline-flex items-center gap-3 group"
-              aria-label="Trustinmuebles, ir al inicio"
+              aria-label={EMPRESA.nombreComercial + ", ir al inicio"}
             >
-              <LogoMark className="w-11 h-11 transition-transform duration-300 group-hover:scale-105" />
+              <LogoMark className="w-14 h-14 transition-transform duration-300 group-hover:scale-105" />
               <div>
-                <span className="text-2xl font-extrabold tracking-tight text-white group-hover:text-emerald-300 transition-colors block leading-none">
-                  Trustinmuebles
+                <span className="text-2xl font-extrabold tracking-tight text-white group-hover:text-marca-dorado-claro transition-colors block leading-none">
+                  {EMPRESA.nombreComercial}
                 </span>
-                <span className="text-[11px] font-semibold uppercase tracking-widest text-emerald-400/80 mt-1 block">
-                  Transparencia Precompra
+                <span className="text-[11px] font-semibold uppercase tracking-widest text-marca-dorado-claro mt-1 block">
+                  {EMPRESA.eslogan}
                 </span>
               </div>
             </Link>
+
+            {/* v1.0 (etapa 8): datos de la inmobiliaria (contenido/empresa.json). */}
+            <address className="not-italic space-y-2 text-sm text-gray-300" data-empresa>
+              <p className="flex items-start gap-2">
+                <Building2 className="mt-0.5 h-4 w-4 shrink-0 text-marca-dorado-claro" aria-hidden="true" />
+                <span>{EMPRESA.razonSocial} · RUC {EMPRESA.ruc}</span>
+              </p>
+              <p className="flex items-start gap-2">
+                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-marca-dorado-claro" aria-hidden="true" />
+                <span>{EMPRESA.direccion}</span>
+              </p>
+              <p className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                <Phone className="h-4 w-4 shrink-0 text-marca-dorado-claro" aria-hidden="true" />
+                <span className="sr-only">Teléfonos:</span>
+                {EMPRESA.telefonos.map((t, i) => (
+                  <span key={t}>
+                    {i > 0 && <span aria-hidden="true" className="mr-2 text-gray-500">·</span>}
+                    <a href={enlaceTelefono(t)} className="hover:text-marca-dorado-claro">{t}</a>
+                  </span>
+                ))}
+              </p>
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1">
+                <a href={enlaceWhatsappEmpresa()} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-marca-dorado-claro" data-whatsapp-empresa>
+                  <MessageCircle className="h-4 w-4 text-marca-dorado-claro" aria-hidden="true" />
+                  WhatsApp {whatsappLegible()}
+                </a>
+                <a href={EMPRESA.facebook} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 hover:text-marca-dorado-claro">
+                  Facebook
+                  <ArrowUpRight className="h-3.5 w-3.5 text-marca-dorado-claro" aria-hidden="true" />
+                </a>
+              </p>
+            </address>
 
             <p className="text-sm text-gray-300/90 leading-relaxed max-w-md">
               Plataforma de orientación documental y técnica para la evaluación de lotes y viviendas urbanas. Partidas registrales, planos 2D y verificación en campo estructurados en un solo expediente.
@@ -52,13 +85,13 @@ export function Footer() {
               </span>
               <span className="inline-flex items-center gap-2 rounded-full bg-emerald-500/10 border border-emerald-400/20 px-3.5 py-1.5 text-xs font-semibold text-emerald-300">
                 <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                Catálogo verificado activo
+                Catálogo publicado
               </span>
             </div>
           </div>
 
           <nav aria-label="Plataforma" className="lg:col-span-2 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-emerald-300/90">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-marca-dorado-claro">
               Plataforma
             </h3>
             <ul className="space-y-3">
@@ -91,7 +124,7 @@ export function Footer() {
           </nav>
 
           <div className="lg:col-span-2 space-y-4">
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-emerald-300/90">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-marca-dorado-claro">
               Fuentes SUNARP
             </h3>
             <ul className="space-y-3">
@@ -119,7 +152,7 @@ export function Footer() {
           </div>
 
           <div className="lg:col-span-3 space-y-3">
-            <h3 className="text-xs font-extrabold uppercase tracking-widest text-emerald-300/90 mb-3">
+            <h3 className="text-xs font-extrabold uppercase tracking-widest text-marca-dorado-claro mb-3">
               Sistema de Doble Filtro
             </h3>
 
@@ -156,7 +189,7 @@ export function Footer() {
             ))}
           </ul>
         </section>
-        <p className="pt-4 text-[11px] font-medium text-gray-400" data-version={VERSION}>Trustinmuebles · versión {VERSION}</p>
+        <p className="pt-4 text-[11px] font-medium text-gray-400" data-version={VERSION}>{EMPRESA.nombreComercial} · {EMPRESA.razonSocial} · RUC {EMPRESA.ruc} · con tecnología Trustinmuebles · versión {VERSION}</p>
       </div>
     </footer>
   );

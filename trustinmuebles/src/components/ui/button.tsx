@@ -5,12 +5,12 @@ import { cva, type VariantProps } from "class-variance-authority"
 import { cn } from "@/lib/utils"
 
 const buttonVariants = cva(
-  "relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-300 hover:[&_svg:last-child:not(:first-child)]:translate-x-0.5",
+  "relative inline-flex shrink-0 cursor-pointer items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-bold transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-marca-dorado/40 disabled:pointer-events-none disabled:opacity-50 active:scale-[0.97] [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:transition-transform [&_svg]:duration-300 hover:[&_svg:last-child:not(:first-child)]:translate-x-0.5",
   {
     variants: {
       variant: {
         default:
-          "bg-primary text-primary-foreground shadow-md shadow-primary/25 hover:-translate-y-0.5 hover:bg-primary/90 hover:shadow-lg hover:shadow-primary/35",
+          "bg-marca-verde text-white shadow-md shadow-marca-verde/25 ring-1 ring-inset ring-marca-dorado/30 hover:-translate-y-0.5 hover:bg-marca-verde-oscuro hover:shadow-lg hover:shadow-marca-verde/35",
         destructive:
           "bg-danger text-danger-foreground shadow-md shadow-danger/20 hover:-translate-y-0.5 hover:bg-danger/90 hover:shadow-lg hover:shadow-danger/30",
         outline:

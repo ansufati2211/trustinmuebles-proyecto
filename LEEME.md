@@ -30,11 +30,20 @@ más las 4 partidas matrices, 15 interesados con correos `@example.com` y 4 cita
 Antes: `scripts/reiniciar-demo.ps1`, arrancar backend e interfaz (abajo) y
 `APP_SEED_PASSWORD=<clave> node scripts/preparar-demo.mjs` (verifica por la API la precarga y completa lo que falte, sin
 borrar nada). Recorrido automático: `node docs/pruebas/uso-v10/recorrido-v10.mjs` (arranca el jar con una base nueva fuera
-del repositorio, la interfaz y Chrome, y apaga todo al final): 13 de 13 pasos el 13/11/2026.
+del repositorio, la interfaz y Chrome, y apaga todo al final): 13 de 13 pasos y 12 de 12 pantallas en tableta (820 × 1180
+y 1180 × 820) el 13/11/2026.
 
-**Pruebas de la 1.0.0:** backend **318** (antes de la etapa 7, 312), interfaz **276** en 30 archivos (antes, 262). La API
-nueva está en [docs/api.md](docs/api.md) («Versión 1.0.0»); las decisiones, en [docs/decisiones.md](docs/decisiones.md)
-(D59 a D69).
+**Pruebas de la 1.0.0:** backend **332** (antes de la etapa 8, 318), interfaz **290** en 32 archivos (antes, 276). La API
+nueva está en [docs/api.md](docs/api.md) («Versión 1.0.0» y «Etapa 8»); las decisiones, en
+[docs/decisiones.md](docs/decisiones.md) (D59 a D73).
+
+**Etapa 8 (ajustes finales):** el portal lleva la marca de la inmobiliaria, **LEDCONS** (logo, razón social, RUC,
+dirección, teléfonos, WhatsApp y Facebook en la barra, el pie y los PDF; «con tecnología Trustinmuebles» en el pie; uso
+autorizado de forma verbal, la autorización escrita está pendiente, D72). Los lotes precargados tienen precios de mercado
+por rango de distrito (D70). La portada muestra cifras reales desde `GET /publico/sitio`. El asesor o el gestor registra
+desde el panel a quien llegó por llamada, oficina, WhatsApp o referido, con consentimiento verbal (V23, D71). Para la demo:
+`node scripts/verificar-sitio.mjs <URL>` y [docs/demo/CHECKLIST-LUNES.md](docs/demo/CHECKLIST-LUNES.md). Material para el
+informe: [docs/PARA-INFORME-v1.0.md](docs/PARA-INFORME-v1.0.md).
 
 **Versión:** `1.0.0` en `trustinmuebles-backend/pom.xml`, `trustinmuebles/package.json`, el pie del sitio y
 `GET /api/v1/publico/sitio`.

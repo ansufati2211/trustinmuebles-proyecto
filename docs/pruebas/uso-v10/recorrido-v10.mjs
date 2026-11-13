@@ -9,7 +9,8 @@
 // Requisitos: Java 21, Google Chrome, el jar compilado (cd trustinmuebles-backend && ./mvnw -DskipTests package) y las
 // dependencias de la interfaz instaladas. puppeteer-core es una devDependency de trustinmuebles.
 // Uso: node docs/pruebas/uso-v10/recorrido-v10.mjs      (APP_SEED_PASSWORD opcional; si falta, se genera una)
-// Genera docs/pruebas/uso-v10/capturas/ y docs/pruebas/uso-v10/RESULTADO-recorrido-v10.json.
+// Genera docs/pruebas/uso-v10/capturas/, capturas-tableta/ (etapa 8: 820 x 1180 y 1180 x 820) y
+// docs/pruebas/uso-v10/RESULTADO-recorrido-v10.json (con la duración del guion y el resultado en tableta).
 import { createRequire } from "node:module";
 import { execFileSync, spawn } from "node:child_process";
 import { existsSync, mkdirSync, mkdtempSync, readFileSync, readdirSync, rmSync, writeFileSync } from "node:fs";
@@ -236,16 +237,16 @@ async function paso(n, quien, esperado, nombre, fn) {
 // ================================================================ VISITANTE (sin sesión)
 let loteElegido = null;
 
-await paso(1, "visitante", "El asistente entiende «lote en Subtanjalla de menos de 50 mil soles» y recomienda lotes", "asistente", async (v, nota) => {
+await paso(1, "visitante", "El asistente entiende «lote en Subtanjalla de menos de 80 mil soles» y recomienda lotes", "asistente", async (v, nota) => {
   await salir();
   await ir("/inmuebles");
-  await page.type("#frase-asistente", "lote en Subtanjalla de menos de 50 mil soles");
+  await page.type("#frase-asistente", "lote en Subtanjalla de menos de 80 mil soles");
   await pulsar("Buscar", true, "[data-asistente]");
   await page.waitForSelector('[aria-label="Lo que entendió el asistente"]', { timeout: 20000 });
   await listo();
   await espera(800);
   const t = await texto();
-  for (const e of ["Lotes o terrenos", "En Subtanjalla", "Hasta S/ 50,000"]) v(t.includes(e), `etiqueta «${e}»`);
+  for (const e of ["Lotes o terrenos", "En Subtanjalla", "Hasta S/ 80,000"]) v(t.includes(e), `etiqueta «${e}»`);
   const total = t.match(/Mostrando \d+–\d+ de (\d+) inmuebles?/)?.[1];
   datos.asistenteResultados = Number(total ?? 0);
   v(Number(total) > 0, `${total} resultados`);
@@ -498,18 +499,68 @@ await paso(13, "visitante", "Pie con el aviso legal y la versión 1.0.0", "pie-v
   v(s.version === "1.0.0" && s.indexable === false, `/publico/sitio: versión ${s.version}, indexable ${s.indexable}`);
 });
 
+// ================================================================ TABLETA (etapa 8)
+// Las pantallas del guion en una tableta vertical (820 x 1180) y horizontal (1180 x 820): barra con la marca, sin
+// desplazamiento horizontal y una captura por pantalla en capturas-tableta/.
+const SHOTS_TABLETA = path.join(AQUI, "capturas-tableta");
+mkdirSync(SHOTS_TABLETA, { recursive: true });
+for (const f of readdirSync(SHOTS_TABLETA)) if (f.endsWith(".png")) rmSync(path.join(SHOTS_TABLETA, f));
+const tableta = [];
+const guionSegundos = Number(pasos.reduce((s, p) => s + Number(p.segundos), 0).toFixed(1));
+const PANTALLAS = [
+  { nombre: "portada", ruta: "/", sesion: null, espera: "inmuebles publicados" },
+  { nombre: "inmuebles", ruta: "/inmuebles", sesion: null, espera: "Asistente de búsqueda" },
+  { nombre: "plano", ruta: "/proyectos/altos-de-ventisca", sesion: null, espera: "Plano de lotes" },
+  { nombre: "ficha-lote", ruta: () => `/proyectos/altos-de-ventisca/lotes/${loteElegido ?? "C-12"}`, sesion: null, espera: "Usos que suelen permitirse" },
+  { nombre: "interesados", ruta: "/interesados", sesion: "asesor-01", espera: "Registrar interesado" },
+  { nombre: "registrar-interesado", ruta: "/interesados", sesion: "asesor-01", espera: "Registrar interesado", accion: async () => {
+    await pulsar("Registrar interesado");
+    await page.waitForSelector("[data-formulario-panel]", { timeout: 10000 });
+  } },
+];
+for (const o of [{ orientacion: "vertical", width: 820, height: 1180 }, { orientacion: "horizontal", width: 1180, height: 820 }]) {
+  await page.setViewport({ width: o.width, height: o.height, isMobile: false, hasTouch: true });
+  let sesionActual = null;
+  await salir();
+  for (const [k, s] of PANTALLAS.entries()) {
+    const hechos = [];
+    let ok = true;
+    const t0 = Date.now();
+    try {
+      if (s.sesion !== sesionActual) { if (s.sesion) await ingresar(s.sesion); else await salir(); sesionActual = s.sesion; }
+      await ir(typeof s.ruta === "function" ? s.ruta() : s.ruta);
+      await conTexto(s.espera);
+      if (s.accion) await s.accion();
+      await espera(500);
+      const m = await page.evaluate(() => ({ ancho: document.documentElement.scrollWidth, vista: window.innerWidth,
+        marca: !!document.querySelector("[data-marca] img[src*=ledcons-logo]"), texto: document.body.innerText }));
+      if (m.ancho > m.vista + 1) { ok = false; hechos.push(`NO: desplazamiento horizontal (${m.ancho} px en ${m.vista} px)`); }
+      else hechos.push(`sin desplazamiento horizontal (${m.ancho} px)`);
+      if (!m.marca) { ok = false; hechos.push("NO: la barra no muestra el logo de LEDCONS"); } else hechos.push("barra con el logo de LEDCONS");
+      if (/compra segura|saneado|garantizad/i.test(m.texto)) { ok = false; hechos.push("NO: texto que promete compra segura"); }
+    } catch (e) { ok = false; hechos.push(`Error: ${e.message.split("\n")[0]}`); }
+    const captura = `${o.orientacion}-${String(k + 1).padStart(2, "0")}-${s.nombre}.png`;
+    await page.screenshot({ path: path.join(SHOTS_TABLETA, captura) }).catch(() => {});
+    const segundos = ((Date.now() - t0) / 1000).toFixed(1);
+    tableta.push({ orientacion: o.orientacion, ventana: `${o.width} x ${o.height}`, pantalla: s.nombre, ok, obtenido: hechos.join("; "), captura, segundos });
+    console.log(`${ok ? "OK   " : "FALLA"} tableta ${o.orientacion} · ${s.nombre} (${segundos} s)\n      ${hechos.join("\n      ")}`);
+  }
+}
+
 // ---------------------------------------------------------------- cierre
 await browser.close();
 const total = ((Date.now() - inicio) / 1000).toFixed(0);
 const resultado = {
-  fecha: new Date().toISOString(), version: "1.0.0", totalSegundos: Number(total),
-  correctos: pasos.filter((p) => p.ok).length, pasos: pasos.length, erroresConsola: errores, respuestas409o500: respuestasError,
+  fecha: new Date().toISOString(), version: "1.0.0", totalSegundos: Number(total), guionSegundos,
+  correctos: pasos.filter((p) => p.ok).length, pasos: pasos.length,
+  tableta: { correctas: tableta.filter((t) => t.ok).length, pantallas: tableta.length, detalle: tableta },
+  erroresConsola: errores, respuestas409o500: respuestasError,
   datos, detalle: pasos,
 };
 writeFileSync(path.join(AQUI, "RESULTADO-recorrido-v10.json"), JSON.stringify(resultado, null, 2));
-console.log(`\n${resultado.correctos} de ${resultado.pasos} pasos correctos en ${total} s. Errores de consola: ${errores.length}. Respuestas 409/500: ${respuestasError.length}.`);
+console.log(`\n${resultado.correctos} de ${resultado.pasos} pasos correctos; guion en ${guionSegundos} s (total con arranque ${total} s). Tableta: ${resultado.tableta.correctas} de ${resultado.tableta.pantallas} pantallas. Errores de consola: ${errores.length}. Respuestas 409/500: ${respuestasError.length}.`);
 apagar();
 await espera(1500);
 try { rmSync(DATOS, { recursive: true, force: true }); } catch { /* Windows puede retener algún archivo un momento */ }
 console.log("Backend, interfaz y navegador apagados; base temporal eliminada.");
-process.exit(resultado.correctos === resultado.pasos ? 0 : 1);
+process.exit(resultado.correctos === resultado.pasos && resultado.tableta.correctas === resultado.tableta.pantallas ? 0 : 1);

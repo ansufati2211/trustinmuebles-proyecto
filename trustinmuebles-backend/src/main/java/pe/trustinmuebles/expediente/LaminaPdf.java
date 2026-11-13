@@ -33,7 +33,8 @@ import pe.trustinmuebles.clasificacion.Especialidad;
 final class LaminaPdf {
     static final String MARCA_DE_AGUA = "DOCUMENTO TÉCNICO REFERENCIAL";
     /** v1.0 (etapa 6): rotulado de la inmobiliaria; no imita el rótulo de un plano municipal ni de un colegio. */
-    static final String ROTULO = "TRUSTINMUEBLES · DOCUMENTO TÉCNICO REFERENCIAL · SIN SELLO NI FIRMA";
+    static final String ROTULO = RotuloInmobiliaria.NOMBRE.toUpperCase(Locale.ROOT)
+            + " · DOCUMENTO TÉCNICO REFERENCIAL · SIN SELLO NI FIRMA";
 
     /** Datos del predio que la lámina dibuja. Todo es opcional: sin medidas se usa un terreno tipo y se avisa. */
     record Datos(String partida, String denominacion, BigDecimal areaTerreno, String linderos,
@@ -163,6 +164,7 @@ final class LaminaPdf {
             doc.addPage(pagina);
             try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
                 marcaDeAgua(cs, negrita);
+                encabezadoEmpresa(doc, cs, negrita);
                 cs.setNonStrokingColor(0f);
                 texto(cs, seguro(especialidad.etiqueta().toUpperCase(Locale.forLanguageTag("es-PE"))), negrita, 15f, IZQ, 790f);
                 texto(cs, "Partida N.° " + seguro(d.partida()), normal, 10f, IZQ, 772f);
@@ -562,6 +564,15 @@ final class LaminaPdf {
         texto(cs, "Esquema técnico referencial de la inmobiliaria. No reemplaza el plano aprobado por la municipalidad.", normal, 7.5f, IZQ + 6f, 77f);
         texto(cs, "LÁMINA", normal, 7f, DER - 56f, 108f);
         texto(cs, codigo, negrita, 16f, DER - 63f, 86f);
+    }
+
+    /** v1.0 (etapa 8): logo y nombre de la inmobiliaria arriba a la derecha (láminas y documentos del lote). */
+    static void encabezadoEmpresa(PDDocument doc, PDPageContentStream cs, PDFont negrita) throws IOException {
+        RotuloInmobiliaria.dibujarLogo(cs, RotuloInmobiliaria.logo(doc), DER - 46f, 750f, 46f);
+        cs.setNonStrokingColor(0.1f, 0.3f, 0.2f);
+        String t = seguro(RotuloInmobiliaria.ENCABEZADO);
+        texto(cs, t, negrita, 7.5f, DER - negrita.getStringWidth(t) / 1000f * 7.5f, 805f);
+        cs.setNonStrokingColor(0f);
     }
 
     // ---------------------------------------------------------------- primitivas

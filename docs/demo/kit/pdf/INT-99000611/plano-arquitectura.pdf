@@ -16,19 +16,19 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 842 595] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 6 0 R >>
 endobj
 6 0 obj
-<< /Length 1525 >>
+<< /Length 1557 >>
 stream
 BT 0.88 g /F2 54 Tf 0.8660 0.5000 -0.5 0.8660 151.56 178.5 Tm (REFERENCIAL) Tj ET 0 g
 1.4 w 0 G 20 20 802 555 re S
 1 w 0 G 572 20 250 150 re S
 0.93 g 572 145 250 25 re f 0 g
-BT 0 g /F2 9 Tf 580 153 Td (TRUSTINMUEBLES · INMOBILIARIA EN ICA) Tj ET
+BT 0 g /F2 9 Tf 580 153 Td (LEDCONS · INMOBILIARIA Y CONSTRUCTORA) Tj ET
 BT 0 g /F2 10 Tf 580 130 Td (Plano arquitectónico) Tj ET
 BT 0 g /F1 7 Tf 580 114 Td (INT-99000611 · Mz. K Lote 9 · Urb. Los Viñedos de Ica · Ica) Tj ET
 BT 0 g /F1 7 Tf 580 100 Td (Área del terreno: 180.00 m² · Área construida: 120.00 m²) Tj ET
 BT 0 g /F1 7 Tf 580 86 Td (Lámina A-01 · Escala referencial · 13/11/2026) Tj ET
 BT 0 g /F1 7 Tf 580 72 Td (Profesional responsable: se registra al asignar al profesional.) Tj ET
-BT 0 g /F1 6.5 Tf 580 50 Td (Documento informativo elaborado por la inmobiliaria Trustinmuebles.) Tj ET
+BT 0 g /F1 6.5 Tf 580 50 Td (Documento informativo elaborado por la inmobiliaria LEDCONS \(LEDCONS E.I.R.L., RUC 20600817133\).) Tj ET
 BT 0 g /F1 6.5 Tf 580 40 Td (Sin sellos ni firmas. No reemplaza los planos de la licencia municipal.) Tj ET
 0.6 w 0 G 60 120 108 240 re S
 BT 0 g /F1 8 Tf 60 104 Td (Terreno 9.00 x 20.00 ml) Tj ET
@@ -49,7 +49,7 @@ BT 0 g /F1 7 Tf 512 184 Td (Dormitorio 2) Tj ET
 endstream
 endobj
 7 0 obj
-<< /Title (Plano arquitectónico INT-99000611) /Author (Trustinmuebles · Inmobiliaria en Ica) /Subject (Lámina referencial elaborada por la inmobiliaria) /Creator (Trustinmuebles 1.0.0) >>
+<< /Title (Plano arquitectónico INT-99000611) /Author (LEDCONS · Inmobiliaria y Constructora) /Subject (Lámina referencial elaborada por la inmobiliaria) /Creator (Trustinmuebles 1.0.0 para LEDCONS) >>
 endobj
 xref
 0 8
@@ -60,9 +60,9 @@ xref
 0000000218 00000 n 
 0000000320 00000 n 
 0000000456 00000 n 
-0000002033 00000 n 
+0000002065 00000 n 
 trailer
 << /Size 8 /Root 1 0 R /Info 7 0 R >>
 startxref
-2236
+2282
 %%EOF

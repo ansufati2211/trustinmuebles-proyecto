@@ -55,6 +55,8 @@ export interface Interesado {
   medio: Medio; contacto: string; etapa: EtapaInteres; etapaEtiqueta: string; responsable: string | null;
   proximaAccion: string | null; proximaAccionFecha: string | null; vencido: boolean; citaPorConfirmar: boolean;
   notas: number;
+  /** v1.0 (etapa 8): por dónde llegó (WEB: el formulario público). */
+  canal?: Canal; canalEtiqueta?: string;
 }
 export interface NotaInteres { id: number; texto: string; cuentaCodigo: string; creadaEn: string }
 export interface OpcionCita { opcion: number; fecha: string; franja: FranjaCita; franjaEtiqueta: string }
@@ -67,6 +69,8 @@ export interface Cita {
 export interface InteresadoDetalle {
   interes: Interesado; mensaje: string | null; consentimientoVersion: string; consentimientoEn: string;
   notas: NotaInteres[]; citas: Cita[]; puedeMarcarLote: boolean;
+  /** v1.0 (etapa 8): casilla del formulario o verbal (con la cuenta que lo registró). */
+  consentimientoForma?: "FORMULARIO" | "VERBAL"; consentimientoFormaEtiqueta?: string; consentimientoRegistradoPor?: string | null;
 }
 export interface CitaEnAgenda { cita: Cita; porConfirmar: boolean; opcion: number | null; franja: FranjaCita; franjaEtiqueta: string }
 export interface Agenda { desde: string; hasta: string; dias: { fecha: string; citas: CitaEnAgenda[] }[] }
@@ -252,4 +256,81 @@ export function textoPresupuesto(i: Pick<Interesado, "presupuestoMin" | "presupu
   if (i.presupuestoMax != null) return `hasta ${s} ${n(i.presupuestoMax)}`;
   if (i.presupuestoMin != null) return `desde ${s} ${n(i.presupuestoMin)}`;
   return "sin presupuesto";
+}
+
+// ------------------------------------------------------------------------------------------------- registro desde el panel
+
+/*
+ * v1.0 (etapa 8): el asesor o el gestor registra a un interesado que llegó por llamada, oficina, WhatsApp o referido
+ * (POST /interesados). Los mismos campos y criterios del formulario público, más el canal y la constancia de que el
+ * interesado aceptó de palabra; el servidor guarda quién lo registró y cuándo. No hay límite por IP.
+ */
+export type Canal = "WEB" | "LLAMADA" | "OFICINA" | "WHATSAPP" | "REFERIDO";
+
+export const CANALES_PANEL: { valor: Exclude<Canal, "WEB">; etiqueta: string }[] = [
+  { valor: "LLAMADA", etiqueta: "Llamada" },
+  { valor: "OFICINA", etiqueta: "Oficina" },
+  { valor: "WHATSAPP", etiqueta: "WhatsApp" },
+  { valor: "REFERIDO", etiqueta: "Referido" },
+];
+
+export const TEXTO_CONSENTIMIENTO_VERBAL =
+  "El interesado aceptó de palabra que la inmobiliaria use su nombre y su contacto solo para responderle y coordinar, y sabe que puede pedir que se eliminen.";
+
+export interface FormularioPanel {
+  canal: Exclude<Canal, "WEB"> | ""; nombre: string; medio: Medio; contacto: string; proyectoCodigo: string; lote: string;
+  zona: string; tipo: "" | "LOTE" | "VIVIENDA"; presupuestoMin: string; presupuestoMax: string; areaDeseada: string;
+  formaPago: FormaPago; mensaje: string; consentimientoVerbal: boolean;
+}
+
+export const formularioPanelVacio = (): FormularioPanel => ({
+  canal: "", nombre: "", medio: "CELULAR", contacto: "", proyectoCodigo: "", lote: "", zona: "", tipo: "",
+  presupuestoMin: "", presupuestoMax: "", areaDeseada: "", formaPago: "POR_DEFINIR", mensaje: "", consentimientoVerbal: false,
+});
+
+const monto = (v: string) => Number(v.replace(/[\s,]/g, ""));
+
+/** Errores por campo del registro desde el panel, con los criterios del servidor. Vacío: se puede enviar. */
+export function validarFormularioPanel(f: FormularioPanel): Partial<Record<keyof FormularioPanel, string>> {
+  const e: Partial<Record<keyof FormularioPanel, string>> = {};
+  if (!f.canal) e.canal = "Indica por dónde llegó el interesado.";
+  const nombre = f.nombre.trim().replace(/\s+/g, " ");
+  if (!nombre) e.nombre = "Escribe el nombre de pila.";
+  else if (!NOMBRE.test(nombre)) e.nombre = "Solo el nombre de pila, con letras (sin apellidos ni documentos).";
+  const contacto = f.contacto.trim();
+  if (!contacto) e.contacto = f.medio === "CORREO" ? "Escribe el correo." : "Escribe el celular.";
+  else if (f.medio === "CORREO" && !CORREO.test(contacto.toLowerCase())) e.contacto = "El correo no es válido.";
+  else if (f.medio === "CELULAR" && !normalizarCelular(contacto)) e.contacto = "El celular debe tener 9 dígitos y empezar con 9.";
+  for (const k of ["presupuestoMin", "presupuestoMax", "areaDeseada"] as const) {
+    if (f[k].trim() && (!Number.isFinite(monto(f[k])) || monto(f[k]) <= 0)) e[k] = "Escribe un número mayor que 0.";
+  }
+  if (!e.presupuestoMin && !e.presupuestoMax && f.presupuestoMin.trim() && f.presupuestoMax.trim()
+    && monto(f.presupuestoMin) > monto(f.presupuestoMax)) e.presupuestoMin = "El mínimo no puede ser mayor que el máximo.";
+  if (f.lote.trim() && !f.proyectoCodigo) e.lote = "Elige primero el proyecto del lote.";
+  if (f.mensaje.length > MAX_MENSAJE) e.mensaje = `Máximo ${MAX_MENSAJE} caracteres.`;
+  else if (OCHO_DIGITOS.test(f.mensaje)) e.mensaje = "No anotes DNI ni otros números de documento.";
+  if (!f.consentimientoVerbal) e.consentimientoVerbal = "Confirma que el interesado aceptó de palabra.";
+  return e;
+}
+
+/** Cuerpo de POST /interesados: solo los campos con valor. Nunca lleva DNI ni la casilla del formulario público. */
+export function cuerpoRegistroPanel(f: FormularioPanel): Record<string, unknown> {
+  const cuerpo: Record<string, unknown> = {
+    canal: f.canal,
+    consentimientoVerbal: f.consentimientoVerbal,
+    nombre: f.nombre.trim().replace(/\s+/g, " "),
+    medio: f.medio,
+    contacto: f.medio === "CELULAR" ? normalizarCelular(f.contacto) ?? f.contacto.trim() : f.contacto.trim().toLowerCase(),
+    formaPago: f.formaPago,
+  };
+  if (f.proyectoCodigo) cuerpo.proyectoCodigo = f.proyectoCodigo;
+  if (f.proyectoCodigo && f.lote.trim()) cuerpo.lote = f.lote.trim().toUpperCase();
+  if (f.zona.trim()) cuerpo.zona = f.zona.trim();
+  if (f.tipo) cuerpo.tipo = f.tipo;
+  if (f.presupuestoMin.trim()) cuerpo.presupuestoMin = monto(f.presupuestoMin);
+  if (f.presupuestoMax.trim()) cuerpo.presupuestoMax = monto(f.presupuestoMax);
+  if (cuerpo.presupuestoMin != null || cuerpo.presupuestoMax != null) cuerpo.moneda = "PEN";
+  if (f.areaDeseada.trim()) cuerpo.areaDeseada = monto(f.areaDeseada);
+  if (f.mensaje.trim()) cuerpo.mensaje = f.mensaje.trim();
+  return cuerpo;
 }

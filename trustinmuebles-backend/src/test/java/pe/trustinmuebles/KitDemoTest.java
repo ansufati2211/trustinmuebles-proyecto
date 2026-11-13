@@ -169,12 +169,12 @@ class KitDemoTest extends BaseApiTest {
         for (String[] f : archivos) {
             try (PDDocument doc = Loader.loadPDF(delKit(f[0], f[1]))) {
                 String t = new PDFTextStripper().getText(doc);
-                assertThat(t).as(f[1]).contains("TRUSTINMUEBLES · INMOBILIARIA EN ICA", f[0],
-                        "Documento informativo elaborado por la inmobiliaria Trustinmuebles.");
+                assertThat(t).as(f[1]).contains("LEDCONS · INMOBILIARIA Y CONSTRUCTORA", f[0],
+                        "Documento informativo elaborado por la inmobiliaria LEDCONS");
                 assertThat(t).as(f[1]).doesNotContainIgnoringCase("CIP N").doesNotContainIgnoringCase("CAP N")
                         .doesNotContain("Colegio de", "MUNICIPALIDAD PROVINCIAL", "SUPERINTENDENCIA NACIONAL", "Código de verificación",
                                 "Firma", "Sello", "compra segura", "saneado");
-                assertThat(doc.getDocumentInformation().getAuthor()).as(f[1]).isEqualTo("Trustinmuebles · Inmobiliaria en Ica");
+                assertThat(doc.getDocumentInformation().getAuthor()).as(f[1]).isEqualTo("LEDCONS · Inmobiliaria y Constructora");
             }
         }
     }

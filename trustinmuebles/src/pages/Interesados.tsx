@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Mail, Phone, Trash2, Users } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Mail, Phone, Trash2, UserPlus, Users } from "lucide-react";
 import { BandejaContactos } from "@/pages/Cartera";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/base/Modal";
@@ -9,6 +9,8 @@ import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { Mensaje } from "@/components/base/Mensaje";
 import { api, post, put } from "@/lib/api";
 import {
+  CANALES_PANEL, FORMAS_PAGO, TEXTO_CONSENTIMIENTO_VERBAL, cuerpoRegistroPanel, formularioPanelVacio,
+  validarFormularioPanel, type FormularioPanel,
   ETAPAS, FRANJAS, estadoSugerido, etiquetaEtapa, fechaCorta, fechaLarga, hoyLima, rutaInteresados, sumarDias,
   textoPresupuesto, type Agenda, type Cita, type EtapaInteres, type FranjaCita, type Interesado,
   type InteresadoDetalle, type OpcionesBandeja, type ResumenDemanda,
@@ -74,10 +76,22 @@ function Bandeja() {
   const { data, loading, error, reload } = useApi<Interesado[]>(rutaInteresados(filtro));
   const { data: opciones } = useApi<OpcionesBandeja>("/interesados/opciones");
   const [abierto, setAbierto] = useState<number | null>(null);
+  const [registrando, setRegistrando] = useState(false);
 
   return (
     <section aria-labelledby="titulo-bandeja" className="space-y-5">
       <h2 id="titulo-bandeja" className="sr-only">Bandeja de interesados</h2>
+      {/* v1.0 (etapa 8): registrar a quien llegó por llamada, oficina, WhatsApp o referido. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="text-sm text-tinta-2">¿Llamó, vino a la oficina, escribió por WhatsApp o lo refirieron? Regístralo aquí.</p>
+        <Button type="button" onClick={() => setRegistrando(true)} data-registrar-interesado>
+          <UserPlus aria-hidden="true" /> Registrar interesado
+        </Button>
+      </div>
+      {registrando && (
+        <RegistrarInteresado opciones={opciones} alCerrar={() => setRegistrando(false)}
+          alRegistrar={(id) => { setRegistrando(false); reload(); setAbierto(id); }} />
+      )}
       <div className={`${tarjeta} grid gap-4 !p-5 sm:grid-cols-2 lg:grid-cols-4`}>
         <Campo etiqueta="Etapa">
           {(p) => <select {...p} className={claseCampo} value={filtro.etapa} onChange={(e) => setFiltro({ ...filtro, etapa: e.target.value })}>
@@ -146,6 +160,122 @@ function FilaInteresado({ i, abrir }: { i: Interesado; abrir: () => void }) {
   );
 }
 
+// ------------------------------------------------------------------------------------------------- registro desde el panel
+
+/** v1.0 (etapa 8): formulario del asesor o el gestor; los mismos datos que el formulario público, con consentimiento verbal. */
+export function RegistrarInteresado({ opciones, alCerrar, alRegistrar }: {
+  opciones: OpcionesBandeja | null; alCerrar: () => void; alRegistrar: (id: number) => void;
+}) {
+  return (
+    <Modal abierto ancho="xl" alCerrar={alCerrar} titulo="Registrar interesado"
+      descripcion="Para quien llegó por llamada, oficina, WhatsApp o referido. Solo nombre de pila y un medio de contacto; nunca DNI.">
+      <FormularioRegistroPanel opciones={opciones} alCancelar={alCerrar} alRegistrar={alRegistrar} />
+    </Modal>
+  );
+}
+
+/** El formulario del registro, sin el modal (se puede dibujar solo, por ejemplo en las pruebas). */
+export function FormularioRegistroPanel({ opciones, alCancelar, alRegistrar }: {
+  opciones: OpcionesBandeja | null; alCancelar: () => void; alRegistrar: (id: number) => void;
+}) {
+  const [f, setF] = useState<FormularioPanel>(formularioPanelVacio());
+  const [intento, setIntento] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [ocupado, setOcupado] = useState(false);
+  const errores = validarFormularioPanel(f);
+  const ver = (k: keyof FormularioPanel) => (intento ? errores[k] : undefined);
+  const cambiar = (p: Partial<FormularioPanel>) => setF({ ...f, ...p });
+
+  const enviar = async () => {
+    setIntento(true);
+    setError(null);
+    if (Object.keys(errores).length > 0) return;
+    setOcupado(true);
+    try {
+      const r = await post<InteresadoDetalle>("/interesados", cuerpoRegistroPanel(f));
+      alRegistrar(r.interes.id);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "No se pudo registrar");
+    } finally {
+      setOcupado(false);
+    }
+  };
+
+  return (
+      <form className="space-y-5" noValidate onSubmit={(e) => { e.preventDefault(); void enviar(); }} data-formulario-panel>
+        {error && <Mensaje tono="error">{error}</Mensaje>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Campo etiqueta="Canal" error={ver("canal")}>
+            {(p) => <select {...p} className={claseCampo} value={f.canal} onChange={(e) => cambiar({ canal: e.target.value as FormularioPanel["canal"] })}>
+              <option value="">Elige…</option>
+              {CANALES_PANEL.map((c) => <option key={c.valor} value={c.valor}>{c.etiqueta}</option>)}
+            </select>}
+          </Campo>
+          <Campo etiqueta="Nombre de pila" error={ver("nombre")}>
+            {(p) => <input {...p} className={claseCampo} value={f.nombre} maxLength={40} autoComplete="off" onChange={(e) => cambiar({ nombre: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Medio de contacto">
+            {(p) => <select {...p} className={claseCampo} value={f.medio} onChange={(e) => cambiar({ medio: e.target.value as FormularioPanel["medio"], contacto: "" })}>
+              <option value="CELULAR">Celular</option>
+              <option value="CORREO">Correo</option>
+            </select>}
+          </Campo>
+          <Campo etiqueta={f.medio === "CORREO" ? "Correo" : "Celular"} error={ver("contacto")}>
+            {(p) => <input {...p} className={claseCampo} value={f.contacto} inputMode={f.medio === "CORREO" ? "email" : "tel"} autoComplete="off" onChange={(e) => cambiar({ contacto: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Proyecto (opcional)">
+            {(p) => <select {...p} className={claseCampo} value={f.proyectoCodigo} onChange={(e) => cambiar({ proyectoCodigo: e.target.value })}>
+              <option value="">Ninguno</option>
+              {opciones?.proyectos.map((x) => <option key={x.codigo} value={x.codigo}>{x.nombre}</option>)}
+            </select>}
+          </Campo>
+          <Campo etiqueta="Lote (opcional)" ayuda="Por ejemplo, A-7." error={ver("lote")}>
+            {(p) => <input {...p} className={claseCampo} value={f.lote} maxLength={12} onChange={(e) => cambiar({ lote: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Zona que busca (opcional)">
+            {(p) => <input {...p} className={claseCampo} value={f.zona} maxLength={80} onChange={(e) => cambiar({ zona: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Tipo (opcional)">
+            {(p) => <select {...p} className={claseCampo} value={f.tipo} onChange={(e) => cambiar({ tipo: e.target.value as FormularioPanel["tipo"] })}>
+              <option value="">Sin indicar</option>
+              <option value="LOTE">Lote</option>
+              <option value="VIVIENDA">Vivienda</option>
+            </select>}
+          </Campo>
+          <Campo etiqueta="Presupuesto mínimo en soles (opcional)" error={ver("presupuestoMin")}>
+            {(p) => <input {...p} className={claseCampo} value={f.presupuestoMin} inputMode="numeric" onChange={(e) => cambiar({ presupuestoMin: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Presupuesto máximo en soles (opcional)" error={ver("presupuestoMax")}>
+            {(p) => <input {...p} className={claseCampo} value={f.presupuestoMax} inputMode="numeric" onChange={(e) => cambiar({ presupuestoMax: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Área deseada en m² (opcional)" error={ver("areaDeseada")}>
+            {(p) => <input {...p} className={claseCampo} value={f.areaDeseada} inputMode="decimal" onChange={(e) => cambiar({ areaDeseada: e.target.value })} />}
+          </Campo>
+          <Campo etiqueta="Forma de pago">
+            {(p) => <select {...p} className={claseCampo} value={f.formaPago} onChange={(e) => cambiar({ formaPago: e.target.value as FormularioPanel["formaPago"] })}>
+              {FORMAS_PAGO.map((x) => <option key={x.valor} value={x.valor}>{x.etiqueta}</option>)}
+            </select>}
+          </Campo>
+        </div>
+        <Campo etiqueta="Nota inicial (opcional)" error={ver("mensaje")}>
+          {(p) => <textarea {...p} className={claseAreaTexto} rows={3} maxLength={300} value={f.mensaje} onChange={(e) => cambiar({ mensaje: e.target.value })} />}
+        </Campo>
+        <label className="flex items-start gap-3 rounded-2xl border border-border bg-superficie p-4 text-sm text-foreground">
+          <input type="checkbox" className="mt-0.5 size-4 accent-primary" checked={f.consentimientoVerbal}
+            onChange={(e) => cambiar({ consentimientoVerbal: e.target.checked })} aria-describedby="error-consentimiento-verbal" />
+          <span>
+            {TEXTO_CONSENTIMIENTO_VERBAL} Queda registrado con tu cuenta y la fecha de hoy.
+            {ver("consentimientoVerbal") && <span id="error-consentimiento-verbal" className="mt-1 block text-xs font-semibold text-sem-rojo-tinta">{ver("consentimientoVerbal")}</span>}
+          </span>
+        </label>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Button type="button" variant="outline" onClick={alCancelar}>Cancelar</Button>
+          <Button type="submit" disabled={ocupado}>{ocupado ? "Registrando…" : "Registrar"}</Button>
+        </div>
+      </form>
+  );
+}
+
 // ------------------------------------------------------------------------------------------------- detalle
 
 function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
@@ -194,6 +324,11 @@ function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
               <a className="hover:underline" href={i.medio === "CORREO" ? `mailto:${i.contacto}` : `tel:+51${i.contacto}`}>{i.contacto}</a>
             </p>
             <p className="text-tinta-2">Registrado el {fecha(i.creadoEn)} · consentimiento {d.consentimientoVersion}</p>
+            {d.consentimientoForma === "VERBAL" && (
+              <p className="text-tinta-2 sm:col-span-2" data-consentimiento-verbal>
+                Llegó por {i.canalEtiqueta ?? "el panel"} · consentimiento verbal registrado por {d.consentimientoRegistradoPor} el {fecha(d.consentimientoEn)}
+              </p>
+            )}
             <p className="text-tinta-2">Busca: {[i.tipo === "VIVIENDA" ? "vivienda" : i.tipo === "LOTE" ? "lote" : null, i.zona, i.areaDeseada ? `${i.areaDeseada} m²` : null].filter(Boolean).join(" · ") || "sin detalle"}</p>
             <p className="text-tinta-2">{textoPresupuesto(i)} · {i.formaPagoEtiqueta}</p>
             {i.proyectoCodigo && (

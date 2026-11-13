@@ -12,7 +12,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+import pe.trustinmuebles.interes.Opciones.CanalInteres;
 import pe.trustinmuebles.interes.Opciones.EstadoCita;
+import pe.trustinmuebles.interes.Opciones.FormaConsentimiento;
 import pe.trustinmuebles.interes.Opciones.FormaPago;
 import pe.trustinmuebles.interes.Opciones.Franja;
 import pe.trustinmuebles.interes.Opciones.MedioContacto;
@@ -172,6 +174,47 @@ final class InteresDtos {
 
     // ------------------------------------------------------------------ peticiones del equipo
 
+    /**
+     * v1.0 (etapa 8): interesado que el asesor o el gestor registra desde el panel porque llegó por llamada, oficina,
+     * WhatsApp o referido. Los mismos campos del formulario público (y sus mismas validaciones: nombre de pila, un solo
+     * medio de contacto, nada de DNI), más el canal y la constancia de que el interesado aceptó de palabra. Sin campo
+     * trampa ni casilla del formulario: el consentimiento verbal lo registra la cuenta que llama.
+     */
+    record RegistroPanel(CanalInteres canal, SolicitudInteres solicitud) {
+        static final Set<String> PROPIOS = Set.of("canal", "consentimientoVerbal");
+        /** Del formulario público no se aceptan la casilla, su versión ni el campo trampa: no aplican al panel. */
+        static final Set<String> SOLO_FORMULARIO = Set.of("consentimiento", "consentimientoVersion", "sitioWeb");
+
+        static RegistroPanel de(JsonNode c, LocalDate hoy) {
+            if (c == null || !c.isObject()) throw new IllegalArgumentException("El cuerpo debe ser un objeto JSON");
+            for (String campo : c.propertyNames()) {
+                if (SOLO_FORMULARIO.contains(campo)) {
+                    throw new IllegalArgumentException("«" + campo + "» no aplica al registro desde el panel: indica "
+                            + "consentimientoVerbal");
+                }
+                if (!PROPIOS.contains(campo) && !SolicitudInteres.CAMPOS.contains(campo)) {
+                    throw new IllegalArgumentException("«" + campo + "» no está permitido. No se piden documentos de "
+                            + "identidad: solo un nombre de pila y un celular o un correo.");
+                }
+            }
+            CanalInteres canal = enumerado(c, "canal", CanalInteres.class, null);
+            if (canal == null || canal == CanalInteres.WEB) {
+                throw new IllegalArgumentException("canal: indica LLAMADA, OFICINA, WHATSAPP o REFERIDO");
+            }
+            JsonNode verbal = c.get("consentimientoVerbal");
+            if (verbal == null || !verbal.isBoolean() || !verbal.asBoolean()) {
+                throw new IllegalArgumentException("consentimientoVerbal: confirma que el interesado aceptó de palabra "
+                        + "que la inmobiliaria use su nombre y su contacto para responderle");
+            }
+            tools.jackson.databind.node.ObjectNode copia = ((tools.jackson.databind.node.ObjectNode) c).deepCopy();
+            copia.remove("canal");
+            copia.remove("consentimientoVerbal");
+            copia.put("consentimiento", true);
+            copia.put("consentimientoVersion", CONSENTIMIENTO_VERSION);
+            return new RegistroPanel(canal, SolicitudInteres.de(copia, hoy));
+        }
+    }
+
     record CambioEtapa(EtapaInteres etapa) {
         static CambioEtapa de(JsonNode c) {
             soloCampos(c, "etapa");
@@ -264,7 +307,7 @@ final class InteresDtos {
             BigDecimal presupuestoMax, String moneda, BigDecimal areaDeseada, FormaPago formaPago,
             String formaPagoEtiqueta, String nombre, MedioContacto medio, String contacto, EtapaInteres etapa,
             String etapaEtiqueta, String responsable, String proximaAccion, LocalDate proximaAccionFecha,
-            boolean vencido, boolean citaPorConfirmar, long notas) {}
+            boolean vencido, boolean citaPorConfirmar, long notas, CanalInteres canal, String canalEtiqueta) {}
 
     record NotaDto(Long id, String texto, String cuentaCodigo, Instant creadaEn) {
         static NotaDto de(NotaInteres n) {
@@ -292,7 +335,8 @@ final class InteresDtos {
     }
 
     record InteresDetalle(InteresDto interes, String mensaje, String consentimientoVersion, Instant consentimientoEn,
-            List<NotaDto> notas, List<CitaDto> citas, boolean puedeMarcarLote) {}
+            List<NotaDto> notas, List<CitaDto> citas, boolean puedeMarcarLote, FormaConsentimiento consentimientoForma,
+            String consentimientoFormaEtiqueta, String consentimientoRegistradoPor) {}
 
     /** Una cita en un día de la agenda. Si está por confirmar, {@code opcion} dice cuál de las propuestas cae ese día. */
     record CitaEnAgenda(CitaDto cita, boolean porConfirmar, Integer opcion, Franja franja, String franjaEtiqueta) {}

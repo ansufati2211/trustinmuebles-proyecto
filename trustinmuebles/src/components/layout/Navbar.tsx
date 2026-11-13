@@ -4,6 +4,7 @@ import { Link, NavLink, useLocation } from "react-router";
 import { User, LogIn, LogOut } from "lucide-react";
 import { useAuth } from "@/lib/auth";
 import { LogoMark } from "@/components/layout/Logo";
+import { EMPRESA } from "@/lib/empresa";
 import { claveDeRuta, navegacion, opcionesMenuMovil } from "@/lib/permisos";
 import { BotonMenuMovil, MenuMovil } from "@/components/layout/MenuMovil";
 
@@ -185,12 +186,17 @@ export function Navbar() {
               to="/"
               onClick={irAlInicio}
               className="flex min-w-0 items-center gap-2 sm:gap-2.5 group"
-              aria-label="Trustinmuebles, ir al inicio"
+              aria-label={EMPRESA.nombreComercial + ", ir al inicio"}
               data-marca
             >
-              <LogoMark className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition-transform duration-300 group-hover:scale-105 group-hover:-rotate-3" />
-              <span className="truncate text-base min-[400px]:text-lg sm:text-xl font-extrabold tracking-tight text-foreground group-hover:text-primary transition-colors duration-200">
-                Trustinmuebles
+              <LogoMark className="w-9 h-9 sm:w-10 sm:h-10 shrink-0 transition-transform duration-300 group-hover:scale-105" />
+              <span className="flex min-w-0 flex-col leading-none">
+                <span className="truncate text-base min-[400px]:text-lg sm:text-xl font-extrabold tracking-tight text-marca-verde group-hover:text-marca-verde-oscuro transition-colors duration-200">
+                  {EMPRESA.nombreComercial}
+                </span>
+                <span className="mt-0.5 hidden truncate text-[10px] font-semibold uppercase tracking-widest text-marca-dorado sm:block">
+                  {EMPRESA.eslogan}
+                </span>
               </span>
             </Link>
 

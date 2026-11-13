@@ -499,3 +499,15 @@ Columnas del CSV: `manzana,lote,area_m2,precio,moneda,estado,independizacion,zon
 - `GET /publico/proyectos/{c}/documentos/{tipo}`: sin sesión, la partida matriz sale como `1111••••`; con sesión, completa.
 - `GET /publico/sitio` agrega `version` (`1.0.0`, tomada del `pom.xml` al compilar: `app.version=@project.version@`).
 - Sin endpoints nuevos de escritura. `scripts/preparar-demo.mjs` usa solo los endpoints de esta página.
+
+### Etapa 8
+
+| Qué | Petición | Respuesta |
+|---|---|---|
+| Cifras de la portada (sin sesión) | `GET /publico/sitio` → `{"indexable": false, "version": "1.0.0", "cifras": {"inmueblesPublicados": 180, "proyectos": 3, "lotesDisponibles": 101}}` (valores de una base nueva) | 200 |
+| Registrar un interesado desde el panel (ASESOR o GESTOR, sin límite por IP) | `POST /interesados` con los campos del formulario público más `"canal"` (`LLAMADA`, `OFICINA`, `WHATSAPP` o `REFERIDO`) y `"consentimientoVerbal": true`; no se aceptan `consentimiento`, `consentimientoVersion` ni `sitioWeb` | 201 con el detalle; 400 si falta el canal o el consentimiento verbal, o un dato no es válido; 401 sin sesión; 403 con otro rol; 404 si el proyecto, lote o inmueble no se ofrece |
+| Canal y consentimiento en la bandeja | `GET /interesados` y `GET /interesados/{id}`: cada interesado trae `canal` y `canalEtiqueta`; el detalle, `consentimientoForma` (`FORMULARIO` o `VERBAL`), su etiqueta y `consentimientoRegistradoPor` | 200 |
+| WhatsApp de contacto | `GET /publico/contacto` → `whatsapp`: el de `APP_CONTACTO_WHATSAPP` o, si está vacía, el de `contenido/empresa.json` (`51991108224`) | 200 |
+
+Los PDF que genera el servidor (ficha registral, láminas y documentos del lote) llevan el logo y el nombre de LEDCONS
+(D72). Los precios de los lotes precargados salen de rangos por distrito (D70).
