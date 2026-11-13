@@ -260,7 +260,8 @@ describe("barra de navegación a 390 px", () => {
     expect(html).toContain('max-[399px]:sr-only">Ingresar</span>');
     // El nombre puede achicarse (truncate) antes que encimarse con «Inmuebles», y los dos lados tienen separación.
     expect(html.match(/<a[^>]*data-marca="true"[^>]*>/)?.[0]).toContain("min-w-0");
-    expect(html).toMatch(/class="truncate[^"]*">Trustinmuebles</);
+    // v1.0 (etapa 8): el nombre que se trunca es el de la inmobiliaria (LEDCONS).
+    expect(html).toMatch(/class="truncate[^"]*">LEDCONS</);
     expect(html).toContain("justify-between gap-2");
     expect(html).toContain(">Inmuebles<");
   });

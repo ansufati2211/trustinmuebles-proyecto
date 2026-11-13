@@ -23,6 +23,11 @@
 
   /* Tokens que usan los componentes (restituidos en la v0.8: el rediseño los había quitado de este archivo). */
   --color-superficie: var(--superficie);
+  /* v1.0 (etapa 8): acentos del logo de la inmobiliaria (encabezados y botones). No tocan el indicador A ni el estado comercial. */
+  --color-marca-verde: var(--marca-verde);
+  --color-marca-verde-oscuro: var(--marca-verde-oscuro);
+  --color-marca-dorado: var(--marca-dorado);
+  --color-marca-dorado-claro: var(--marca-dorado-claro);
   --color-tinta-2: var(--tinta-2);
   --color-sem-verde: var(--sem-verde);
   --color-sem-verde-suave: var(--sem-verde-suave);
@@ -77,6 +82,8 @@
   --radius: 1rem;
 
   --superficie: #F5F8F6;
+  /* v1.0 (etapa 8): verde oscuro y dorado del logo de LEDCONS. Blanco sobre --marca-verde: contraste 10:1; --marca-dorado sobre blanco: 3.2:1 (solo texto grande o detalles). */
+  --marca-verde: #1B4D2E;  --marca-verde-oscuro: #0F2E1B;  --marca-dorado: #A8812F;  --marca-dorado-claro: #E3C67E;
   --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */
   --sem-verde: #22A05A;    --sem-verde-suave: #DFF5E7;    --sem-verde-tinta: #14532D;
   --sem-amarillo: #E0A21B; --sem-amarillo-suave: #FDF1D2; --sem-amarillo-tinta: #713F12;

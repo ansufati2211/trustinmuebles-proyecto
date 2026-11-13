@@ -1,7 +1,7 @@
 # Reporte de la versión 1.0.0 de Trustinmuebles
 
-Fecha: 13 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-7`, creada
-desde `origin/main` en `525deeb` (sin push).
+Fecha: 13 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-8`, creada
+desde `origin/main` en `d88bfe1` (sin push). Material autocontenido para redactar el informe: [PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md).
 
 La 1.0.0 convierte el sistema de transparencia precompra en un **portal inmobiliario**: el comprador encuentra lotes y
 casas de la inmobiliaria sin irse a otra (filtros, orden, plano de lotes, asistente, usos posibles del lote, solicitud de
@@ -19,7 +19,8 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | 4. Interés, citas y CRM | `f8abf44` | `POST /publico/interes` con consentimiento, trampa y límite; citas; bandeja de interesados con etapas, notas, agenda y demanda; 15 interesados y 4 citas precargados | V21 | D65 |
 | 5. Asistente y usos del lote | `0147b41` | Asistente por reglas (sin IA), recomendaciones con motivos, usos que suelen permitirse | — | D66 |
 | 6. Realismo del contenido | `525deeb` | Sin palabras de prueba; INT-; titulares reservados; partida oculta en la ficha; ficha registral propia; PDF públicos; colegiatura vacía; créditos; no indexar; menú ☰ | V22 | D67 |
-| 7. Kit, documentación y versión | `v1.0-etapa-7` (sin merge) | Partida oculta también en la tarjeta, el proyecto, la portada y los PDF de la partida matriz; «Plano de plano» corregido; kit de respaldo; `preparar-demo.mjs`; versión 1.0.0; documentación; recorrido de 15 minutos | — | D68, D69 |
+| 7. Kit, documentación y versión | `d88bfe1` | Partida oculta también en la tarjeta, el proyecto, la portada y los PDF de la partida matriz; «Plano de plano» corregido; kit de respaldo; `preparar-demo.mjs`; versión 1.0.0; documentación; recorrido de 15 minutos | — | D68, D69 |
+| 8. Ajustes finales y verificación | `v1.0-etapa-8` (sin merge) | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
 
 ## 2. Pruebas
 
@@ -30,6 +31,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | v0.9 (`d7803f8`, antes de la 1.0) | 200 | 85 (16 archivos) |
 | Antes de la etapa 7 (`525deeb`) | **312**, 0 fallos | **262** (29 archivos), 0 fallos |
 | Después de la etapa 7 | **318**, 0 fallos | **276** (30 archivos), 0 fallos |
+| Después de la etapa 8 | **332**, 0 fallos | **290** (32 archivos), 0 fallos |
 
 Build de la interfaz (`tsc --noEmit && vite build`): correcto, con el aviso de tamaño del JS principal que ya existía.
 
@@ -49,6 +51,7 @@ Cuenta de `@Test` en el backend y de `it(`/`test(` en la interfaz en cada merge;
 | Etapa 5 | 291 | 236 |
 | Etapa 6 | 311 | 262 |
 | Etapa 7 | 317 | 272 |
+| Etapa 8 | 331 | 286 |
 
 ### Pruebas de la etapa 7
 
@@ -59,6 +62,22 @@ Cuenta de `@Test` en el backend y de `it(`/`test(` en la interfaz en cada merge;
   exigía `N.° 11048217` sin sesión) y los documentos del proyecto (`ProyectosApiTest.documentosDelProyecto`, antes exigía
   la partida matriz completa sin sesión). Ahora exigen la partida oculta sin sesión y completa con sesión. La página del
   proyecto exige `(N.° 1111••••)` sin sesión en lugar de `(N.° 11112001)`. Ninguna prueba se borró ni se desactivó.
+
+### Pruebas de la etapa 8
+
+- Nuevas (backend, +14): `RegistroPanelYMarcaTest` (9: permisos, consentimiento verbal, validaciones, sin límite por IP,
+  V23 sobre una base existente, cifras del sitio, empresa.json, PDF con la empresa y WhatsApp), `PreciosZonaTest` (3: rangos,
+  base nueva y base existente), `ProyectosUnidadTest.precioEnRango` y `InteresUnidadTest.numeroWhatsapp`.
+- Nuevas (interfaz, +14): `lib/empresa.test.ts` (6: copia idéntica de empresa.json, datos, logo, enlace wa.me, teléfonos,
+  cifras de la portada) y `pages/etapa8.test.tsx` (8: barra, pie, colores sin tocar A ni el estado comercial, portada sin
+  números fijos, registro desde el panel).
+- **Ajustadas conservando lo que verifican** (ver D70 y D72): `ProyectosApiTest.precarga` (precio con la fórmula nueva);
+  el rótulo de los PDF en `CopiaLiteralPdfTest`, `RealismoContenidoTest`, `KitDemoTest` y `lib/kit.test.ts` («LEDCONS» en
+  lugar de «TRUSTINMUEBLES»); la barra en `pages/proyectos.test.tsx`; `InteresApiTest.configuracionPublica` (sin variable, el
+  WhatsApp es el de la empresa y ya no nulo). **Dos aserciones exigían PDF sin ninguna imagen**
+  (`CopiaLiteralPdfTest.sinElementosOficiales`, `LaminaPdfTest.unaLaminaPorEspecialidad`); la etapa pide el logo de la
+  empresa, así que ahora exigen que la **única** imagen sea ese logo (mismas dimensiones que su PNG): siguen impidiendo
+  escudos, sellos o QR. Ninguna prueba se borró ni se desactivó.
 
 ## 3. Tiempo con 1000 lotes
 
@@ -140,18 +159,40 @@ la inmobiliaria, marca de agua «REFERENCIAL» y sin sellos, firmas ni códigos 
 | Catálogo | 180 inmuebles publicados en el portal |
 | Versión | 1.0.0, sitio no indexable |
 
-## 7. Pendientes y límites conocidos
+## 7. Etapa 8: verificación de la demo
 
-- **Sin push ni merge** de `v1.0-etapa-7`: lo decide el equipo.
-- `preparar-demo.mjs` no puede **crear un proyecto** que falte (no hay endpoint): lo informa y pide reiniciar la base. Los
-  lotes que repone llegan como **disponibles** (no reproduce el reparto aleatorio de vendidos y separados de la semilla).
-  Si faltan interesados, el formulario público admite 10 envíos por hora: con más de 10 faltantes hay que volver a correrlo.
-- En la base nueva no se probó `preparar-demo.mjs` reponiendo datos (siempre encontró la precarga completa); la reposición
-  usa los mismos endpoints que cubren las pruebas de las etapas 3b y 4.
+**Recorrido** (`recorrido-v10.mjs`, base nueva, 13/11/2026): **13 de 13 pasos** con la frase nueva del asistente
+(«lote en Subtanjalla de menos de 80 mil soles», 19 resultados) y **12 de 12 pantallas en tableta** (820 × 1180 y 1180 × 820:
+portada, inmuebles, plano, ficha del lote, interesados y registrar interesado), sin desplazamiento horizontal, con el logo
+de LEDCONS en la barra, sin errores de consola ni respuestas 409/500. Duración del guion ejecutado por la máquina: **70,1 s**
+(159 s con el arranque del backend, 46,2 s). **La duración con una persona no se midió**: el guion está pensado para 15
+minutos y hay que cronometrarlo en el ensayo. Capturas: `uso-v10/capturas/` y `uso-v10/capturas-tableta/`.
+
+**Reposición en vivo** (`preparar-demo.mjs`, base temporal): se borraron a pedido 2 interesados (Ana, con cita confirmada, y
+Luis) y se pasó el lote A-1 de Altos de Ventisca de disponible a vendido. `--solo-verificar` lo detectó (13 de 15, 3 citas, 1
+lote cambiado); el script repuso los 2 interesados por el registro desde el panel (con la cita confirmada de Ana) y devolvió
+A-1 a disponible; la verificación siguiente dio todo OK. El reparto de estados de la semilla se reproduce exacto: 168 de 168
+lotes, y la fórmula de precios del script coincide con la del servidor en los 168.
+
+**`verificar-sitio.mjs`** contra la instalación local (`http://localhost:8080`): 6 de 6 OK (180 inmuebles publicados, 3
+proyectos, 101 lotes disponibles; robots `Disallow: /`; ficha registral `8019••••` sin el número completo). Para la nube:
+`node scripts/verificar-sitio.mjs https://<dominio-de-la-demo>` (no ejecutado: la nube se reinicia y verifica el domingo,
+ver `docs/demo/CHECKLIST-LUNES.md`).
+
+**Precargado en la etapa 8:** precios de los 168 lotes con los rangos nuevos (en una base existente, solo los no editados);
+`contenido/empresa.json` y el logo; el CSV del kit re-preciado; los PDF del kit regenerados con el rótulo de LEDCONS.
+
+## 8. Pendientes y límites conocidos
+
+- **Sin push ni merge** de `v1.0-etapa-8`: lo decide el equipo.
+- `preparar-demo.mjs` no puede **crear un proyecto** que falte (no hay endpoint): lo informa y pide reiniciar la base.
+  Desde la etapa 8 repone lotes con el estado de la semilla y los interesados por el panel (sin límite por IP). No hay un
+  endpoint para borrar lotes, así que la carga de lotes **faltantes** por CSV no se ensayó en vivo (sí el cambio de estado).
 - Los PDF de la partida matriz con sesión se abren con `abrirPdf` (fetch con el token): un bloqueador de ventanas
   emergentes puede impedir que se abra la pestaña.
 - El recorrido usa la ruta de Chrome de Windows (`C:/Program Files/Google/Chrome/Application/chrome.exe`) y no se probó en
   otros navegadores ni con lectores de pantalla. No se ensayó el guion a mano con público ni se cronometró con una persona.
 - El aviso de tamaño del JS principal de la interfaz sigue (no se partió el paquete).
 - La demo en la nube no se verificó en esta etapa.
-- Los textos de la portada todavía hablan del «catálogo de 12 lotes y viviendas»; no se cambiaron en esta etapa.
+- Etapa 8: la autorización **escrita** de LedCons para su marca está pendiente (hoy verbal). Los PDF del kit llevan el
+  rótulo de LEDCONS pero no el logo (el generador sin dependencias no incrusta imágenes).

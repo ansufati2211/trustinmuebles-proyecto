@@ -67,7 +67,7 @@ describe("kit: archivos de apoyo", () => {
       expect(existsSync(join(pdf, f)), f).toBe(true);
       const contenido = readFileSync(join(pdf, f)).toString("latin1");
       expect(contenido.startsWith("%PDF-1.4"), f).toBe(true);
-      expect(contenido, f).toContain("TRUSTINMUEBLES");
+      expect(contenido, f).toContain("LEDCONS"); // v1.0 (etapa 8): rótulo de la inmobiliaria que opera el portal
       expect(contenido, f).not.toMatch(/SUNARP emite este|Municipalidad Provincial de Ica certifica|Colegio de/);
     }
   });

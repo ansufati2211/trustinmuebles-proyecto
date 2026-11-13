@@ -98,15 +98,34 @@ class ProyectosApiTest extends BaseApiTest {
             assertThat(n).isBetween(40, 70);
             Map<String, Integer> estados = new HashMap<>();
             int conZonificacion = 0;
-            BigDecimal porM2 = precios.get("precioPorM2").get(e.getValue()).decimalValue();
+            // v1.0 (etapa 8): el precio sale del rango por m² del distrito (ya no de un valor único).
+            BigDecimal min = precios.get("rangoPorM2").get(e.getValue()).get("min").decimalValue();
+            BigDecimal max = precios.get("rangoPorM2").get(e.getValue()).get("max").decimalValue();
+            Map<String, Integer> porManzana = new HashMap<>();
+            for (JsonNode l : p.get("lotes")) porManzana.merge(l.get("manzana").asString(), 1, Integer::sum);
             for (JsonNode l : p.get("lotes")) {
                 estados.merge(l.get("estadoComercial").asString(), 1, Integer::sum);
                 if (l.hasNonNull("zonificacion")) conZonificacion++;
                 assertThat(l.get("publicado").asBoolean()).isTrue();
-                // Precio = área × precio por m² del distrito, redondeado a la centena.
-                BigDecimal esperado = l.get("areaM2").decimalValue().multiply(porM2)
-                        .divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP).multiply(BigDecimal.valueOf(100));
-                assertThat(l.get("precio").decimalValue()).as(l.get("codigo").asString()).isEqualByComparingTo(esperado);
+                // Precio = área × un valor por m² del rango fijado por manzana y número (+8 % en esquina), a S/ 500.
+                BigDecimal area = l.get("areaM2").decimalValue();
+                BigDecimal precio = l.get("precio").decimalValue();
+                String codigo = l.get("codigo").asString();
+                int numero = l.get("numero").asInt();
+                int tamano = porManzana.get(l.get("manzana").asString());
+                int mitad = (tamano + 1) / 2;
+                boolean esquina = numero == 1 || numero == mitad || numero == mitad + 1 || numero == tamano;
+                int escalon = Math.floorMod((l.get("manzana").asString().charAt(0) - 'A') * 7 + numero * 3, 11);
+                BigDecimal m2 = min.add(max.subtract(min).multiply(BigDecimal.valueOf(escalon))
+                        .divide(BigDecimal.TEN, 2, RoundingMode.HALF_UP));
+                BigDecimal bruto = area.multiply(m2).multiply(esquina ? new BigDecimal("1.08") : BigDecimal.ONE);
+                BigDecimal quinientos = BigDecimal.valueOf(500);
+                BigDecimal esperado = bruto.divide(quinientos, 0, RoundingMode.HALF_UP).multiply(quinientos);
+                assertThat(precio).as(codigo).isEqualByComparingTo(esperado);
+                assertThat(precio.remainder(quinientos)).as(codigo + " redondeado a S/ 500").isEqualByComparingTo("0");
+                assertThat(precio).as(codigo + " dentro del rango")
+                        .isBetween(area.multiply(min).subtract(BigDecimal.valueOf(250)),
+                                area.multiply(max).multiply(new BigDecimal("1.08")).add(BigDecimal.valueOf(250)));
                 assertThat(l.get("moneda").asString()).isEqualTo("PEN");
             }
             assertThat(estados.get("VENDIDO")).isEqualTo(Math.round(n * 0.15f));

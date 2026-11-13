@@ -101,10 +101,11 @@ class InteresApiTest extends BaseApiTest {
     // ------------------------------------------------------------------ portal público
 
     @Test
-    @DisplayName("sin sesión: configuración pública con el consentimiento vigente y sin WhatsApp si no está configurado")
+    @DisplayName("sin sesión: configuración pública con el consentimiento vigente; sin variable, el WhatsApp de empresa.json")
     void configuracionPublica() throws Exception {
+        // v1.0 (etapa 8): con APP_CONTACTO_WHATSAPP vacía ya no queda sin número: toma el de la inmobiliaria.
         mvc.perform(get("/api/v1/publico/contacto")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.whatsapp").value(nullValue()))
+                .andExpect(jsonPath("$.whatsapp").value("51991108224"))
                 .andExpect(jsonPath("$.consentimientoVersion").value(VERSION))
                 .andExpect(jsonPath("$.consentimientoTexto").value(containsString("eliminen")));
     }

@@ -4,11 +4,12 @@
 //   - los 4 proyectos de contenido/proyectos.json con sus lotes (Horizonte de Los Aquijes va sin lotes: los carga el CSV
 //     del kit durante la demo);
 //   - los 15 interesados precargados (correos @example.com) y sus 4 citas de los próximos 7 días.
-// Si algo falta, lo carga:
-//   - lotes que faltan en un proyecto existente: por la carga masiva (CSV generado de proyectos.json, como DISPONIBLES);
-//   - interesados que faltan: por el formulario público (POST /publico/interes) con su cita; después el asesor confirma
-//     o reprograma la cita y lo lleva a su etapa. El formulario admite 10 envíos por hora desde la misma IP: si se llega
-//     al límite, el script lo dice y se vuelve a correr una hora después (lo ya cargado no se repite).
+// Si algo falta o cambió, lo repone (etapa 8):
+//   - lotes: los que faltan se cargan por CSV y los que cambiaron de estado vuelven al de la semilla (el mismo reparto
+//     determinista de ProyectosSeeder, con su semilla) o, en Horizonte de Los Aquijes si ya se cargó, al del CSV del kit;
+//   - interesados que faltan: por el registro desde el panel (POST /interesados, con la sesión de asesor-01, canal
+//     LLAMADA y consentimiento verbal), con su cita; después el asesor confirma o reprograma la cita y lo lleva a su
+//     etapa. El registro del panel no tiene límite por IP.
 // Un proyecto que no existe no se puede crear por la API: el script lo informa (reinicia la base).
 //
 // Uso: APP_SEED_PASSWORD=<contraseña de las cuentas> node scripts/preparar-demo.mjs [--solo-verificar]
@@ -32,6 +33,8 @@ if (!CLAVE) {
 const CONTENIDO = path.join(RAIZ, "trustinmuebles-backend", "src", "main", "resources", "contenido");
 const PROYECTOS = JSON.parse(readFileSync(path.join(CONTENIDO, "proyectos.json"), "utf8")).proyectos;
 const PRECIOS = JSON.parse(readFileSync(path.join(CONTENIDO, "precios-zona.json"), "utf8"));
+/** v1.0 (etapa 8): estados del CSV del kit para el proyecto que se carga en vivo. */
+const KIT_CSV = { "horizonte-de-los-aquijes": path.join(RAIZ, "docs", "demo", "kit", "proyecto-nuevo-80-lotes.csv") };
 
 /**
  * Respaldo de la precarga de interesados (la misma de InteresSeeder: nombre de pila, correo @example.com, etapa y a qué
@@ -97,9 +100,49 @@ const hoyMas = (dias) => {
 
 // ------------------------------------------------------------------------------------------------ proyectos
 
-/** Lotes que manda proyectos.json para un proyecto (manzana, número, área, precio y zonificación). */
+/** java.util.Random (LCG de 48 bits): reproduce el reparto de estados de ProyectosSeeder con la misma semilla. */
+class RandomJava {
+  static MASCARA = (1n << 48n) - 1n;
+  constructor(semilla) { this.s = (BigInt(semilla) ^ 0x5DEECE66Dn) & RandomJava.MASCARA; }
+  next(bits) {
+    this.s = (this.s * 0x5DEECE66Dn + 0xBn) & RandomJava.MASCARA;
+    return Number(this.s >> BigInt(48 - bits));
+  }
+  nextInt(cota) {
+    let r = this.next(31);
+    const m = cota - 1;
+    if ((cota & m) === 0) return Number((BigInt(cota) * BigInt(r)) >> 31n);
+    for (let u = r; u - (r = u % cota) + m > 2147483647; u = this.next(31));
+    return r;
+  }
+}
+
+/** ProyectosSeeder.repartoDeEstados: 15 % vendidos, 25 % separados, el resto disponibles, barajados como Collections.shuffle. */
+export function repartoDeEstados(n, semilla) {
+  const vendidos = Math.round(n * 0.15);
+  const separados = Math.round(n * 0.25);
+  const e = Array.from({ length: n }, (_, i) => (i < vendidos ? "VENDIDO" : i < vendidos + separados ? "SEPARADO" : "DISPONIBLE"));
+  const azar = new RandomJava(semilla);
+  for (let i = n; i > 1; i--) {
+    const j = azar.nextInt(i);
+    [e[i - 1], e[j]] = [e[j], e[i - 1]];
+  }
+  return e;
+}
+
+/** ProyectosSeeder.valorM2 y precioEnRango (etapa 8): valor fijo dentro del rango del distrito, +8 % en esquina, a S/ 500. */
+function precioDeLote(rango, manzana, numero, area, esquina) {
+  if (!rango) return null;
+  const escalon = (((manzana.toUpperCase().charCodeAt(0) - 65) * 7 + numero * 3) % 11 + 11) % 11;
+  const m2 = Math.round((rango.min + ((rango.max - rango.min) * escalon) / 10) * 100) / 100;
+  const bruto = area * m2 * (esquina ? 1 + PRECIOS.recargoEsquina : 1);
+  const paso = PRECIOS.redondeo ?? 500;
+  return Math.round(bruto / paso) * paso;
+}
+
+/** Lotes que manda proyectos.json para un proyecto (manzana, número, área, precio, zonificación y estado de la semilla). */
 function lotesEsperados(p) {
-  const porM2 = PRECIOS.precioPorM2[p.distrito];
+  const rango = PRECIOS.rangoPorM2?.[p.distrito];
   const salida = [];
   for (const m of p.manzanas ?? []) {
     const mitad = Math.floor((m.lotes + 1) / 2);
@@ -107,17 +150,34 @@ function lotesEsperados(p) {
       const esquina = n === 1 || n === mitad || n === mitad + 1 || n === m.lotes;
       const area = Math.round((esquina ? m.frente + 1.5 : m.frente) * m.fondo * 100) / 100;
       salida.push({ clave: `${m.manzana}-${n}`, manzana: m.manzana, numero: n, area,
-        precio: porM2 ? Math.round((area * porM2) / 100) * 100 : null, zonificacion: m.zonificacion ?? "",
+        precio: precioDeLote(rango, m.manzana, n, area, esquina), zonificacion: m.zonificacion ?? "",
         independizacion: m.independizacion ?? p.independizacion ?? "EN_PARTIDA_MATRIZ" });
     }
   }
+  const estados = repartoDeEstados(salida.length, p.semilla);
+  salida.forEach((l, i) => { l.estado = estados[i]; });
   return salida;
 }
 
-async function clavesDeLotes(codigo) {
+/** Lotes del CSV del kit (Horizonte de Los Aquijes), con su estado. */
+function lotesDelKit(codigo) {
+  const archivo = KIT_CSV[codigo];
+  if (!archivo) return [];
+  const [cab, ...filas] = readFileSync(archivo, "utf8").trim().split(/\r?\n/);
+  const col = cab.split(",");
+  return filas.map((f) => {
+    const v = Object.fromEntries(f.split(",").map((x, i) => [col[i], x]));
+    return { clave: `${v.manzana}-${v.lote}`, manzana: v.manzana, numero: Number(v.lote), area: Number(v.area_m2),
+      precio: v.precio ? Number(v.precio) : null, estado: v.estado || "DISPONIBLE", zonificacion: v.zonificacion ?? "",
+      independizacion: v.independizacion || "EN_PARTIDA_MATRIZ" };
+  });
+}
+
+/** Lotes actuales del proyecto por clave (vacío si el proyecto aún no se ve en el portal). */
+async function lotesActuales(codigo) {
   const r = await api("GET", `/publico/proyectos/${codigo}`, undefined, { publico: true });
-  if (r.status !== 200) return new Set();
-  return new Set(r.datos.lotes.map((l) => l.clave));
+  if (r.status !== 200) return new Map();
+  return new Map(r.datos.lotes.map((l) => [l.clave, l]));
 }
 
 async function prepararProyectos(resumen) {
@@ -125,43 +185,64 @@ async function prepararProyectos(resumen) {
   if (r.status !== 200) throw new Error(`GET /proyectos respondió ${r.status}`);
   const existentes = new Map(r.datos.map((p) => [p.codigo, p]));
   for (const p of PROYECTOS) {
-    const esperados = lotesEsperados(p);
     const actual = existentes.get(p.codigo);
     if (!actual) {
       resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "FALTA", detalle: "no existe y no se puede crear por la API: reinicia la base" });
       continue;
     }
-    if (esperados.length === 0) {
+    // Sin manzanas en el contenido (Horizonte de Los Aquijes): se carga en vivo con el CSV del kit. Si ya se cargó, se
+    // repone con los estados de ese CSV; si no, se deja vacío para la demo.
+    const delKit = (p.manzanas ?? []).length === 0;
+    if (delKit && actual.lotes === 0) {
       resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "OK",
-        detalle: `${actual.lotes} lotes (va sin lotes: se cargan en la demo con el CSV del kit)` });
+        detalle: "0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)" });
       continue;
     }
-    const tiene = actual.lotes >= esperados.length ? null : await clavesDeLotes(p.codigo);
-    const faltan = tiene ? esperados.filter((l) => !tiene.has(l.clave)) : [];
-    if (faltan.length === 0) {
+    const esperados = delKit ? lotesDelKit(p.codigo) : lotesEsperados(p);
+    const actuales = await lotesActuales(p.codigo);
+    const faltan = esperados.filter((l) => !actuales.has(l.clave));
+    // Con caso propio, el estado comercial vive en el caso: no se toca desde aquí.
+    const cambiados = esperados.filter((l) => actuales.has(l.clave) && !actuales.get(l.clave).casoCodigo
+      && actuales.get(l.clave).estadoComercial !== l.estado);
+    const fuente = delKit ? "CSV del kit" : "semilla";
+    if (faltan.length === 0 && cambiados.length === 0) {
       resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "OK",
-        detalle: `${actual.lotes} lotes, ${actual.publicados} publicados, autorización ${actual.autorizacionVigente ? "vigente" : "NO vigente"}` });
+        detalle: `${actual.lotes} lotes, ${actual.publicados} publicados, estados como en la ${fuente}, autorización ${actual.autorizacionVigente ? "vigente" : "NO vigente"}` });
       continue;
     }
     if (SOLO_VERIFICAR) {
-      resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "FALTA", detalle: `faltan ${faltan.length} lotes` });
+      resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "FALTA",
+        detalle: `faltan ${faltan.length} lotes y ${cambiados.length} cambiaron de estado respecto de la ${fuente}` });
       continue;
     }
-    const csv = ["manzana,lote,area_m2,precio,moneda,estado,independizacion,zonificacion,codigo_caso",
-      ...faltan.map((l) => [l.manzana, l.numero, l.area.toFixed(2), l.precio ?? "", l.precio ? PRECIOS.moneda : "",
-        "DISPONIBLE", l.independizacion, l.zonificacion, ""].join(","))].join("\n");
-    const formulario = new FormData();
-    formulario.append("archivo", new Blob([csv], { type: "text/csv" }), `${p.codigo}-faltantes.csv`);
-    const c = await api("POST", `/proyectos/${p.codigo}/lotes/carga`, undefined, { formulario });
-    resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: c.status === 200 ? "CARGADO" : "FALTA",
-      detalle: c.status === 200 ? `se cargaron ${faltan.length} lotes que faltaban (como disponibles)` : `la carga respondió ${c.status}` });
+    const hechos = [];
+    let fallo = false;
+    if (faltan.length) {
+      const csv = ["manzana,lote,area_m2,precio,moneda,estado,independizacion,zonificacion,codigo_caso",
+        ...faltan.map((l) => [l.manzana, l.numero, l.area.toFixed(2), l.precio ?? "", l.precio ? PRECIOS.moneda : "",
+          l.estado, l.independizacion, l.zonificacion, ""].join(","))].join("\n");
+      const formulario = new FormData();
+      formulario.append("archivo", new Blob([csv], { type: "text/csv" }), `${p.codigo}-faltantes.csv`);
+      const c = await api("POST", `/proyectos/${p.codigo}/lotes/carga`, undefined, { formulario });
+      if (c.status === 200) hechos.push(`se cargaron ${faltan.length} lotes que faltaban`);
+      else { fallo = true; hechos.push(`la carga respondió ${c.status}`); }
+    }
+    let repuestos = 0;
+    for (const l of cambiados) {
+      const r = await api("PUT", `/proyectos/${p.codigo}/lotes/${l.clave}/estado-comercial`, { estadoComercial: l.estado });
+      if (r.status === 200) repuestos++;
+      else { fallo = true; hechos.push(`${l.clave}: el cambio de estado respondió ${r.status}`); }
+    }
+    if (repuestos) hechos.push(`${repuestos} lotes volvieron al estado de la ${fuente}`);
+    resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: fallo ? "FALTA" : "CARGADO", detalle: hechos.join("; ") });
   }
 }
 
 // ------------------------------------------------------------------------------------------------ interesados
 
-async function destinoDe(i, consentimientoVersion) {
-  const cuerpo = { nombre: i.nombre, medio: "CORREO", contacto: i.correo, consentimiento: true, consentimientoVersion,
+/** Cuerpo del registro desde el panel (etapa 8): los mismos campos del formulario, con canal y consentimiento verbal. */
+async function destinoDe(i) {
+  const cuerpo = { canal: "LLAMADA", consentimientoVerbal: true, nombre: i.nombre, medio: "CORREO", contacto: i.correo,
     formaPago: i.pago };
   if (i.min) cuerpo.presupuestoMin = i.min;
   if (i.max) { cuerpo.presupuestoMax = i.max; cuerpo.moneda = "PEN"; }
@@ -211,24 +292,19 @@ async function prepararInteresados(resumen) {
   const porCorreo = new Map(r.datos.map((x) => [x.contacto, x]));
   const faltan = INTERESADOS.filter((i) => !porCorreo.has(i.correo));
   let cargados = 0;
-  let limite = false;
   if (faltan.length && !SOLO_VERIFICAR) {
-    const config = await api("GET", "/publico/contacto", undefined, { publico: true });
     for (const i of faltan) {
-      const cuerpo = await destinoDe(i, config.datos.consentimientoVersion);
-      const envio = await api("POST", "/publico/interes", cuerpo, { publico: true });
-      if (envio.status === 429) { limite = true; break; }
-      if (envio.status !== 201) { console.warn(`  ${i.nombre}: el formulario respondió ${envio.status}`); continue; }
-      const ahora = await api("GET", "/interesados");
-      const nuevo = ahora.datos.find((x) => x.contacto === i.correo);
-      if (nuevo) { await llevarAEtapa(nuevo.id, i); cargados++; }
+      const envio = await api("POST", "/interesados", await destinoDe(i));
+      if (envio.status !== 201) { console.warn(`  ${i.nombre}: el registro desde el panel respondió ${envio.status}`); continue; }
+      await llevarAEtapa(envio.datos.interes.id, i);
+      cargados++;
     }
   }
   const total = (await api("GET", "/interesados")).datos;
   const presentes = INTERESADOS.filter((i) => total.some((x) => x.contacto === i.correo)).length;
   resumen.push({ grupo: "Interesados", nombre: "Precarga (correos @example.com)",
     estado: presentes === INTERESADOS.length ? (cargados ? "CARGADO" : "OK") : "FALTA",
-    detalle: `${presentes} de ${INTERESADOS.length}${cargados ? `; se cargaron ${cargados}` : ""}${limite ? "; se llegó al límite de 10 envíos por hora: vuelve a correr el script en una hora" : ""}` });
+    detalle: `${presentes} de ${INTERESADOS.length}${cargados ? `; se cargaron ${cargados}` : ""}` });
   const porEtapa = {};
   for (const x of total) porEtapa[x.etapaEtiqueta] = (porEtapa[x.etapaEtiqueta] ?? 0) + 1;
   resumen.push({ grupo: "Interesados", nombre: "Por etapa", estado: "INFO",

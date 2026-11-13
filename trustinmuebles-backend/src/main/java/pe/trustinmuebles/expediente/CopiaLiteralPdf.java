@@ -24,9 +24,9 @@ import org.apache.pdfbox.util.Matrix;
  * Ficha registral del inmueble (REQ-F03, RN-01). v1.0 (etapa 6): antes «copia literal referencial».
  *
  * La elabora la inmobiliaria con los datos de la partida y lo dice en su encabezado y en su pie: no imita el formato de
- * SUNARP (sin zona registral en el encabezado, sin tomo del diario, derechos cobrados ni recibo), no lleva logo, escudo,
+ * SUNARP (sin zona registral en el encabezado, sin tomo del diario, derechos cobrados ni recibo), no lleva logo oficial, escudo,
  * sello, firma, código de verificación ni código QR, y cada página trae una marca de agua y el pie «no reemplaza la copia
- * literal que emite SUNARP».
+ * literal que emite SUNARP». v1.0 (etapa 8): el encabezado lleva el logo de la inmobiliaria (LEDCONS), no uno oficial.
  */
 final class CopiaLiteralPdf {
     static final String MARCA_DE_AGUA = "FICHA INFORMATIVA · DOCUMENTO REFERENCIAL · SIN VALOR LEGAL";
@@ -103,11 +103,13 @@ final class CopiaLiteralPdf {
             doc.setDocumentInformation(info);
 
             int total = paginas.size();
+            // v1.0 (etapa 8): el logo de la inmobiliaria en el encabezado de cada página.
+            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject logo = RotuloInmobiliaria.logo(doc);
             for (int i = 0; i < total; i++) {
                 PDPage pagina = new PDPage(PDRectangle.A4);
                 doc.addPage(pagina);
                 try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
-                    encabezado(cs, d, p, normal, negrita);
+                    encabezado(cs, d, p, normal, negrita, logo);
                     float y = PDRectangle.A4.getHeight() - MARGEN - ALTO_ENCABEZADO;
                     for (Linea l : paginas.get(i)) {
                         y -= l.antes() + l.tam() * 1.28f;
@@ -350,8 +352,10 @@ final class CopiaLiteralPdf {
         cs.endText();
     }
 
-    private static void encabezado(PDPageContentStream cs, DatosCopia d, Procedencia p, PDFont normal, PDFont negrita) throws IOException {
+    private static void encabezado(PDPageContentStream cs, DatosCopia d, Procedencia p, PDFont normal, PDFont negrita,
+            org.apache.pdfbox.pdmodel.graphics.image.PDImageXObject logo) throws IOException {
         float arriba = PDRectangle.A4.getHeight() - MARGEN;
+        RotuloInmobiliaria.dibujarLogo(cs, logo, PDRectangle.A4.getWidth() - MARGEN - 42f, arriba - 44f, 42f);
         cs.setNonStrokingColor(0f);
         texto(cs, RotuloInmobiliaria.ENCABEZADO, negrita, 8.5f, MARGEN, arriba - 8f);
         texto(cs, p.transcrita() ? "Ficha registral del inmueble · Transcripción referencial"

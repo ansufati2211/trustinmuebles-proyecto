@@ -63,6 +63,7 @@ final class DocumentoLotePdf {
             doc.addPage(pagina);
             try (PDPageContentStream cs = new PDPageContentStream(doc, pagina)) {
                 marcaDeAgua(cs, negrita);
+                LaminaPdf.encabezadoEmpresa(doc, cs, negrita);
                 cs.setNonStrokingColor(0f);
                 texto(cs, seguro(tipo.etiqueta().toUpperCase(Locale.forLanguageTag("es-PE"))), negrita, 15f, IZQ, 790f);
                 texto(cs, "Partida N.° " + seguro(d.partida()), normal, 10f, IZQ, 772f);

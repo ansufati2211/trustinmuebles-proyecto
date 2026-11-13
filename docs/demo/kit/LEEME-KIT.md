@@ -51,8 +51,10 @@ color lo calcula el motor de reglas; el kit solo aporta los datos. `KitDemoTest`
 
 ### Qué dicen los PDF
 
-Todos llevan el encabezado «TRUSTINMUEBLES · INMOBILIARIA EN ICA», la marca de agua «REFERENCIAL», el pie «Documento
-informativo elaborado por la inmobiliaria Trustinmuebles.» y la inmobiliaria como autor en sus metadatos. El de
+Todos llevan el encabezado «LEDCONS · INMOBILIARIA Y CONSTRUCTORA» (etapa 8, D72), la marca de agua «REFERENCIAL», el pie
+«Documento informativo elaborado por la inmobiliaria LEDCONS (LEDCONS E.I.R.L., RUC 20600817133).» y la inmobiliaria como
+autor en sus metadatos. Llevan el nombre pero no el logo: el generador sin dependencias no incrusta imágenes (los PDF que
+genera el servidor sí lo llevan). Los precios de `proyecto-nuevo-80-lotes.csv` siguen el rango de Los Aquijes (D70). El de
 zonificación se titula «Resumen de zonificación y vías» y aclara que el certificado lo emite la municipalidad; la tasación
 es «referencial» y aclara que no la firma un perito. Ninguno lleva escudos, sellos, firmas, colegiaturas ni códigos de
 verificación, ni se presenta como emitido por SUNARP, una municipalidad o un colegio profesional.

@@ -65,13 +65,13 @@ class CopiaLiteralPdfTest {
             String texto = new PDFTextStripper().getText(doc);
             // v1.0 (etapa 6): la zona y la oficina siguen en el documento, como datos registrales y no como encabezado.
             assertThat(texto).contains("Zona Registral N.° XI - Sede Ica", "Oficina Registral de Ica", "DATOS REGISTRALES",
-                    "TRUSTINMUEBLES · INMOBILIARIA EN ICA", "Partida N.° SIM-11048217", "FICHA REGISTRAL DEL INMUEBLE",
+                    "LEDCONS · INMOBILIARIA Y CONSTRUCTORA", "Partida N.° SIM-11048217", "FICHA REGISTRAL DEL INMUEBLE",
                     "DESCRIPCIÓN DEL INMUEBLE", "Área: 160.00 m²", "ANTECEDENTE DOMINIAL", "TÍTULOS DE DOMINIO",
                     "GRAVÁMENES Y CARGAS", "CANCELACIONES", "OTROS", "D00001 · HIPOTECA", "Título archivado N.° SIM-2018-00011",
                     "presentado el 26/03/2018", "inscrito el 02/04/2018", "persona natural (datos reservados)");
             assertThat(texto).doesNotContain("COPIA LITERAL DE PARTIDA REGISTRAL", "REGISTRO DE PREDIOS ·");
             assertThat(doc.getDocumentInformation().getTitle()).isEqualTo("Ficha registral del inmueble SIM-11048217");
-            assertThat(doc.getDocumentInformation().getAuthor()).isEqualTo("Trustinmuebles");
+            assertThat(doc.getDocumentInformation().getAuthor()).isEqualTo("LEDCONS");
         }
     }
 
@@ -84,7 +84,8 @@ class CopiaLiteralPdfTest {
                     "documento informativo elaborado por la inmobiliaria; no reemplaza la copia literal que emite sunarp");
             assertThat(texto).doesNotContain("código de verificación", "codigo de verificacion", "código qr", "registrador",
                     "firma digital", "firmado digitalmente");
-            assertThat(doc.getPage(0).getResources().getXObjectNames()).as("sin imágenes: ni logo, ni escudo, ni QR").isEmpty();
+            // v1.0 (etapa 8): la única imagen es el logo de la inmobiliaria; ni escudo, ni sello, ni QR.
+            ImagenesPdf.soloElLogoDeLaEmpresa(doc.getPage(0), "ficha registral");
             assertThat(doc.getDocumentInformation().getSubject()).contains("Sin valor legal");
         }
     }

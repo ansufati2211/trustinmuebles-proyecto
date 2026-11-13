@@ -18,7 +18,7 @@ import pe.trustinmuebles.clasificacion.Especialidad;
 class LaminaPdfTest {
 
     @Test
-    @DisplayName("Cada especialidad genera un PDF válido con su título, su rótulo ficticio y sin imágenes")
+    @DisplayName("Cada especialidad genera un PDF válido con su título, su rótulo ficticio y sin más imagen que el logo de la empresa")
     void unaLaminaPorEspecialidad() throws Exception {
         for (Especialidad e : Especialidad.values()) {
             byte[] pdf = LaminaPdf.generar(e, "SIM-11048217", "Mz. F Lote 7 · Hab. Urb. Santa Elvira · Parcona, Ica",
@@ -35,7 +35,8 @@ class LaminaPdfTest {
                         e.etiqueta().toUpperCase(java.util.Locale.forLanguageTag("es-PE")), "Partida N.° SIM-11048217");
                 // Los avisos hablan de «sin sello ni firma»; lo que no debe haber es una firma presentada.
                 assertThat(String.join(" ", dibujado)).doesNotContainIgnoringCase("firmado por");
-                assertThat(doc.getPage(0).getResources().getXObjectNames()).as("sin logos ni sellos como imagen").isEmpty();
+                // v1.0 (etapa 8): la única imagen es el logo de la inmobiliaria; ningún sello como imagen.
+                ImagenesPdf.soloElLogoDeLaEmpresa(doc.getPage(0), e.etiqueta());
             }
         }
     }

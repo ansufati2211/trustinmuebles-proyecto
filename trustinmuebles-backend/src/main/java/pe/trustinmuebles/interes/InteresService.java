@@ -24,7 +24,9 @@ import pe.trustinmuebles.identidad.AuthService;
 import pe.trustinmuebles.identidad.Rol;
 import pe.trustinmuebles.identidad.UsuarioActual;
 import pe.trustinmuebles.interes.InteresDtos.*;
+import pe.trustinmuebles.interes.Opciones.CanalInteres;
 import pe.trustinmuebles.interes.Opciones.EstadoCita;
+import pe.trustinmuebles.interes.Opciones.FormaConsentimiento;
 import pe.trustinmuebles.interes.Opciones.ModalidadCita;
 import pe.trustinmuebles.interes.Opciones.OrigenInteres;
 import pe.trustinmuebles.shared.ConflictoException;
@@ -65,7 +67,17 @@ class InteresService {
         this.inmuebles = inmuebles;
         this.auth = auth;
         this.limite = limite;
-        this.whatsapp = whatsapp == null ? "" : whatsapp.replaceAll("[^0-9]", "");
+        this.whatsapp = numeroWhatsapp(whatsapp, pe.trustinmuebles.shared.Empresa.datos().whatsapp());
+    }
+
+    /**
+     * v1.0 (etapa 8): el número de app.contacto.whatsapp (variable APP_CONTACTO_WHATSAPP) o, si está vacía, el de la
+     * inmobiliaria en contenido/empresa.json. Solo dígitos, con el código de país (wa.me no admite «+» ni espacios).
+     */
+    static String numeroWhatsapp(String configurado, String deLaEmpresa) {
+        String d = configurado == null ? "" : configurado.replaceAll("[^0-9]", "");
+        if (d.isEmpty() && deLaEmpresa != null) d = deLaEmpresa.replaceAll("[^0-9]", "");
+        return d;
     }
 
     static LocalDate hoy() {
@@ -92,6 +104,28 @@ class InteresService {
         }
         Recibido ok = new Recibido(true, s.cita() != null, s.cita() != null ? MENSAJE_RECIBIDO_CITA : MENSAJE_RECIBIDO);
         if (s.trampa()) return ok;
+        crear(s, CanalInteres.WEB, FormaConsentimiento.FORMULARIO, null);
+        return ok;
+    }
+
+    /**
+     * v1.0 (etapa 8): el asesor o el gestor registra a un interesado que llegó por llamada, oficina, WhatsApp o referido,
+     * con su consentimiento verbal (queda quién lo registró y cuándo). Mismas validaciones que el formulario público y sin
+     * límite por IP. Si quien registra puede ser responsable, queda a su cargo; se deja una nota con el canal.
+     */
+    InteresDetalle registrar(tools.jackson.databind.JsonNode cuerpo) {
+        UsuarioActual u = exigirEquipo();
+        RegistroPanel r = RegistroPanel.de(cuerpo, hoy());
+        Interes i = crear(r.solicitud(), r.canal(), FormaConsentimiento.VERBAL, u.codigoCuenta());
+        if (RESPONSABLES.contains(u.codigoCuenta())) i.setResponsable(u.codigoCuenta());
+        i = intereses.saveAndFlush(i);
+        nota(i.getId(), "Registrado desde el panel (" + r.canal().etiqueta + "). El interesado dio su consentimiento "
+                + "de forma verbal; lo registró " + u.codigoCuenta() + ".", u.codigoCuenta());
+        return detalleDe(i);
+    }
+
+    /** Guarda el interés y su cita (si la pidió). Común al formulario público y al registro desde el panel. */
+    private Interes crear(SolicitudInteres s, CanalInteres canal, FormaConsentimiento forma, String registradoPor) {
         Referencia ref = referencia(s);
         if (s.cita() != null && s.cita().modalidad() == ModalidadCita.VISITA_AL_LOTE && ref == null) {
             throw new IllegalArgumentException("cita.modalidad: para una visita elige primero un lote o un inmueble");
@@ -122,6 +156,9 @@ class InteresService {
         i.setConsentimiento(true);
         i.setConsentimientoVersion(s.consentimientoVersion());
         i.setConsentimientoEn(ahora);
+        i.setCanal(canal);
+        i.setConsentimientoForma(forma);
+        i.setConsentimientoRegistradoPor(registradoPor);
         i.setEtapa(EtapaInteres.NUEVO);
         i = intereses.saveAndFlush(i);
         if (s.cita() != null) {
@@ -139,7 +176,7 @@ class InteresService {
             c.setActualizadaEn(ahora);
             citas.saveAndFlush(c);
         }
-        return ok;
+        return i;
     }
 
     private Referencia referencia(SolicitudInteres s) {
@@ -393,7 +430,8 @@ class InteresService {
         boolean marcable = (i.getEtapa() == EtapaInteres.SEPARACION || i.getEtapa() == EtapaInteres.VENTA)
                 && (i.getOrigen() == OrigenInteres.LOTE || i.getOrigen() == OrigenInteres.CASO);
         return new InteresDetalle(dto(i, ns.size(), lista, hoy()), i.getMensaje(), i.getConsentimientoVersion(),
-                i.getConsentimientoEn(), ns, lista.stream().map(c -> CitaDto.de(c, i)).toList(), marcable);
+                i.getConsentimientoEn(), ns, lista.stream().map(c -> CitaDto.de(c, i)).toList(), marcable,
+                i.getConsentimientoForma(), i.getConsentimientoForma().etiqueta, i.getConsentimientoRegistradoPor());
     }
 
     static InteresDto dto(Interes i, long nNotas, List<Cita> susCitas, LocalDate hoy) {
@@ -405,7 +443,7 @@ class InteresService {
                 i.getPresupuestoMin(), i.getPresupuestoMax(), i.getMoneda(), i.getAreaDeseada(), i.getFormaPago(),
                 i.getFormaPago().etiqueta, i.getNombre(), i.getMedio(), i.getContacto(), i.getEtapa(),
                 i.getEtapa().etiqueta(), i.getResponsable(), i.getProximaAccion(), i.getProximaAccionFecha(), vencido,
-                porConfirmar, nNotas);
+                porConfirmar, nNotas, i.getCanal(), i.getCanal().etiqueta);
     }
 
     /** Rangos de presupuesto, por moneda (nunca se suman soles y dólares). Se usa el máximo o, si falta, el mínimo. */

@@ -913,3 +913,107 @@ límite de 10 por hora: si lo alcanza, lo dice). Un proyecto inexistente no se p
 interfaz y Chrome, corre `preparar-demo`, recorre el guion de 15 minutos con el kit y apaga todo.
 **Pruebas:** `KitDemoTest` (6), `lib/kit.test.ts` (12), una de versión en `lib/limitesLegales.test.tsx`, una de la
 página del proyecto con sesión en `pages/proyectos.test.tsx`.
+
+## D70. v1.0 (etapa 8): precios de mercado por rango de distrito (sin migración)
+
+**Fuente.** 13 avisos de terrenos de Urbania revisados por el equipo el **13/11/2026**. Dos avisos de Ica se excluyeron por
+ser inmuebles con construcción o céntricos (más de S/ 3,600 por m²). La fuente y qué valores son estimados se documentan
+**solo aquí**, no en la interfaz ni en el contenido público (`precios-zona.json` remite a esta decisión).
+**Rangos en soles por m² (`contenido/precios-zona.json`, campo `rangoPorM2`):**
+
+| Distrito | Rango (S/ por m²) | Origen |
+|---|---|---|
+| Ica | 800 a 900 | Avisos |
+| Subtanjalla | 450 a 650 | Avisos |
+| La Tinguiña | 350 a 500 | **Estimado** |
+| Los Aquijes | 300 a 450 | **Estimado** |
+| Salas | 250 a 400 | **Estimado** |
+
+Los tres estimados existen porque los avisos de esos distritos son terrenos rústicos o de gran extensión, de S/ 48 a 280 por
+m², que solo sirven como piso. El más cercano a un lote urbano es uno de Los Aquijes (S/ 250 a 280 por m², independizado y con
+servicios). Los distritos sin proyecto (Parcona, Pueblo Nuevo, Santiago, Pachacútec, San José de los Molinos) salieron del
+archivo: no había avisos ni lotes que los usaran.
+**Fórmula (determinista).** Cada lote toma uno de 11 escalones del rango, elegidos por la letra de la manzana y su número:
+`escalón = (letra × 7 + número × 3) mod 11` (A = 0) y `valor por m² = mín + (máx − mín) × escalón / 10`. Precio = área ×
+valor por m², con **8 % más en las esquinas** (el primer y el último lote de la manzana y los dos del medio, los mismos que
+tienen 1.50 m más de frente), **redondeado a S/ 500**. Ejemplo: Subtanjalla, Mz. A Lote 1 (escalón 3): S/ 510 por m².
+**Bases.** Una base nueva nace con estos precios. En una base existente, `ProyectosSeeder` aplica el ajuste una sola vez
+(marca `v1.0-etapa-8-precios` en `ajuste_contenido`) y solo a los lotes **que nadie editó**: los que conservan el precio de la
+fórmula anterior (área × S/ por m² del distrito, a la centena) y no tienen historial de carga por CSV. Un lote con otro
+precio o tocado por CSV no cambia.
+**Kit.** `proyecto-nuevo-80-lotes.csv` (Horizonte de Los Aquijes) se re-preció con la misma fórmula y el rango de Los Aquijes,
+sin cambiar sus estados. Cambiaron los montos del guion (paso 1: «menos de 80 mil soles», 19 resultados; paso 3: Mz. C
+Lote 12 a S/ 82,000) y de las frases 1, 4 y 9 del asistente (`kit/frases-asistente.md`).
+**Pruebas:** `PreciosZonaTest` (3, con base existente simulada), `ProyectosUnidadTest.precioEnRango`; ajustada conservando
+lo que verifica `ProyectosApiTest.precarga` (el precio se recalcula a mano con la fórmula nueva).
+
+## D71. v1.0 (etapa 8): cifras reales en la portada y registro de interesados desde el panel (V23)
+
+**Portada.** `GET /api/v1/publico/sitio` agrega `cifras`: `inmueblesPublicados` (el total del catálogo público),
+`proyectos` (proyectos con al menos un lote publicado; no cuenta los que solo agrupan casos sueltos) y `lotesDisponibles`
+(lotes publicados y disponibles de esos proyectos). La portada ya no dice «12 expedientes» ni «12 lotes y viviendas»; las
+tres cifras del encabezado («4 planos por vivienda» y «6 pasos de inspección» eran fijas) son ahora esas tres, con «—»
+mientras no llegan. En una base nueva: 180 inmuebles publicados, 3 proyectos y 101 lotes disponibles.
+**Registro desde el panel (`POST /api/v1/interesados`, ASESOR o GESTOR).** Para quien llegó por **LLAMADA, OFICINA,
+WHATSAPP o REFERIDO**. Los mismos campos y validaciones del formulario público (nombre de pila, un solo medio de contacto,
+nada de DNI, 8 dígitos seguidos en el mensaje dan 400, cita opcional) más `canal` y `consentimientoVerbal: true`
+(obligatorio). No acepta la casilla del formulario, su versión ni el campo trampa. **Sin límite por IP.** Se guarda el
+canal, `consentimiento_forma = VERBAL`, la cuenta que lo registró (`consentimiento_registrado_por`) y la fecha
+(`consentimiento_en`); queda a cargo de quien lo registra y con una nota. Responde 201 con el detalle.
+**V23** agrega `canal` (por omisión `WEB`), `consentimiento_forma` (por omisión `FORMULARIO`) y
+`consentimiento_registrado_por`, con restricciones: canal en la lista, forma en la lista y, si es verbal, con autor y canal
+distinto de `WEB`. Los interesados existentes quedan como formulario web. Sigue valiendo D68: solo nombre de pila y un medio
+de contacto, borrado a pedido.
+**Interfaz.** «Registrar interesado» en la bandeja de Interesados: formulario con canal, nombre, medio y contacto, proyecto y
+lote, búsqueda, presupuesto, forma de pago, nota y la constancia del consentimiento verbal. El detalle muestra «Llegó por …
+· consentimiento verbal registrado por … el …».
+**Pruebas:** `RegistroPanelYMarcaTest` (permisos, validaciones, sin límite por IP, V23 sobre una base existente, cifras),
+`pages/etapa8.test.tsx`, `lib/empresa.test.ts`.
+
+## D72. v1.0 (etapa 8): marca de la inmobiliaria (LEDCONS)
+
+**Autorización.** LedCons autorizó **de forma verbal** el **13/11/2026** el uso de sus datos y de su logo en el portal. **La
+autorización escrita está pendiente**: hasta tenerla, la marca se usa solo en la demostración y en la entrega del curso.
+**Datos (`contenido/empresa.json`, copia idéntica en `trustinmuebles/src/contenido/empresa.json`):** nombre comercial
+«LEDCONS» (el logo dice «LEDCONS SAC» y se usa tal cual como imagen), razón social «LEDCONS E.I.R.L.», RUC 20600817133,
+eslogan «Inmobiliaria y Constructora», dirección «Av. San Martín 577, 2.º piso, oficina 32, Ica», teléfonos 991 108 224 y
+904 958 416, WhatsApp 51991108224 y su Facebook. Logo: `trustinmuebles/public/img/marca/ledcons-logo.png` y su copia
+`trustinmuebles-backend/src/main/resources/marca/ledcons-logo.png` (dejados por el equipo).
+**Dónde se ve.** Barra (logo, «LEDCONS» y eslogan), pie (razón social y RUC, dirección, teléfonos con enlace `tel:`,
+WhatsApp `wa.me`, Facebook y «con tecnología Trustinmuebles · versión 1.0.0»), ingreso y pantalla de carga; en los PDF que
+genera el servidor, el logo y «LEDCONS · INMOBILIARIA Y CONSTRUCTORA» en el encabezado de la ficha registral, las 4 láminas
+y los 4 documentos del lote, con autor «LEDCONS» y la frase «elaborado por la inmobiliaria LEDCONS (LEDCONS E.I.R.L., RUC
+…)». Los PDF del kit se regeneraron con el mismo rótulo (sin logo: el generador sin dependencias no incrusta imágenes). El
+logo es el de una empresa privada: no es un escudo ni un sello y ningún PDF se presenta como emitido por SUNARP, una
+municipalidad o un colegio profesional (sigue D67).
+**WhatsApp.** `app.contacto.whatsapp` (`APP_CONTACTO_WHATSAPP`) manda; si está vacía, se usa el de `empresa.json`. El
+enlace es `https://wa.me/<solo dígitos>?text=…`.
+**Colores.** Tokens `--marca-verde` (#1B4D2E), `--marca-verde-oscuro`, `--marca-dorado` (#A8812F) y `--marca-dorado-claro`
+para encabezados de la portada, la barra, el pie y el botón principal. **No cambian** `--primary` (lo usa la etiqueta del
+estado comercial «Disponible»), los colores del semáforo de A (`--sem-*`) ni el resaltado de A.
+**Pruebas ajustadas conservando lo que verifican:** las aserciones del rótulo en `CopiaLiteralPdfTest`,
+`RealismoContenidoTest`, `KitDemoTest` y `lib/kit.test.ts` (ahora «LEDCONS» en lugar de «TRUSTINMUEBLES»); la de la barra en
+`pages/proyectos.test.tsx` (el nombre que se trunca); `InteresApiTest.configuracionPublica` (sin variable, el WhatsApp ya no
+es nulo: es el de la empresa). Dos aserciones exigían que los PDF no tuvieran **ninguna imagen**
+(`CopiaLiteralPdfTest.sinElementosOficiales`, `LaminaPdfTest.unaLaminaPorEspecialidad`); ahora exigen que la **única**
+imagen sea el logo de la empresa (mismo ancho y alto que su PNG), así que siguen impidiendo escudos, sellos o QR.
+
+## D73. v1.0 (etapa 8): preparar-demo con reposición, verificar-sitio, tableta y lista del lunes
+
+**`scripts/preparar-demo.mjs`.** Repone interesados con el **registro desde el panel** (sesión de `asesor-01`, canal
+LLAMADA, consentimiento verbal), así que ya no depende del límite de 10 envíos por hora. Repone los lotes: los que faltan
+se cargan por CSV con el estado de la semilla y los que cambiaron de estado vuelven al de la semilla con
+`PUT /proyectos/{c}/lotes/{clave}/estado-comercial`. El estado de la semilla se reproduce con una copia de
+`java.util.Random` y `Collections.shuffle` (misma semilla de `proyectos.json`): coincidió en los 168 lotes de una base
+nueva. Horizonte de Los Aquijes, si ya se cargó, se repone con los estados del CSV del kit; si no tiene lotes, se deja
+vacío para cargarlo en vivo. Un proyecto que falta sigue dando «no existe y no se puede crear por la API: reinicia la
+base». **Prueba en vivo (13/11/2026, base temporal):** se borraron a pedido Ana y Luis y se pasó el lote A-1 de Altos de
+Ventisca a vendido; `--solo-verificar` lo detectó (13 de 15 interesados, 3 citas, 1 lote cambiado); el script repuso los 2
+interesados (con la cita confirmada de Ana) y el lote, y la verificación posterior dio todo OK.
+**`scripts/verificar-sitio.mjs <URL>`.** Sin dependencias y sin sesión: `/publico/sitio`, la lista, el detalle de un caso y
+la ficha de un lote, un proyecto con su plano, `robots.txt` con `Disallow` y la ficha registral en PDF con la partida
+oculta. Imprime OK o FALLA por punto. Local: 6 de 6 OK.
+**Recorrido.** `recorrido-v10.mjs` agrega una pasada en tableta (820 × 1180 y 1180 × 820) por la portada, el catálogo, el
+plano, la ficha del lote, la bandeja de interesados y el formulario de registro, sin desplazamiento horizontal y con la
+marca en la barra (capturas en `docs/pruebas/uso-v10/capturas-tableta/`), y registra la duración del guion.
+**`docs/demo/CHECKLIST-LUNES.md`:** qué revisar el domingo y el lunes.

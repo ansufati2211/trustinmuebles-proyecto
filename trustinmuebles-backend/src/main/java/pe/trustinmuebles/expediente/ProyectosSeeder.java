@@ -8,14 +8,18 @@ import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.core.annotation.Order;
 import org.springframework.core.io.ClassPathResource;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 import tools.jackson.databind.ObjectMapper;
@@ -25,9 +29,13 @@ import tools.jackson.databind.ObjectMapper;
  * su proyecto. Corre después de CasosSeeder, que carga las partidas matrices. Es idempotente: un proyecto que ya existe
  * solo recibe lo que le falta (descripción, partida matriz, hitos o lotes), sin pisar lo editado.
  *
- * <p>Los lotes salen de las manzanas del contenido: área = frente × fondo (las esquinas tienen 1.50 m más de frente) y
- * precio = área × precio por m² del distrito (contenido/precios-zona.json), redondeado a la centena. Los estados se
- * reparten de forma determinista (semilla fija): 15 % vendidos, 25 % separados y el resto disponibles.
+ * <p>Los lotes salen de las manzanas del contenido: área = frente × fondo (las esquinas tienen 1.50 m más de frente). Desde
+ * la etapa 8, precio = área × un valor por m² fijo dentro del rango del distrito (contenido/precios-zona.json) que depende
+ * de la manzana y el número, con un 8 % más en las esquinas, redondeado a S/ 500. Los estados se reparten de forma
+ * determinista (semilla fija): 15 % vendidos, 25 % separados y el resto disponibles.
+ *
+ * <p>Una base existente recibe los precios nuevos una sola vez (ajuste {@value #AJUSTE_PRECIOS}) y solo en los lotes que
+ * nadie editó: los que conservan el precio de la fórmula anterior y no tienen historial de carga por CSV.
  */
 @Component
 @Order(45)
@@ -35,21 +43,30 @@ class ProyectosSeeder implements ApplicationRunner {
     static final double VENDIDOS = 0.15;
     static final double SEPARADOS = 0.25;
     static final BigDecimal EXTRA_ESQUINA = new BigDecimal("1.50");
+    /** Marca del ajuste de precios de la etapa 8 en una base existente (tabla ajuste_contenido). */
+    static final String AJUSTE_PRECIOS = "v1.0-etapa-8-precios";
+    /** Precio por m² con el que se generaron los lotes hasta la etapa 7 (para reconocer los que nadie editó). */
+    static final Map<String, BigDecimal> PRECIO_M2_ANTERIOR = Map.of("Ica", new BigDecimal("450"),
+            "Subtanjalla", new BigDecimal("250"), "La Tinguiña", new BigDecimal("300"),
+            "Los Aquijes", new BigDecimal("250"), "Salas", new BigDecimal("200"));
 
     private final ProyectoRepository proyectos;
     private final LoteProyectoRepository lotes;
     private final CasoLoteRepository casos;
     private final VinculoProyecto vinculo;
     private final ObjectMapper json;
+    private final JdbcTemplate jdbc;
     private final boolean habilitado;
 
     ProyectosSeeder(ProyectoRepository proyectos, LoteProyectoRepository lotes, CasoLoteRepository casos,
-            VinculoProyecto vinculo, ObjectMapper json, @Value("${app.seed.enabled}") boolean habilitado) {
+            VinculoProyecto vinculo, ObjectMapper json, JdbcTemplate jdbc,
+            @Value("${app.seed.enabled}") boolean habilitado) {
         this.proyectos = proyectos;
         this.lotes = lotes;
         this.casos = casos;
         this.vinculo = vinculo;
         this.json = json;
+        this.jdbc = jdbc;
         this.habilitado = habilitado;
     }
 
@@ -64,14 +81,20 @@ class ProyectosSeeder implements ApplicationRunner {
 
     record ProyectosJson(List<ProyectoJson> proyectos) {}
 
-    record PreciosZona(String moneda, String nota, Map<String, BigDecimal> precioPorM2) {}
+    /** Rango de precio por m² de un distrito, en la moneda del archivo. */
+    record Rango(BigDecimal min, BigDecimal max) {}
+
+    record PreciosZona(String moneda, String nota, BigDecimal redondeo, BigDecimal recargoEsquina,
+            Map<String, Rango> rangoPorM2) {}
 
     @Override
     @Transactional
     public void run(ApplicationArguments args) {
         if (habilitado) {
             PreciosZona precios = leer("contenido/precios-zona.json", PreciosZona.class);
-            for (ProyectoJson p : leer("contenido/proyectos.json", ProyectosJson.class).proyectos()) cargar(p, precios);
+            List<ProyectoJson> lista = leer("contenido/proyectos.json", ProyectosJson.class).proyectos();
+            for (ProyectoJson p : lista) cargar(p, precios);
+            ajustarPrecios(lista, precios);
         }
         // Siempre: un caso con texto de proyecto y sin referencia (una base anterior o una carga nueva) se vincula.
         for (CasoLote c : casos.findAll()) {
@@ -109,25 +132,27 @@ class ProyectosSeeder implements ApplicationRunner {
         }
         p = proyectos.saveAndFlush(p);
         if (lotes.countByProyectoId(p.getId()) == 0) {
-            BigDecimal porM2 = precios.precioPorM2().get(j.distrito());
-            lotes.saveAll(generarLotes(p, j, porM2, precios.moneda()));
+            lotes.saveAll(generarLotes(p, j, precios));
         }
     }
 
     /** Los lotes de un proyecto, en orden de manzana y número. Determinista: la misma semilla da los mismos lotes. */
-    static List<LoteProyecto> generarLotes(Proyecto p, ProyectoJson j, BigDecimal porM2, String moneda) {
+    static List<LoteProyecto> generarLotes(Proyecto p, ProyectoJson j, PreciosZona precios) {
+        Rango rango = precios.rangoPorM2().get(j.distrito());
+        String moneda = precios.moneda();
         List<LoteProyecto> salida = new ArrayList<>();
         for (ManzanaJson m : j.manzanas()) {
-            int mitad = (m.lotes() + 1) / 2;
             for (int n = 1; n <= m.lotes(); n++) {
-                boolean esquina = n == 1 || n == mitad || n == mitad + 1 || n == m.lotes();
+                boolean esquina = esEsquina(m.lotes(), n);
                 BigDecimal frente = esquina ? m.frente().add(EXTRA_ESQUINA) : m.frente();
                 LoteProyecto l = new LoteProyecto();
                 l.setProyecto(p);
                 l.setManzana(m.manzana().toUpperCase(java.util.Locale.ROOT));
                 l.setNumero(n);
                 l.setAreaM2(frente.multiply(m.fondo()).setScale(2, RoundingMode.HALF_UP));
-                if (porM2 != null) l.setPrecio(precioDe(l.getAreaM2(), porM2));
+                if (rango != null) {
+                    l.setPrecio(precioEnRango(l.getAreaM2(), rango, l.getManzana(), n, esquina, precios));
+                }
                 l.setMoneda(moneda == null ? "PEN" : moneda);
                 l.setZonificacion(m.zonificacion());
                 l.setIndependizacion(m.independizacion() != null ? m.independizacion()
@@ -141,7 +166,64 @@ class ProyectosSeeder implements ApplicationRunner {
         return salida;
     }
 
-    /** Área por precio por m², redondeado a la centena. */
+    /** Las esquinas de una manzana: el primer y el último lote y los dos del medio (dan a dos calles). */
+    static boolean esEsquina(int lotesDeLaManzana, int n) {
+        int mitad = (lotesDeLaManzana + 1) / 2;
+        return n == 1 || n == mitad || n == mitad + 1 || n == lotesDeLaManzana;
+    }
+
+    /**
+     * Valor por m² del lote dentro del rango del distrito: uno de 11 escalones (del mínimo al máximo) elegido por la letra
+     * de la manzana y el número del lote. Determinista: el mismo lote siempre da el mismo valor.
+     */
+    static BigDecimal valorM2(Rango r, String manzana, int numero) {
+        int letra = manzana == null || manzana.isEmpty() ? 0 : Character.toUpperCase(manzana.charAt(0)) - 'A';
+        int escalon = Math.floorMod(letra * 7 + numero * 3, 11);
+        return r.min().add(r.max().subtract(r.min()).multiply(BigDecimal.valueOf(escalon))
+                .divide(BigDecimal.TEN, 2, RoundingMode.HALF_UP));
+    }
+
+    /** Área × valor por m² del lote (con el recargo si es esquina), redondeado al múltiplo de {@code redondeo}. */
+    static BigDecimal precioEnRango(BigDecimal area, Rango r, String manzana, int numero, boolean esquina,
+            PreciosZona precios) {
+        BigDecimal bruto = area.multiply(valorM2(r, manzana, numero));
+        if (esquina && precios.recargoEsquina() != null) bruto = bruto.multiply(BigDecimal.ONE.add(precios.recargoEsquina()));
+        BigDecimal paso = precios.redondeo() == null ? BigDecimal.valueOf(500) : precios.redondeo();
+        return bruto.divide(paso, 0, RoundingMode.HALF_UP).multiply(paso).setScale(2, RoundingMode.UNNECESSARY);
+    }
+
+    /**
+     * v1.0 (etapa 8): una sola vez por base. Los lotes precargados que nadie editó (precio igual al de la fórmula anterior
+     * y sin historial de carga por CSV) toman el precio nuevo. Una base nueva ya nace con ellos y solo queda marcada.
+     */
+    private void ajustarPrecios(List<ProyectoJson> lista, PreciosZona precios) {
+        Integer hecho = jdbc.queryForObject("select count(*) from ajuste_contenido where clave = ?", Integer.class,
+                AJUSTE_PRECIOS);
+        if (hecho != null && hecho > 0) return;
+        for (ProyectoJson j : lista) {
+            Rango rango = precios.rangoPorM2().get(j.distrito());
+            BigDecimal anterior = PRECIO_M2_ANTERIOR.get(j.distrito());
+            if (rango == null || anterior == null || j.manzanas() == null || j.manzanas().isEmpty()) continue;
+            Map<String, Integer> tamanos = new HashMap<>();
+            for (ManzanaJson m : j.manzanas()) tamanos.put(m.manzana().toUpperCase(java.util.Locale.ROOT), m.lotes());
+            Set<String> editados = new HashSet<>(jdbc.queryForList(
+                    "select distinct lote_clave from historial_lote_proyecto where proyecto_codigo = ?", String.class,
+                    j.codigo()));
+            for (LoteProyecto l : lotes.findDelProyecto(j.codigo())) {
+                Integer tamano = tamanos.get(l.getManzana());
+                if (tamano == null || l.getNumero() > tamano || l.getPrecio() == null || l.getAreaM2() == null) continue;
+                if (editados.contains(l.clave())) continue;
+                if (l.getPrecio().compareTo(precioDe(l.getAreaM2(), anterior)) != 0) continue;
+                l.setPrecio(precioEnRango(l.getAreaM2(), rango, l.getManzana(), l.getNumero(),
+                        esEsquina(tamano, l.getNumero()), precios));
+                lotes.save(l);
+            }
+        }
+        jdbc.update("insert into ajuste_contenido (clave, aplicado_en) values (?, ?)", AJUSTE_PRECIOS,
+                java.sql.Timestamp.from(java.time.Instant.now()));
+    }
+
+    /** Fórmula anterior a la etapa 8 (área × precio por m², redondeado a la centena); reconoce los lotes sin editar. */
     static BigDecimal precioDe(BigDecimal area, BigDecimal porM2) {
         return area.multiply(porM2).divide(BigDecimal.valueOf(100), 0, RoundingMode.HALF_UP)
                 .multiply(BigDecimal.valueOf(100)).setScale(2, RoundingMode.UNNECESSARY);

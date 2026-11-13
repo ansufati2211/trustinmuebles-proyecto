@@ -8,7 +8,7 @@
 //    verificación.
 //
 // Uso: node scripts/generar-pdf-demo.mjs [carpeta-v08] [--sin-kit] [--kit=carpeta]
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import os from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -126,16 +126,20 @@ function pdfDeLienzos(lienzos, { titulo, asunto }) {
     hijos.push(`${nPagina} 0 R`);
   }
   objetos[1] = `<< /Type /Pages /Kids [${hijos.join(" ")}] /Count ${hijos.length} >>`;
-  objetos.push(`<< /Title (${winAnsi(titulo)}) /Author (${winAnsi(ROTULO.autor)}) /Subject (${winAnsi(asunto)}) /Creator (${winAnsi("Trustinmuebles 1.0.0")}) >>`);
+  objetos.push(`<< /Title (${winAnsi(titulo)}) /Author (${winAnsi(ROTULO.autor)}) /Subject (${winAnsi(asunto)}) /Creator (${winAnsi("Trustinmuebles 1.0.0 para " + EMPRESA.nombreComercial)}) >>`);
   return ensamblar(objetos, objetos.length);
 }
 
 // ------------------------------------------------------------------------------------------------ Kit v1.0
 
+// v1.0 (etapa 8): el rótulo es el de la inmobiliaria que opera el portal (contenido/empresa.json), como en los PDF que
+// genera el servidor. Sin logo: este PDF escrito a mano no incrusta imágenes.
+const EMPRESA = JSON.parse(readFileSync(path.join(RAIZ, "trustinmuebles-backend", "src", "main", "resources", "contenido",
+  "empresa.json"), "utf8"));
 const ROTULO = {
-  encabezado: "TRUSTINMUEBLES · INMOBILIARIA EN ICA",
-  autor: "Trustinmuebles · Inmobiliaria en Ica",
-  elaborado: "Documento informativo elaborado por la inmobiliaria Trustinmuebles.",
+  encabezado: `${EMPRESA.nombreComercial} · ${EMPRESA.eslogan}`.toLocaleUpperCase("es-PE"),
+  autor: `${EMPRESA.nombreComercial} · ${EMPRESA.eslogan}`,
+  elaborado: `Documento informativo elaborado por la inmobiliaria ${EMPRESA.nombreComercial} (${EMPRESA.razonSocial}, RUC ${EMPRESA.ruc}).`,
   profesional: "Profesional responsable: se registra al asignar al profesional.",
 };
 

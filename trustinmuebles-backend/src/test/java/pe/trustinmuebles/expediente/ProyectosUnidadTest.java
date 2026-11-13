@@ -47,6 +47,36 @@ class ProyectosUnidadTest {
     }
 
     @Test
+    @DisplayName("Etapa 8: valor por m² determinista dentro del rango, +8 % en esquina y redondeo a S/ 500")
+    void precioEnRango() {
+        ProyectosSeeder.Rango r = new ProyectosSeeder.Rango(new BigDecimal("450"), new BigDecimal("650"));
+        ProyectosSeeder.PreciosZona pz = new ProyectosSeeder.PreciosZona("PEN", null, new BigDecimal("500"),
+                new BigDecimal("0.08"), java.util.Map.of("Subtanjalla", r));
+        java.util.Set<BigDecimal> valores = new java.util.HashSet<>();
+        for (String mz : new String[] {"A", "B", "C", "D", "E"}) {
+            for (int n = 1; n <= 14; n++) {
+                BigDecimal v = ProyectosSeeder.valorM2(r, mz, n);
+                assertThat(v).isBetween(r.min(), r.max());
+                assertThat(v).isEqualByComparingTo(ProyectosSeeder.valorM2(r, mz, n));
+                valores.add(v.stripTrailingZeros());
+                BigDecimal p = ProyectosSeeder.precioEnRango(new BigDecimal("140.00"), r, mz, n, false, pz);
+                assertThat(p.remainder(BigDecimal.valueOf(500))).isEqualByComparingTo("0");
+            }
+        }
+        assertThat(valores.size()).as("los lotes no tienen todos el mismo valor").isGreaterThan(5);
+        // A-1: escalón (0 × 7 + 1 × 3) mod 11 = 3 → 450 + 200 × 0.3 = 510 por m².
+        assertThat(ProyectosSeeder.valorM2(r, "A", 1)).isEqualByComparingTo("510");
+        // 140 m² × 510 = 71 400 → 71 500; en esquina × 1.08 = 77 112 → 77 000.
+        assertThat(ProyectosSeeder.precioEnRango(new BigDecimal("140"), r, "A", 1, false, pz)).isEqualByComparingTo("71500");
+        assertThat(ProyectosSeeder.precioEnRango(new BigDecimal("140"), r, "A", 1, true, pz)).isEqualByComparingTo("77000");
+        assertThat(ProyectosSeeder.esEsquina(12, 1)).isTrue();
+        assertThat(ProyectosSeeder.esEsquina(12, 6)).isTrue();
+        assertThat(ProyectosSeeder.esEsquina(12, 7)).isTrue();
+        assertThat(ProyectosSeeder.esEsquina(12, 12)).isTrue();
+        assertThat(ProyectosSeeder.esEsquina(12, 2)).isFalse();
+    }
+
+    @Test
     @DisplayName("Clase del catálogo: CASO o LOTE_PROYECTO; sin ella entran los dos; otro valor da error")
     void clase() {
         FiltroPublico todos = FiltroPublico.de(null, null, null, null, null, null, null, null, null, null, null, null,
