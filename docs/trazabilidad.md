@@ -82,7 +82,8 @@ Evidencias en `docs/pruebas/evidencias/`. Detalle por caso en [pruebas/registro.
 ## Pruebas que no se pueden dar por aprobadas
 
 Esta sección usa la numeración antigua (CP-01 a CP-07), que no coincide con la del informe: la correspondencia vigente está en la
-sección 16.4 de [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md).
+sección 16.4 de [historico/MODELO-NEGOCIO-v0.9.md](historico/MODELO-NEGOCIO-v0.9.md) (CP01 a CP25) y en la sección 16.3 de
+[MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md) (CP26 a CP32, etapa 9).
 
 - **CP-05b** (amarillo o rojo según la tabla especializada): se ejecutó con una regla prioritaria ficticia que existe solo
   dentro del test. No se marca aprobada hasta que haya una tabla jurídica revisada con entradas y salidas esperadas.

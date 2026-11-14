@@ -11,6 +11,8 @@ services:
       APP_SEED_PASSWORD: ${APP_SEED_PASSWORD:?Define APP_SEED_PASSWORD (mínimo 8 caracteres)}
       APP_JWT_SECRET: ${APP_JWT_SECRET:?Define APP_JWT_SECRET (mínimo 32 caracteres)}
       APP_STORAGE_KEY: ${APP_STORAGE_KEY:?Define APP_STORAGE_KEY}
+      # v1.0 (etapa 9): cuentas de asesor que el arranque crea si faltan (con APP_SEED_PASSWORD), separadas por comas.
+      APP_ASESORES: ${APP_ASESORES:-asesor-01}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://trust.aurorabeauty.site,http://localhost:8085,http://127.0.0.1:8085,http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173}
     volumes:
       - backend-data:/app/data

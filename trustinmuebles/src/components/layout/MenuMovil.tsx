@@ -3,6 +3,7 @@ import type { KeyboardEvent, RefObject } from "react";
 import { Link } from "react-router";
 import { Menu, X } from "lucide-react";
 import type { OpcionMenu } from "@/lib/permisos";
+import { AvisoNuevos } from "@/components/layout/AvisoNuevos";
 
 /*
  * v1.0 (etapa 6): menú de pantallas de menos de 1024 px (tableta y celular). El botón ☰ despliega todas las opciones
@@ -48,8 +49,10 @@ export function BotonMenuMovil({ abierto, alCambiar, botonRef }: {
   );
 }
 
-export function MenuMovil({ abierto, enlaces, claveActiva, alCerrar, alElegir }: {
+export function MenuMovil({ abierto, enlaces, claveActiva, alCerrar, alElegir, nuevos = 0 }: {
   abierto: boolean; enlaces: OpcionMenu[]; claveActiva: string | null;
+  /** v1.0 (etapa 9): interesados nuevos, junto a «Interesados». */
+  nuevos?: number;
   /** Cierra el menú; `devolverFoco` lo pide Escape para volver al botón. */
   alCerrar: (devolverFoco: boolean) => void;
   alElegir?: (e: OpcionMenu) => void;
@@ -84,6 +87,7 @@ export function MenuMovil({ abierto, enlaces, claveActiva, alCerrar, alElegir }:
               className={`flex min-h-12 items-center rounded-2xl px-4 text-base font-semibold transition-colors focus-visible:outline-none focus-visible:ring-4 focus-visible:ring-primary/25 ${
                 claveActiva === e.clave ? "bg-primary/10 text-primary" : "text-foreground hover:bg-gray-50"}`}>
               {e.etiqueta}
+              {e.clave === "interesados" && <AvisoNuevos n={nuevos} />}
             </Link>
           </li>
         ))}

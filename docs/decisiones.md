@@ -1017,3 +1017,68 @@ oculta. Imprime OK o FALLA por punto. Local: 6 de 6 OK.
 plano, la ficha del lote, la bandeja de interesados y el formulario de registro, sin desplazamiento horizontal y con la
 marca en la barra (capturas en `docs/pruebas/uso-v10/capturas-tableta/`), y registra la duración del guion.
 **`docs/demo/CHECKLIST-LUNES.md`:** qué revisar el domingo y el lunes.
+
+## D74. v1.0 (etapa 9): exportar a CSV para Excel (sin migración)
+
+**Contexto.** En la entrevista del 09/11/2026 la inmobiliaria contó que lleva sus lotes y clientes en Excel, y la
+contadora trabaja con esos archivos. **Decisión.** Dos descargas, solo para ASESOR y GESTOR (SecurityConfig y otra vez en
+el servicio): `GET /proyectos/{c}/lotes/exportar.csv` y `GET /interesados/exportar.csv` (con los mismos filtros y orden que
+la bandeja). Formato: **punto y coma**, **UTF-8 con BOM** y CRLF (Excel en español lo abre con doble clic y respeta las
+tildes); respuesta `text/csv`, sin caché y con `nosniff`. El CSV de lotes usa **las mismas columnas que la carga**
+(`CargaLotesService.COLUMNAS`) y el estado vigente (el del caso propio, si lo tiene), así que sirve de plantilla de ida y
+vuelta: volver a cargarlo sin cambios da todo «sin cambios» (`Etapa9Test.lotesIdaYVuelta`). Un texto que empieza con `=`,
+`+`, `-` o `@` se antepone con un apóstrofo para que Excel no lo ejecute como fórmula (`shared.EscritorCsv`). **Por qué
+CSV y no .xlsx:** no agrega dependencias y el lector de la carga ya entiende CSV. **Privacidad:** el CSV de interesados
+lleva nombre de pila y contacto (con su consentimiento, D68); la pantalla avisa que no se comparta fuera del equipo. El
+revisor no exporta: no ve interesados y el de lotes trae precios de lotes que no están en línea.
+
+## D75. v1.0 (etapa 9): ubicación y condiciones de pago del proyecto (V24)
+
+**Contexto.** La inmobiliaria contó que el comprador teme estafas por la ubicación del lote. **Decisión.** El proyecto
+tiene tres campos opcionales: `direccion` (200), `mapa_url` (500, solo `https://` con dominio; restricción en la base y
+validación en el servidor y en la interfaz) y `condiciones_pago` (500, texto libre). Los edita el asesor o el gestor con
+`PUT /proyectos/{c}/datos` («Ubicación y pago» en Proyectos); un campo vacío borra el dato. La página del proyecto y la
+ficha del lote muestran la dirección y el botón **«Cómo llegar»**, que abre el enlace en otra pestaña
+(`rel="noopener noreferrer"`). **Sin mapa embebido ni dependencias**, y **sin botón cuando no hay enlace**: armar una
+búsqueda de mapa con la dirección podría llevar a otro lugar, que es justo el temor que se quiere reducir. Las condiciones
+de pago se muestran con el título «Condiciones de pago» y la nota «Consulta con un asesor»; no hay simulador ni tasas
+calculadas. **Precarga:** una dirección referencial verosímil por distrito en cada proyecto de demostración (`proyectos.json`),
+aplicada una sola vez por base (`ajuste_contenido`, clave `v1.0-etapa-9-direcciones`, para no reescribir una dirección que
+el equipo borró o cambió), sin enlace y sin condiciones. Nada de esto interviene en el indicador A.
+
+## D76. v1.0 (etapa 9): aviso de interesados nuevos en el menú (sin migración)
+
+**Decisión.** `GET /interesados/nuevos` devuelve cuántos interesados están en etapa NUEVO (solo ASESOR y GESTOR). La barra y
+el menú ☰ muestran junto a «Interesados» una burbuja con la cantidad («99+» desde 100), oculta para lectores de pantalla,
+y un texto para ellos («, 3 interesados nuevos») que se lee con el nombre del enlace. Se actualiza al cambiar de página,
+cuando la bandeja avisa un cambio (evento `tm:interesados-cambio`) y cada minuto; los demás roles no consultan nada. Sin
+nuevos no hay burbuja. El **gestor** tiene ahora «Interesados» en su menú (antes solo entraba por la dirección). La burbuja
+es oscura y no usa los colores del indicador A ni del estado comercial.
+
+## D77. v1.0 (etapa 9): cuentas de asesor por configuración (sin migración)
+
+**Contexto.** La inmobiliaria trabaja con un asesor y puede sumar otros. **Decisión.** `app.asesores`
+(`APP_ASESORES`, por omisión `asesor-01`) lista los códigos de asesor separados por comas; al arrancar se crean los que
+falten con rol ASESOR y la contraseña de `APP_SEED_PASSWORD`, sin cambiar la contraseña ni el rol de una cuenta que ya
+existe. La lista se limpia (espacios, mayúsculas, repetidos) y un código que no sea de minúsculas, dígitos y guiones
+detiene el arranque con un mensaje claro (`identidad.CuentasAsesores`). Los **responsables** posibles de un interesado ya
+no son una lista fija: son todas las cuentas ASESOR y GESTOR, en orden alfabético; quien registra desde el panel queda como
+responsable. **Seguridad:** en la nube `APP_SEED_PASSWORD` debe ser una contraseña propia del despliegue y no la de las
+pruebas (CHECKLIST-LUNES), porque con ella entra cualquier asesor. `docker-compose.yml` pasa la variable.
+
+## D78. v1.0 (etapa 9): embudo de interesados (sin migración)
+
+**Decisión.** `GET /interesados/embudo` (ASESOR y GESTOR) y la pestaña «Embudo» de Interesados: cantidad y porcentaje por
+etapa del total y de cada proyecto con interesados, más «Sin proyecto» (búsqueda general o inmueble suelto). El porcentaje
+es sobre el total de la fila, con un decimal y redondeo al más cercano. **Cuenta los descartados**, para que las etapas
+sumen el total (la pestaña «Demanda» sigue sin contarlos). Es informativo: no califica inmuebles ni cambia A.
+
+## D79. v1.0 (etapa 9): un solo modelo de negocio y una sola descripción de funcionalidades
+
+**Decisión.** `MODELO-NEGOCIO-IMPLEMENTADO.md` y `funcionalidades.md` describen **solo la 1.0.0**, sin capas por versión.
+El texto de las versiones v0.7 a v0.9 del modelo pasó **sin cambios** a `docs/historico/MODELO-NEGOCIO-v0.9.md`, y el de la
+v0.8 de funcionalidades a `docs/historico/funcionalidades-v0.8.md`. Se corrigió lo que contradecía la 1.0: los datos de la
+marca y de contacto **sí** vienen de LedCons (autorización verbal); **sí** hay datos de contacto (de la empresa y de los
+interesados con consentimiento); los especialistas **no** tienen colegiatura registrada; el sistema **no** es solo de uso
+local (se despliega en la nube); y los conteos de pruebas y de contenido son los de la 1.0.0. Lo que no consta en el
+repositorio (acta de la entrevista, gasto en publicidad, disposición a pagar) se marca como pendiente o supuesto.

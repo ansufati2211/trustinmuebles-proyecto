@@ -73,9 +73,28 @@ export async function abrirPdf(path: string) {
   setTimeout(() => URL.revokeObjectURL(url), 60_000);
 }
 
+/**
+ * v1.0 (etapa 9): nombre de archivo de la cabecera Content-Disposition («attachment; filename="x.csv"»), o el de
+ * respaldo si no viene. Solo letras, dígitos, punto, guion y guion bajo.
+ */
+export function nombreDeDescarga(cabecera: string | null, respaldo: string): string {
+  const m = cabecera?.match(/filename="?([^";]+)"?/i);
+  const nombre = m?.[1]?.trim() ?? "";
+  return /^[\w.-]+$/.test(nombre) ? nombre : respaldo;
+}
+
 /** Descarga un PDF protegido con el nombre indicado (v0.8: botón «Descargar» de cada documento). */
 export async function descargarPdf(path: string, nombre: string) {
+  return descargarArchivo(path, nombre, false);
+}
+
+/**
+ * v1.0 (etapa 9): descarga un archivo protegido (PDF o CSV). Con {@code nombreDelServidor}, usa el nombre que manda el
+ * servidor (por ejemplo, con la fecha) y el dado solo si falta.
+ */
+export async function descargarArchivo(path: string, nombre: string, nombreDelServidor = true) {
   const res = await request(path);
+  if (nombreDelServidor) nombre = nombreDeDescarga(res.headers.get("Content-Disposition"), nombre);
   const url = URL.createObjectURL(await res.blob());
   const a = document.createElement("a");
   a.href = url;

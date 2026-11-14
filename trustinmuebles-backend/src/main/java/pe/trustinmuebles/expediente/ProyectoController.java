@@ -10,6 +10,7 @@ import org.springframework.web.multipart.MultipartFile;
 import pe.trustinmuebles.expediente.CargaLotesDtos.HistorialLoteDto;
 import pe.trustinmuebles.expediente.CargaLotesDtos.ResultadoCarga;
 import pe.trustinmuebles.expediente.CargaLotesDtos.VistaPreviaCarga;
+import pe.trustinmuebles.expediente.ProyectoDtos.DatosProyectoRequest;
 import pe.trustinmuebles.expediente.ProyectoDtos.EstadoLoteRequest;
 import pe.trustinmuebles.expediente.ProyectoDtos.LoteDto;
 import pe.trustinmuebles.expediente.ProyectoDtos.ResumenProyecto;
@@ -58,6 +59,25 @@ class ProyectoController {
                 .header("Content-Disposition", "attachment; filename=\"plantilla-lotes.csv\"")
                 .header("X-Content-Type-Options", "nosniff").cacheControl(CacheControl.noStore())
                 .body(CargaLotesService.PLANTILLA.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+    }
+
+    /**
+     * v1.0 (etapa 9): los lotes del proyecto en CSV para Excel, con las columnas de la carga (sirve de plantilla de ida y
+     * vuelta). Solo gestor y asesor (SecurityConfig).
+     */
+    @GetMapping(value = "/{codigo}/lotes/exportar.csv", produces = "text/csv")
+    ResponseEntity<byte[]> exportar(@PathVariable String codigo) {
+        byte[] csv = carga.exportar(codigo);
+        return pe.trustinmuebles.shared.EscritorCsv.descarga(
+                "lotes-" + codigo + "-" + java.time.LocalDate.now(java.time.ZoneId.of("America/Lima")) + ".csv", csv);
+    }
+
+    // ------------------------------------------------------------------ datos del proyecto (etapa 9)
+
+    /** Dirección, enlace de mapa y condiciones de pago. Vacío borra el dato. Gestor y asesor (SecurityConfig). */
+    @PutMapping("/{codigo}/datos")
+    ResumenProyecto datos(@PathVariable String codigo, @RequestBody DatosProyectoRequest req) {
+        return servicio.actualizarDatos(codigo, req);
     }
 
     /** Revisa el archivo sin guardar nada: qué se crearía o cambiaría y los errores de cada fila. */

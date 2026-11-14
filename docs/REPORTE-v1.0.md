@@ -1,7 +1,9 @@
 # Reporte de la versión 1.0.0 de Trustinmuebles
 
-Fecha: 13 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-8`, creada
-desde `origin/main` en `d88bfe1` (sin push). Material autocontenido para redactar el informe: [PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md).
+Fecha: 14 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-9`, creada
+desde `main` en `7d6f044` (merge de la etapa 8). Material autocontenido para redactar el informe:
+[PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md). Modelo de negocio único de la 1.0.0:
+[MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md).
 
 La 1.0.0 convierte el sistema de transparencia precompra en un **portal inmobiliario**: el comprador encuentra lotes y
 casas de la inmobiliaria sin irse a otra (filtros, orden, plano de lotes, asistente, usos posibles del lote, solicitud de
@@ -20,7 +22,8 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | 5. Asistente y usos del lote | `0147b41` | Asistente por reglas (sin IA), recomendaciones con motivos, usos que suelen permitirse | — | D66 |
 | 6. Realismo del contenido | `525deeb` | Sin palabras de prueba; INT-; titulares reservados; partida oculta en la ficha; ficha registral propia; PDF públicos; colegiatura vacía; créditos; no indexar; menú ☰ | V22 | D67 |
 | 7. Kit, documentación y versión | `d88bfe1` | Partida oculta también en la tarjeta, el proyecto, la portada y los PDF de la partida matriz; «Plano de plano» corregido; kit de respaldo; `preparar-demo.mjs`; versión 1.0.0; documentación; recorrido de 15 minutos | — | D68, D69 |
-| 8. Ajustes finales y verificación | `v1.0-etapa-8` (sin merge) | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
+| 8. Ajustes finales y verificación | `7d6f044` | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
+| 9. Modelo consolidado y adopción | `v1.0-etapa-9` (sin merge) | Modelo de negocio y funcionalidades en una sola descripción de la 1.0.0 (lo anterior, a `docs/historico/`); exportar a CSV para Excel la bandeja (con filtros) y los lotes de un proyecto (plantilla de ida y vuelta); dirección, enlace de mapa y «Cómo llegar»; condiciones de pago en texto; aviso de interesados nuevos en el menú; cuentas de asesor por `app.asesores`; embudo por etapa y proyecto | V24 | D74–D78 |
 
 ## 2. Pruebas
 
@@ -32,6 +35,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | Antes de la etapa 7 (`525deeb`) | **312**, 0 fallos | **262** (29 archivos), 0 fallos |
 | Después de la etapa 7 | **318**, 0 fallos | **276** (30 archivos), 0 fallos |
 | Después de la etapa 8 | **332**, 0 fallos | **290** (32 archivos), 0 fallos |
+| Después de la etapa 9 | **347**, 0 fallos, 0 errores, 0 omitidas | **309** (33 archivos), 0 fallos |
 
 Build de la interfaz (`tsc --noEmit && vite build`): correcto, con el aviso de tamaño del JS principal que ya existía.
 
@@ -52,6 +56,7 @@ Cuenta de `@Test` en el backend y de `it(`/`test(` en la interfaz en cada merge;
 | Etapa 6 | 311 | 262 |
 | Etapa 7 | 317 | 272 |
 | Etapa 8 | 331 | 286 |
+| Etapa 9 | 346 | 304 |
 
 ### Pruebas de la etapa 7
 
@@ -79,6 +84,21 @@ Cuenta de `@Test` en el backend y de `it(`/`test(` en la interfaz en cada merge;
   empresa, así que ahora exigen que la **única** imagen sea ese logo (mismas dimensiones que su PNG): siguen impidiendo
   escudos, sellos o QR. Ninguna prueba se borró ni se desactivó.
 
+### Pruebas de la etapa 9
+
+- Nuevas (backend, +15): `Etapa9Test` (base H2 propia y `app.asesores=asesor-01, asesor-02,asesor-02`): permisos y
+  contenido del CSV de lotes, ida y vuelta (la vista previa del archivo exportado da todo «sin cambios»), protección contra
+  fórmulas, permisos y filtros del CSV de interesados, direcciones de la precarga, permisos de «datos del proyecto»,
+  ubicación en el proyecto y en el lote, enlaces inválidos (http, `javascript:`, sin dominio, con espacios), límites de 200
+  y 500 caracteres, aviso de nuevos, cuentas de asesor configurables, lista de asesores y embudo (15).
+- Nuevas (interfaz, +19): `pages/etapa9.test.tsx` (19 ejecutadas; 18 `it`, uno repetido para el asesor y el gestor): rutas
+  de exportación, nombre del archivo, botones en Proyectos, «Cómo llegar» solo con https, página del proyecto y ficha del
+  lote con y sin enlace, condiciones de pago con y sin texto, formulario y validación, aviso en la barra del asesor y del
+  gestor y en el menú ☰, embudo.
+- **Ajustada conservando lo que verifica:** `lib/permisos.test.ts` «cada rol ve solo sus vistas» ahora espera
+  `["inicio", "casos", "cartera", "interesados"]` para el gestor (la etapa pide el aviso también en su menú). Ninguna prueba
+  se borró ni se desactivó.
+
 ## 3. Tiempo con 1000 lotes
 
 `CargaCatalogoTest.milLotes` (etapa 2) genera 1000 lotes publicados además de la precarga y mide cada consulta del catálogo
@@ -100,6 +120,20 @@ Todas por debajo del límite de 2 s; la más lenta, 248 ms. Es tiempo de la API 
 interfaz ni de un servidor en la nube.
 
 ## 4. Recorrido de 15 minutos
+
+**Corrida vigente: 14/11/2026, etapa 9, base nueva — 15 de 15 pasos y 12 de 12 pantallas en tableta**, sin errores de
+consola ni respuestas 409/500. Guion ejecutado por la máquina en **100,1 s** (178 s con el arranque del backend, 37,2 s).
+Los pasos 1 a 13 dieron lo mismo que en la tabla de abajo (con la frase nueva del asistente, 19 resultados). Pasos nuevos de
+la etapa 9:
+
+| Paso | Quién | Qué se comprobó | Resultado |
+|---|---|---|---|
+| 14 | `asesor-01` | Aviso «3» junto a «Interesados» (3 en etapa Nuevo según la API); botón «Exportar a CSV»; CSV de interesados `text/csv`, con BOM, 16 filas para 16 interesados y separador «;»; CSV de lotes de Horizonte de Los Aquijes con las columnas de la carga y 80 filas; volver a cargarlo da 80 sin cambios, 0 nuevos, 0 actualizados; «Ubicación y pago» de Altos de Ventisca con la dirección precargada, enlace de mapa y condiciones guardados | OK |
+| 15 | Visitante | Ficha del lote C-12 y página del proyecto con la dirección y «Cómo llegar» (abre el enlace en otra pestaña); «Condiciones de pago» con «Consulta con un asesor»; sin mapa embebido | OK |
+
+Capturas nuevas: `capturas/14-exportar-ubicacion.png` y `15-ubicacion-pago.png`; las demás se regeneraron.
+
+**Corrida de la etapa 7** (13/11/2026), que dio origen a la tabla:
 
 `docs/pruebas/uso-v10/recorrido-v10.mjs`, ejecutado el 13/11/2026: arranca `backend-1.0.0.jar` con una **base nueva en
 una carpeta temporal fuera del repositorio**, la interfaz con Vite y Chrome sin ventana; corre `scripts/preparar-demo.mjs`;
@@ -182,9 +216,30 @@ ver `docs/demo/CHECKLIST-LUNES.md`).
 **Precargado en la etapa 8:** precios de los 168 lotes con los rangos nuevos (en una base existente, solo los no editados);
 `contenido/empresa.json` y el logo; el CSV del kit re-preciado; los PDF del kit regenerados con el rótulo de LEDCONS.
 
-## 8. Pendientes y límites conocidos
+## 8. Etapa 9: modelo consolidado y mejoras de adopción
 
-- **Sin push ni merge** de `v1.0-etapa-8`: lo decide el equipo.
+- **Documentación:** [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md) y [funcionalidades.md](funcionalidades.md)
+  describen una sola 1.0.0. El texto de la v0.7 a la v0.9 del modelo y el de la v0.8 de funcionalidades se movieron sin
+  cambios a `docs/historico/`. Se corrigió lo que contradecía la 1.0 (datos que sí vienen de LedCons, datos de contacto que
+  sí existen, especialistas sin colegiatura, conteos, despliegue en la nube).
+- **Exportar a CSV** (D74): bandeja de interesados con los filtros aplicados y lotes de un proyecto; punto y coma, UTF-8 con
+  BOM y CRLF; solo ASESOR y GESTOR; sin caché; protección contra fórmulas. El de lotes usa las columnas de la carga.
+- **Ubicación y condiciones de pago** (D75, V24): dirección (200), enlace de mapa https (500) y condiciones (500). La página
+  del proyecto y la ficha del lote muestran la dirección y «Cómo llegar» (otra pestaña); sin enlace no hay botón. Precarga:
+  una dirección referencial por proyecto, sin enlace y sin condiciones.
+- **Aviso de nuevos** (D76): `GET /interesados/nuevos`; burbuja junto a «Interesados» en la barra y en el menú ☰, con texto
+  para lectores de pantalla; el gestor tiene ahora «Interesados» en su menú.
+- **Cuentas de asesor** (D77): `app.asesores` / `APP_ASESORES` (por omisión `asesor-01`); los responsables posibles son todas
+  las cuentas ASESOR y GESTOR. `docker-compose.yml` pasa la variable. CHECKLIST-LUNES: contraseña propia en la nube.
+- **Embudo** (D78): `GET /interesados/embudo` y pestaña «Embudo» en Interesados.
+- **Sin «colegiado» en textos:** el pie, la portada, el ingreso, el panel del indicador B, el informe técnico en PDF y el
+  glosario `v0.5` decían «especialista colegiado» o «profesional colegiado»; ahora dicen «especialista de la inmobiliaria»
+  o «profesional responsable», porque los especialistas no tienen colegiatura registrada (D67). `limitesLegales.test.tsx`
+  sigue exigiendo el texto del pie y además que no diga «colegiado».
+
+## 9. Pendientes y límites conocidos
+
+- **Sin push ni merge** de `v1.0-etapa-9`: lo decide el equipo.
 - `preparar-demo.mjs` no puede **crear un proyecto** que falte (no hay endpoint): lo informa y pide reiniciar la base.
   Desde la etapa 8 repone lotes con el estado de la semilla y los interesados por el panel (sin límite por IP). No hay un
   endpoint para borrar lotes, así que la carga de lotes **faltantes** por CSV no se ensayó en vivo (sí el cambio de estado).
@@ -194,5 +249,9 @@ ver `docs/demo/CHECKLIST-LUNES.md`).
   otros navegadores ni con lectores de pantalla. No se ensayó el guion a mano con público ni se cronometró con una persona.
 - El aviso de tamaño del JS principal de la interfaz sigue (no se partió el paquete).
 - La demo en la nube no se verificó en esta etapa.
+- Etapa 9: el enlace de «Cómo llegar» lo pega una persona; el sistema comprueba que sea https con dominio, no que lleve al
+  lugar correcto. Las direcciones de la precarga son referenciales: hay que reemplazarlas por las reales de LedCons. El CSV
+  de interesados lleva datos de contacto: quien lo descarga es responsable de no difundirlo. No se probó abrir los CSV en
+  Excel de escritorio (sí su formato: BOM, «;», CRLF y la vuelta por la carga).
 - Etapa 8: la autorización **escrita** de LedCons para su marca está pendiente (hoy verbal). Los PDF del kit llevan el
   rótulo de LEDCONS pero no el logo (el generador sin dependencias no incrusta imágenes).

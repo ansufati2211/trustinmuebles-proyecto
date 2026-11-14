@@ -20,6 +20,53 @@ export const urlDocumentoProyecto = (codigo: string, tipo: string) => `/api/v1${
 
 export const enlaceProyecto = (codigo: string) => `/proyectos/${encodeURIComponent(codigo)}`;
 
+// ------------------------------------------------------------------------------------------------- etapa 9
+
+/** v1.0 (etapa 9): los lotes del proyecto en CSV para Excel (mismas columnas que la carga). */
+export const rutaExportarLotes = (codigo: string) => `/proyectos/${encodeURIComponent(codigo)}/lotes/exportar.csv`;
+export const rutaDatosProyecto = (codigo: string) => `/proyectos/${encodeURIComponent(codigo)}/datos`;
+
+export const MAX_DIRECCION = 200;
+export const MAX_MAPA_URL = 500;
+export const MAX_CONDICIONES_PAGO = 500;
+
+/**
+ * Enlace de «Cómo llegar»: solo si es https con un dominio (el servidor ya lo exige; aquí se vuelve a mirar antes de
+ * ponerlo en un enlace). Cualquier otra cosa: null y no hay botón.
+ */
+export function enlaceComoLlegar(url: string | null | undefined): string | null {
+  if (!url) return null;
+  try {
+    const u = new URL(url.trim());
+    return u.protocol === "https:" && u.hostname.includes(".") ? u.href : null;
+  } catch {
+    return null;
+  }
+}
+
+export interface DatosProyecto { direccion: string; mapaUrl: string; condicionesPago: string }
+
+export const datosDe = (p: { direccion?: string | null; mapaUrl?: string | null; condicionesPago?: string | null }): DatosProyecto =>
+  ({ direccion: p.direccion ?? "", mapaUrl: p.mapaUrl ?? "", condicionesPago: p.condicionesPago ?? "" });
+
+/** Errores por campo con los mismos criterios que el servidor. Vacío: se puede guardar. */
+export function validarDatosProyecto(d: DatosProyecto): Partial<Record<keyof DatosProyecto, string>> {
+  const e: Partial<Record<keyof DatosProyecto, string>> = {};
+  if (d.direccion.trim().length > MAX_DIRECCION) e.direccion = `Hasta ${MAX_DIRECCION} caracteres.`;
+  const mapa = d.mapaUrl.trim();
+  if (mapa.length > MAX_MAPA_URL) e.mapaUrl = `Hasta ${MAX_MAPA_URL} caracteres.`;
+  else if (mapa && !enlaceComoLlegar(mapa)) e.mapaUrl = "Pega un enlace https, por ejemplo el de Google Maps.";
+  if (d.condicionesPago.trim().length > MAX_CONDICIONES_PAGO) e.condicionesPago = `Hasta ${MAX_CONDICIONES_PAGO} caracteres.`;
+  return e;
+}
+
+/** Cuerpo del PUT: vacío se manda como null (borra el dato). */
+export const cuerpoDatosProyecto = (d: DatosProyecto) => ({
+  direccion: d.direccion.trim() || null,
+  mapaUrl: d.mapaUrl.trim() || null,
+  condicionesPago: d.condicionesPago.trim() || null,
+});
+
 /** La ficha de un lote: la de su caso propio si lo tiene, o la del lote dentro del proyecto. */
 export function enlaceLote(proyectoCodigo: string, lote: Pick<LoteProyecto, "clave" | "casoCodigo">): string {
   if (lote.casoCodigo) return `/inmuebles/${encodeURIComponent(lote.casoCodigo)}`;

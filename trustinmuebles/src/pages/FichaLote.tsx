@@ -7,6 +7,7 @@ import { IndicadorProyecto } from "@/components/IndicadorProyecto";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
 import { SolicitarCita } from "@/components/SolicitarCita";
 import { UsosDelLote } from "@/components/UsosDelLote";
+import { UbicacionProyecto } from "@/components/UbicacionProyecto";
 import { m2, precio } from "@/lib/formato";
 import { enlaceProyecto, rutaLotePublico } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
@@ -85,6 +86,8 @@ export default function FichaLote() {
               <p className="cifras mt-1 text-xs font-semibold text-tinta-2">Mz. {d.lote.manzana} · Lote {d.lote.numero}</p>
             </div>
             <LineaIndependizacion predio={p} />
+            {/* v1.0 (etapa 9): dirección del proyecto y «Cómo llegar». */}
+            <UbicacionProyecto direccion={d.proyectoDireccion} mapaUrl={d.proyectoMapaUrl} nombre={d.proyectoNombre} />
 
             <div className={`${tarjeta} space-y-3 !p-5`}>
               <p className="flex items-center gap-2 font-bold text-foreground">

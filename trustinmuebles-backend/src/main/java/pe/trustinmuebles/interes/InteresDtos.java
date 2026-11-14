@@ -351,6 +351,18 @@ final class InteresDtos {
     record ResumenDemanda(long activos, Map<EtapaInteres, Long> porEtapa, List<Conteo> porZona, List<Conteo> porTipo,
             List<Conteo> porPresupuesto, List<Conteo> porProyecto) {}
 
+    /** v1.0 (etapa 9): aviso del menú: interesados en etapa NUEVO. */
+    record ConteoNuevos(long nuevos) {}
+
+    /** v1.0 (etapa 9): una etapa del embudo; el porcentaje es sobre el total de la fila, con un decimal. */
+    record EtapaEmbudo(EtapaInteres etapa, String etiqueta, long cantidad, BigDecimal porcentaje) {}
+
+    /** Una fila del embudo: el total o un proyecto ({@code SIN_PROYECTO}: búsqueda general o inmueble suelto). */
+    record FilaEmbudo(String clave, String etiqueta, long total, List<EtapaEmbudo> etapas) {}
+
+    /** v1.0 (etapa 9): cantidad y porcentaje por etapa, del total y de cada proyecto. Incluye los descartados. */
+    record Embudo(FilaEmbudo total, List<FilaEmbudo> porProyecto) {}
+
     record OpcionesBandeja(List<pe.trustinmuebles.expediente.InmueblesInteres.ProyectoOpcion> proyectos,
             List<String> responsables) {}
 

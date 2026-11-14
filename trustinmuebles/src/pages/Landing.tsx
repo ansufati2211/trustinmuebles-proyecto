@@ -280,7 +280,7 @@ export default function Landing() {
                 </span>
                 <div>
                   <p className="text-xs font-semibold text-emerald-300">Indicador B · presencial</p>
-                  <p className="text-sm font-bold">Especialista colegiado de la inmobiliaria</p>
+                  <p className="text-sm font-bold">Especialista de la inmobiliaria</p>
                 </div>
               </div>
 
@@ -429,7 +429,7 @@ export default function Landing() {
                 <Badge className="bg-white/15 text-emerald-300 mb-5 px-3 py-1 text-xs border-0">Indicador B · presencial · a pedido</Badge>
                 <h3 className="text-2xl lg:text-3xl font-extrabold tracking-tight mb-3">Evaluación técnica en campo</h3>
                 <p className="text-gray-300 mb-7 leading-relaxed">
-                  Un especialista colegiado de la inmobiliaria visita el predio y sigue un protocolo estandarizado de 6 pasos.
+                  Un especialista de la inmobiliaria visita el predio y sigue un protocolo estandarizado de 6 pasos.
                 </p>
                 <ol className="space-y-3.5 text-sm text-gray-200">
                   {PROCEDIMIENTO_INSPECCION.map((p, idx) => (

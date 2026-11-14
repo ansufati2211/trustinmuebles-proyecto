@@ -7,6 +7,7 @@ import { LogoMark } from "@/components/layout/Logo";
 import { EMPRESA } from "@/lib/empresa";
 import { claveDeRuta, navegacion, opcionesMenuMovil } from "@/lib/permisos";
 import { BotonMenuMovil, MenuMovil } from "@/components/layout/MenuMovil";
+import { AvisoNuevos, useNuevosInteresados } from "@/components/layout/AvisoNuevos";
 
 const enlaceBase =
   "relative z-10 px-4 py-2 text-sm font-semibold rounded-full transition-colors duration-200 select-none";
@@ -116,6 +117,8 @@ export function Navbar() {
   }, [location.pathname]);
 
   const enlaces = navegacion(usuario?.rol);
+  // v1.0 (etapa 9): interesados en etapa NUEVO, junto a «Interesados» (asesor y gestor).
+  const nuevos = useNuevosInteresados(usuario?.rol);
   const principal = enlaces.find((e) => e.clave !== "inicio") ?? null;
   // v1.0 (etapa 6): por debajo de 1024 px, para todos los roles, el menú completo está en el botón ☰ y la barra conserva
   // el enlace principal desde 640 px (antes, el menú del asesor se recortaba entre 768 y 1024 px).
@@ -142,7 +145,7 @@ export function Navbar() {
 
   useLayoutEffect(() => {
     posicionarPildora();
-  }, [posicionarPildora, enlaces.length]);
+  }, [posicionarPildora, enlaces.length, nuevos]);
 
   useEffect(() => {
     window.addEventListener("resize", posicionarPildora);
@@ -232,6 +235,7 @@ export function Navbar() {
                   }`}
                 >
                   {e.etiqueta}
+                  {e.clave === "interesados" && <AvisoNuevos n={nuevos} />}
                 </Link>
               ))}
 
@@ -265,6 +269,7 @@ export function Navbar() {
                 }
               >
                 {principal.etiqueta}
+                {principal.clave === "interesados" && <AvisoNuevos n={nuevos} />}
               </NavLink>
             )}
 
@@ -294,7 +299,7 @@ export function Navbar() {
             )}
           </div>
         </div>
-        <MenuMovil abierto={menuAbierto} enlaces={opcionesMenuMovil(usuario?.rol)} claveActiva={claveActiva}
+        <MenuMovil abierto={menuAbierto} enlaces={opcionesMenuMovil(usuario?.rol)} claveActiva={claveActiva} nuevos={nuevos}
           alCerrar={cerrarMenu}
           alElegir={(e) => {
             if (e.clave === "inicio") irAlInicio();

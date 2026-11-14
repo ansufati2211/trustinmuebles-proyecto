@@ -41,6 +41,18 @@ class Proyecto {
     @Column(name = "caso_matriz_codigo", length = 40)
     private String casoMatrizCodigo;
 
+    /** v1.0 (etapa 9): dirección del proyecto; opcional. */
+    @Column(length = 200)
+    private String direccion;
+
+    /** v1.0 (etapa 9): enlace de mapa (https) que abre «Cómo llegar» en otra pestaña; opcional. */
+    @Column(name = "mapa_url", length = 500)
+    private String mapaUrl;
+
+    /** v1.0 (etapa 9): condiciones de pago en texto libre, hasta 500 caracteres; opcional. Sin cálculos. */
+    @Column(name = "condiciones_pago", length = 500)
+    private String condicionesPago;
+
     @Column(name = "creado_en", nullable = false, updatable = false)
     private Instant creadoEn;
 

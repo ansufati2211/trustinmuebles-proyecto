@@ -109,6 +109,29 @@ class CargaLotesService {
         return new ResultadoCarga(cargaId, p.getCodigo(), creados, actualizados, sinCambios);
     }
 
+    /**
+     * v1.0 (etapa 9): los lotes del proyecto en un CSV para Excel (punto y coma, UTF-8 con BOM) con las mismas columnas que
+     * la carga, así sirve de plantilla de ida y vuelta: volver a cargarlo sin cambios no cambia nada. El estado es el
+     * vigente (el del caso propio, si lo tiene). Es interno: trae los precios de los lotes que no están en línea.
+     */
+    @Transactional(readOnly = true)
+    byte[] exportar(String codigo) {
+        Proyecto p = proyecto(codigo);
+        List<LoteProyecto> lista = new ArrayList<>(lotes.findDelProyecto(p.getCodigo()));
+        lista.sort(java.util.Comparator.comparing(LoteProyecto::getManzana).thenComparingInt(LoteProyecto::getNumero));
+        List<List<String>> filas = new ArrayList<>();
+        for (LoteProyecto l : lista) {
+            filas.add(java.util.Arrays.asList(l.getManzana(), String.valueOf(l.getNumero()), plano(l.getAreaM2()),
+                    plano(l.getPrecio()), l.getMoneda(), estadoVigente(l).name(), l.getIndependizacion().name(),
+                    l.getZonificacion(), l.getCasoCodigo()));
+        }
+        return pe.trustinmuebles.shared.EscritorCsv.excel(COLUMNAS, filas);
+    }
+
+    private static String plano(BigDecimal n) {
+        return n == null ? null : n.setScale(2, java.math.RoundingMode.HALF_UP).toPlainString();
+    }
+
     @Transactional(readOnly = true)
     List<HistorialLoteDto> historial(String codigo, String clave) {
         proyecto(codigo);

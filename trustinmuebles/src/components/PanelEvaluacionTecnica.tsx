@@ -433,7 +433,7 @@ export function PanelEvaluacionTecnica({ detalle, alCambiar }: { detalle: Detall
       <TituloSeccion
         icono={ClipboardCheck}
         id="titulo-indicador-b"
-        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba en el inmueble un especialista colegiado de la inmobiliaria."
+        descripcion="Un plano no demuestra que una estructura o una instalación estén bien hoy. Eso lo comprueba en el inmueble un especialista de la inmobiliaria."
         derecha={<IndicadorB estado={t.estado} resultado={t.resultado} tamano="lg" conPrefijo={false} />}
       >
         Evaluación técnica presencial (Indicador B)

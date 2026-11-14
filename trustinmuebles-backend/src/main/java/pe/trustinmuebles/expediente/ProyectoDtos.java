@@ -56,15 +56,23 @@ final class ProyectoDtos {
     /** Página pública del proyecto: plano, recorrido, hitos y documentos. */
     record ProyectoPublico(String codigo, String nombre, String distrito, String descripcion, String recorridoUrl,
             List<HitoDto> hitos, List<LoteDto> lotes, ConteoEstados conteo, IndicadorADto indicadorA,
-            List<DocumentoProyectoDto> documentos, int inmueblesPublicados) {}
+            List<DocumentoProyectoDto> documentos, int inmueblesPublicados, String direccion, String mapaUrl,
+            String condicionesPago) {}
 
     /** Ficha pública de un lote de proyecto sin caso propio. */
     record LotePublico(String codigo, String denominacion, String proyectoCodigo, String proyectoNombre,
-            LoteDto lote, PredioDto predio, IndicadorADto indicadorA) {}
+            LoteDto lote, PredioDto predio, IndicadorADto indicadorA, String proyectoDireccion, String proyectoMapaUrl) {}
 
     /** Resumen interno de un proyecto para el equipo. */
     record ResumenProyecto(String codigo, String nombre, String distrito, String casoMatrizCodigo,
-            boolean autorizacionVigente, int lotes, int publicados, ConteoEstados conteo) {}
+            boolean autorizacionVigente, int lotes, int publicados, ConteoEstados conteo, String direccion,
+            String mapaUrl, String condicionesPago) {}
+
+    /**
+     * v1.0 (etapa 9): datos del proyecto que edita el equipo. Un campo vacío o ausente borra el dato. {@code mapaUrl}
+     * debe empezar con https://; {@code condicionesPago} es texto libre de hasta 500 caracteres (sin cálculos).
+     */
+    record DatosProyectoRequest(String direccion, String mapaUrl, String condicionesPago) {}
 
     record EstadoLoteRequest(@NotNull EstadoComercial estadoComercial) {}
 }

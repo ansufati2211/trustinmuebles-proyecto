@@ -18,12 +18,23 @@ class DemoUsuariosSeeder implements ApplicationRunner {
     private final AuthService auth;
     private final boolean habilitado;
     private final String password;
+    private final List<String> asesores;
 
     DemoUsuariosSeeder(AuthService auth, @Value("${app.seed.enabled}") boolean habilitado,
-            @Value("${app.seed.password}") String password) {
+            @Value("${app.seed.password}") String password, @Value("${app.asesores:asesor-01}") String asesores) {
         this.auth = auth;
         this.habilitado = habilitado;
         this.password = password;
+        this.asesores = CuentasAsesores.de(asesores);
+    }
+
+    /** Las cuentas fijas de la demostración más las de asesor configuradas (sin repetir una fija). */
+    List<Cuenta> cuentas() {
+        List<Cuenta> todas = new java.util.ArrayList<>(CUENTAS);
+        for (String a : asesores) {
+            if (todas.stream().noneMatch(c -> c.codigo().equals(a))) todas.add(new Cuenta(a, Rol.ASESOR));
+        }
+        return todas;
     }
 
     record Cuenta(String codigo, Rol rol) {}
@@ -34,9 +45,9 @@ class DemoUsuariosSeeder implements ApplicationRunner {
             new Cuenta("gestor-01", Rol.GESTOR), new Cuenta("propietario-01", Rol.PROPIETARIO),
             new Cuenta("propietario-02", Rol.PROPIETARIO), new Cuenta("especialista-02", Rol.ESPECIALISTA),
             // v0.9: propietaria de demostración de los dos lotes de la subasta de la SBN. No representa a la SBN.
-            new Cuenta("propietario-03", Rol.PROPIETARIO),
-            // v1.0: asesor de la inmobiliaria (permisos de revisor y de gestor).
-            new Cuenta("asesor-01", Rol.ASESOR));
+            new Cuenta("propietario-03", Rol.PROPIETARIO));
+    // v1.0: el asesor de la inmobiliaria (permisos de revisor y de gestor). Etapa 9: las cuentas de asesor salen de
+    // app.asesores (por defecto, solo asesor-01).
 
     static final String ESPECIALISTA_02_NOMBRE = "Arq. Valeria Sofía Paredes Rojas";
     static final String ESPECIALISTA_02_ESPECIALIDAD = "Arquitecto";
@@ -59,11 +70,13 @@ class DemoUsuariosSeeder implements ApplicationRunner {
         auth.completarPerfilProfesional("especialista-02", ESPECIALISTA_02_NOMBRE, ESPECIALISTA_02_ESPECIALIDAD,
                 ESPECIALISTA_02_COLEGIATURA);
         auth.completarFuncion("gestor-01", FUNCION_GESTOR);
-        auth.completarFuncion("asesor-01", FUNCION_ASESOR);
+        for (String a : asesores) {
+            if (auth.tieneRol(a, Rol.ASESOR)) auth.completarFuncion(a, FUNCION_ASESOR);
+        }
     }
 
     private void crearCuentasQueFalten() {
-        List<Cuenta> faltan = CUENTAS.stream().filter(c -> !auth.existeCuenta(c.codigo())).toList();
+        List<Cuenta> faltan = cuentas().stream().filter(c -> !auth.existeCuenta(c.codigo())).toList();
         if (faltan.isEmpty()) return;
         if (password == null || password.length() < 8) {
             throw new IllegalStateException(

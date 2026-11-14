@@ -1,7 +1,8 @@
 # Material para el informe — Trustinmuebles versión 1.0.0
 
-**Para:** quien redacte el informe del curso sin leer el código. **Fecha:** 13 de noviembre de 2026. **Entrega:** lunes
-16 de noviembre de 2026. **Fuente de verdad:** el repositorio en la rama `v1.0-etapa-8` (etapas 1 a 8 de la 1.0.0). Todo lo
+**Para:** quien redacte el informe del curso sin leer el código. **Fecha:** 14 de noviembre de 2026. **Entrega:** lunes
+16 de noviembre de 2026. **Fuente de verdad:** el repositorio en la rama `v1.0-etapa-9` (etapas 1 a 9 de la 1.0.0); el
+modelo de negocio completo y único de la 1.0.0 está en [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md). Todo lo
 que aquí se afirma está en el código, en las pruebas o en `docs/`; lo que no consta se marca como **No consta** o
 **Supuesto**. No hay resultados del estudio con participantes: no se ha aplicado.
 
@@ -24,8 +25,9 @@ cuya marca se muestra en el portal desde la etapa 8) con dos caras:
   proyecto, **asistente de búsqueda** por reglas (sin IA), **usos que suelen permitirse** según la zonificación del lote,
   ficha de cada inmueble con su **indicador A** (pre-evaluación documental) y **solicitud de cita** sin crear cuenta.
 - **Panel de la inmobiliaria:** el asesor registra inmuebles uno a uno o carga lotes **por CSV** (con vista previa, todo o
-  nada), publica solo lo autorizado y sigue a cada **interesado** como en un CRM (etapas, notas, agenda de citas, demanda,
-  registro de quien llega por llamada u oficina).
+  nada) y los **exporta a CSV para Excel**, publica solo lo autorizado, registra la **ubicación** y las **condiciones de
+  pago** de cada proyecto y sigue a cada **interesado** como en un CRM (etapas, notas, agenda de citas, demanda, **embudo**,
+  **aviso de nuevos**, registro de quien llega por llamada u oficina, exportación de la bandeja).
 
 Se conserva lo anterior a la 1.0: expedientes, indicador A, ruta de regularización, semáforo de gestión interno, documentos
 del lote e inspección técnica (indicador B). **No hay pagos en línea.** El sistema **no certifica saneamiento, no recomienda
@@ -48,11 +50,17 @@ trasladó al desarrollo (y por eso consta en el sistema) es:
 | Quién carga | Un asesor carga los inmuebles (uno a uno o por lotes) y atiende a los interesados | Validado |
 | Por dónde llegan los interesados | Formulario web, llamada, oficina, WhatsApp o referido (etapa 8) | Validado |
 | Necesidad del comprador | Encontrar los lotes y casas de la inmobiliaria sin irse a otra; ver el plano; pedir cita | Validado |
+| Volumen | Unos 400 lotes al mes (cartera de lotes de proyectos) | Validado (entrevista) |
+| Personal | Un asesor y una contadora | Validado (entrevista). La contadora no tiene rol en el sistema: recibe los CSV |
+| Herramienta actual | Excel | Validado (entrevista). Respuesta: exportar a CSV (etapa 9) |
+| Temor del comprador | Estafas por la ubicación del lote | Validado (entrevista). Respuesta: dirección y «Cómo llegar» (etapa 9) |
+| Pedidos de mejora | Mejoras sobre la versión mostrada | La etapa 9 responde a los trasladados (Excel, ubicación, condiciones de pago, aviso de nuevos, más asesores, embudo). Texto literal: **No consta** |
 
 **Roles reales (según lo trasladado):** asesores comerciales (cargan inmuebles y atienden interesados) y propietarios
 particulares (autorizan la venta de su inmueble); la autorización de los inmuebles propios la da la inmobiliaria. En el
 sistema: ASESOR, GESTOR, REVISOR, PROPIETARIO (sección 4). **Pendiente de completar por el equipo:** cargos reales (por
-ejemplo, quién autoriza en nombre de la empresa), número de asesores y respuestas textuales de la entrevista.
+ejemplo, quién autoriza en nombre de la empresa), respuestas textuales de la entrevista y las preguntas abiertas de
+ingresos: **cuánto gasta hoy LedCons en publicidad y portales** y **cuánto estaría dispuesta a pagar** por el sistema.
 
 **Proceso AS-IS (Supuesto: reconstruido de lo trasladado, a confirmar con el acta):**
 
@@ -71,7 +79,7 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | **Propuesta de valor** | Comprador: todo el catálogo de la inmobiliaria en un sitio, con plano, filtros, asistente, usos del lote, indicador A explicado y cita sin cuenta. Inmobiliaria: carga masiva por CSV, publicación solo con autorización, CRM de interesados con agenda y demanda | Implementado; valor percibido **Supuesto** (sin estudio) |
 | **Canales** | Portal web público (sin indexar mientras se prueba); WhatsApp de la inmobiliaria (`wa.me`); oficina y teléfono | Implementado |
 | **Relación** | Asistida: el asesor responde, confirma o reprograma citas y sigue al interesado por etapas | Implementado |
-| **Ingresos** | La inmobiliaria paga el sistema (suscripción); parte del costo de la inspección B (S/ 250 referencial) | **Supuesto no validado.** El sistema no cobra |
+| **Ingresos** | La inmobiliaria paga el sistema (suscripción); parte del costo de la inspección B (S/ 250 referencial) | **Supuesto no validado.** El sistema no cobra. Preguntas abiertas a LedCons: gasto actual en publicidad y portales; disposición a pagar |
 | **Recursos clave** | Catálogo y partidas de la inmobiliaria, motor de reglas versionado, plano de lotes, asesores | Implementado / Validado |
 | **Actividades clave** | Captar y cargar inmuebles, mantener expedientes, publicar con autorización, atender interesados | Implementado |
 | **Socios** | LedCons (operadora); abogados o notarios (verificación fuera del sistema); SUNARP y municipalidad como fuentes consultadas a mano | LedCons: Validado (verbal). Resto: Supuesto |
@@ -82,24 +90,26 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | Actor | Rol en el sistema | Qué hace |
 |---|---|---|
 | Visitante | Sin cuenta | Busca, filtra, abre planos y fichas, pide cita (nombre de pila y un medio de contacto, con consentimiento) |
-| Asesor inmobiliario | ASESOR (`asesor-01`) | Permisos de revisor y gestor: registra, carga CSV, publica, autoriza en nombre de la inmobiliaria, atiende interesados, registra a quien llega por llamada u oficina |
-| Gestor (asesor comercial) | GESTOR (`gestor-01`) | Publica, atiende contactos e interesados, asigna especialistas, ve el panel y el semáforo interno |
+| Asesor inmobiliario | ASESOR (`asesor-01` y los de `APP_ASESORES`) | Permisos de revisor y gestor: registra, carga y exporta CSV, registra ubicación y condiciones de pago, publica, autoriza en nombre de la inmobiliaria, atiende interesados (aviso de nuevos, embudo, exportación), registra a quien llega por llamada u oficina |
+| Gestor (asesor comercial) | GESTOR (`gestor-01`) | Publica, atiende contactos e interesados (con el aviso de nuevos y la exportación), asigna especialistas, ve el panel y el semáforo interno |
 | Revisor | REVISOR (`revisor-01`) | Registra partidas, planos y checklist |
 | Especialista | ESPECIALISTA (`especialista-01`, `-02`) | Emite el informe técnico (indicador B) que le asignan |
 | Propietario particular | PROPIETARIO (`propietario-01` a `-03`) | Ve sus inmuebles y autoriza su publicación |
 | Comprador con cuenta | COMPRADOR (`comprador-01`) | Pide contacto e inspección B |
 | Abogado o notario, SUNARP, municipalidad | Externos | Verificación jurídica; fuentes consultadas a mano |
+| Contadora de LedCons | Externa al sistema | Recibe los CSV que exporta el asesor (Supuesto de uso) |
 
 **Flujo TO-BE (5 pasos):**
 
 1. **Carga.** El asesor carga los lotes de un proyecto por CSV (vista previa por fila; se confirma todo o nada; historial) o
-   registra un inmueble de un particular.
+   registra un inmueble de un particular; registra la ubicación y las condiciones de pago del proyecto. Puede exportar los
+   lotes a CSV, editarlos en Excel y volver a cargarlos.
 2. **Evaluación.** El motor de reglas calcula el indicador A del inmueble o de la partida matriz del proyecto.
 3. **Autorización y publicación.** El asesor autoriza en nombre de la inmobiliaria (o el propietario autoriza lo suyo) y
    publica. Sin autorización vigente no se publica; publicar no cambia A.
-4. **Búsqueda y cita.** El visitante usa el asistente, los filtros y el plano, abre la ficha y pide una cita (o escribe por
-   WhatsApp, llama o va a la oficina y el asesor lo registra).
-5. **Seguimiento.** El asesor confirma o reprograma la cita y lleva al interesado por etapas (Nuevo → Contactado → Cita
+4. **Búsqueda y cita.** El visitante usa el asistente, los filtros y el plano, abre la ficha (con la dirección, «Cómo
+   llegar» y las condiciones de pago) y pide una cita (o escribe por WhatsApp, llama o va a la oficina y el asesor lo registra).
+5. **Seguimiento.** El asesor ve el aviso de nuevos, confirma o reprograma la cita y lleva al interesado por etapas (Nuevo → Contactado → Cita
    agendada → Visita realizada → Separación → Venta, o Descartado); en Separación o Venta marca el lote. La verificación
    jurídica ocurre fuera del sistema.
 
@@ -131,9 +141,15 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | RF20 | Asistente de búsqueda y usos del lote | Implementado | `lib/asistente.test.ts`, `lib/usosLote.test.ts` |
 | RF21 | Registro de interesados desde el panel (llamada, oficina, WhatsApp, referido) con consentimiento verbal | Implementado (etapa 8) | `RegistroPanelYMarcaTest` |
 | RF22 | Portada con cifras reales y marca de la inmobiliaria | Implementado (etapa 8) | `RegistroPanelYMarcaTest.cifrasDelSitio`, `pages/etapa8.test.tsx` |
+| RF26 | Exportar a CSV (Excel) la bandeja con filtros y los lotes de un proyecto; solo asesor y gestor | Implementado (etapa 9) | `Etapa9Test`, `pages/etapa9.test.tsx` |
+| RF27 | Dirección y enlace de mapa del proyecto con «Cómo llegar» | Implementado (etapa 9) | `Etapa9Test.ubicacionPublica`, `enlaceInvalido` |
+| RF28 | Condiciones de pago del proyecto (texto) | Implementado (etapa 9) | `Etapa9Test.limites`, `pages/etapa9.test.tsx` |
+| RF29 | Aviso de interesados nuevos en el menú | Implementado (etapa 9) | `Etapa9Test.avisoNuevos`, `pages/etapa9.test.tsx` |
+| RF30 | Cuentas de asesor por configuración | Implementado (etapa 9) | `Etapa9Test.asesoresConfigurables` |
+| RF31 | Embudo por etapa, total y por proyecto | Implementado (etapa 9) | `Etapa9Test.embudo` |
 | RF23 | Pagos en línea | **Fuera de alcance** | — |
 | RF24 | Consulta automática a SUNARP o a la municipalidad | **Fuera de alcance** (no hay API pública) | — |
-| RF25 | Mapas georreferenciados | **Fuera de alcance** (sin dependencias nuevas; el plano es SVG propio) | — |
+| RF25 | Mapas georreferenciados embebidos | **Fuera de alcance** (sin dependencias nuevas; el plano es SVG propio; la etapa 9 solo enlaza el mapa de la inmobiliaria) | — |
 
 ### Requisitos no funcionales
 
@@ -164,8 +180,10 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | RN-verbal | El consentimiento verbal queda con quién lo registró y cuándo | Implementado (etapa 8) | `RegistroPanelYMarcaTest.registraConConsentimientoVerbal` |
 | RN-marca | Ningún PDF se presenta como emitido por SUNARP, una municipalidad o un colegio; la única imagen es el logo de la empresa | Implementado | `CopiaLiteralPdfTest.sinElementosOficiales`, `LaminaPdfTest` |
 | RN-precio | El precio de los lotes precargados sale de un rango de mercado por distrito | Implementado (etapa 8) | `PreciosZonaTest` |
+| RN-exportar | Solo el asesor y el gestor exportan; el CSV de lotes vuelve a cargarse sin cambios; los CSV no ejecutan fórmulas | Implementado (etapa 9) | `Etapa9Test.lotesIdaYVuelta`, `protegeFormulas` |
+| RN-ubicación | «Cómo llegar» solo con un enlace https registrado por la inmobiliaria; sin mapa embebido | Implementado (etapa 9) | `Etapa9Test.enlaceInvalido` |
 
-## 6. Decisiones D52 a D73 (una línea cada una)
+## 6. Decisiones D52 a D79 (una línea cada una)
 
 | ID | Decisión |
 |---|---|
@@ -191,6 +209,12 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | D71 | Etapa 8: cifras reales en la portada y registro de interesados desde el panel (V23) |
 | D72 | Etapa 8: marca de LEDCONS en el portal y en los PDF (autorización verbal; escrita pendiente) |
 | D73 | Etapa 8: `preparar-demo` con reposición, `verificar-sitio`, pasada en tableta y lista del lunes |
+| D74 | Etapa 9: exportar a CSV para Excel (punto y coma, UTF-8 con BOM), lotes con las columnas de la carga |
+| D75 | Etapa 9: dirección, enlace de mapa y condiciones de pago del proyecto; «Cómo llegar» sin mapa embebido (V24) |
+| D76 | Etapa 9: aviso de interesados nuevos en el menú del asesor y del gestor |
+| D77 | Etapa 9: cuentas de asesor por `app.asesores`; responsables = cuentas ASESOR y GESTOR |
+| D78 | Etapa 9: embudo por etapa, total y por proyecto |
+| D79 | Etapa 9: un solo modelo de negocio y una sola descripción de funcionalidades; lo anterior a `docs/historico/` |
 
 ## 7. Arquitectura
 
@@ -200,7 +224,7 @@ PostgreSQL), PDFBox. Interfaz React 19, Vite, Tailwind 4, React Router (rutas `#
 **Módulos** (verificados por `ModularityTests`): `identidad` (cuentas, login, roles), `expediente` (casos, partidas,
 proyectos, lotes, catálogo público, PDF), `clasificacion` (motor de reglas e historial de A), `inspeccion` (indicador B),
 `cartera` (contactos, decisiones de captación, panel), `interes` (interesados, notas, citas), `checklist`, `orientacion`
-(glosario), `almacenamiento` (archivos y PDF) y `shared` (errores y, desde la etapa 8, los datos de la empresa).
+(glosario), `almacenamiento` (archivos y PDF) y `shared` (errores, datos de la empresa y, desde la etapa 9, el escritor de CSV).
 
 **Entidades principales.** Usuario; CasoLote (inmueble) con su Expediente (partida, asientos, planos, documentos del lote,
 datos comerciales); Evaluación e HistorialEvaluación (A); EvaluaciónTécnica (B); Proyecto, HitoProyecto, LoteProyecto e
@@ -233,6 +257,7 @@ HistorialLoteProyecto; SolicitudContacto y DecisiónCaptación; Interés, NotaIn
 | V21 | Interesados, notas y citas |
 | V22 | Realismo: colegiatura vacía y tabla de ajustes de contenido |
 | V23 | Canal del interesado y consentimiento verbal con su autor |
+| V24 | Dirección, enlace de mapa y condiciones de pago del proyecto |
 
 **Endpoints.** Todos bajo `/api/v1` (detalle en `docs/api.md`).
 
@@ -243,8 +268,9 @@ HistorialLoteProyecto; SolicitudContacto y DecisiónCaptación; Interés, NotaIn
   `GET /robots.txt`; `POST /auth/login`.
 - **Privados (con sesión y rol):** casos (`/casos/**`: registrar, partida, planos, documentos, checklist, autorización,
   publicación, historial, ruta, decisión de captación, inspección), proyectos (`/proyectos/**`: lista, publicación y estado
-  de lotes, plantilla, vista previa y carga CSV, historial), contactos y panel (`/contactos`, `/cartera/panel`),
-  interesados y citas (`/interesados/**`, incluido `POST /interesados` desde el panel, y `/citas/**`).
+  de lotes, plantilla, vista previa y carga CSV, historial; etapa 9: `exportar.csv` y `PUT /proyectos/{c}/datos`),
+  contactos y panel (`/contactos`, `/cartera/panel`), interesados y citas (`/interesados/**`, incluido `POST /interesados`
+  desde el panel y, en la etapa 9, `exportar.csv`, `nuevos` y `embudo`; `/citas/**`).
 
 **Despliegue.** *Local:* backend en `127.0.0.1:8080` (`./mvnw spring-boot:run` con `APP_SEED_PASSWORD`) e interfaz en
 `localhost:5173` (`npm run dev`), con `scripts/reiniciar-demo.ps1` para empezar de cero. *Nube:* `docker-compose.yml` para
@@ -277,17 +303,20 @@ repone por la API interesados y lotes sin borrar nada.
 | v0.8.0 | 186 | 82 | 20 de 20 pasos (02/11/2026) |
 | v0.9 (`d7803f8`) | 200 | 85 (16 archivos) | 27 de 27 pasos (09/11/2026) |
 | v1.0.0, etapa 7 | 318 | 276 (30 archivos) | 13 de 13 pasos (13/11/2026) |
-| v1.0.0, etapa 8 | **332** | **290** (32 archivos) | **13 de 13 pasos y 12 de 12 pantallas en tableta** (13/11/2026) |
+| v1.0.0, etapa 8 | 332 | 290 (32 archivos) | 13 de 13 pasos y 12 de 12 pantallas en tableta (13/11/2026) |
+| v1.0.0, etapa 9 | **347** | **309** (33 archivos) | **15 de 15 pasos y 12 de 12 pantallas en tableta** (14/11/2026) |
 
 Todas aprobadas, 0 fallos. Build de la interfaz correcto (aviso de tamaño del paquete que ya existía).
 
-**Recorrido de la etapa 8** (`docs/pruebas/uso-v10/recorrido-v10.mjs`, base nueva fuera del repositorio, Chrome sin
-ventana): guion de 15 minutos ejecutado por la máquina en **70 s** (159 s con el arranque del backend); sin errores de
-consola ni respuestas 409/500. **La duración con una persona no se ha medido**: debe cronometrarse en el ensayo.
+**Recorrido de la etapa 9** (`docs/pruebas/uso-v10/recorrido-v10.mjs`, base nueva fuera del repositorio, Chrome sin
+ventana, 14/11/2026): los 13 pasos del guion de 15 minutos más 2 de la etapa 9 (aviso de nuevos, exportación a CSV con ida
+y vuelta, ubicación y condiciones de pago, «Cómo llegar»), ejecutados por la máquina en **100 s** (178 s con el arranque
+del backend); sin errores de consola ni respuestas 409/500. **La duración con una persona no se ha medido**: debe
+cronometrarse en el ensayo.
 
 **Capturas.** Laptop (1280 × 900), `docs/pruebas/uso-v10/capturas/`: 01-asistente, 02-filtros, 03-plano, 04-ficha-lote,
 05-solicitar-cita, 06-carga-csv, 07-registro-particular, 08-laminas-kit, 09-propietario-autoriza, 10-publica,
-11-confirma-cita, 12-separacion, 13-pie-version. Tableta, `docs/pruebas/uso-v10/capturas-tableta/`: vertical y horizontal ×
+11-confirma-cita, 12-separacion, 13-pie-version, 14-exportar-ubicacion, 15-ubicacion-pago. Tableta, `docs/pruebas/uso-v10/capturas-tableta/`: vertical y horizontal ×
 portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). Las de versiones anteriores están en
 `docs/pruebas/capturas-v07/`, `capturas-v08/` y `uso-v09/capturas/`.
 
@@ -313,12 +342,17 @@ portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). L
 - **Consentimiento:** el formulario exige la casilla (versión `2026-11-v1`) y guarda solo nombre de pila y un medio de
   contacto; el registro desde el panel exige la constancia del consentimiento verbal y guarda quién lo registró y cuándo;
   todo se borra a pedido. Precarga, kit y pruebas con correos `@example.com` y sin celulares.
+- **Exportación (etapa 9):** el CSV de interesados lleva datos de contacto; solo lo descargan el asesor y el gestor, sin
+  caché, y la pantalla avisa que no se comparta fuera del equipo.
+- **Contraseña de las cuentas en la nube:** `APP_SEED_PASSWORD` propia del despliegue, no la de las pruebas (D77).
 
 ## 12. Limitaciones y pendientes
 
 - **Autorización escrita de LedCons** para su marca y datos (hoy verbal, 13/11/2026) y **acta** de la entrevista del
   09/11/2026.
-- **Datos reales de LedCons** (proyectos, lotes, precios y partidas): el sistema usa contenido preparado por el equipo.
+- **Datos reales de LedCons** (proyectos, lotes, precios, partidas, direcciones y enlaces de mapa): el sistema usa
+  contenido preparado por el equipo; las direcciones de la precarga son referenciales y no tienen enlace.
+- **Ingresos:** gasto actual de LedCons en publicidad y portales, y disposición a pagar: sin respuesta.
 - **Estudio con participantes:** no se ha aplicado; no hay resultados.
 - **Revisión especializada** de las reglas `v0.5`, el glosario, la ruta y los criterios de esfuerzo.
 - **Decisiones del docente** pendientes sobre los desvíos ya listados (partidas transcritas, lotes de la SBN, quitar rótulos
@@ -342,6 +376,6 @@ documentos anteriores del equipo; confirma la numeración vigente del informe an
 | Anexo 18 (contenido y datos) | Precios por rango, contenido realista, consentimiento | 8, 11 |
 | Anexos 19 y 20 (módulos y versiones) | Módulos y tecnología | 7 |
 | Anexo 23 y 24 (servicios y endpoints) | Endpoints públicos y privados | 7 |
-| Anexo 25 (resultados de pruebas) | Totales por versión y recorrido de la etapa 8 | 9 |
+| Anexo 25 (resultados de pruebas) | Totales por versión y recorrido de la etapa 9 | 9 |
 | Anexo 26 (capturas) | Lista de capturas de laptop y tableta | 9 |
 | Anexos del estudio | Sin resultados: el estudio no se ha aplicado | 12 |

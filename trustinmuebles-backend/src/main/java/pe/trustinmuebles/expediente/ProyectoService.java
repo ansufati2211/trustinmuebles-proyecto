@@ -58,7 +58,7 @@ class ProyectoService {
                         .map(ProyectoService::documento).toList();
         return new ProyectoPublico(p.getCodigo(), p.getNombre(), p.getDistrito(), p.getDescripcion(),
                 p.getRecorridoUrl(), hitos, v.lotes(), conteo(v.lotes()), indicador(v), documentos,
-                v.casosPublicados());
+                v.casosPublicados(), p.getDireccion(), p.getMapaUrl(), p.getCondicionesPago());
     }
 
     /** Ficha pública de un lote: 404 si el lote no se ofrece. Si tiene caso propio, su ficha es la del caso. */
@@ -70,7 +70,8 @@ class ProyectoService {
         if (!dto.publicado()) throw new NoEncontradoException("Lote", clave);
         LoteProyecto l = buscarLote(codigo, clave);
         return new LotePublico(dto.codigo(), ExpedienteService.denominacionDe(l), v.proyecto().getCodigo(),
-                v.proyecto().getNombre(), dto, ExpedienteService.predioDeLote(l, dto.estadoComercial()), indicador(v));
+                v.proyecto().getNombre(), dto, ExpedienteService.predioDeLote(l, dto.estadoComercial()), indicador(v),
+                v.proyecto().getDireccion(), v.proyecto().getMapaUrl());
     }
 
     /** PDF de un documento del proyecto (los de su partida matriz), si el proyecto se ve sin sesión. */
@@ -86,13 +87,63 @@ class ProyectoService {
     @Transactional(readOnly = true)
     List<ResumenProyecto> listar() {
         List<ResumenProyecto> salida = new ArrayList<>();
-        for (Proyecto p : proyectos.findAllByOrderByNombreAsc()) {
-            Vista v = vista(p.getCodigo());
-            salida.add(new ResumenProyecto(p.getCodigo(), p.getNombre(), p.getDistrito(), p.getCasoMatrizCodigo(),
-                    ExpedienteService.autorizaLotes(v.matriz()), v.lotes().size(),
-                    (int) v.lotes().stream().filter(LoteDto::publicado).count(), conteo(v.lotes())));
-        }
+        for (Proyecto p : proyectos.findAllByOrderByNombreAsc()) salida.add(resumen(p));
         return salida;
+    }
+
+    private ResumenProyecto resumen(Proyecto p) {
+        Vista v = vista(p.getCodigo());
+        return new ResumenProyecto(p.getCodigo(), p.getNombre(), p.getDistrito(), p.getCasoMatrizCodigo(),
+                ExpedienteService.autorizaLotes(v.matriz()), v.lotes().size(),
+                (int) v.lotes().stream().filter(LoteDto::publicado).count(), conteo(v.lotes()), p.getDireccion(),
+                p.getMapaUrl(), p.getCondicionesPago());
+    }
+
+    static final int MAX_DIRECCION = 200;
+    static final int MAX_MAPA_URL = 500;
+    static final int MAX_CONDICIONES_PAGO = 500;
+
+    /**
+     * v1.0 (etapa 9): dirección, enlace de mapa y condiciones de pago del proyecto. Un campo vacío borra el dato. El enlace
+     * debe ser https con un dominio (no se embebe: «Cómo llegar» lo abre en otra pestaña). Las condiciones son texto libre:
+     * no se calculan cuotas ni tasas. Nada de esto toca el indicador A.
+     */
+    ResumenProyecto actualizarDatos(String codigo, DatosProyectoRequest req) {
+        Proyecto p = proyectos.findByCodigo(codigo).orElseThrow(() -> new NoEncontradoException("Proyecto", codigo));
+        if (req == null) throw new IllegalArgumentException("El cuerpo debe ser un objeto JSON");
+        p.setDireccion(texto("direccion", req.direccion(), MAX_DIRECCION));
+        p.setMapaUrl(enlaceMapa(req.mapaUrl()));
+        p.setCondicionesPago(texto("condicionesPago", req.condicionesPago(), MAX_CONDICIONES_PAGO));
+        proyectos.saveAndFlush(p);
+        return resumen(p);
+    }
+
+    /** Texto sin espacios sobrantes en cada línea ni líneas vacías al inicio o al final; vacío → null. */
+    static String texto(String campo, String valor, int max) {
+        if (valor == null) return null;
+        String t = valor.replace("\r\n", "\n").lines().map(x -> x.trim().replaceAll("[ \\t]+", " "))
+                .collect(java.util.stream.Collectors.joining("\n")).trim();
+        if (t.isEmpty()) return null;
+        if (t.length() > max) {
+            throw new IllegalArgumentException(campo + ": tiene " + t.length() + " caracteres y el máximo es " + max);
+        }
+        return t;
+    }
+
+    /** Enlace de mapa: vacío → null; si no, https con dominio, sin espacios y de hasta 500 caracteres. */
+    static String enlaceMapa(String valor) {
+        String t = texto("mapaUrl", valor, MAX_MAPA_URL);
+        if (t == null) return null;
+        java.net.URI uri;
+        try {
+            uri = new java.net.URI(t);
+        } catch (java.net.URISyntaxException ex) {
+            throw new IllegalArgumentException("mapaUrl: no es un enlace válido");
+        }
+        if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null || !uri.getHost().contains(".")) {
+            throw new IllegalArgumentException("mapaUrl: debe ser un enlace https, por ejemplo el de Google Maps");
+        }
+        return t;
     }
 
     /**
