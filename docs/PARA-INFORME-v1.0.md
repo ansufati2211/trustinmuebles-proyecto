@@ -38,38 +38,63 @@ comprar y no reemplaza a un abogado o notario.**
 **Organización:** LedCons — razón social **LEDCONS E.I.R.L.**, RUC 20600817133, «Inmobiliaria y Constructora», Av. San
 Martín 577, 2.º piso, oficina 32, Ica. Teléfonos 991 108 224 y 904 958 416; WhatsApp 51991108224; Facebook
 `Constructora.Inmobiliaria.Ledcons.sac`. El logo dice «LEDCONS SAC» y se usa tal cual. **Autorización de uso de datos y
-marca: verbal, 13/11/2026; la escrita está pendiente** (D72). No hay acta ni acuerdo formal firmado.
+marca: verbal, el 09/11/2026 y el 13/11/2026 (datos de marca); la escrita está pendiente** (D72). No hay acta ni acuerdo
+formal firmado.
 
-**Entrevista del 09/11/2026.** El repositorio **no contiene el acta, la guía ni las respuestas literales**. Lo que el equipo
-trasladó al desarrollo (y por eso consta en el sistema) es:
+**Entrevista del 09/11/2026.** Entrevista semiestructurada a **Katerin Ramos Ledesma, propietaria de LedCons**, registrada
+por el equipo. Las cifras son aproximadas y el **acta firmada está pendiente**.
 
-| Tema | Lo que consta | Estado |
-|---|---|---|
-| Qué vende | Sobre todo lotes de proyectos de urbanización en Ica (más de 400 al mes) y algunos inmuebles de particulares | Validado por el equipo con LedCons (trasladado a las etapas) |
-| Pagos | No hay pagos en línea | Validado |
-| Quién carga | Un asesor carga los inmuebles (uno a uno o por lotes) y atiende a los interesados | Validado |
-| Por dónde llegan los interesados | Formulario web, llamada, oficina, WhatsApp o referido (etapa 8) | Validado |
-| Necesidad del comprador | Encontrar los lotes y casas de la inmobiliaria sin irse a otra; ver el plano; pedir cita | Validado |
-| Volumen | Unos 400 lotes al mes (cartera de lotes de proyectos) | Validado (entrevista) |
-| Personal | Un asesor y una contadora | Validado (entrevista). La contadora no tiene rol en el sistema: recibe los CSV |
-| Herramienta actual | Excel | Validado (entrevista). Respuesta: exportar a CSV (etapa 9) |
-| Temor del comprador | Estafas por la ubicación del lote | Validado (entrevista). Respuesta: dirección y «Cómo llegar» (etapa 9) |
-| Pedidos de mejora | Mejoras sobre la versión mostrada | La etapa 9 responde a los trasladados (Excel, ubicación, condiciones de pago, aviso de nuevos, más asesores, embudo). Texto literal: **No consta** |
+| Tema | Respuesta registrada |
+|---|---|
+| Tamaño y tipo de cartera | Alrededor de 400 lotes al mes en proyectos de lotización; trabajan sobre todo con lotes y pocas viviendas |
+| Zonas | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona. Sol de Carhuaz es un proyecto ofrecido a LedCons y a Ceinys, por eso compiten en él |
+| Origen de los inmuebles | Lotes de proyectos, mayormente de urbanización; también inmuebles de particulares que les asignan para vender |
+| Documentos que piden | Documentos básicos: partida registral y documentos legales. No mostraron una lista o formato |
+| Quién revisa y quién atiende | Un asesor; la contadora confirma que los papeles están en orden |
+| Dónde guardan la información | Excel |
+| Tiempo de revisión | Alrededor de un día, a cargo de la contadora |
+| Inmuebles con problemas | Respondió «7» de cada 10; mencionó un caso con levantamiento, ya resuelto. Por confirmar |
+| Qué hacen ante un problema | Lo gestionan hasta tener todo en orden; si no, toman otras medidas (no detalladas) |
+| Ventas caídas o demoradas | Sí hubo; no dio detalles |
+| Preocupación del comprador | Temor a estafas relacionadas con la ubicación de los lotes |
+| Revisión por ingeniero o arquitecto | Rara vez o nunca; no trabajan con especialistas habituales |
+| Datos para el sistema | Dispuestos a entregar de 5 a 10 inmuebles de ejemplo |
+| Moneda | Soles |
+| Autorización | Verbal el 09/11 y el 13/11 (datos de marca); escrita pendiente |
+| Opinión tras la demostración | Útil. Pidió: formulario de interés (datos, zona y presupuesto), mapa de lotes, menos actores, catálogo con filtros sin salir del sitio (referencia: Urbania), recorrido 3D con sus recursos y compararse con Ceinys |
+| Prueba con su equipo | Siguiente reunión: 16/11/2026 |
 
-**Roles reales (según lo trasladado):** asesores comerciales (cargan inmuebles y atienden interesados) y propietarios
-particulares (autorizan la venta de su inmueble); la autorización de los inmuebles propios la da la inmobiliaria. En el
-sistema: ASESOR, GESTOR, REVISOR, PROPIETARIO (sección 4). **Pendiente de completar por el equipo:** cargos reales (por
-ejemplo, quién autoriza en nombre de la empresa), respuestas textuales de la entrevista y las preguntas abiertas de
-ingresos: **cuánto gasta hoy LedCons en publicidad y portales** y **cuánto estaría dispuesta a pagar** por el sistema.
+**Cómo se atendió cada pedido en la v1.0:** formulario de interés y solicitud de cita (D65, D68); plano interactivo de
+lotes por proyecto (D63); un solo rol de asesor y visitante sin cuenta (D59 a D61); catálogo con filtros, orden y asistente
+de búsqueda (D62, D66); enlace al recorrido o video de LedCons por proyecto (D63); comparación con Ceinys en la sección de
+competencia.
 
-**Proceso AS-IS (Supuesto: reconstruido de lo trasladado, a confirmar con el acta):**
+**Qué respuestas de la entrevista atiende la etapa 9** (son respuestas, no pedidos literales): Excel → exportar a CSV
+(D74); temor a estafas por la ubicación → dirección y «Cómo llegar» (D75); un solo asesor que atiende → cuentas de asesor por
+configuración, para cuando sumen otros (D77; que vayan a sumarlos es Supuesto). El aviso de nuevos (D76), el embudo (D78) y las condiciones de pago en
+texto (D75) son propuestas del equipo para el seguimiento y frente a la oferta de financiamiento de Ceinys; LedCons no
+las pidió.
 
-1. La inmobiliaria lotiza un terreno matriz y vende sus lotes antes de independizarlos (en el sistema: «en partida matriz»).
-2. Los lotes se difunden por sus canales (Facebook y WhatsApp constan en sus datos), sin plano interactivo ni ficha propia
-   por lote.
-3. El interesado escribe o llama; el asesor responde a mano y agenda la visita sin un registro común.
-4. El comprador no ve la partida ni sabe qué documentos faltan; la verificación queda para el final (abogado o notario).
-5. El seguimiento de cada interesado depende de cada asesor (cuaderno, chat).
+**Roles reales:** la propietaria; **un asesor** que atiende a los interesados; y **la contadora**, que confirma que los
+papeles están en orden (alrededor de un día por inmueble). No trabajan con especialistas habituales. En el sistema:
+ASESOR (el asesor; más cuentas con `APP_ASESORES`), REVISOR (la tarea de revisión documental que hoy hace la contadora;
+**Supuesto**: no tiene cuenta todavía), PROPIETARIO (particulares que les asignan inmuebles) y ESPECIALISTA (indicador B, que
+hoy LedCons casi no usa). **Pendiente de completar por el equipo:** quién autoriza en nombre de la empresa la publicación de
+sus lotes, el acta firmada y las preguntas abiertas de ingresos: **cuánto gasta hoy LedCons en publicidad y portales** y
+**cuánto estaría dispuesta a pagar** por el sistema (la entrevista no las respondió).
+
+**Proceso AS-IS** (de la entrevista; lo marcado **Supuesto** no lo dijo la entrevistada):
+
+1. LedCons recibe lotes de proyectos de lotización (unos 400 al mes, en Nueva Ica, Monte Alegre y Villa Macacona) e
+   inmuebles de particulares que le asignan para vender. **Supuesto:** los lotes se venden antes de independizarlos (en el
+   sistema, «en partida matriz»).
+2. La contadora revisa los documentos básicos (partida registral y documentos legales), en alrededor de un día, sin una
+   lista ni un formato; si hay un problema, lo gestionan hasta tenerlo en orden. No interviene un ingeniero o arquitecto.
+3. La información se guarda en Excel.
+4. Los lotes se difunden por sus canales (Facebook y WhatsApp) sin plano interactivo ni ficha propia por lote
+   (**Supuesto**, por sus datos públicos); el comprador teme estafas por la ubicación.
+5. El asesor atiende a cada interesado; **Supuesto:** sin un registro común de seguimiento. Hubo ventas caídas o
+   demoradas (sin detalle).
 
 ## 3. Modelo de negocio (lienzo)
 
@@ -97,7 +122,7 @@ ingresos: **cuánto gasta hoy LedCons en publicidad y portales** y **cuánto est
 | Propietario particular | PROPIETARIO (`propietario-01` a `-03`) | Ve sus inmuebles y autoriza su publicación |
 | Comprador con cuenta | COMPRADOR (`comprador-01`) | Pide contacto e inspección B |
 | Abogado o notario, SUNARP, municipalidad | Externos | Verificación jurídica; fuentes consultadas a mano |
-| Contadora de LedCons | Externa al sistema | Recibe los CSV que exporta el asesor (Supuesto de uso) |
+| Contadora de LedCons | Sin cuenta todavía | Confirma que los papeles están en orden (unos 1 día por inmueble); recibe los CSV que exporta el asesor (Supuesto de uso). Su tarea corresponde al rol REVISOR |
 
 **Flujo TO-BE (5 pasos):**
 
@@ -322,14 +347,31 @@ portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). L
 
 ## 10. Competencia, referencias y fuente de precios
 
-- **Urbania** (urbania.pe): portal inmobiliario peruano donde publican muchas inmobiliarias y particulares. Es el canal donde
-  el comprador «se va a otra»; la 1.0 responde con un portal propio de la inmobiliaria, con plano de lotes y ficha por lote.
-  También es la **fuente de precios** (D70): 13 avisos revisados por el equipo el 13/11/2026, dos excluidos (Ica, con
-  construcción o céntricos, más de S/ 3,600 por m²); tres distritos con rango **estimado** porque sus avisos eran terrenos
-  rústicos o grandes (S/ 48 a 280 por m², solo como piso).
-- **Ceinys:** referencia de competencia indicada por el equipo. **El repositorio no tiene su análisis**: completar con las
-  notas del equipo (qué ofrece, en qué se diferencia).
-- **SUNARP** (Conoce Aquí, Visor BGR) y la **municipalidad**: fuentes que se consultan a mano; el sistema solo enlaza.
+Revisión del equipo del 11/11/2026 de dos páginas de proyectos de **Ceinys**
+([La Palma Paracas](https://www.ceinys.pe/lapalmaparacas.html) y [Sol de Carhuaz](https://www.ceinys.pe/soldecarhuaz.html);
+Sol de Carhuaz también se ofreció a LedCons, por eso compiten en él) y de **[Urbania](https://urbania.pe/buscar/venta-de-terrenos-en-ica--ica)**
+como portal de referencia. Urbania no se pudo leer de forma automática; sus funciones se describen por revisión manual y
+conocimiento general.
+
+| Tema | Ceinys | Urbania | Trustinmuebles 1.0.0 |
+|---|---|---|---|
+| Lotes | Rangos de área (120–318 m²); varios contadores en «0» y «S/0» | Avisos individuales de cada anunciante | Cada lote con área, precio, precio por m² y estado comercial |
+| Plano | Imagen fija del master plan | Mapa geográfico | Plano interactivo por proyecto (disponible, separado o vendido) y, desde la etapa 9, dirección y «Cómo llegar» con el enlace de mapa de la inmobiliaria |
+| Búsqueda | Sin filtros ni orden | Filtros por ubicación, tipo, precio y área | Filtros combinables, orden, filtros en la URL y asistente por reglas |
+| Respaldo legal | Menciona partida, parámetros, zonificación y modelo de contrato, sin enlaces | Depende de cada anunciante | Documentos con estado y PDF, indicador A, independización del lote |
+| Uso del lote | Solo amenidades | No | Usos orientativos según zonificación y área, con aviso de verificar parámetros |
+| Contacto | Formulario de 4 campos y WhatsApp | Contacto con el anunciante | Interés o cita con consentimiento, WhatsApp con mensaje armado y CRM con embudo |
+| Avance de obra | Lista de hitos | No | Hitos por proyecto, informativos |
+| Financiamiento | «0 % de interés, hasta 80 meses», sin tabla | Variable | Condiciones de pago en texto por proyecto (etapa 9), con «Consulta con un asesor»; sin simulador, tasas ni pagos en línea |
+
+**Lo que se tomó:** hitos de obra, formulario corto y WhatsApp (Ceinys); búsqueda pública con filtros (Urbania). **No se
+copió** diseño, textos ni estructura.
+
+**Fuente de precios:** 13 avisos de terrenos en Urbania revisados por el equipo el 13/11/2026 (dos excluidos: Ica, con
+construcción o céntricos, más de S/ 3,600 por m²). Ica y Subtanjalla con avisos de lotes urbanos; La Tinguiña, Los Aquijes
+y Salas estimados a partir de terrenos rústicos o de gran extensión (S/ 48 a 280 por m²), usados solo como piso (D70).
+
+**SUNARP** (Conoce Aquí, Visor BGR) y la **municipalidad**: fuentes que se consultan a mano; el sistema solo enlaza.
 
 ## 11. Privacidad y contenido realista
 
@@ -348,10 +390,12 @@ portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). L
 
 ## 12. Limitaciones y pendientes
 
-- **Autorización escrita de LedCons** para su marca y datos (hoy verbal, 13/11/2026) y **acta** de la entrevista del
-  09/11/2026.
+- **Autorización escrita de LedCons** para su marca y datos (hoy verbal, 09/11 y 13/11/2026) y **acta firmada** de la
+  entrevista del 09/11/2026. Por confirmar: la cifra de «7 de cada 10» inmuebles con problemas.
 - **Datos reales de LedCons** (proyectos, lotes, precios, partidas, direcciones y enlaces de mapa): el sistema usa
-  contenido preparado por el equipo; las direcciones de la precarga son referenciales y no tienen enlace.
+  contenido preparado por el equipo; las direcciones de la precarga son referenciales y no tienen enlace. LedCons ofreció
+  de 5 a 10 inmuebles de ejemplo; la prueba con su equipo está prevista para el 16/11/2026. Sus zonas reales (Nueva Ica,
+  Monte Alegre, Villa Macacona) no son las de los proyectos precargados.
 - **Ingresos:** gasto actual de LedCons en publicidad y portales, y disposición a pagar: sin respuesta.
 - **Estudio con participantes:** no se ha aplicado; no hay resultados.
 - **Revisión especializada** de las reglas `v0.5`, el glosario, la ruta y los criterios de esfuerzo.
@@ -368,8 +412,8 @@ documentos anteriores del equipo; confirma la numeración vigente del informe an
 | Capítulo o anexo | Qué actualizar | Sección de este documento |
 |---|---|---|
 | I. Problemática y objetivos | Problema del comprador y de la inmobiliaria; objetivo de la 1.0 (portal + panel) | 1 |
-| II. Marco teórico / referencial | Portales inmobiliarios y competencia (Urbania, Ceinys), indicadores de transparencia, privacidad | 8, 10, 11 |
-| III. Organización y diagnóstico | LedCons, entrevista del 09/11/2026, roles, AS-IS | 2 |
+| II. Marco teórico / referencial | Portales inmobiliarios y competencia (Urbania, Ceinys: tabla comparativa), indicadores de transparencia, privacidad | 8, 10, 11 |
+| III. Organización y diagnóstico | LedCons, entrevista del 09/11/2026 (respuestas registradas), roles, AS-IS | 2 |
 | IV. Modelo de negocio | Lienzo con validado y supuesto; propuesta de valor | 3 |
 | V. Arquitectura de negocio y de sistemas | Actores, TO-BE de 5 pasos (sección 6.4.2), requisitos, reglas, decisiones, módulos, entidades (tabla 14, figura 6), migraciones, endpoints, despliegue (6.5.2) | 4, 5, 6, 7 |
 | VI. Implementación, pruebas y resultados | Indicadores y límites, pruebas por versión (tabla 10), recorridos y capturas, limitaciones, control de cambios (tabla 49: fila de la 1.0.0) | 8, 9, 12 |

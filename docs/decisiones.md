@@ -1020,8 +1020,8 @@ marca en la barra (capturas en `docs/pruebas/uso-v10/capturas-tableta/`), y regi
 
 ## D74. v1.0 (etapa 9): exportar a CSV para Excel (sin migración)
 
-**Contexto.** En la entrevista del 09/11/2026 la inmobiliaria contó que lleva sus lotes y clientes en Excel, y la
-contadora trabaja con esos archivos. **Decisión.** Dos descargas, solo para ASESOR y GESTOR (SecurityConfig y otra vez en
+**Contexto.** En la entrevista del 09/11/2026 la inmobiliaria contó que guarda su información en Excel; la contadora
+revisa los papeles de cada inmueble. **Decisión.** Dos descargas, solo para ASESOR y GESTOR (SecurityConfig y otra vez en
 el servicio): `GET /proyectos/{c}/lotes/exportar.csv` y `GET /interesados/exportar.csv` (con los mismos filtros y orden que
 la bandeja). Formato: **punto y coma**, **UTF-8 con BOM** y CRLF (Excel en español lo abre con doble clic y respeta las
 tildes); respuesta `text/csv`, sin caché y con `nosniff`. El CSV de lotes usa **las mismas columnas que la carga**
@@ -1057,7 +1057,8 @@ es oscura y no usa los colores del indicador A ni del estado comercial.
 
 ## D77. v1.0 (etapa 9): cuentas de asesor por configuración (sin migración)
 
-**Contexto.** La inmobiliaria trabaja con un asesor y puede sumar otros. **Decisión.** `app.asesores`
+**Contexto.** La inmobiliaria trabaja hoy con un asesor (entrevista); la configuración permite sumar otros sin tocar el
+código (que vayan a sumarlos es Supuesto). **Decisión.** `app.asesores`
 (`APP_ASESORES`, por omisión `asesor-01`) lista los códigos de asesor separados por comas; al arrancar se crean los que
 falten con rol ASESOR y la contraseña de `APP_SEED_PASSWORD`, sin cambiar la contraseña ni el rol de una cuenta que ya
 existe. La lista se limpia (espacios, mayúsculas, repetidos) y un código que no sea de minúsculas, dígitos y guiones

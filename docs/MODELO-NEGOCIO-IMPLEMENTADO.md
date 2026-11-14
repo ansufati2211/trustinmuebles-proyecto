@@ -25,21 +25,53 @@ prueba ejecutada, **Validado**. El texto de las versiones v0.7 a v0.9 está, sin
 | Nombre comercial | LedCons («LEDCONS», «Inmobiliaria y Constructora») | Validado |
 | Razón social y RUC | **LEDCONS E.I.R.L.**, RUC **20600817133** | Validado (dato público de la empresa) |
 | Dirección y contacto | Av. San Martín 577, 2.º piso, oficina 32, Ica; teléfonos 991 108 224 y 904 958 416; WhatsApp y Facebook de la empresa (`contenido/empresa.json`) | Validado |
-| Autorización de uso de marca y datos | **Verbal** (13/11/2026). **La escrita está pendiente** (D72). No hay acta ni acuerdo firmado | Pendiente |
+| Propietaria | Katerin Ramos Ledesma (entrevistada el 09/11/2026) | Validado |
+| Zonas donde trabaja | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona | Validado (entrevista) |
+| Personal | Un asesor que atiende a los interesados y una contadora que confirma que los papeles están en orden | Validado (entrevista) |
+| Autorización de uso de marca y datos | **Verbal** (09/11 y 13/11/2026). **La escrita está pendiente** (D72). No hay acta firmada | Pendiente |
 
-**Entrevista del 09/11/2026** (el acta y las respuestas literales **no están en el repositorio**; esto es lo que el equipo
-trasladó al desarrollo):
+**Entrevista del 09/11/2026.** Semiestructurada, a la propietaria, registrada por el equipo. Las cifras son aproximadas y
+el **acta firmada está pendiente**.
 
-| Tema | Lo que se trasladó | Cómo responde el sistema |
-|---|---|---|
-| Cartera | Sobre todo **lotes de proyectos de urbanización** en Ica, **unos 400 al mes**, y algunos inmuebles de particulares | Proyectos con plano de lotes y carga masiva por CSV (hasta 2000 filas por archivo) |
-| Personal | Trabajan con **un asesor y una contadora** | Rol ASESOR; desde la etapa 9 se pueden crear más cuentas de asesor sin tocar el código (`app.asesores`). La contadora **no tiene rol**: recibe los CSV |
-| Herramienta actual | Llevan sus datos en **Excel** | Exportar a CSV que Excel abre directo (lotes e interesados); el CSV de lotes vuelve a cargarse tal cual |
-| Temor del comprador | **Miedo a estafas por la ubicación** (que el lote no esté donde dicen) | Dirección del proyecto y botón «Cómo llegar» con el enlace de mapa que registra la inmobiliaria; partida y documentos del proyecto a la vista |
-| Pedidos de mejora | Pidieron mejoras sobre la versión mostrada | La etapa 9 responde a los que el equipo trasladó: Excel, ubicación, condiciones de pago, aviso de interesados nuevos, más asesores y cifras del embudo. Qué pidió cada persona, textualmente: **No consta** |
+| Tema | Respuesta registrada |
+|---|---|
+| Tamaño y tipo de cartera | Alrededor de 400 lotes al mes en proyectos de lotización; trabajan sobre todo con lotes y pocas viviendas |
+| Zonas | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona. Sol de Carhuaz es un proyecto ofrecido a LedCons y a Ceinys, por eso compiten en él |
+| Origen de los inmuebles | Lotes de proyectos, mayormente de urbanización; también inmuebles de particulares que les asignan para vender |
+| Documentos que piden | Documentos básicos: partida registral y documentos legales. No mostraron una lista o formato |
+| Quién revisa y quién atiende | Un asesor; la contadora confirma que los papeles están en orden |
+| Dónde guardan la información | Excel |
+| Tiempo de revisión | Alrededor de un día, a cargo de la contadora |
+| Inmuebles con problemas | Respondió «7» de cada 10; mencionó un caso con levantamiento, ya resuelto. Por confirmar |
+| Qué hacen ante un problema | Lo gestionan hasta tener todo en orden; si no, toman otras medidas (no detalladas) |
+| Ventas caídas o demoradas | Sí hubo; no dio detalles |
+| Preocupación del comprador | Temor a estafas relacionadas con la ubicación de los lotes |
+| Revisión por ingeniero o arquitecto | Rara vez o nunca; no trabajan con especialistas habituales |
+| Datos para el sistema | Dispuestos a entregar de 5 a 10 inmuebles de ejemplo |
+| Moneda | Soles |
+| Autorización | Verbal el 09/11 y el 13/11 (datos de marca); escrita pendiente |
+| Opinión tras la demostración | Útil. Pidió: formulario de interés (datos, zona y presupuesto), mapa de lotes, menos actores, catálogo con filtros sin salir del sitio (referencia: Urbania), recorrido 3D con sus recursos y compararse con Ceinys |
+| Prueba con su equipo | Siguiente reunión: 16/11/2026 |
 
-**Pendiente de completar por el equipo:** acta de la entrevista, cargos reales (quién autoriza en nombre de la empresa),
-gasto actual en publicidad y portales, y disposición a pagar (sección 12).
+**Cómo se atendió cada pedido en la v1.0:** formulario de interés y solicitud de cita (D65, D68); plano interactivo de
+lotes por proyecto (D63); un solo rol de asesor y visitante sin cuenta (D59 a D61); catálogo con filtros, orden y asistente
+de búsqueda (D62, D66); enlace al recorrido o video de LedCons por proyecto (D63); comparación con Ceinys en
+[PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md), sección 10.
+
+**Qué respuestas de la entrevista atiende la etapa 9** (son respuestas, no pedidos literales): Excel → exportar a CSV
+(D74); temor a estafas por la ubicación → dirección y «Cómo llegar» (D75); un solo asesor que atiende → cuentas de asesor por
+configuración, para cuando sumen otros (D77; que vayan a sumarlos es Supuesto). El aviso de nuevos (D76), el embudo (D78) y las condiciones de pago en
+texto (D75) son propuestas del equipo para el seguimiento y frente a la oferta de financiamiento de Ceinys; LedCons no
+las pidió.
+
+**Lo que la entrevista cambia en el modelo:** la contadora hace hoy la revisión documental (en el sistema, la tarea del rol
+REVISOR; no tiene cuenta todavía); LedCons **rara vez o nunca** recurre a un ingeniero o arquitecto, así que el indicador B
+y su ingreso son una hipótesis más débil (sección 12); y el «7 de cada 10» inmuebles con problemas, si se confirma, respalda
+la propuesta del indicador A y de la ruta de regularización.
+
+**Pendiente:** acta firmada; confirmar el «7 de cada 10»; quién autoriza en nombre de la empresa la publicación de sus
+lotes; gasto actual en publicidad y portales, y disposición a pagar (sección 12; la entrevista no los respondió); los 5 a 10
+inmuebles de ejemplo que ofreció LedCons; prueba con su equipo el 16/11/2026.
 
 ## 3. Lienzo del modelo
 
@@ -82,7 +114,7 @@ en el menú; registro de quien llega por llamada, oficina, WhatsApp o referido; 
 | ACT-06 | Abogado o notario | Externo | Verificación jurídica antes de comprar | No tiene cuenta |
 | ACT-07 | SUNARP | Externo, consultado a mano | Conoce Aquí (el asesor o revisor transcribe) y Visor BGR (solo enlace) | El sistema no se conecta |
 | ACT-08 | Municipalidad | Externo, consultado a mano | Declaración jurada (HR y PU) y certificado de zonificación | El sistema no se conecta |
-| ACT-09 | Contadora de LedCons | Externa al sistema | Recibe los CSV exportados por el asesor | No tiene cuenta ni rol (Supuesto: así lo usarían) |
+| ACT-09 | Contadora de LedCons | Sin cuenta todavía | Confirma que los papeles están en orden (alrededor de un día por inmueble); recibe los CSV que exporta el asesor (Supuesto de uso) | Su tarea corresponde al rol REVISOR; hoy no tiene cuenta |
 
 Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD` y nacen al arrancar si faltan; no hay registro abierto. El
 servidor comprueba el rol en cada operación (I4).
@@ -151,7 +183,7 @@ backend no publica puertos y el sitio no se indexa mientras `app.sitio.indexable
 | Fuente | Qué aporta | Cómo entra |
 |---|---|---|
 | LedCons | Marca, razón social, RUC, dirección, teléfonos, WhatsApp y Facebook (`contenido/empresa.json`) | Autorización verbal; escrita pendiente |
-| LedCons (pendiente) | Proyectos, lotes, precios y partidas reales | **No consta**: el sistema usa contenido preparado por el equipo (sección 13) |
+| LedCons (pendiente) | Proyectos, lotes, precios y partidas reales | Ofreció de 5 a 10 inmuebles de ejemplo; aún no entregados. El sistema usa contenido preparado por el equipo (sección 13), en otras zonas que las suyas |
 | Asesor de la inmobiliaria | Inmuebles, lotes por CSV, ubicación y enlace de mapa, condiciones de pago | Panel |
 | SUNARP (Conoce Aquí, Visor BGR) | Texto de la partida; ubicación catastral | A mano; el sistema solo enlaza |
 | Municipalidad | HR y PU; certificado de zonificación y vías | Los aporta el propietario |
@@ -201,7 +233,7 @@ Ninguna cifra está validada. El sistema no cobra, no factura y no tiene pasarel
 | Hipótesis | Qué soporta hoy el sistema | Estado |
 |---|---|---|
 | La inmobiliaria paga una suscripción mensual por el portal y el panel | Nada: no hay planes ni medición de uso | Supuesto |
-| Parte del costo de cada inspección B (S/ 250 referencial) | Registra solicitudes y asignaciones; no suma importes | Supuesto |
+| Parte del costo de cada inspección B (S/ 250 referencial) | Registra solicitudes y asignaciones; no suma importes | Supuesto, **debilitado**: LedCons rara vez o nunca recurre a un ingeniero o arquitecto (entrevista) |
 | El portal propio reemplaza parte del gasto en portales y publicidad | El embudo y la demanda muestran de dónde vienen los interesados y cuántos avanzan | Supuesto |
 | Costos: hospedaje en contenedores, dominio, mantenimiento, especialistas para B | Sin cifras | Supuesto |
 
@@ -236,7 +268,7 @@ reemplazar a un abogado o notario; documentos que se presenten como oficiales.
 
 ## 15. Limitaciones
 
-- Autorización escrita de LedCons y acta de la entrevista: pendientes.
+- Autorización escrita de LedCons y acta firmada de la entrevista: pendientes.
 - Datos reales de LedCons (proyectos, lotes, precios, partidas): no cargados.
 - Estudio con compradores: no se ha aplicado; no hay resultados.
 - Reglas `v0.5`, glosario, ruta y criterios de esfuerzo: pendientes de revisión especializada.
