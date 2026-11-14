@@ -1,362 +1,131 @@
-# Funcionalidades de Trustinmuebles
+# Funcionalidades de Trustinmuebles 1.0.0
 
-## Versión 1.0.0
+Qué hace el sistema en la versión **1.0.0**, por actor y por pantalla. Una sola descripción: lo de la v0.8 que ya no aplica
+(reglas v0.2, documento simulado, copia literal, uso solo local, perfiles ficticios) está, sin cambios, en
+[historico/funcionalidades-v0.8.md](historico/funcionalidades-v0.8.md). El modelo de negocio está en
+[MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md); la API, en [api.md](api.md).
 
-Lo que agrega la 1.0.0 (etapas 1 a 7), por quién lo usa. El resto del documento describe la v0.8 y sigue vigente.
+Trustinmuebles es el portal y el panel de **una inmobiliaria de Ica** (LedCons). **No certifica saneamiento, no recomienda
+comprar, no reemplaza a un abogado o notario y no cobra nada en línea.**
 
-### Visitante, sin cuenta
+## Resumen por actor
 
-| Función | Dónde | Notas |
+| Actor | Cuenta | Qué usa |
 |---|---|---|
-| Catálogo unido de casos publicados y lotes de proyecto | `#/inmuebles` | 24 por página; filtros por proyecto, distrito, tipo, estado comercial, moneda, precio, precio por m², área, indicador A, tipo de alerta, zonificación y uso; orden por novedad, precio, precio por m² o área; todo en la dirección |
-| Asistente de búsqueda | Arriba del catálogo | Reglas y expresiones regulares, sin IA y sin enviar la frase a ningún servicio. Etiquetas que se pueden quitar y tres recomendaciones con sus motivos |
-| Página del proyecto | `#/proyectos/{c}` | Plano de lotes SVG por manzanas (teclado: flechas, Inicio, Fin, Enter), leyenda en texto, panel del lote, hitos, indicador A de la partida matriz y sus documentos |
-| Ficha del lote | `#/proyectos/{c}/lotes/{A-7}` | Precio, precio por m², zonificación, «Usos que suelen permitirse» (orientativo, con aviso de parámetros urbanísticos) |
-| Ficha pública de un caso | `#/inmuebles/{c}` | Indicadores A y B, usos, documentos para descargar sin sesión (ficha registral, láminas, documentos del lote); partida oculta |
-| Solicitar cita | Ficha, plano o asistente | Visita al lote, reunión en oficina o llamada; una o dos fechas con franja; nombre de pila y un celular o correo; consentimiento; WhatsApp solo si la inmobiliaria lo configura |
-| Créditos de imágenes | `#/creditos` | Solo fotos de licencia libre |
+| Visitante | Sin cuenta | Portada, catálogo, asistente, proyecto con plano, ubicación y condiciones de pago, ficha del lote o del inmueble, cita |
+| Asesor | `asesor-01` (y los de `app.asesores`) | Todo lo del revisor y del gestor: Registrar, Proyectos (carga y exportación CSV, ubicación y pago), Expedientes, Cartera, Interesados (con aviso, embudo y exportación) |
+| Gestor | `gestor-01` | Expedientes, Cartera, Interesados (con aviso, embudo y exportación), publicación, asignación de especialistas y Proyectos (`#/proyectos`, sin enlace en su menú) |
+| Revisor | `revisor-01` | Expedientes y Registrar partida: partida, planos, documentos del lote, checklist |
+| Especialista | `especialista-01`, `-02` | Expedientes: informe técnico (indicador B) de la inspección asignada |
+| Propietario | `propietario-01` a `-03` | Mis inmuebles: ver lo suyo y autorizar o retirar su publicación |
+| Comprador con cuenta | `comprador-01` | Expedientes publicados: contacto con motivo cerrado e inspección B |
 
-Sin sesión, la partida se muestra con sus primeros 4 caracteres y «••••» en la ficha, la tarjeta, el indicador del proyecto,
-las muestras de la portada y los PDF (etapa 7). Con sesión, completa.
+## 1. Visitante (sin cuenta)
 
-### Asesor (`asesor-01`)
+| Pantalla | Ruta | Qué hace |
+|---|---|---|
+| Portada | `#/` | Marca de LEDCONS en la barra; cifras reales (inmuebles publicados, proyectos, lotes disponibles); cómo funciona; pie con razón social, RUC, dirección, teléfonos, WhatsApp, Facebook, límites legales y «con tecnología Trustinmuebles · versión 1.0.0» |
+| Catálogo | `#/inmuebles` | Casos publicados y lotes de proyecto juntos, 24 por página; filtros por proyecto, distrito, tipo, estado comercial, moneda, precio, precio por m², área, indicador A, tipo de alerta, zonificación y uso; orden por novedad, precio, precio por m² o área; todo queda en la dirección |
+| Asistente | Arriba del catálogo | Entiende frases como «lote en Subtanjalla de menos de 80 mil soles» con reglas (sin IA; la frase no sale del navegador); etiquetas que se pueden quitar y 3 recomendaciones con sus motivos |
+| Proyecto | `#/proyectos/{c}` | Nombre, distrito, **dirección y botón «Cómo llegar»** (abre en otra pestaña el enlace de mapa que registró la inmobiliaria; sin enlace no aparece), plano de lotes SVG por manzanas (flechas, Inicio, Fin, Enter), leyenda en texto, panel del lote, **«Condiciones de pago» con la nota «Consulta con un asesor»** (si la inmobiliaria las registró), avance (hitos), indicador A de la partida matriz y sus documentos |
+| Ficha del lote | `#/proyectos/{c}/lotes/{A-7}` | Precio, precio por m², zonificación, independización, **dirección del proyecto y «Cómo llegar»**, «Usos que suelen permitirse» (orientativo), indicador A de la partida matriz y solicitud de cita |
+| Ficha de un inmueble | `#/inmuebles/{c}` | Indicadores A y B, usos, documentos para descargar sin sesión (ficha registral, láminas, documentos del lote) |
+| Solicitar cita | Ficha, plano o asistente | Visita al lote, reunión en oficina o llamada; una o dos fechas con franja; nombre de pila y un celular o correo; consentimiento obligatorio; WhatsApp de la inmobiliaria |
+| Créditos | `#/creditos` | Fotos con licencia libre |
 
-| Función | Dónde |
+Sin sesión, la partida se ve parcial (`1105••••`) en la ficha, la tarjeta, el proyecto, la portada y los PDF. El sitio pide
+no ser indexado mientras `app.sitio.indexable` sea false.
+
+## 2. Asesor y gestor (panel de la inmobiliaria)
+
+El asesor reúne los permisos del revisor y del gestor. El gestor tiene los de gestión (no edita la partida).
+
+### Menú y aviso de interesados nuevos
+
+- El menú muestra junto a **«Interesados»** la cantidad de interesados en etapa **Nuevo** (burbuja con el número, «99+»
+  desde 100). Para lectores de pantalla el enlace se lee «Interesados, 3 interesados nuevos». Se actualiza al cambiar de
+  página, cuando la bandeja cambia (etapa, registro, borrado) y cada minuto. Sin nuevos no hay burbuja. También en el menú ☰
+  de tableta y celular. El gestor tiene ahora «Interesados» en su menú.
+
+### Proyectos (`#/proyectos`)
+
+| Función | Qué hace |
 |---|---|
-| Registrar un inmueble de la inmobiliaria o de un particular (titularidad comercial, proyecto, estado comercial, independización, precio) | Registrar (`#/casos/nueva`) |
-| Lista de proyectos y carga de lotes por CSV con vista previa, «solo errores», confirmación todo o nada e historial | Proyectos (`#/proyectos`, `#/proyectos/{c}/carga`) |
-| Registrar o retirar la autorización en nombre de la inmobiliaria; publicar y retirar | Expediente |
-| Bandeja de interesados (filtros por etapa, proyecto y responsable; vencidos primero), notas, próxima acción, etapas, marcar el lote separado o vendido, borrar a pedido | Interesados |
-| Agenda de citas de 7 días (confirmar, reprogramar, rechazar) y resumen de demanda | Interesados → pestañas |
+| Lista de proyectos | Nombre, distrito, dirección (o «Sin dirección registrada»), lotes, en línea, disponibles y aviso si la partida matriz no tiene autorización |
+| Cargar lotes (CSV) | `#/proyectos/{c}/carga`: plantilla, «Descargar los lotes actuales», vista previa con errores por fila y «solo errores», confirmación todo o nada, historial por lote |
+| **Exportar lotes (CSV)** | Descarga `lotes-{proyecto}-{fecha}.csv` con las mismas columnas que la carga (`manzana;lote;area_m2;precio;moneda;estado;independizacion;zonificacion;codigo_caso`), separador punto y coma y UTF-8 con BOM: Excel lo abre con doble clic. Se edita y se vuelve a cargar; sin cambios, la vista previa dice «sin cambios» en todas las filas. Incluye los precios de los lotes que no están en línea (es interno) |
+| **Ubicación y pago** | Dirección (hasta 200 caracteres), enlace de mapa opcional (solo https, por ejemplo el de «Compartir» de Google Maps) y condiciones de pago opcionales (hasta 500 caracteres, con contador). Un campo vacío borra el dato. No se calculan cuotas ni tasas |
+| Ver página pública | Abre `#/proyectos/{c}` |
 
-### Para la demostración
+### Expedientes, Registrar y Cartera
 
-- Kit en `docs/demo/kit/` ([LEEME-KIT.md](demo/kit/LEEME-KIT.md)): CSV, textos de partida `INT-`, PDF de láminas y documentos
-  del lote, frases del asistente y datos de la cita.
-- `scripts/preparar-demo.mjs`: verifica y completa la precarga por la API, sin borrar nada.
-- Versión visible en el pie: «Trustinmuebles · versión 1.0.0».
+- **Registrar** (`#/casos/nueva`): inmueble de la inmobiliaria o de un particular (titularidad comercial, proyecto, estado
+  comercial, independización, precio), pegando el texto de la partida; vista previa sin datos personales.
+- **Expediente** (`#/casos/{c}`): partida, planos, documentos del lote, checklist, indicador A con historial, ruta de
+  regularización, semáforo de gestión interno con decisión de captación, autorización (en nombre de la inmobiliaria) y
+  publicación, asignación del especialista.
+- **Cartera** (`#/cartera`): panel por color de A, publicación, tipo de alerta, esfuerzo y estado de gestión; contactos de
+  compradores con cuenta.
 
-### Lo que la 1.0.0 no hace
+### Interesados (`#/interesados`)
 
-Pagos en línea, mapas de terceros, IA, consultas en línea a SUNARP o a la municipalidad, envío de correos o mensajes desde
-el sistema (el asesor contacta por fuera), y certificar saneamiento o recomendar comprar.
+| Pestaña | Qué hace |
+|---|---|
+| Interesados | Bandeja con filtros por etapa, proyecto, responsable y «solo con acción vencida» (vencidos primero y resaltados); detalle con etapa, responsable, próxima acción, notas, citas y «Marcar el lote separado o vendido»; borrar a pedido; **Registrar interesado** (llamada, oficina, WhatsApp o referido, con consentimiento verbal); **Exportar a CSV** con los filtros aplicados (`interesados-{fecha}.csv`: registrado el, nombre, medio, contacto, canal, etapa, inmueble o búsqueda, proyecto, lote, zona, tipo, presupuesto, forma de pago, responsable, próxima acción, vencida, cita por confirmar y notas). La pantalla avisa que el archivo lleva datos de contacto y no debe compartirse fuera del equipo |
+| Agenda de citas | 7 días; confirmar, reprogramar o rechazar |
+| **Embudo** | Cantidad y porcentaje por etapa del total y de cada proyecto (más «Sin proyecto»), en barras y en una tabla con título para lectores de pantalla. Cuenta los descartados, así las etapas suman el total |
+| Demanda | Interesados activos por zona, tipo, presupuesto y proyecto |
 
----
+Los responsables posibles son todas las cuentas de asesor y de gestor. Quien registra a un interesado desde el panel queda
+como su responsable.
 
+### Cuentas de asesor
 
-> Versión v0.8.0 «Feedback docente»: el plano presentado exige su PDF (con límite de tamaño y optimización automática), ruta de
-> regularización con el plazo del gravamen, panel del gestor por tipo de alerta y esfuerzo, semáforo de gestión interno con
-> decisión de captación y resaltado del color de A (sección 5 ter). Recorrido de 20 pasos en Chrome con los 5 roles
-> ([resultado](pruebas/RESULTADO-recorrido-v08.md)).
->
-> v0.7.0 «Ciclo de cartera»: roles GESTOR y PROPIETARIO, captación con propietario, autorización, publicación,
-> historial de evaluaciones, contacto del comprador, asignación del especialista y panel de cartera (sección 5 bis). Las vistas
-> de la interfaz se recorrieron en Chrome con los 5 roles ([resultado](pruebas/RESULTADO-recorrido-v07.md)).
->
-> v0.6.0: interfaz comercial (catálogo con ilustraciones, precios referenciales y filtros), solicitud de inspección solo
-> del comprador con costo referencial (M5), informe firmado desde la cuenta del especialista (M8), ítem HR y PU en el checklist
-> (M9) y filtros del catálogo en el servidor (M13). Sobre la v0.5.1.
+`app.asesores` (variable `APP_ASESORES`) lista los códigos de asesor que el arranque crea si faltan, con la contraseña de
+`APP_SEED_PASSWORD`; por omisión solo `asesor-01`. Ejemplo: `asesor-01,asesor-02`. No cambia la contraseña ni el rol de una
+cuenta que ya existe; un código mal escrito detiene el arranque con un mensaje claro.
 
-Qué hace el programa hoy (versión v0.8.0), por rol, con la pantalla o la ruta donde está y lo que **no** hace. Para el detalle
-técnico, ver [api.md](api.md); para las decisiones, [decisiones.md](decisiones.md); para las pruebas, [trazabilidad.md](trazabilidad.md).
+## 3. Revisor
 
-Trustinmuebles es el sistema de transparencia precompra de **una inmobiliaria de Ica** para su cartera de lotes y viviendas.
-Muestra la partida registral y los planos de cada inmueble, explica sus términos, señala qué falta revisar y, a pedido del
-comprador, registra una inspección técnica presencial. **No certifica saneamiento, no recomienda comprar y no
-reemplaza asesoría legal.**
+Registra partidas (`#/casos/nueva`) con su origen, edita la partida, los planos (con su PDF) y los documentos del lote, cambia
+el checklist y elimina partidas captadas. Ve los proyectos, pero no publica, no autoriza, no exporta y no ve interesados.
 
-## Resumen
+## 4. Especialista
 
-| Área | Qué ofrece | Quién |
-|---|---|---|
-| Acceso | Ingreso con código de cuenta y contraseña; cinco roles, menú y vistas según el rol | Todos |
-| Catálogo | Tarjetas con ilustración, tipo, distrito, área, precio referencial y los dos indicadores; filtros combinables en la URL | Todos |
-| Expedientes | Búsqueda por número y detalle de cada partida | Todos |
-| Semáforo informativo | Estado verde, amarillo, rojo o gris, con motivos, alertas y faltantes | Todos |
-| Partida registral | Descripción del inmueble y asientos por rubro (C, D, E, F) | Todos |
-| Glosario | Términos explicados al seleccionarlos | Todos |
-| Checklist | Elementos pendientes, revisados u observados, incluida la declaración jurada municipal (HR y PU) | Ver: todos. Cambiar: revisor |
-| Documento PDF | Copia literal simulada o transcripción referencial | Ver: todos. Subir uno propio: revisor |
-| Planos | Expediente de 4 especialidades con lámina 2D referencial | Ver: todos. Editar: revisor |
-| Evaluación técnica | Solicitud con costo referencial e informe del especialista | Solicitar: comprador. Emitir: especialista |
-| Edición | Cambiar los datos, los asientos y los planos de una partida | Revisor |
-| Captación de partidas | Registrar, con origen obligatorio (transcrita o simulada), propietario y precio opcional; eliminar las captadas | Revisor |
-| Autorización | Otorgar o retirar la autorización de sus propios casos | Propietario |
-| Publicación | Publicar (con autorización vigente) o retirar un caso | Gestor |
-| Historial de evaluaciones | Línea de tiempo de solo lectura de cada recálculo del indicador A | Revisor, gestor, especialista, propietario |
-| Contacto | Solicitar contacto sobre un caso publicado con un motivo de lista cerrada; atenderlo | Solicitar: comprador. Atender: gestor |
-| Asignación de inspecciones | Asignar un especialista a una inspección solicitada o en curso; sin asignación nadie registra avance ni emite | Gestor |
-| Panel de cartera (`#/cartera`) | Totales por color y publicación, faltantes, inspecciones, contactos y lista filtrable | Gestor |
-| Mis inmuebles (`#/mis-inmuebles`) | Sus casos con indicadores, motivos, faltantes, publicación y autorización | Propietario |
-| Ruta de regularización (v0.8) | Pasos por motivo, quién gestiona, documento, esfuerzo y plazo del gravamen; orientativa | Todos los que ven el detalle |
-| Cartera por tipo de alerta (v0.8) | Conteos por tipo de alerta, esfuerzo y estado de gestión; lista «Por regularizar»; filtro por tipo de alerta | Panel: gestor. Filtro: todos |
-| Gestión inmobiliaria (interno, v0.8) | Semáforo de gestión, decisión de captación e historial de decisiones | Ver: gestor y revisor. Decidir: gestor |
+Ve los expedientes y, solo si el gestor o el asesor le asignó la inspección, registra el avance y emite el informe técnico
+(indicador B, seis pasos), firmado con los datos de su cuenta. Su número de colegiatura no está registrado: se registra al
+asignar al profesional real. B nunca cambia A.
 
-## 1. Acceso y roles
+## 5. Propietario particular
 
-- **Ingreso** (`#/login`): código de cuenta y contraseña. No hay registro abierto: las cuentas las crea el sistema al
-  arrancar si faltan (`comprador-01`, `revisor-01`, `especialista-01`, `especialista-02`, `gestor-01`, `propietario-01` y
-  `propietario-02`), y el panel «Cuentas de demostración» las ofrece todas. Todas usan la contraseña de
-  `APP_SEED_PASSWORD`.
-- **Sesión:** dura mientras la pestaña esté abierta. Si caduca, el sistema vuelve al ingreso.
-- **Protección contra intentos repetidos:** tras cinco fallos seguidos, se bloquea el ingreso unos minutos.
-- **Roles:**
-  - **Comprador:** consulta todo y es el único que solicita la inspección técnica; no modifica nada.
-  - **Especialista:** consulta y, si el gestor le asignó la inspección, registra el avance y emite el informe técnico presencial,
-    firmado con los datos de su cuenta (ficticios: Ing. Perfil Ficticio 01, Ingeniero Civil, CIP N.° SIM-CIP-0001). Los perfiles
-    de especialista son ficticios y no firman informes reales. No edita partidas.
-  - **Revisor:** además edita partidas, cambia el checklist, sube documentos y registra o elimina partidas captadas.
-  - **Gestor (asesor comercial, v0.7):** ve todos los casos, publica o retira, atiende contactos, asigna inspecciones y usa
-    el panel «Cartera».
-  - **Propietario (v0.7):** ve solo sus casos en «Mis inmuebles» y otorga o retira su autorización. No edita ni sube nada.
-  - **Visibilidad (v0.7):** el comprador solo ve casos publicados; un caso que no le corresponde da «no encontrado».
-  - **Menú por rol:** cada rol ve solo sus enlaces, y escribir a mano la URL de una vista de otro rol muestra un aviso.
-  - El servidor verifica el rol en cada operación. Ocultar un botón en pantalla no es la protección.
+En «Mis inmuebles» (`#/mis-inmuebles`) ve sus inmuebles (también en borrador) con indicadores, motivos y faltantes, y
+autoriza o retira su publicación. No edita ni sube nada. Los inmuebles de la inmobiliaria no los autoriza él.
 
-## 2. Inicio y avisos
+## 6. Comprador con cuenta
 
-- **Inicio** (`#/`):
-  - **Héroe** con ilustración, propuesta de valor y el botón «Explorar Cartera de Inmuebles».
-  - **«¿Cómo te protegemos antes de comprar?», el modelo en 4 pasos:** (1) captación y verificación de la cartera propia en Ica,
-    sin scraping ni APIs inexistentes; (2) indicador A, semáforo de 4 estados sobre la partida, los 4 planos y el glosario;
-    (3) indicador B, inspección presencial en 6 pasos por un profesional colegiado, independiente de A (RN-10); (4) decisión
-    informada con el checklist (incluye HR y PU) y los PDF.
-  - **Transparencia de fuentes de información:** gratuitas (Conoce Aquí y Visor Catastral BGR) frente a aportadas o de pago
-    (copia literal certificada, planos de 4 especialidades, HR y PU, inspección presencial), y el bloque «Sin scraping ni APIs
-    inexistentes».
-  - Lo que Trustinmuebles **no** hace.
-- **Barra superior** en todas las pantallas, con una franja fina: entorno de demostración, partidas ficticias y transcritas sin
-  nombres de personas, precios y profesionales simulados, información referencial.
-- **Pie** con los límites legales visibles en la landing y en todas las pantallas con sesión (I7): no certifica saneamiento, no
-  recomienda comprar, no reemplaza asesoría legal, los datos y los especialistas son simulados, y la verificación jurídica con
-  abogado o notario se realiza fuera del sistema. El login no lleva pie: dice «Entorno académico demostrativo · Datos sintéticos».
+Ve los expedientes publicados, pide contacto con un motivo cerrado (información general, documentos o inspección) y solicita
+la inspección B (S/ 250 referencial, sin pago en línea).
 
-## 3. Cartera de inmuebles (`#/casos`)
+## 7. Indicadores, documentos y textos
 
-- **Tarjetas:** ilustración propia del predio, tipo de inmueble, precio referencial («Precio a consultar» si no tiene), denominación,
-  distrito, área del terreno, número de partida, los dos indicadores (A documental y B técnico, siempre separados y con ícono y
-  texto), pendientes del checklist y, si corresponde, la insignia «Transcrita de SUNARP».
-- **Filtros combinables:** tipo de inmueble, indicador A (verde, amarillo, rojo o gris) e indicador B (no solicitada,
-  solicitada, en inspección, informe emitido o «con riesgo físico detectado»). Los resuelve el servidor (M13), se reflejan en la
-  URL (se pueden compartir y recargar) y tienen contador de resultados, botón «Limpiar filtros» y estado vacío.
-- **Búsqueda por número de partida:** acepta el número con o sin el prefijo `SIM-` y con espacios o guiones. También busca por
-  texto de la denominación (por ejemplo, «Parcona»).
-- **Partida no registrada:** la pantalla ofrece «Buscar en Conoce Aquí» (copia el número y abre el sitio de SUNARP) y «Ver
-  ubicación en el Visor BGR». Para el revisor, además lleva al formulario de registro.
+- **Indicador A** (reglas `v0.5`): verde «Sin alertas en los campos evaluados», amarillo «Requiere revisión», rojo «Alerta
+  prioritaria», gris «Información insuficiente». Siempre con texto e ícono, nunca solo color. Nadie lo fija a mano.
+- **Ficha registral del inmueble** (PDF): elaborada por la inmobiliaria con su logo y la marca de agua «FICHA INFORMATIVA ·
+  DOCUMENTO REFERENCIAL · SIN VALOR LEGAL»; no imita una copia literal de SUNARP.
+- **Láminas y documentos del lote:** referenciales; el revisor o el asesor puede subir el PDF real.
+- **Glosario:** 57 términos (versión `v0.5`).
 
-## 4. Detalle de un expediente (`#/casos/{número}`)
+## 8. Seguridad, privacidad y despliegue
 
-### Semáforo informativo
-- **Estado:** verde, amarillo, rojo o gris, siempre con **texto, ícono y color** (nunca solo color).
-- **Motivos, alertas conocidas y datos faltantes:** cada estado explica por qué.
-- **Reglas (v0.2, borrador pendiente de revisión especializada), sobre los gravámenes vigentes del rubro D:**
-  - **Rojo (alerta prioritaria):** embargo (RP-01), anotación de demanda o medida cautelar (RP-02) y bloqueo registral (RP-03).
-  - **Amarillo (revisión):** hipoteca (RV-02), carga técnica o servidumbre (RV-03) y otro acto (RV-01).
-  - **Verde:** sin alertas en los campos evaluados. **No significa saneamiento.**
-  - **Gris:** información insuficiente o condición no contemplada. Las alertas ya conocidas se siguen mostrando.
-  - Los gravámenes cancelados y la copropiedad no generan alerta.
-- **El color no se elige:** se recalcula con las reglas cada vez que se guarda un cambio y no existe forma de fijarlo a mano.
-- **Límite visible:** cada resultado dice «no certifica saneamiento ni recomienda comprar», con la versión de las reglas.
+- Contraseñas con BCrypt, sesión con token que caduca, bloqueo tras cinco intentos fallidos, permisos en el servidor.
+- Archivos cifrados en disco (AES-256-GCM). Las descargas CSV van sin caché y con `nosniff`; un texto que empieza con `=`,
+  `+`, `-` o `@` se antepone con un apóstrofo para que Excel no lo ejecute como fórmula.
+- Interesados: solo nombre de pila y un medio de contacto, con consentimiento; se borran a pedido.
+- Despliegue local (backend en `127.0.0.1:8080`) o en la nube con Docker (backend sin puertos publicados). En la nube,
+  `APP_SEED_PASSWORD` debe ser una contraseña propia, no la de las pruebas.
 
-### Partida registral
-- **Descripción del inmueble:** zona y oficina registral, condición, ubicación, área, linderos, antecedente dominial, titularidad,
-  completitud del extracto y fecha referencial (con la advertencia de que no es una consulta oficial).
-- **Titularidad:** sale del último asiento de títulos de dominio. Si no consta, dice «desconocido», que no equivale a «sin cargas».
-- **Asientos por rubro**, en paneles que se abren con el teclado:
-  - **C** títulos de dominio, **D** gravámenes y cargas, **E** cancelaciones, **F** otros.
-  - Cada asiento muestra su número, tipo de acto, estado (vigente o cancelada), fechas, título archivado y texto.
-  - Una cancelación indica qué asiento cancela, y ese asiento figura como cancelado.
-- **Extracto parcial:** si falta un rubro, se dice y no se inventa.
+## 9. Lo que no hace
 
-### Expediente técnico de planos (2D)
-- En una **vivienda**, 4 planos: arquitectónico, de estructuras, de instalaciones eléctricas (II.EE.) y de instalaciones sanitarias (II.SS.).
-  En un **lote** no aplican.
-- El sistema revisa solo lo documental: si cada plano está **presentado, observado o no presentado**, el sistema constructivo que declara el
-  de estructuras y si el **área del plano arquitectónico coincide** con el área construida inscrita (margen de 1 %).
-- **Reglas** (borrador pendiente de revisión): RV-04 falta un plano de II.EE. o II.SS.; RV-05 el área no coincide o no consta una inscrita;
-  RV-06 plano observado. Sin plano arquitectónico o de estructuras, una vivienda queda en gris.
-- «Ver plano 2D» abre una **lámina referencial ficticia** dibujada a escala con las medidas de los linderos del expediente: terreno con cotas, vía, norte, escala gráfica, ambientes con sus áreas y cuadro de áreas (arquitectura); ejes y columnas o muros de adobe (estructuras); circuitos y pozo a tierra (II.EE.); agua, desagüe y caja de registro (II.SS.). Lleva rótulo, código de lámina y marca de agua, sin sello ni firma. El revisor puede subir el PDF real
-  de cada plano y, desde ese momento, se muestra ese.
-
-### Evaluación técnica por especialista (indicador B)
-- **Separada del semáforo documental y nunca lo cambia.** Un texto fijo lo dice: «El indicador B es independiente y no cambia
-  el color del indicador A».
-- **Stepper de 4 etapas:** no solicitada → solicitada → en inspección → informe emitido (favorable, con observaciones
-  subsanables o con riesgo físico detectado).
-- **Solicitud (M5):** solo el comprador ve el botón «Solicitar inspección técnica». Abre un modal con el alcance de los 6 pasos y
-  el costo referencial (S/ 250.00, que envía el backend; sin pasarela de pago) y pide confirmación. Después el expediente muestra
-  la cuenta solicitante y la fecha. El servidor rechaza con 403 la solicitud de otro rol y con 409 una segunda solicitud.
-- **Especialista (M8):** credencial con las iniciales, nombre, especialidad y colegiatura, rotulada «Perfil ficticio de
-  demostración». El servidor toma esos datos de la cuenta; el formulario ya no los pide y, si alguien los envía, se ignoran.
-- **Estado físico:** tarjetas de Estructuras, Instalaciones eléctricas e Instalaciones sanitarias con lo verificado en campo.
-- **Los 6 pasos** con su ícono de avance y siempre el límite: basada en inspección visual e instrumental; lo que exige ensayos
-  queda fuera.
-- El **especialista asignado** llena el informe: fecha, verificación en campo de las 4 especialidades, observaciones, conclusiones
-  y estudios adicionales. Sin asignación, la pantalla dice «Pendiente de asignación por el gestor» y el servidor responde 409.
-
-### Documentos PDF (todos con marca de agua y aviso en cada página)
-- **Copia literal:** encabezado en cada página, descripción y antecedente, asientos por rubro con el cuerpo en tipografía de texto registral
-  justificada y el cierre registral de cada asiento (título, hora de presentación, tomo del diario, derechos y recibo). Esos datos de
-  presentación se derivan del título del asiento, son siempre los mismos y solo existen en las partidas ficticias.
-- **Láminas de planos:** una por especialidad presentada (ver arriba).
-- **Informe técnico:** cuando el especialista lo emitió, un PDF con datos del inmueble, profesional, procedimiento, planos revisados con su
-  verificación en campo, observaciones, conclusión, estudios adicionales y limitaciones. «Ver informe técnico (PDF)» en el panel.
-
-### Glosario
-- Cerrado y con versión (48 términos en la versión activa v0.4). Cada término se abre al seleccionarlo, también con Enter, y lleva el estado «pendiente de
-  revisión». Si un dato no consta, el expediente lo dice.
-
-### Checklist
-- Cada elemento está **pendiente, revisado u observado**, con una observación opcional. «Revisado» solo significa que se revisó
-  en la plataforma, no que tenga validez jurídica.
-- Los 10 casos traen el ítem **«Declaración Jurada Municipal (HR y PU)»** (M9), con estados distintos según el caso y una
-  observación cuando está observado (por ejemplo, en Pachacútec el PU declara 72 m² y no incluye la ampliación).
-- Solo el revisor cambia el estado. El checklist no cambia el color del semáforo (I3).
-
-### Documento del expediente
-- «Abrir documento» muestra un PDF en otra pestaña, con la sesión del usuario (no hay enlace público).
-- **Partida ficticia o simulada:** copia literal simulada, con marca de agua «Documento simulado · Sin valor legal» en cada página.
-- **Partida transcrita:** transcripción referencial, con marca de agua «Transcripción referencial · No es publicidad registral».
-- El PDF imita la estructura de una copia literal (rubros, asientos, títulos), pero **no lleva logos, sellos, firmas, códigos de
-  verificación ni QR**.
-
-## 5. Funciones del revisor
-
-### Editar una partida («Editar partida», en el expediente)
-- Cambia los datos del predio, la completitud, la fecha referencial, la nota y los asientos (agregar, quitar, corregir).
-- Al guardar: valida todo, **regenera el PDF** (si lo genera el sistema), **recalcula el semáforo** y guarda en una sola operación.
-  Si algo falla, no queda un registro a medias.
-- **Control de versiones:** si alguien más editó mientras tanto, avisa y no pisa el cambio (conflicto 409).
-- El sistema impide las contradicciones: un asiento repetido, un asiento E que no cancela nada o un asiento C sin titulares dan un
-  error claro.
-
-### Subir un PDF propio
-- Solo PDF, hasta 25 MB (v0.8). Se verifica que sea un PDF real que se pueda abrir (no cifrado ni dañado). Si pesa más de 5 MB,
-  la pantalla avisa «Se optimizará automáticamente» y el servidor reduce sus imágenes; después muestra «Optimizado: X MB → Y MB».
-  Lo guardado no puede pasar de 10 MB. Desde ese momento el sistema deja de regenerar el documento. El archivo se guarda cifrado,
-  con quién lo subió, cuándo, su tamaño y su huella. No se deben subir documentos con datos reales de personas o predios.
-
-### Registrar una partida (`#/casos/nueva`)
-1. Datos de la partida: **origen** (obligatorio), precio referencial en soles (opcional), número, denominación, distrito, fecha de
-   consulta, condición y completitud. Una partida **transcrita de Conoce Aquí** no admite el prefijo `SIM-`; una **simulada para
-   demostración** lo exige (por ejemplo `SIM-99000404`).
-2. **Pegar el texto** de la partida copiado de Conoce Aquí, o los asientos inventados si es simulada. «Leer asientos» lo divide en asientos y deduce el tipo de acto, la
-   cancelación, las fechas, el título y los titulares.
-3. Corregir lo que haga falta en los asientos.
-4. **Vista previa sin datos personales:**
-   - Los nombres de personas naturales se reemplazan por «Persona natural N»; los DNI, el estado civil y los domicilios se omiten.
-   - Se conservan las empresas y el Estado.
-   - El revisor puede **ocultar a mano** un nombre que no se detectó o indicar que algo detectado **no es una persona**.
-   - Los nombres originales **nunca salen del navegador**.
-5. **Confirmar** que no quedan datos personales y registrar. El servidor vuelve a rechazar cualquier DNI, estado civil o domicilio.
-- La partida queda con su semáforo, checklist inicial, glosario, PDF y la fuente: «Conoce Aquí – SUNARP» con la fecha de consulta, o
-  «Partida simulada para demostración». El rechazo de datos personales se aplica a los dos orígenes.
-
-### Eliminar una partida captada
-- Desde su página, con una confirmación dentro de la pantalla. Borra el expediente, el checklist, la evaluación y el documento.
-  Sirve, por ejemplo, para atender el pedido de un titular. Los diez casos de demostración no se pueden eliminar.
-
-## 5 bis. Ciclo de cartera (v0.7)
-
-- **Captación:** al registrar una partida (`#/casos/nueva`) el revisor indica el origen y el código de cuenta del propietario. El
-  caso nace en borrador y sin autorización: el indicador A se calcula ahora y el gestor solo podrá publicarlo con la autorización
-  del propietario. El revisor no tiene un botón para autorizar por el propietario.
-- **Autorización:** en «Mis inmuebles» o en el detalle, el propietario usa «Autorizar publicación» o «Retirar autorización». Si la
-  retira de un caso publicado, el caso pasa a retirado.
-- **Publicación:** en el detalle, el gestor usa «Publicar» (solo con autorización vigente) o «Retirar». Ninguna de estas
-  acciones cambia el color del indicador A; tras cada una la interfaz vuelve a consultar el caso.
-- **Historial de evaluaciones:** en el detalle (salvo para el comprador), cada recálculo con fecha y hora, color anterior →
-  nuevo, origen (edición, plano, partida transcrita, partida simulada o carga inicial), cuenta, criterios, faltantes y motivos. Solo lectura.
-- **Subsanación:** el revisor incorpora un plano o asientos faltantes con la edición de siempre; el motor recalcula y el
-  historial lo registra. Adjuntar un PDF no levanta un rojo por embargo, bloqueo o demanda.
-- **Contacto:** en un caso publicado, el comprador usa «Solicitar contacto» y elige un motivo (información general, consulta de
-  documentos o consulta de inspección). No hay texto libre. Una segunda solicitud pendiente muestra un aviso y no se duplica.
-- **Inspección asignada:** en el panel de inspección, el gestor debe asignar la inspección solicitada o en curso a un especialista.
-  Solo ese especialista registra el avance y emite el informe. Mientras no haya asignación, la pantalla dice «Pendiente de
-  asignación por el gestor» y nadie puede emitir.
-- **Panel «Cartera» (`#/cartera`):** totales por color de A y por publicación, casos con faltantes, inspecciones con su
-  asignación, bandeja de contactos pendientes con «Marcar atendida» y lista de casos filtrable por color, publicación y texto.
-- **Siguiente paso:** el detalle muestra para todos «Siguiente paso: verificación jurídica con abogado o notario, fuera del
-  sistema». No es una función del sistema.
-
-## 5 ter. Feedback docente y decisiones del equipo (v0.8)
-
-- **Plano con su archivo:** en el editor y al registrar, «Presentado» y «Observado» solo se pueden elegir si el plano ya tiene su
-  PDF (o ya estaba presentado, como las láminas de los casos de demostración). En el panel de planos, el revisor sube el PDF de un
-  plano no presentado con «Subir PDF (queda presentado)». Cada plano dice su origen: «Subido por revisor-01 el …, 1,2 MB»,
-  «Generado por el sistema a partir de la transcripción, no es un documento oficial» o «Falta el archivo», con «Descargar».
-- **Ruta de regularización** (en el detalle, después del semáforo): un paso por motivo, ordenado de mayor a menor esfuerzo, con
-  quién gestiona, el documento requerido, el esfuerzo con texto y el aviso «Orientativo: no es asesoría legal ni recomendación de
-  compra». En una hipoteca muestra el acreedor y «Plazo o vencimiento: …» o «No consta en la partida: solicitar al propietario o al
-  acreedor». En un caso verde: «Sin alertas en los campos evaluados: no hay pasos de regularización».
-- **Acreedor y plazo:** en los asientos del rubro D, del editor y del registro, hay dos campos opcionales: acreedor (persona
-  jurídica o «no consta») y plazo o vencimiento. No cambian el semáforo.
-- **Cartera del gestor:** tarjetas «Casos por tipo de alerta» (un clic filtra la lista) y «Esfuerzo de regularización», bloque
-  «Gestión inmobiliaria (interno)» con el conteo por estado y la matriz tipo de alerta × estado de gestión, y tabla «Por
-  regularizar» con enlace a la ruta de cada caso. Aviso: «Priorización interna de la inmobiliaria; no es una recomendación de
-  compra». La lista de casos agrega filtros por estado de gestión y por tipo de alerta, y cada tarjeta muestra el color de A, el
-  estado de gestión y el esfuerzo.
-- **Catálogo:** filtro «Tipo de alerta del indicador A» (en la URL como `tipoAlerta`), para todos los roles; el comprador solo ve
-  publicados.
-- **Gestión inmobiliaria (interno)** (en el detalle, solo gestor y revisor): estado de gestión con ícono propio, etiqueta,
-  explicación y sugerencia; tipos de alerta del caso; resumen de la ruta; formulario de decisión de captación (solo gestor, con
-  decisión y motivo de listas cerradas) e historial de decisiones. Si la última decisión es «no captar por ahora», «Publicar» pide
-  confirmación: «La decisión registrada es no captar por ahora. ¿Publicar de todos modos?». El comprador, el propietario y el
-  especialista no lo ven.
-- **Resaltado de A:** las tarjetas del catálogo y de Cartera, Mis inmuebles y la cabecera del detalle llevan un borde izquierdo y un
-  fondo tenue del color de A, con la etiqueta «Indicador A: …» e ícono. Nunca solo color. El semáforo de gestión usa contorno
-  discontinuo sin relleno para no confundirse con A.
-
-## 6. Contenido incluido
-
-Cada caso trae también su tipo de inmueble, distrito, precio referencial simulado, ilustración propia y el ítem HR y PU (ver la
-tabla completa en el [LEEME](../LEEME.md)). Solo Santiago es un lote (D23).
-
-| Partida | Predio | Estado esperado | Qué muestra |
-|---|---|---|---|
-| `SIM-11048217` | Mz. F Lote 7 · Santa Elvira · Parcona | Verde | Una titular; hipoteca cancelada; 4 planos; informe favorable |
-| `SIM-11052690` | Mz. K Lote 12 · Rincón del Sauce · La Tinguiña | Amarillo | Copropiedad; hipoteca vigente; faltan los planos de II.EE. e II.SS.; informe con observaciones |
-| `SIM-11061555` | Mz. C Lote 3 · Mirador del Sol · Subtanjalla | Gris | Extracto parcial; demanda vigente (alerta prioritaria); sin planos |
-| `SIM-11070419` | Mz. B Lote 9 · Villa del Algarrobo · Los Aquijes | Gris | Sin copia literal ni planos |
-| `SIM-11075836` | Mz. G Lote 14 · Jardines del Pacae · Pueblo Nuevo | Rojo | Embargo vigente ordenado por un juzgado civil; 4 planos |
-| `SIM-11081204` | Mz. B Lote 5 · Campiña del Olivar · Santiago | Verde | Lote recién independizado, sin cargas; los planos no aplican |
-| `SIM-11087751` | Mz. D Lote 22 · Los Tamarindos · Salas | Amarillo | Sucesión intestada con coherederos; servidumbre de paso; adobe; informe con riesgo |
-| `SIM-11093320` | Mz. A Lote 3 · Puente Molino · San José de los Molinos | Rojo | Bloqueo registral vigente; inspección solicitada, pendiente de asignación |
-| `SIM-11098467` | Mz. N Lote 8 · Mirador del Pallar · Pachacútec | Amarillo | Ampliación no declarada: plano de 98 m² contra 72 m² inscritos; inspección en curso, asignada a `especialista-01` |
-| `SIM-11104029` | Mz. M Lote 6 · Los Laureles del Sur · Ica | Amarillo | Reserva vial (carga técnica); plano de estructuras observado; informe favorable |
-
-Son partidas ficticias: personas, empresas, números y montos inventados. Las partidas transcritas se registran aparte y no se
-guardan en el repositorio.
-
-## 7. Seguridad, integridad y rendimiento
-
-- **Contraseñas** con hash BCrypt. **Sesión** con token firmado, que caduca. **API protegida** por rol en cada ruta.
-- **Archivos** cifrados en disco (AES-256-GCM).
-- **Entradas validadas** en el servidor, con mensajes claros y sin cambios parciales.
-- **Tiempo de respuesta** medido el 30 de octubre de 2026: 20 de 20 consultas en menos de 2 segundos (máximo 54,3 ms, solo la API).
-- **Solo uso local (I6):** el backend escucha en `127.0.0.1` y la base es H2 en archivo. En Docker, el frontend se publica en
-  `127.0.0.1` y el backend no publica puertos (sin ejecutar). No está preparado para un servidor expuesto a la red.
-- **Accesibilidad básica:** teclado y foco visible, enlace «Saltar al contenido», modales con foco atrapado y Escape, estados con
-  ícono y texto (contraste AA), y texto alternativo en cada ilustración.
-
-## 8. Lo que no hace
-
-- **No se conecta a SUNARP ni a ninguna fuente oficial.** No hay API pública de predios; las partidas reales se consultan a mano
-  en Conoce Aquí y se transcriben.
-- No emite documentos oficiales ni comprueba la autenticidad de un documento.
-- No certifica saneamiento, no recomienda comprar y no da dictámenes jurídicos.
-- No usa OCR, visión artificial ni inteligencia artificial: no analiza fotos ni planos. El análisis es por reglas sobre datos estructurados y el informe de un especialista.
-- No afirma el estado físico de una vivienda: eso solo lo dice el informe del especialista.
-- Sin pagos en línea, agenda de visitas, contratos, firmas, tours ni posventa (sección 1.7 del informe). El costo de la
-  inspección es referencial y se coordina con la inmobiliaria.
-- Las ilustraciones de los predios son dibujos propios, no fotos de los inmuebles. Las fotografías de ambiente están en
-  `public/img/` y ninguna muestra a una persona identificable.
-- La lámina 2D es un esquema referencial, no el plano aprobado. La ubicación del predio solo se enlaza al Visor BGR de SUNARP.
-
-## 9. Pendiente
-
-- Revisión especializada de las reglas, el glosario y los casos.
-- Aprobación del asesor para las partidas transcritas (desvío de RN-01 y PA2).
-- Prueba de instalación en otro equipo (CP-07), piloto y aplicación del estudio.
-- Pruebas con lector de pantalla y en otros navegadores distintos de Chrome.
-- El comprador no puede consultar después el estado de su solicitud de contacto: el backend no ofrece esa ruta (D46).
+Pagos en línea; simulador de crédito o tasas; mapas embebidos; IA u OCR; consultas en línea a SUNARP o a la municipalidad;
+envío de correos o mensajes (el asesor contacta por fuera); contratos o firmas; certificar saneamiento o recomendar comprar.
+El enlace de «Cómo llegar» lo pega una persona: el sistema comprueba que sea https, no que lleve al lugar correcto.

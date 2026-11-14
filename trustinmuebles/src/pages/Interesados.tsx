@@ -1,18 +1,19 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Mail, Phone, Trash2, UserPlus, Users } from "lucide-react";
+import { AlertTriangle, CalendarDays, ChevronLeft, ChevronRight, Download, Filter, Mail, Phone, Trash2, UserPlus, Users } from "lucide-react";
 import { BandejaContactos } from "@/pages/Cartera";
 import { Button } from "@/components/ui/button";
 import { Modal } from "@/components/base/Modal";
 import { Campo, claseAreaTexto, claseCampo } from "@/components/base/Campo";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { Mensaje } from "@/components/base/Mensaje";
-import { api, post, put } from "@/lib/api";
+import { api, descargarArchivo, post, put } from "@/lib/api";
 import {
   CANALES_PANEL, FORMAS_PAGO, TEXTO_CONSENTIMIENTO_VERBAL, cuerpoRegistroPanel, formularioPanelVacio,
   validarFormularioPanel, type FormularioPanel,
   ETAPAS, FRANJAS, estadoSugerido, etiquetaEtapa, fechaCorta, fechaLarga, hoyLima, rutaInteresados, sumarDias,
-  textoPresupuesto, type Agenda, type Cita, type EtapaInteres, type FranjaCita, type Interesado,
+  textoPresupuesto, avisarCambioInteresados, rutaExportarInteresados, textoEtapaEmbudo, type Embudo, type FilaEmbudo,
+  type Agenda, type Cita, type EtapaInteres, type FranjaCita, type Interesado,
   type InteresadoDetalle, type OpcionesBandeja, type ResumenDemanda,
 } from "@/lib/interes";
 import { enlaceProyecto } from "@/lib/proyectos";
@@ -20,7 +21,7 @@ import { fecha } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
 
 const tarjeta = "rounded-[2rem] border border-border bg-card p-6 shadow-tarjeta";
-type Pestana = "bandeja" | "agenda" | "demanda";
+type Pestana = "bandeja" | "agenda" | "embudo" | "demanda";
 
 /**
  * v1.0 (etapa 4): «Interesados» del asesor y del gestor. Bandeja tipo CRM con filtros por etapa, proyecto y
@@ -33,6 +34,8 @@ export default function Interesados() {
   const pestanas: { clave: Pestana; etiqueta: string }[] = [
     { clave: "bandeja", etiqueta: "Interesados" },
     { clave: "agenda", etiqueta: "Agenda de citas" },
+    // v1.0 (etapa 9): cantidad y porcentaje por etapa, total y por proyecto.
+    { clave: "embudo", etiqueta: "Embudo" },
     { clave: "demanda", etiqueta: "Demanda" },
   ];
   return (
@@ -57,6 +60,7 @@ export default function Interesados() {
       <div className="mx-auto w-full max-w-6xl space-y-10 px-4 pt-10 sm:px-6 lg:px-8">
         {pestana === "bandeja" && <Bandeja />}
         {pestana === "agenda" && <AgendaSemanal />}
+        {pestana === "embudo" && <EmbudoEtapas />}
         {pestana === "demanda" && <Demanda />}
         {pestana === "bandeja" && (
           <section aria-labelledby="titulo-contactos" className="space-y-4">
@@ -77,6 +81,15 @@ function Bandeja() {
   const { data: opciones } = useApi<OpcionesBandeja>("/interesados/opciones");
   const [abierto, setAbierto] = useState<number | null>(null);
   const [registrando, setRegistrando] = useState(false);
+  const [problemaExportar, setProblemaExportar] = useState<string | null>(null);
+  // v1.0 (etapa 9): cada cambio en la bandeja actualiza también el aviso de nuevos del menú.
+  const cambio = () => { reload(); avisarCambioInteresados(); };
+  const exportar = () => {
+    setProblemaExportar(null);
+    descargarArchivo(rutaExportarInteresados(filtro), "interesados.csv")
+      .catch((e: Error) => setProblemaExportar(e.message));
+  };
+  const hayFiltro = !!(filtro.etapa || filtro.proyecto || filtro.responsable || filtro.vencidos);
 
   return (
     <section aria-labelledby="titulo-bandeja" className="space-y-5">
@@ -90,7 +103,7 @@ function Bandeja() {
       </div>
       {registrando && (
         <RegistrarInteresado opciones={opciones} alCerrar={() => setRegistrando(false)}
-          alRegistrar={(id) => { setRegistrando(false); reload(); setAbierto(id); }} />
+          alRegistrar={(id) => { setRegistrando(false); cambio(); setAbierto(id); }} />
       )}
       <div className={`${tarjeta} grid gap-4 !p-5 sm:grid-cols-2 lg:grid-cols-4`}>
         <Campo etiqueta="Etapa">
@@ -119,6 +132,22 @@ function Bandeja() {
         </label>
       </div>
 
+      {/* v1.0 (etapa 9): la bandeja tal como está filtrada, en CSV para Excel. Lleva datos de contacto. */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <p className="flex items-center gap-1.5 text-sm text-tinta-2">
+          <Filter className="size-4" aria-hidden="true" />
+          {data ? `${data.length} ${data.length === 1 ? "interesado" : "interesados"}${hayFiltro ? " con estos filtros" : ""}` : ""}
+        </p>
+        <Button type="button" variant="outline" onClick={exportar} disabled={!data || data.length === 0} data-exportar-interesados>
+          <Download aria-hidden="true" /> Exportar a CSV{hayFiltro ? " (con filtros)" : ""}
+        </Button>
+      </div>
+      {problemaExportar && <Mensaje tono="error">{problemaExportar}</Mensaje>}
+      <p className="text-xs text-tinta-2">
+        El archivo abre en Excel y lleva nombres y datos de contacto: úsalo solo para dar seguimiento a estas personas y no lo
+        compartas fuera del equipo.
+      </p>
+
       {loading && !data ? <Cargando texto="Cargando interesados…" /> : error ? (
         <ErrorCarga mensaje={error.message} alReintentar={reload} />
       ) : !data || data.length === 0 ? (
@@ -129,7 +158,7 @@ function Bandeja() {
         </ul>
       )}
       {abierto !== null && (
-        <DetalleInteresado id={abierto} opciones={opciones} alCerrar={() => setAbierto(null)} alCambiar={reload} />
+        <DetalleInteresado id={abierto} opciones={opciones} alCerrar={() => setAbierto(null)} alCambiar={cambio} />
       )}
     </section>
   );
@@ -546,6 +575,64 @@ function AgendaSemanal() {
 }
 
 // ------------------------------------------------------------------------------------------------- demanda
+
+// ------------------------------------------------------------------------------------------------- embudo (etapa 9)
+
+/** v1.0 (etapa 9): cantidad y porcentaje por etapa, del total y de cada proyecto. Incluye los descartados. */
+function EmbudoEtapas() {
+  const { data, loading, error, reload } = useApi<Embudo>("/interesados/embudo");
+  if (loading && !data) return <Cargando texto="Cargando embudo…" />;
+  if (error || !data) return <ErrorCarga mensaje={error?.message ?? "Sin datos"} alReintentar={reload} />;
+  return <TablaEmbudo embudo={data} />;
+}
+
+/** La tabla del embudo, sin cargar datos (se puede dibujar sola, por ejemplo en las pruebas). */
+export function TablaEmbudo({ embudo }: { embudo: Embudo }) {
+  const filas: FilaEmbudo[] = [embudo.total, ...embudo.porProyecto];
+  const etapas = embudo.total.etapas;
+  return (
+    <section aria-labelledby="titulo-embudo" className="space-y-5">
+      <div>
+        <h2 id="titulo-embudo" className="text-xl font-bold text-foreground">Embudo de {embudo.total.total} interesados</h2>
+        <p className="mt-1 text-sm text-tinta-2">
+          Cuántos hay en cada etapa y qué porcentaje son de su fila (incluye los descartados, así las etapas suman el total).
+        </p>
+      </div>
+      <div className="space-y-2 rounded-[2rem] border border-border bg-card p-5 shadow-tarjeta" aria-hidden="true">
+        {etapas.map((e) => (
+          <div key={e.etapa} className="grid grid-cols-[9rem_1fr_6.5rem] items-center gap-3 text-sm">
+            <span className="font-semibold text-foreground">{e.etiqueta}</span>
+            <span className="h-3 overflow-hidden rounded-full bg-secondary">
+              <span className="block h-full rounded-full bg-marca-verde" style={{ width: `${Math.min(100, Number(e.porcentaje))}%` }} />
+            </span>
+            <span className="cifras text-right font-bold text-foreground">{textoEtapaEmbudo(e)}</span>
+          </div>
+        ))}
+      </div>
+      <div className={`${tarjeta} overflow-x-auto !p-0`}>
+        <table className="w-full min-w-[720px] text-sm" data-embudo>
+          <caption className="sr-only">Interesados por etapa: cantidad y porcentaje, del total y por proyecto</caption>
+          <thead>
+            <tr className="border-b border-border text-left text-xs uppercase tracking-wider text-tinta-2">
+              <th scope="col" className="px-4 py-3">Proyecto</th>
+              <th scope="col" className="px-3 py-3 text-right">Total</th>
+              {etapas.map((e) => <th key={e.etapa} scope="col" className="px-3 py-3 text-right">{e.etiqueta}</th>)}
+            </tr>
+          </thead>
+          <tbody>
+            {filas.map((f) => (
+              <tr key={f.clave} className={`border-b border-border last:border-b-0 ${f.clave === "TOTAL" ? "bg-superficie font-bold" : ""}`} data-fila-embudo={f.clave}>
+                <th scope="row" className="px-4 py-3 text-left font-semibold text-foreground">{f.etiqueta}</th>
+                <td className="cifras px-3 py-3 text-right font-bold text-foreground">{f.total}</td>
+                {f.etapas.map((e) => <td key={e.etapa} className="cifras px-3 py-3 text-right text-foreground">{textoEtapaEmbudo(e)}</td>)}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    </section>
+  );
+}
 
 function Demanda() {
   const { data, loading, error, reload } = useApi<ResumenDemanda>("/interesados/resumen");

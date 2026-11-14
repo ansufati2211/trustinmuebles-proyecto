@@ -1,10 +1,10 @@
 {
-  "fecha": "2026-11-13T18:27:29.679Z",
+  "fecha": "2026-11-14T05:14:54.221Z",
   "version": "1.0.0",
-  "totalSegundos": 159,
-  "guionSegundos": 70.1,
-  "correctos": 13,
-  "pasos": 13,
+  "totalSegundos": 178,
+  "guionSegundos": 100.1,
+  "correctos": 15,
+  "pasos": 15,
   "tableta": {
     "correctas": 12,
     "pantallas": 12,
@@ -16,7 +16,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-01-portada.png",
-        "segundos": "1.3"
+        "segundos": "1.4"
       },
       {
         "orientacion": "vertical",
@@ -25,7 +25,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-02-inmuebles.png",
-        "segundos": "2.2"
+        "segundos": "2.5"
       },
       {
         "orientacion": "vertical",
@@ -34,7 +34,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-03-plano.png",
-        "segundos": "1.3"
+        "segundos": "1.4"
       },
       {
         "orientacion": "vertical",
@@ -43,7 +43,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-04-ficha-lote.png",
-        "segundos": "1.2"
+        "segundos": "1.3"
       },
       {
         "orientacion": "vertical",
@@ -52,7 +52,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-05-interesados.png",
-        "segundos": "4.0"
+        "segundos": "4.9"
       },
       {
         "orientacion": "vertical",
@@ -70,7 +70,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-01-portada.png",
-        "segundos": "1.3"
+        "segundos": "1.4"
       },
       {
         "orientacion": "horizontal",
@@ -88,7 +88,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-03-plano.png",
-        "segundos": "1.3"
+        "segundos": "1.4"
       },
       {
         "orientacion": "horizontal",
@@ -97,7 +97,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-04-ficha-lote.png",
-        "segundos": "1.2"
+        "segundos": "1.5"
       },
       {
         "orientacion": "horizontal",
@@ -106,7 +106,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-05-interesados.png",
-        "segundos": "4.6"
+        "segundos": "7.3"
       },
       {
         "orientacion": "horizontal",
@@ -122,14 +122,14 @@
   "erroresConsola": [],
   "respuestas409o500": [],
   "datos": {
-    "arranqueBackendS": "46.2",
+    "arranqueBackendS": "37.2",
     "baseDatos": "carpeta temporal nueva (fuera del repositorio)",
     "preparar": {
       "codigo": 0,
-      "salida": "Preparando la demostración contra http://127.0.0.1:8080/api/v1…\n\nResumen:\n  [OK      ] Proyecto · Altos de Ventisca                   56 lotes, 56 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Rinconada del Lúcumo                44 lotes, 44 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Terrazas de Sauzal                  68 lotes, 68 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Horizonte de Los Aquijes            0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Interesados · Precarga (correos @example.com)  15 de 15\n  [INFO    ] Interesados · Por etapa                        Nuevo 3, Contactado 3, Visita realizada 2, Cita agendada 3, Separación 2, Venta 1, Descartado 1\n  [OK      ] Citas · Agenda 2026-11-13 a 2026-11-19         4 citas (se esperan al menos 4): Confirmada 2, Por confirmar 1, Reprogramada 1\n  [OK      ] Catálogo · Inmuebles publicados                180 en el portal público\n  [INFO    ] Sistema · Versión                              1.0.0 · indexable: no\n\nLa base está lista para la demostración. No se borró nada.\n"
+      "salida": "Preparando la demostración contra http://127.0.0.1:8080/api/v1…\n\nResumen:\n  [OK      ] Proyecto · Altos de Ventisca                   56 lotes, 56 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Rinconada del Lúcumo                44 lotes, 44 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Terrazas de Sauzal                  68 lotes, 68 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Horizonte de Los Aquijes            0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Interesados · Precarga (correos @example.com)  15 de 15\n  [INFO    ] Interesados · Por etapa                        Nuevo 3, Contactado 3, Visita realizada 2, Cita agendada 3, Separación 2, Venta 1, Descartado 1\n  [OK      ] Citas · Agenda 2026-11-14 a 2026-11-20         4 citas (se esperan al menos 4): Confirmada 2, Por confirmar 1, Reprogramada 1\n  [OK      ] Catálogo · Inmuebles publicados                180 en el portal público\n  [INFO    ] Sistema · Versión                              1.0.0 · indexable: no\n\nLa base está lista para la demostración. No se borró nada.\n"
     },
     "asistenteResultados": 19,
-    "fechaCita": "2026-11-15",
+    "fechaCita": "2026-11-16",
     "interesadoId": 16
   },
   "detalle": [
@@ -140,7 +140,7 @@
       "obtenido": "etiqueta «Lotes o terrenos»; etiqueta «En Subtanjalla»; etiqueta «Hasta S/ 80,000»; 19 resultados; URL: #/inmuebles?distrito=Subtanjalla&tipo=LOTE&moneda=PEN&precioMax=80000; ningún texto promete compra segura ni saneamiento",
       "ok": true,
       "captura": "01-asistente.png",
-      "segundos": "8.2"
+      "segundos": "11.4"
     },
     {
       "n": 2,
@@ -149,7 +149,7 @@
       "obtenido": "hay orden «Precio: de menor a mayor»; orden: «Precio: de menor a mayor»; Mostrando 1–12 de 12 inmuebles; filtro y orden quedan en la URL; 12 tarjetas, todas disponibles; 9 tarjetas de casos, 0 con la partida completa; ejemplo: «N.° 1110••••»",
       "ok": true,
       "captura": "02-filtros.png",
-      "segundos": "3.3"
+      "segundos": "3.7"
     },
     {
       "n": 3,
@@ -158,7 +158,7 @@
       "obtenido": "plano de lotes; la partida matriz se ve oculta («1111••••»); lote elegido: C-12; el panel muestra precio y área; Mz. C · Lote 12 · Área · 144.00 m² · Estado · Disponible · Precio; el PDF de la partida matriz, sin sesión, oculta el número",
       "ok": true,
       "captura": "03-plano.png",
-      "segundos": "2.3"
+      "segundos": "3.0"
     },
     {
       "n": 4,
@@ -167,16 +167,16 @@
       "obtenido": "usos del lote; aviso de parámetros urbanísticos; indicador A rotulado como de la partida matriz; botón «Solicitar cita»; S/ 82,000",
       "ok": true,
       "captura": "04-ficha-lote.png",
-      "segundos": "1.0"
+      "segundos": "1.4"
     },
     {
       "n": 5,
       "quien": "visitante",
       "esperado": "Solicita una visita al lote con los datos de datos-cita.md (Carla, correo @example.com)",
-      "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-15, mañana",
+      "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-16, mañana",
       "ok": true,
       "captura": "05-solicitar-cita.png",
-      "segundos": "4.2"
+      "segundos": "4.4"
     },
     {
       "n": 6,
@@ -185,7 +185,7 @@
       "obtenido": "80 lotes nuevos · 0 por actualizar · 0 sin cambios · 0 filas con errores; el proyecto tiene 80 lotes (80 publicados); la página pública del proyecto muestra 80 lotes",
       "ok": true,
       "captura": "06-carga-csv.png",
-      "segundos": "4.9"
+      "segundos": "5.4"
     },
     {
       "n": 7,
@@ -194,7 +194,7 @@
       "obtenido": "la lectura no deja avisos; la vista previa no detecta nombres de personas; borrador y sin autorización; propietario-02; A = GRIS (sin planos); 2 asientos leídos",
       "ok": true,
       "captura": "07-registro-particular.png",
-      "segundos": "8.4"
+      "segundos": "10.1"
     },
     {
       "n": 8,
@@ -203,7 +203,7 @@
       "obtenido": "los 4 planos quedan presentados; A = VERDE",
       "ok": true,
       "captura": "08-laminas-kit.png",
-      "segundos": "7.5"
+      "segundos": "8.6"
     },
     {
       "n": 9,
@@ -212,7 +212,7 @@
       "obtenido": "autorizado y todavía en borrador",
       "ok": true,
       "captura": "09-propietario-autoriza.png",
-      "segundos": "6.5"
+      "segundos": "8.5"
     },
     {
       "n": 10,
@@ -221,16 +221,16 @@
       "obtenido": "publicado; A sigue en VERDE; la ficha pública muestra «INT-••••»; la ficha registral pública no trae el número completo",
       "ok": true,
       "captura": "10-publica.png",
-      "segundos": "8.2"
+      "segundos": "12.7"
     },
     {
       "n": 11,
       "quien": "asesor-01",
       "esperado": "Abre a Carla en Interesados y confirma su cita: pasa a «Cita agendada»",
-      "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-15; total de interesados: 16",
+      "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-16; total de interesados: 16",
       "ok": true,
       "captura": "11-confirma-cita.png",
-      "segundos": "5.4"
+      "segundos": "6.2"
     },
     {
       "n": 12,
@@ -239,7 +239,7 @@
       "obtenido": "etapa: Separación; 5 notas automáticas de los cambios; el lote C-12 aparece Separado en el plano; el indicador A de la partida matriz sigue en VERDE",
       "ok": true,
       "captura": "12-separacion.png",
-      "segundos": "3.4"
+      "segundos": "3.5"
     },
     {
       "n": 13,
@@ -248,7 +248,25 @@
       "obtenido": "«No certifica saneamiento.»; «No recomienda comprar.»; «No reemplaza asesoría legal.»; versión 1.0.0 en el pie; /publico/sitio: versión 1.0.0, indexable false",
       "ok": true,
       "captura": "13-pie-version.png",
-      "segundos": "6.8"
+      "segundos": "7.7"
+    },
+    {
+      "n": 14,
+      "quien": "asesor-01",
+      "esperado": "Etapa 9: el menú avisa los interesados nuevos; exporta la bandeja y los lotes a CSV para Excel (ida y vuelta sin cambios) y registra la ubicación y las condiciones de pago",
+      "obtenido": "aviso junto a «Interesados»: 3 (API: 3 en etapa Nuevo); botón «Exportar a CSV» en la bandeja; CSV de interesados: 200, text/csv;charset=UTF-8, BOM true; 16 filas para 16 interesados, separador «;»; CSV de lotes con las columnas de la carga; 80 lotes de Horizonte de Los Aquijes (los 80 del CSV del kit); volver a cargarlo: 80 sin cambios, 0 nuevos, 0 actualizados; dirección precargada: Sector La Ventisca, a la altura del km 301 de la Panamericana Sur, Subtanjalla, Ica; enlace de mapa y condiciones guardados",
+      "ok": true,
+      "captura": "14-exportar-ubicacion.png",
+      "segundos": "8.8"
+    },
+    {
+      "n": 15,
+      "quien": "visitante",
+      "esperado": "Etapa 9: la página del proyecto y la ficha del lote muestran la dirección, «Cómo llegar» (otra pestaña) y las condiciones de pago",
+      "obtenido": "ficha del lote C-12: «Cómo llegar» abre https://www.google.com/maps/search/?api=1&query=Subtanjalla%2C+Ica en otra pestaña; dirección en la cabecera del proyecto; «Cómo llegar» en la página del proyecto; «Condiciones de pago» con la nota «Consulta con un asesor»; sin mapa embebido",
+      "ok": true,
+      "captura": "15-ubicacion-pago.png",
+      "segundos": "4.7"
     }
   ]
 }

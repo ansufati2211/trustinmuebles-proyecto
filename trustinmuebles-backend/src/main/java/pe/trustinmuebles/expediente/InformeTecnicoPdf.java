@@ -125,7 +125,7 @@ final class InformeTecnicoPdf {
             "Verificación de los planos de las 4 especialidades frente a lo construido.",
             "Inspección física presencial, visual e instrumental, in situ.",
             "Identificación de observaciones, deficiencias o riesgos que no figuraban en los planos.",
-            "Emisión del informe técnico, con el profesional colegiado responsable.",
+            "Emisión del informe técnico, con el profesional responsable.",
             "Delimitación de las conclusiones y de los estudios adicionales que se requieren."};
         for (int i = 0; i < pasos.length; i++) {
             parrafo(l, "Paso " + (i + 1) + ". " + pasos[i], normal, 9.5f, 8f, 2f, ancho, false);

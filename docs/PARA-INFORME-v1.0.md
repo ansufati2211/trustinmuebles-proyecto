@@ -1,7 +1,8 @@
 # Material para el informe — Trustinmuebles versión 1.0.0
 
-**Para:** quien redacte el informe del curso sin leer el código. **Fecha:** 13 de noviembre de 2026. **Entrega:** lunes
-16 de noviembre de 2026. **Fuente de verdad:** el repositorio en la rama `v1.0-etapa-8` (etapas 1 a 8 de la 1.0.0). Todo lo
+**Para:** quien redacte el informe del curso sin leer el código. **Fecha:** 14 de noviembre de 2026. **Entrega:** lunes
+16 de noviembre de 2026. **Fuente de verdad:** el repositorio en la rama `v1.0-etapa-9` (etapas 1 a 9 de la 1.0.0); el
+modelo de negocio completo y único de la 1.0.0 está en [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md). Todo lo
 que aquí se afirma está en el código, en las pruebas o en `docs/`; lo que no consta se marca como **No consta** o
 **Supuesto**. No hay resultados del estudio con participantes: no se ha aplicado.
 
@@ -24,8 +25,9 @@ cuya marca se muestra en el portal desde la etapa 8) con dos caras:
   proyecto, **asistente de búsqueda** por reglas (sin IA), **usos que suelen permitirse** según la zonificación del lote,
   ficha de cada inmueble con su **indicador A** (pre-evaluación documental) y **solicitud de cita** sin crear cuenta.
 - **Panel de la inmobiliaria:** el asesor registra inmuebles uno a uno o carga lotes **por CSV** (con vista previa, todo o
-  nada), publica solo lo autorizado y sigue a cada **interesado** como en un CRM (etapas, notas, agenda de citas, demanda,
-  registro de quien llega por llamada u oficina).
+  nada) y los **exporta a CSV para Excel**, publica solo lo autorizado, registra la **ubicación** y las **condiciones de
+  pago** de cada proyecto y sigue a cada **interesado** como en un CRM (etapas, notas, agenda de citas, demanda, **embudo**,
+  **aviso de nuevos**, registro de quien llega por llamada u oficina, exportación de la bandeja).
 
 Se conserva lo anterior a la 1.0: expedientes, indicador A, ruta de regularización, semáforo de gestión interno, documentos
 del lote e inspección técnica (indicador B). **No hay pagos en línea.** El sistema **no certifica saneamiento, no recomienda
@@ -36,32 +38,63 @@ comprar y no reemplaza a un abogado o notario.**
 **Organización:** LedCons — razón social **LEDCONS E.I.R.L.**, RUC 20600817133, «Inmobiliaria y Constructora», Av. San
 Martín 577, 2.º piso, oficina 32, Ica. Teléfonos 991 108 224 y 904 958 416; WhatsApp 51991108224; Facebook
 `Constructora.Inmobiliaria.Ledcons.sac`. El logo dice «LEDCONS SAC» y se usa tal cual. **Autorización de uso de datos y
-marca: verbal, 13/11/2026; la escrita está pendiente** (D72). No hay acta ni acuerdo formal firmado.
+marca: verbal, el 09/11/2026 y el 13/11/2026 (datos de marca); la escrita está pendiente** (D72). No hay acta ni acuerdo
+formal firmado.
 
-**Entrevista del 09/11/2026.** El repositorio **no contiene el acta, la guía ni las respuestas literales**. Lo que el equipo
-trasladó al desarrollo (y por eso consta en el sistema) es:
+**Entrevista del 09/11/2026.** Entrevista semiestructurada a **Katerin Ramos Ledesma, propietaria de LedCons**, registrada
+por el equipo. Las cifras son aproximadas y el **acta firmada está pendiente**.
 
-| Tema | Lo que consta | Estado |
-|---|---|---|
-| Qué vende | Sobre todo lotes de proyectos de urbanización en Ica (más de 400 al mes) y algunos inmuebles de particulares | Validado por el equipo con LedCons (trasladado a las etapas) |
-| Pagos | No hay pagos en línea | Validado |
-| Quién carga | Un asesor carga los inmuebles (uno a uno o por lotes) y atiende a los interesados | Validado |
-| Por dónde llegan los interesados | Formulario web, llamada, oficina, WhatsApp o referido (etapa 8) | Validado |
-| Necesidad del comprador | Encontrar los lotes y casas de la inmobiliaria sin irse a otra; ver el plano; pedir cita | Validado |
+| Tema | Respuesta registrada |
+|---|---|
+| Tamaño y tipo de cartera | Alrededor de 400 lotes al mes en proyectos de lotización; trabajan sobre todo con lotes y pocas viviendas |
+| Zonas | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona. Sol de Carhuaz es un proyecto ofrecido a LedCons y a Ceinys, por eso compiten en él |
+| Origen de los inmuebles | Lotes de proyectos, mayormente de urbanización; también inmuebles de particulares que les asignan para vender |
+| Documentos que piden | Documentos básicos: partida registral y documentos legales. No mostraron una lista o formato |
+| Quién revisa y quién atiende | Un asesor; la contadora confirma que los papeles están en orden |
+| Dónde guardan la información | Excel |
+| Tiempo de revisión | Alrededor de un día, a cargo de la contadora |
+| Inmuebles con problemas | Respondió «7» de cada 10; mencionó un caso con levantamiento, ya resuelto. Por confirmar |
+| Qué hacen ante un problema | Lo gestionan hasta tener todo en orden; si no, toman otras medidas (no detalladas) |
+| Ventas caídas o demoradas | Sí hubo; no dio detalles |
+| Preocupación del comprador | Temor a estafas relacionadas con la ubicación de los lotes |
+| Revisión por ingeniero o arquitecto | Rara vez o nunca; no trabajan con especialistas habituales |
+| Datos para el sistema | Dispuestos a entregar de 5 a 10 inmuebles de ejemplo |
+| Moneda | Soles |
+| Autorización | Verbal el 09/11 y el 13/11 (datos de marca); escrita pendiente |
+| Opinión tras la demostración | Útil. Pidió: formulario de interés (datos, zona y presupuesto), mapa de lotes, menos actores, catálogo con filtros sin salir del sitio (referencia: Urbania), recorrido 3D con sus recursos y compararse con Ceinys |
+| Prueba con su equipo | Siguiente reunión: 16/11/2026 |
 
-**Roles reales (según lo trasladado):** asesores comerciales (cargan inmuebles y atienden interesados) y propietarios
-particulares (autorizan la venta de su inmueble); la autorización de los inmuebles propios la da la inmobiliaria. En el
-sistema: ASESOR, GESTOR, REVISOR, PROPIETARIO (sección 4). **Pendiente de completar por el equipo:** cargos reales (por
-ejemplo, quién autoriza en nombre de la empresa), número de asesores y respuestas textuales de la entrevista.
+**Cómo se atendió cada pedido en la v1.0:** formulario de interés y solicitud de cita (D65, D68); plano interactivo de
+lotes por proyecto (D63); un solo rol de asesor y visitante sin cuenta (D59 a D61); catálogo con filtros, orden y asistente
+de búsqueda (D62, D66); enlace al recorrido o video de LedCons por proyecto (D63); comparación con Ceinys en la sección de
+competencia.
 
-**Proceso AS-IS (Supuesto: reconstruido de lo trasladado, a confirmar con el acta):**
+**Qué respuestas de la entrevista atiende la etapa 9** (son respuestas, no pedidos literales): Excel → exportar a CSV
+(D74); temor a estafas por la ubicación → dirección y «Cómo llegar» (D75); un solo asesor que atiende → cuentas de asesor por
+configuración, para cuando sumen otros (D77; que vayan a sumarlos es Supuesto). El aviso de nuevos (D76), el embudo (D78) y las condiciones de pago en
+texto (D75) son propuestas del equipo para el seguimiento y frente a la oferta de financiamiento de Ceinys; LedCons no
+las pidió.
 
-1. La inmobiliaria lotiza un terreno matriz y vende sus lotes antes de independizarlos (en el sistema: «en partida matriz»).
-2. Los lotes se difunden por sus canales (Facebook y WhatsApp constan en sus datos), sin plano interactivo ni ficha propia
-   por lote.
-3. El interesado escribe o llama; el asesor responde a mano y agenda la visita sin un registro común.
-4. El comprador no ve la partida ni sabe qué documentos faltan; la verificación queda para el final (abogado o notario).
-5. El seguimiento de cada interesado depende de cada asesor (cuaderno, chat).
+**Roles reales:** la propietaria; **un asesor** que atiende a los interesados; y **la contadora**, que confirma que los
+papeles están en orden (alrededor de un día por inmueble). No trabajan con especialistas habituales. En el sistema:
+ASESOR (el asesor; más cuentas con `APP_ASESORES`), REVISOR (la tarea de revisión documental que hoy hace la contadora;
+**Supuesto**: no tiene cuenta todavía), PROPIETARIO (particulares que les asignan inmuebles) y ESPECIALISTA (indicador B, que
+hoy LedCons casi no usa). **Pendiente de completar por el equipo:** quién autoriza en nombre de la empresa la publicación de
+sus lotes, el acta firmada y las preguntas abiertas de ingresos: **cuánto gasta hoy LedCons en publicidad y portales** y
+**cuánto estaría dispuesta a pagar** por el sistema (la entrevista no las respondió).
+
+**Proceso AS-IS** (de la entrevista; lo marcado **Supuesto** no lo dijo la entrevistada):
+
+1. LedCons recibe lotes de proyectos de lotización (unos 400 al mes, en Nueva Ica, Monte Alegre y Villa Macacona) e
+   inmuebles de particulares que le asignan para vender. **Supuesto:** los lotes se venden antes de independizarlos (en el
+   sistema, «en partida matriz»).
+2. La contadora revisa los documentos básicos (partida registral y documentos legales), en alrededor de un día, sin una
+   lista ni un formato; si hay un problema, lo gestionan hasta tenerlo en orden. No interviene un ingeniero o arquitecto.
+3. La información se guarda en Excel.
+4. Los lotes se difunden por sus canales (Facebook y WhatsApp) sin plano interactivo ni ficha propia por lote
+   (**Supuesto**, por sus datos públicos); el comprador teme estafas por la ubicación.
+5. El asesor atiende a cada interesado; **Supuesto:** sin un registro común de seguimiento. Hubo ventas caídas o
+   demoradas (sin detalle).
 
 ## 3. Modelo de negocio (lienzo)
 
@@ -71,7 +104,7 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | **Propuesta de valor** | Comprador: todo el catálogo de la inmobiliaria en un sitio, con plano, filtros, asistente, usos del lote, indicador A explicado y cita sin cuenta. Inmobiliaria: carga masiva por CSV, publicación solo con autorización, CRM de interesados con agenda y demanda | Implementado; valor percibido **Supuesto** (sin estudio) |
 | **Canales** | Portal web público (sin indexar mientras se prueba); WhatsApp de la inmobiliaria (`wa.me`); oficina y teléfono | Implementado |
 | **Relación** | Asistida: el asesor responde, confirma o reprograma citas y sigue al interesado por etapas | Implementado |
-| **Ingresos** | La inmobiliaria paga el sistema (suscripción); parte del costo de la inspección B (S/ 250 referencial) | **Supuesto no validado.** El sistema no cobra |
+| **Ingresos** | La inmobiliaria paga el sistema (suscripción); parte del costo de la inspección B (S/ 250 referencial) | **Supuesto no validado.** El sistema no cobra. Preguntas abiertas a LedCons: gasto actual en publicidad y portales; disposición a pagar |
 | **Recursos clave** | Catálogo y partidas de la inmobiliaria, motor de reglas versionado, plano de lotes, asesores | Implementado / Validado |
 | **Actividades clave** | Captar y cargar inmuebles, mantener expedientes, publicar con autorización, atender interesados | Implementado |
 | **Socios** | LedCons (operadora); abogados o notarios (verificación fuera del sistema); SUNARP y municipalidad como fuentes consultadas a mano | LedCons: Validado (verbal). Resto: Supuesto |
@@ -82,24 +115,26 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | Actor | Rol en el sistema | Qué hace |
 |---|---|---|
 | Visitante | Sin cuenta | Busca, filtra, abre planos y fichas, pide cita (nombre de pila y un medio de contacto, con consentimiento) |
-| Asesor inmobiliario | ASESOR (`asesor-01`) | Permisos de revisor y gestor: registra, carga CSV, publica, autoriza en nombre de la inmobiliaria, atiende interesados, registra a quien llega por llamada u oficina |
-| Gestor (asesor comercial) | GESTOR (`gestor-01`) | Publica, atiende contactos e interesados, asigna especialistas, ve el panel y el semáforo interno |
+| Asesor inmobiliario | ASESOR (`asesor-01` y los de `APP_ASESORES`) | Permisos de revisor y gestor: registra, carga y exporta CSV, registra ubicación y condiciones de pago, publica, autoriza en nombre de la inmobiliaria, atiende interesados (aviso de nuevos, embudo, exportación), registra a quien llega por llamada u oficina |
+| Gestor (asesor comercial) | GESTOR (`gestor-01`) | Publica, atiende contactos e interesados (con el aviso de nuevos y la exportación), asigna especialistas, ve el panel y el semáforo interno |
 | Revisor | REVISOR (`revisor-01`) | Registra partidas, planos y checklist |
 | Especialista | ESPECIALISTA (`especialista-01`, `-02`) | Emite el informe técnico (indicador B) que le asignan |
 | Propietario particular | PROPIETARIO (`propietario-01` a `-03`) | Ve sus inmuebles y autoriza su publicación |
 | Comprador con cuenta | COMPRADOR (`comprador-01`) | Pide contacto e inspección B |
 | Abogado o notario, SUNARP, municipalidad | Externos | Verificación jurídica; fuentes consultadas a mano |
+| Contadora de LedCons | Sin cuenta todavía | Confirma que los papeles están en orden (unos 1 día por inmueble); recibe los CSV que exporta el asesor (Supuesto de uso). Su tarea corresponde al rol REVISOR |
 
 **Flujo TO-BE (5 pasos):**
 
 1. **Carga.** El asesor carga los lotes de un proyecto por CSV (vista previa por fila; se confirma todo o nada; historial) o
-   registra un inmueble de un particular.
+   registra un inmueble de un particular; registra la ubicación y las condiciones de pago del proyecto. Puede exportar los
+   lotes a CSV, editarlos en Excel y volver a cargarlos.
 2. **Evaluación.** El motor de reglas calcula el indicador A del inmueble o de la partida matriz del proyecto.
 3. **Autorización y publicación.** El asesor autoriza en nombre de la inmobiliaria (o el propietario autoriza lo suyo) y
    publica. Sin autorización vigente no se publica; publicar no cambia A.
-4. **Búsqueda y cita.** El visitante usa el asistente, los filtros y el plano, abre la ficha y pide una cita (o escribe por
-   WhatsApp, llama o va a la oficina y el asesor lo registra).
-5. **Seguimiento.** El asesor confirma o reprograma la cita y lleva al interesado por etapas (Nuevo → Contactado → Cita
+4. **Búsqueda y cita.** El visitante usa el asistente, los filtros y el plano, abre la ficha (con la dirección, «Cómo
+   llegar» y las condiciones de pago) y pide una cita (o escribe por WhatsApp, llama o va a la oficina y el asesor lo registra).
+5. **Seguimiento.** El asesor ve el aviso de nuevos, confirma o reprograma la cita y lleva al interesado por etapas (Nuevo → Contactado → Cita
    agendada → Visita realizada → Separación → Venta, o Descartado); en Separación o Venta marca el lote. La verificación
    jurídica ocurre fuera del sistema.
 
@@ -131,9 +166,15 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | RF20 | Asistente de búsqueda y usos del lote | Implementado | `lib/asistente.test.ts`, `lib/usosLote.test.ts` |
 | RF21 | Registro de interesados desde el panel (llamada, oficina, WhatsApp, referido) con consentimiento verbal | Implementado (etapa 8) | `RegistroPanelYMarcaTest` |
 | RF22 | Portada con cifras reales y marca de la inmobiliaria | Implementado (etapa 8) | `RegistroPanelYMarcaTest.cifrasDelSitio`, `pages/etapa8.test.tsx` |
+| RF26 | Exportar a CSV (Excel) la bandeja con filtros y los lotes de un proyecto; solo asesor y gestor | Implementado (etapa 9) | `Etapa9Test`, `pages/etapa9.test.tsx` |
+| RF27 | Dirección y enlace de mapa del proyecto con «Cómo llegar» | Implementado (etapa 9) | `Etapa9Test.ubicacionPublica`, `enlaceInvalido` |
+| RF28 | Condiciones de pago del proyecto (texto) | Implementado (etapa 9) | `Etapa9Test.limites`, `pages/etapa9.test.tsx` |
+| RF29 | Aviso de interesados nuevos en el menú | Implementado (etapa 9) | `Etapa9Test.avisoNuevos`, `pages/etapa9.test.tsx` |
+| RF30 | Cuentas de asesor por configuración | Implementado (etapa 9) | `Etapa9Test.asesoresConfigurables` |
+| RF31 | Embudo por etapa, total y por proyecto | Implementado (etapa 9) | `Etapa9Test.embudo` |
 | RF23 | Pagos en línea | **Fuera de alcance** | — |
 | RF24 | Consulta automática a SUNARP o a la municipalidad | **Fuera de alcance** (no hay API pública) | — |
-| RF25 | Mapas georreferenciados | **Fuera de alcance** (sin dependencias nuevas; el plano es SVG propio) | — |
+| RF25 | Mapas georreferenciados embebidos | **Fuera de alcance** (sin dependencias nuevas; el plano es SVG propio; la etapa 9 solo enlaza el mapa de la inmobiliaria) | — |
 
 ### Requisitos no funcionales
 
@@ -164,8 +205,10 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | RN-verbal | El consentimiento verbal queda con quién lo registró y cuándo | Implementado (etapa 8) | `RegistroPanelYMarcaTest.registraConConsentimientoVerbal` |
 | RN-marca | Ningún PDF se presenta como emitido por SUNARP, una municipalidad o un colegio; la única imagen es el logo de la empresa | Implementado | `CopiaLiteralPdfTest.sinElementosOficiales`, `LaminaPdfTest` |
 | RN-precio | El precio de los lotes precargados sale de un rango de mercado por distrito | Implementado (etapa 8) | `PreciosZonaTest` |
+| RN-exportar | Solo el asesor y el gestor exportan; el CSV de lotes vuelve a cargarse sin cambios; los CSV no ejecutan fórmulas | Implementado (etapa 9) | `Etapa9Test.lotesIdaYVuelta`, `protegeFormulas` |
+| RN-ubicación | «Cómo llegar» solo con un enlace https registrado por la inmobiliaria; sin mapa embebido | Implementado (etapa 9) | `Etapa9Test.enlaceInvalido` |
 
-## 6. Decisiones D52 a D73 (una línea cada una)
+## 6. Decisiones D52 a D79 (una línea cada una)
 
 | ID | Decisión |
 |---|---|
@@ -191,6 +234,12 @@ ejemplo, quién autoriza en nombre de la empresa), número de asesores y respues
 | D71 | Etapa 8: cifras reales en la portada y registro de interesados desde el panel (V23) |
 | D72 | Etapa 8: marca de LEDCONS en el portal y en los PDF (autorización verbal; escrita pendiente) |
 | D73 | Etapa 8: `preparar-demo` con reposición, `verificar-sitio`, pasada en tableta y lista del lunes |
+| D74 | Etapa 9: exportar a CSV para Excel (punto y coma, UTF-8 con BOM), lotes con las columnas de la carga |
+| D75 | Etapa 9: dirección, enlace de mapa y condiciones de pago del proyecto; «Cómo llegar» sin mapa embebido (V24) |
+| D76 | Etapa 9: aviso de interesados nuevos en el menú del asesor y del gestor |
+| D77 | Etapa 9: cuentas de asesor por `app.asesores`; responsables = cuentas ASESOR y GESTOR |
+| D78 | Etapa 9: embudo por etapa, total y por proyecto |
+| D79 | Etapa 9: un solo modelo de negocio y una sola descripción de funcionalidades; lo anterior a `docs/historico/` |
 
 ## 7. Arquitectura
 
@@ -200,7 +249,7 @@ PostgreSQL), PDFBox. Interfaz React 19, Vite, Tailwind 4, React Router (rutas `#
 **Módulos** (verificados por `ModularityTests`): `identidad` (cuentas, login, roles), `expediente` (casos, partidas,
 proyectos, lotes, catálogo público, PDF), `clasificacion` (motor de reglas e historial de A), `inspeccion` (indicador B),
 `cartera` (contactos, decisiones de captación, panel), `interes` (interesados, notas, citas), `checklist`, `orientacion`
-(glosario), `almacenamiento` (archivos y PDF) y `shared` (errores y, desde la etapa 8, los datos de la empresa).
+(glosario), `almacenamiento` (archivos y PDF) y `shared` (errores, datos de la empresa y, desde la etapa 9, el escritor de CSV).
 
 **Entidades principales.** Usuario; CasoLote (inmueble) con su Expediente (partida, asientos, planos, documentos del lote,
 datos comerciales); Evaluación e HistorialEvaluación (A); EvaluaciónTécnica (B); Proyecto, HitoProyecto, LoteProyecto e
@@ -233,6 +282,7 @@ HistorialLoteProyecto; SolicitudContacto y DecisiónCaptación; Interés, NotaIn
 | V21 | Interesados, notas y citas |
 | V22 | Realismo: colegiatura vacía y tabla de ajustes de contenido |
 | V23 | Canal del interesado y consentimiento verbal con su autor |
+| V24 | Dirección, enlace de mapa y condiciones de pago del proyecto |
 
 **Endpoints.** Todos bajo `/api/v1` (detalle en `docs/api.md`).
 
@@ -243,8 +293,9 @@ HistorialLoteProyecto; SolicitudContacto y DecisiónCaptación; Interés, NotaIn
   `GET /robots.txt`; `POST /auth/login`.
 - **Privados (con sesión y rol):** casos (`/casos/**`: registrar, partida, planos, documentos, checklist, autorización,
   publicación, historial, ruta, decisión de captación, inspección), proyectos (`/proyectos/**`: lista, publicación y estado
-  de lotes, plantilla, vista previa y carga CSV, historial), contactos y panel (`/contactos`, `/cartera/panel`),
-  interesados y citas (`/interesados/**`, incluido `POST /interesados` desde el panel, y `/citas/**`).
+  de lotes, plantilla, vista previa y carga CSV, historial; etapa 9: `exportar.csv` y `PUT /proyectos/{c}/datos`),
+  contactos y panel (`/contactos`, `/cartera/panel`), interesados y citas (`/interesados/**`, incluido `POST /interesados`
+  desde el panel y, en la etapa 9, `exportar.csv`, `nuevos` y `embudo`; `/citas/**`).
 
 **Despliegue.** *Local:* backend en `127.0.0.1:8080` (`./mvnw spring-boot:run` con `APP_SEED_PASSWORD`) e interfaz en
 `localhost:5173` (`npm run dev`), con `scripts/reiniciar-demo.ps1` para empezar de cero. *Nube:* `docker-compose.yml` para
@@ -277,30 +328,50 @@ repone por la API interesados y lotes sin borrar nada.
 | v0.8.0 | 186 | 82 | 20 de 20 pasos (02/11/2026) |
 | v0.9 (`d7803f8`) | 200 | 85 (16 archivos) | 27 de 27 pasos (09/11/2026) |
 | v1.0.0, etapa 7 | 318 | 276 (30 archivos) | 13 de 13 pasos (13/11/2026) |
-| v1.0.0, etapa 8 | **332** | **290** (32 archivos) | **13 de 13 pasos y 12 de 12 pantallas en tableta** (13/11/2026) |
+| v1.0.0, etapa 8 | 332 | 290 (32 archivos) | 13 de 13 pasos y 12 de 12 pantallas en tableta (13/11/2026) |
+| v1.0.0, etapa 9 | **347** | **309** (33 archivos) | **15 de 15 pasos y 12 de 12 pantallas en tableta** (14/11/2026) |
 
 Todas aprobadas, 0 fallos. Build de la interfaz correcto (aviso de tamaño del paquete que ya existía).
 
-**Recorrido de la etapa 8** (`docs/pruebas/uso-v10/recorrido-v10.mjs`, base nueva fuera del repositorio, Chrome sin
-ventana): guion de 15 minutos ejecutado por la máquina en **70 s** (159 s con el arranque del backend); sin errores de
-consola ni respuestas 409/500. **La duración con una persona no se ha medido**: debe cronometrarse en el ensayo.
+**Recorrido de la etapa 9** (`docs/pruebas/uso-v10/recorrido-v10.mjs`, base nueva fuera del repositorio, Chrome sin
+ventana, 14/11/2026): los 13 pasos del guion de 15 minutos más 2 de la etapa 9 (aviso de nuevos, exportación a CSV con ida
+y vuelta, ubicación y condiciones de pago, «Cómo llegar»), ejecutados por la máquina en **100 s** (178 s con el arranque
+del backend); sin errores de consola ni respuestas 409/500. **La duración con una persona no se ha medido**: debe
+cronometrarse en el ensayo.
 
 **Capturas.** Laptop (1280 × 900), `docs/pruebas/uso-v10/capturas/`: 01-asistente, 02-filtros, 03-plano, 04-ficha-lote,
 05-solicitar-cita, 06-carga-csv, 07-registro-particular, 08-laminas-kit, 09-propietario-autoriza, 10-publica,
-11-confirma-cita, 12-separacion, 13-pie-version. Tableta, `docs/pruebas/uso-v10/capturas-tableta/`: vertical y horizontal ×
+11-confirma-cita, 12-separacion, 13-pie-version, 14-exportar-ubicacion, 15-ubicacion-pago. Tableta, `docs/pruebas/uso-v10/capturas-tableta/`: vertical y horizontal ×
 portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). Las de versiones anteriores están en
 `docs/pruebas/capturas-v07/`, `capturas-v08/` y `uso-v09/capturas/`.
 
 ## 10. Competencia, referencias y fuente de precios
 
-- **Urbania** (urbania.pe): portal inmobiliario peruano donde publican muchas inmobiliarias y particulares. Es el canal donde
-  el comprador «se va a otra»; la 1.0 responde con un portal propio de la inmobiliaria, con plano de lotes y ficha por lote.
-  También es la **fuente de precios** (D70): 13 avisos revisados por el equipo el 13/11/2026, dos excluidos (Ica, con
-  construcción o céntricos, más de S/ 3,600 por m²); tres distritos con rango **estimado** porque sus avisos eran terrenos
-  rústicos o grandes (S/ 48 a 280 por m², solo como piso).
-- **Ceinys:** referencia de competencia indicada por el equipo. **El repositorio no tiene su análisis**: completar con las
-  notas del equipo (qué ofrece, en qué se diferencia).
-- **SUNARP** (Conoce Aquí, Visor BGR) y la **municipalidad**: fuentes que se consultan a mano; el sistema solo enlaza.
+Revisión del equipo del 11/11/2026 de dos páginas de proyectos de **Ceinys**
+([La Palma Paracas](https://www.ceinys.pe/lapalmaparacas.html) y [Sol de Carhuaz](https://www.ceinys.pe/soldecarhuaz.html);
+Sol de Carhuaz también se ofreció a LedCons, por eso compiten en él) y de **[Urbania](https://urbania.pe/buscar/venta-de-terrenos-en-ica--ica)**
+como portal de referencia. Urbania no se pudo leer de forma automática; sus funciones se describen por revisión manual y
+conocimiento general.
+
+| Tema | Ceinys | Urbania | Trustinmuebles 1.0.0 |
+|---|---|---|---|
+| Lotes | Rangos de área (120–318 m²); varios contadores en «0» y «S/0» | Avisos individuales de cada anunciante | Cada lote con área, precio, precio por m² y estado comercial |
+| Plano | Imagen fija del master plan | Mapa geográfico | Plano interactivo por proyecto (disponible, separado o vendido) y, desde la etapa 9, dirección y «Cómo llegar» con el enlace de mapa de la inmobiliaria |
+| Búsqueda | Sin filtros ni orden | Filtros por ubicación, tipo, precio y área | Filtros combinables, orden, filtros en la URL y asistente por reglas |
+| Respaldo legal | Menciona partida, parámetros, zonificación y modelo de contrato, sin enlaces | Depende de cada anunciante | Documentos con estado y PDF, indicador A, independización del lote |
+| Uso del lote | Solo amenidades | No | Usos orientativos según zonificación y área, con aviso de verificar parámetros |
+| Contacto | Formulario de 4 campos y WhatsApp | Contacto con el anunciante | Interés o cita con consentimiento, WhatsApp con mensaje armado y CRM con embudo |
+| Avance de obra | Lista de hitos | No | Hitos por proyecto, informativos |
+| Financiamiento | «0 % de interés, hasta 80 meses», sin tabla | Variable | Condiciones de pago en texto por proyecto (etapa 9), con «Consulta con un asesor»; sin simulador, tasas ni pagos en línea |
+
+**Lo que se tomó:** hitos de obra, formulario corto y WhatsApp (Ceinys); búsqueda pública con filtros (Urbania). **No se
+copió** diseño, textos ni estructura.
+
+**Fuente de precios:** 13 avisos de terrenos en Urbania revisados por el equipo el 13/11/2026 (dos excluidos: Ica, con
+construcción o céntricos, más de S/ 3,600 por m²). Ica y Subtanjalla con avisos de lotes urbanos; La Tinguiña, Los Aquijes
+y Salas estimados a partir de terrenos rústicos o de gran extensión (S/ 48 a 280 por m²), usados solo como piso (D70).
+
+**SUNARP** (Conoce Aquí, Visor BGR) y la **municipalidad**: fuentes que se consultan a mano; el sistema solo enlaza.
 
 ## 11. Privacidad y contenido realista
 
@@ -313,12 +384,19 @@ portada, inmuebles, plano, ficha-lote, interesados, registrar-interesado (12). L
 - **Consentimiento:** el formulario exige la casilla (versión `2026-11-v1`) y guarda solo nombre de pila y un medio de
   contacto; el registro desde el panel exige la constancia del consentimiento verbal y guarda quién lo registró y cuándo;
   todo se borra a pedido. Precarga, kit y pruebas con correos `@example.com` y sin celulares.
+- **Exportación (etapa 9):** el CSV de interesados lleva datos de contacto; solo lo descargan el asesor y el gestor, sin
+  caché, y la pantalla avisa que no se comparta fuera del equipo.
+- **Contraseña de las cuentas en la nube:** `APP_SEED_PASSWORD` propia del despliegue, no la de las pruebas (D77).
 
 ## 12. Limitaciones y pendientes
 
-- **Autorización escrita de LedCons** para su marca y datos (hoy verbal, 13/11/2026) y **acta** de la entrevista del
-  09/11/2026.
-- **Datos reales de LedCons** (proyectos, lotes, precios y partidas): el sistema usa contenido preparado por el equipo.
+- **Autorización escrita de LedCons** para su marca y datos (hoy verbal, 09/11 y 13/11/2026) y **acta firmada** de la
+  entrevista del 09/11/2026. Por confirmar: la cifra de «7 de cada 10» inmuebles con problemas.
+- **Datos reales de LedCons** (proyectos, lotes, precios, partidas, direcciones y enlaces de mapa): el sistema usa
+  contenido preparado por el equipo; las direcciones de la precarga son referenciales y no tienen enlace. LedCons ofreció
+  de 5 a 10 inmuebles de ejemplo; la prueba con su equipo está prevista para el 16/11/2026. Sus zonas reales (Nueva Ica,
+  Monte Alegre, Villa Macacona) no son las de los proyectos precargados.
+- **Ingresos:** gasto actual de LedCons en publicidad y portales, y disposición a pagar: sin respuesta.
 - **Estudio con participantes:** no se ha aplicado; no hay resultados.
 - **Revisión especializada** de las reglas `v0.5`, el glosario, la ruta y los criterios de esfuerzo.
 - **Decisiones del docente** pendientes sobre los desvíos ya listados (partidas transcritas, lotes de la SBN, quitar rótulos
@@ -334,14 +412,14 @@ documentos anteriores del equipo; confirma la numeración vigente del informe an
 | Capítulo o anexo | Qué actualizar | Sección de este documento |
 |---|---|---|
 | I. Problemática y objetivos | Problema del comprador y de la inmobiliaria; objetivo de la 1.0 (portal + panel) | 1 |
-| II. Marco teórico / referencial | Portales inmobiliarios y competencia (Urbania, Ceinys), indicadores de transparencia, privacidad | 8, 10, 11 |
-| III. Organización y diagnóstico | LedCons, entrevista del 09/11/2026, roles, AS-IS | 2 |
+| II. Marco teórico / referencial | Portales inmobiliarios y competencia (Urbania, Ceinys: tabla comparativa), indicadores de transparencia, privacidad | 8, 10, 11 |
+| III. Organización y diagnóstico | LedCons, entrevista del 09/11/2026 (respuestas registradas), roles, AS-IS | 2 |
 | IV. Modelo de negocio | Lienzo con validado y supuesto; propuesta de valor | 3 |
 | V. Arquitectura de negocio y de sistemas | Actores, TO-BE de 5 pasos (sección 6.4.2), requisitos, reglas, decisiones, módulos, entidades (tabla 14, figura 6), migraciones, endpoints, despliegue (6.5.2) | 4, 5, 6, 7 |
 | VI. Implementación, pruebas y resultados | Indicadores y límites, pruebas por versión (tabla 10), recorridos y capturas, limitaciones, control de cambios (tabla 49: fila de la 1.0.0) | 8, 9, 12 |
 | Anexo 18 (contenido y datos) | Precios por rango, contenido realista, consentimiento | 8, 11 |
 | Anexos 19 y 20 (módulos y versiones) | Módulos y tecnología | 7 |
 | Anexo 23 y 24 (servicios y endpoints) | Endpoints públicos y privados | 7 |
-| Anexo 25 (resultados de pruebas) | Totales por versión y recorrido de la etapa 8 | 9 |
+| Anexo 25 (resultados de pruebas) | Totales por versión y recorrido de la etapa 9 | 9 |
 | Anexo 26 (capturas) | Lista de capturas de laptop y tableta | 9 |
 | Anexos del estudio | Sin resultados: el estudio no se ha aplicado | 12 |

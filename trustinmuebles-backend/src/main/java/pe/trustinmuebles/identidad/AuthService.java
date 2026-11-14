@@ -112,6 +112,13 @@ public class AuthService {
         return repo.count() > 0;
     }
 
+    /** v1.0 (etapa 9): códigos de las cuentas con alguno de esos roles, en orden alfabético. */
+    @Transactional(readOnly = true)
+    public java.util.List<String> cuentasConRol(Rol... roles) {
+        return repo.findByRolInOrderByCodigoCuentaAsc(java.util.List.of(roles)).stream().map(Usuario::getCodigoCuenta)
+                .toList();
+    }
+
     @Transactional(readOnly = true)
     public boolean existeCuenta(String codigoCuenta) {
         return repo.findByCodigoCuenta(codigoCuenta).isPresent();

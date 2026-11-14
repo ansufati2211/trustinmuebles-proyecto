@@ -4,13 +4,13 @@ import { Link, useParams } from "react-router";
 import { ArrowLeft, Download, FileUp, FolderKanban } from "lucide-react";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { Mensaje } from "@/components/base/Mensaje";
-import { ApiError, descargarPdf, subirArchivo } from "@/lib/api";
+import { ApiError, descargarArchivo, descargarPdf, subirArchivo } from "@/lib/api";
 import {
   COLUMNAS_CSV, MAX_FILAS, errorDeArchivo, rutaConfirmar, rutaPlantilla, rutaVistaPrevia, sePuedeConfirmar, tamanoLegible,
   textoResultado,
 } from "@/lib/cargaLotes";
 import { VistaPreviaCarga } from "@/components/VistaPreviaCarga";
-import { enlaceProyecto } from "@/lib/proyectos";
+import { enlaceProyecto, rutaExportarLotes } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
 import type { ResultadoCarga, ResumenProyecto, VistaPreviaCarga as Vista } from "@/lib/types";
 
@@ -123,6 +123,14 @@ export default function CargaLotes() {
               className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground hover:border-primary/40">
               <Download className="size-4" aria-hidden="true" /> Descargar plantilla
             </button>
+            {/* v1.0 (etapa 9): los lotes actuales con las mismas columnas: se editan en Excel y se vuelven a cargar. */}
+            {proyecto.lotes > 0 && (
+              <button type="button" data-exportar-lotes={proyecto.codigo}
+                onClick={() => descargarArchivo(rutaExportarLotes(proyecto.codigo), `lotes-${proyecto.codigo}.csv`).catch((e: Error) => setProblema(e.message))}
+                className="inline-flex items-center gap-1.5 rounded-xl border border-border bg-card px-4 py-2.5 text-sm font-bold text-foreground hover:border-primary/40">
+                <Download className="size-4" aria-hidden="true" /> Descargar los lotes actuales
+              </button>
+            )}
             <label className="inline-flex cursor-pointer items-center gap-1.5 rounded-xl bg-primary px-4 py-2.5 text-sm font-bold text-white focus-within:outline focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-primary">
               <FileUp className="size-4" aria-hidden="true" /> {archivo ? "Elegir otro archivo" : "Elegir archivo"}
               <input ref={entrada} type="file" accept=".csv,text/csv" onChange={elegir} disabled={ocupado} className="sr-only" aria-label="Archivo CSV de lotes" />

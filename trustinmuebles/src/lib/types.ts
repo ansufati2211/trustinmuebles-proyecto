@@ -120,12 +120,16 @@ export interface ProyectoPublico {
   codigo: string; nombre: string; distrito: string | null; descripcion: string | null; recorridoUrl: string | null;
   hitos: HitoProyecto[]; lotes: LoteProyecto[]; conteo: { disponibles: number; separados: number; vendidos: number };
   indicadorA: IndicadorAProyecto; documentos: DocumentoProyecto[]; inmueblesPublicados: number;
+  /** v1.0 (etapa 9): ubicación (el enlace abre «Cómo llegar» en otra pestaña) y condiciones de pago en texto libre. */
+  direccion?: string | null; mapaUrl?: string | null; condicionesPago?: string | null;
 }
 
 /** v1.0 (etapa 3a): ficha pública de un lote de proyecto (GET /publico/proyectos/{codigo}/lotes/{clave}). */
 export interface LotePublico {
   codigo: string; denominacion: string; proyectoCodigo: string; proyectoNombre: string; lote: LoteProyecto;
   predio: Predio; indicadorA: IndicadorAProyecto;
+  /** v1.0 (etapa 9): la ubicación del proyecto del lote. */
+  proyectoDireccion?: string | null; proyectoMapaUrl?: string | null;
 }
 
 /** v1.0: una página del catálogo público (la primera es la 0; 24 por página). */
@@ -374,4 +378,6 @@ export interface ResultadoCarga { cargaId: string; proyectoCodigo: string; cread
 export interface ResumenProyecto {
   codigo: string; nombre: string; distrito: string | null; casoMatrizCodigo: string | null; autorizacionVigente: boolean;
   lotes: number; publicados: number; conteo: { disponibles: number; separados: number; vendidos: number };
+  /** v1.0 (etapa 9): datos que edita el equipo. */
+  direccion?: string | null; mapaUrl?: string | null; condicionesPago?: string | null;
 }

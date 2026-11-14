@@ -1,605 +1,350 @@
-# Modelo de negocio implementado — Trustinmuebles, versión 1.0.0
+# Modelo de negocio implementado — Trustinmuebles 1.0.0
 
-## Versión 1.0.0 (etapas 1 a 7, noviembre de 2026)
+Un solo modelo: el de la versión **1.0.0** tal como la hacen el código y las pruebas (rama `v1.0-etapa-9`). Lo que no consta
+en el repositorio se marca **No consta**; lo que es hipótesis del equipo, **Supuesto**; lo confirmado por LedCons o por una
+prueba ejecutada, **Validado**. El texto de las versiones v0.7 a v0.9 está, sin cambios, en
+[historico/MODELO-NEGOCIO-v0.9.md](historico/MODELO-NEGOCIO-v0.9.md). Detalle técnico en [api.md](api.md), decisiones en
+[decisiones.md](decisiones.md), estado y pruebas en [REPORTE-v1.0.md](REPORTE-v1.0.md).
 
-Esta sección resume lo que la 1.0.0 agrega al modelo. Las secciones 0 a 16 describen la v0.9 y siguen vigentes en lo que no
-se contradiga aquí. Detalle técnico en [api.md](api.md) y decisiones D59 a D69 en [decisiones.md](decisiones.md); estado y
-pruebas en [REPORTE-v1.0.md](REPORTE-v1.0.md).
-
-### Propuesta de valor 1.0
-
-- **Para el comprador:** encontrar en un solo portal los lotes de los proyectos de la inmobiliaria y sus inmuebles de
-  particulares, compararlos con filtros, orden y un asistente, ver el plano de lotes y los usos que suele permitir la
-  zonificación, y **pedir una cita sin crear cuenta**. Ve el indicador A de cada inmueble (o el de la partida matriz del
-  proyecto, rotulado así) sin que nada prometa una compra segura.
-- **Para la inmobiliaria:** cargar más de 400 lotes al mes por CSV con vista previa, publicar solo lo autorizado y seguir a
-  cada interesado por etapas (Nuevo → Contactado → Cita agendada → Visita realizada → Separación → Venta, o Descartado), con
-  agenda de citas y resumen de demanda.
-
-### Actores nuevos o cambiados
-
-| ID | Actor | Rol | Qué hace en la 1.0 |
-|---|---|---|---|
-| ACT-00 | Visitante | Sin cuenta | Busca, filtra, abre planos y fichas, pide cita (nombre de pila y un medio de contacto, con consentimiento) |
-| ACT-10 | Asesor inmobiliario | ASESOR (`asesor-01`) | Permisos de revisor y gestor: registra, carga CSV, publica, registra la autorización en nombre de la inmobiliaria, atiende interesados y citas |
-| ACT-05 | Propietario | PROPIETARIO | Sin cambios: autoriza sus inmuebles **particulares**. Los de la inmobiliaria los autoriza el asesor o el gestor (D60) |
-
-### Flujo 1.0
-
-| Paso | Qué pasa | Pantalla | Regla que se mantiene |
-|---|---|---|---|
-| 1 | El asesor carga los lotes de un proyecto por CSV (todo o nada, con historial) o registra un inmueble | `#/proyectos/{c}/carga`, `#/casos/nueva` | Un lote se ofrece solo si la partida matriz tiene autorización vigente (I14) |
-| 2 | El motor calcula A del inmueble o de la partida matriz | Expediente | El color lo calculan las reglas `v0.5` |
-| 3 | Autorización (asesor en nombre de la inmobiliaria, o el propietario particular) y publicación | Expediente | Publicar no cambia A |
-| 4 | El visitante busca (asistente, filtros, plano) y pide una cita | Portal | Sin pagos en línea; sin DNI |
-| 5 | El asesor confirma o reprograma la cita y mueve al interesado por etapas; en Separación o Venta marca el lote | `#/interesados` | Marcar el lote no cambia A |
-| 6 | Verificación jurídica con abogado o notario | Fuera del sistema | — |
-
-### Datos y privacidad en la 1.0
-
-- **Excepción acotada a I11 (D68):** el interés guarda un nombre de pila y un medio de contacto, con consentimiento
-  versionado; se borra a pedido. Ningún otro dato personal.
-- **Contenido realista (D67):** titulares «Persona natural (datos reservados)» o empresas inventadas, partida parcial en el
-  portal (`1105••••`, también en la tarjeta, el proyecto y los PDF de la partida matriz desde la etapa 7), ficha registral
-  propia de la inmobiliaria (no copia literal), especialistas sin colegiatura registrada y sitio no indexable por omisión.
-
-### Ingresos (hipótesis no validada, sin cambios)
-
-La inmobiliaria paga el sistema; la inspección B mantiene su costo referencial sin pasarela de pago.
-
-### Verificación 1.0.0
-
-Backend 318 pruebas y interfaz 276, todas aprobadas; recorrido de 15 minutos en Chrome con el kit: 13 de 13 pasos
-(`docs/pruebas/uso-v10/`). Catálogo con 1000 lotes: la consulta más lenta, 248 ms (límite 2 s, `CargaCatalogoTest`).
-
----
-
-## Modelo de negocio de la v0.9 (se conserva)
-
-
-Este documento describe lo que el **código y las pruebas** hacen hoy. Cuando la documentación anterior dice otra cosa, manda
-el código, y la diferencia se anota. Lo que no se pudo comprobar dice **No verificado**. Los cambios de los tres últimos commits
-y sus observaciones están en [REPORTE-v0.9-real.md](REPORTE-v0.9-real.md).
-
-## 0. Ficha
+## 1. Ficha
 
 | Campo | Valor |
 |---|---|
-| Versión | `main` en `d7803f8` («Version real»), sobre `7fc4a54` (v0.9) y `43cd45d` (fotos). Los paquetes siguen numerados `0.8.0` (`trustinmuebles-backend/pom.xml`, `trustinmuebles/package.json`); no hay tag `v0.9` |
-| Fecha de esta revisión | 9 de noviembre de 2026, en la rama `docs-v0.9-real`, creada desde `origin/main` en `d7803f8` |
-| Pruebas del backend | `./mvnw -B verify`: **200 ejecutadas, 200 aprobadas**, 0 fallos, 0 errores, 0 omitidas (32 clases); `BUILD SUCCESS` |
-| Pruebas del frontend | `npx pnpm@9 test`: **16 archivos, 85 pruebas, 85 aprobadas** |
-| Compilación del frontend | `npx pnpm@9 build`: correcta (`tsc --noEmit` y `vite build`), con aviso de tamaño del JS principal (618 kB) |
-| Organización de referencia del caso | LedCons, sin acta ni acuerdo formal acreditado |
-| Alcance | MVP académico para **una sola inmobiliaria de Ica**. Las partidas de Ica y los especialistas son contenido redactado por el equipo, aunque desde `d7803f8` ya no se rotulan como simulados; los dos lotes de la SBN vienen de una fuente pública |
-| Verificación en navegador | Recorrido de uso de 27 pasos con las 8 cuentas en Chrome: **27 de 27 correctos** el 9 de noviembre de 2026 (`docs/pruebas/uso-v09/recorrido-v09.mjs`, capturas en `docs/pruebas/uso-v09/capturas/`), sobre una base nueva fuera del repositorio, sin errores de consola ni respuestas 409/500. No cubre lectores de pantalla ni otros navegadores |
-| Demo en la nube | Configurada, **no verificada**: CORS con `https://trust.aurorabeauty.site` y flujo de imágenes Docker en cada push a `main` (sección 11) |
-| Rendimiento (NF02) | **20 de 20** en 2 s o menos el 30/10/2026; mediana 25,2 ms, máximo 54,3 ms. Solo la API. No se volvió a medir |
+| Versión | `1.0.0` (`trustinmuebles-backend/pom.xml`, `trustinmuebles/package.json`, pie del sitio y `GET /api/v1/publico/sitio`) |
+| Fecha de esta descripción | 14 de noviembre de 2026 (etapa 9). Entrega: lunes 16 de noviembre de 2026 |
+| Pruebas del backend | **347 ejecutadas, 347 aprobadas** (0 fallos, 0 errores, 0 omitidas). Antes de la etapa 9: 332 |
+| Pruebas de la interfaz | **309 aprobadas en 33 archivos** (Vitest). Antes de la etapa 9: 290 en 32 |
+| Recorrido en navegador | `docs/pruebas/uso-v10/recorrido-v10.mjs` con una base nueva, el 14/11/2026: **15 de 15 pasos** (los 13 del guion de 15 minutos y los pasos 14 y 15 de la etapa 9) y **12 de 12 pantallas en tableta**; sin errores de consola ni respuestas 409/500. Detalle en [REPORTE-v1.0.md](REPORTE-v1.0.md), sección 4 |
+| Rendimiento | Catálogo con 1000 lotes: consulta más lenta 248 ms (límite 2 s, `CargaCatalogoTest`). NF02: 20 de 20 en 2 s o menos (máximo 54,3 ms, solo la API, 30/10/2026) |
+| Alcance | Sistema de **una sola inmobiliaria** (LedCons): portal público y panel interno. Sin pagos en línea |
 
-Las pruebas del backend son de integración (MockMvc con H2 en memoria) y unitarias; las del frontend son de funciones puras
-(Vitest), más una que renderiza el pie (`limitesLegales.test.tsx`); **no prueban cómo se dibujan las demás pantallas**.
+## 2. Organización
 
-## 1. Propuesta de valor
-
-**Problema que reduce:** el comprador suele decidir sin entender la partida registral ni saber qué documentos faltan.
-Trustinmuebles ordena la partida y los planos de cada inmueble de la cartera, explica sus términos (glosario), señala lo que
-falta (faltantes y checklist) y, si el comprador lo pide, registra una evaluación técnica presencial.
-
-**Qué NO hace** (comprobado en el código; ninguna ruta lo hace):
-- No certifica saneamiento. Cada evaluación lleva el texto fijo «No certifica saneamiento ni recomienda comprar»
-  (`MotorClasificacion.LIMITE`, verificado por `MotorClasificacionTest` y `CasosApiTest`).
-- No recomienda comprar ni ordena casos por conveniencia. El comprador no ve rankings (D41). D52 matiza D41 solo para el gestor:
-  su panel ordena la lista «Por regularizar» por esfuerzo, para organizar la subsanación, con el aviso «Priorización interna de la
-  inmobiliaria; no es una recomendación de compra».
-- No consulta fuentes oficiales en línea: no hay cliente HTTP hacia SUNARP ni a la Municipalidad; la interfaz solo abre
-  enlaces (`lib/fuentes.ts`).
-- No reemplaza a un abogado o notario: la etapa 9 es un texto fijo en el detalle, no una función.
-
-## 2. Segmentos y cliente
-
-| | Quién | Evidencia |
+| Dato | Valor | Estado |
 |---|---|---|
-| **Quién paga (hipótesis)** | La inmobiliaria de Ica que usa el sistema con su propia cartera | Solo documentación (LEEME, D21, D49). El código no tiene cobros, planes ni facturación |
-| **Quién usa, externo** | El comprador | Rol `COMPRADOR` |
-| **Quién usa, interno** | Personal de la inmobiliaria: revisor, gestor (asesor comercial) y especialistas | Roles `REVISOR`, `GESTOR`, `ESPECIALISTA` |
-| **Quién autoriza** | El propietario del inmueble | Rol `PROPIETARIO` |
+| Nombre comercial | LedCons («LEDCONS», «Inmobiliaria y Constructora») | Validado |
+| Razón social y RUC | **LEDCONS E.I.R.L.**, RUC **20600817133** | Validado (dato público de la empresa) |
+| Dirección y contacto | Av. San Martín 577, 2.º piso, oficina 32, Ica; teléfonos 991 108 224 y 904 958 416; WhatsApp y Facebook de la empresa (`contenido/empresa.json`) | Validado |
+| Propietaria | Katerin Ramos Ledesma (entrevistada el 09/11/2026) | Validado |
+| Zonas donde trabaja | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona | Validado (entrevista) |
+| Personal | Un asesor que atiende a los interesados y una contadora que confirma que los papeles están en orden | Validado (entrevista) |
+| Autorización de uso de marca y datos | **Verbal** (09/11 y 13/11/2026). **La escrita está pendiente** (D72). No hay acta firmada | Pendiente |
 
-El sistema es de **una sola organización**: el código no modela empresas, sucursales ni varias inmobiliarias. No hay datos de
-contacto de la inmobiliaria en el sistema.
+**Entrevista del 09/11/2026.** Semiestructurada, a la propietaria, registrada por el equipo. Las cifras son aproximadas y
+el **acta firmada está pendiente**.
 
-**Organización de referencia del caso:** LedCons, sin acta ni acuerdo formal acreditado. Ningún dato del sistema proviene de esa
-organización y el código no la modela.
-
-## 3. Actores
-
-**Sobre el personal:** que revisor, gestor y especialistas sean personal **de la inmobiliaria** (no de una empresa aparte)
-lo dice la documentación (LEEME, D21) y es coherente con el código: no existe ninguna entidad «empresa» ni «proveedor», el
-servicio de inspección dice «Coordinado con la inmobiliaria» (`InspeccionService.CONDICIONES`) y la credencial vacía dice «la
-inmobiliaria coordina la visita» (`PanelEvaluacionTecnica.tsx`). El código no puede probar el vínculo laboral: es una
-**afirmación de modelo**, no un dato del sistema.
-
-| ID | Actor | Rol en el sistema | Responsabilidades | Qué NO puede hacer | Evidencia |
-|---|---|---|---|---|---|
-| ACT-01 | Comprador | `COMPRADOR` (`comprador-01`) | Consultar el catálogo de casos **publicados** y su detalle; solicitar contacto; solicitar la inspección técnica (único rol que puede) | Ver borradores o retirados (404); ver el historial (403); ver el código del propietario; editar nada | `ExpedienteService.visible`, `SecurityConfig`; `CaptacionPublicacionTest.visibilidadPorRol`, `CatalogoYServiciosTest.soloElCompradorSolicita`, `HistorialEvaluacionTest.accesoAlHistorial` |
-| ACT-02 | Revisor | `REVISOR` (`revisor-01`) | Registrar la captación (partida transcrita o simulada, con el código del propietario); editar partida, planos y checklist; subir PDF; eliminar partidas captadas | Autorizar por el propietario; publicar; emitir el informe técnico; solicitar inspección | `SecurityConfig` (PUT/POST/PATCH/DELETE `/casos/**`); `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `soloElGestorPublica`, `CasosApiTest.checklistSoloRevisor` |
-| ACT-03 | Gestor (asesor comercial) | `GESTOR` (`gestor-01`, función «Asesor comercial») — el asesor comercial **es** este rol | Publicar y retirar casos; atender contactos; asignar o reasignar el especialista; ver el panel de cartera | Editar la partida o el checklist; autorizar; emitir el informe | `DemoUsuariosSeeder.FUNCION_GESTOR`, `SecurityConfig`; `CaptacionPublicacionTest.soloElGestorPublica`, `CarteraTest.permisosPorRol` |
-| ACT-04 | Especialista | `ESPECIALISTA` (`especialista-01`, `especialista-02`) | Registrar el avance y emitir el informe técnico (indicador B) de las inspecciones que el gestor le asignó, firmado con los datos de su cuenta | Actuar sin asignación (409) o si la inspección está asignada a otro (403); editar la partida; cambiar el color de A | `InspeccionService.registrar`; `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite`, `CatalogoYServiciosTest.identidadDelEspecialistaBloqueada` |
-| ACT-05 | Propietario | `PROPIETARIO` (`propietario-01`, `propietario-02` y, desde la v0.9, `propietario-03`, dueña de demostración de los dos lotes de la SBN; no representa a la SBN) | Ver solo sus casos (también en borrador) y su historial; otorgar o retirar su autorización | Editar, subir documentos, publicar; ver casos ajenos (404); autorizar casos ajenos (403) | `ExpedienteService.casoDelPropietario`; `CaptacionPublicacionTest.propietarioSoloLectura`, `propietarioVeSoloLoSuyo`, `autorizacionSoloDelPropietario` |
-| ACT-06 | Abogado o notario | Externo | Verificación jurídica antes de comprar (etapa 9) | No tiene cuenta ni función en el sistema | Texto fijo en `Expediente.tsx` (D48). Sin prueba automática |
-| ACT-07 | SUNARP (Conoce Aquí, Visor BGR) | Externo, fuente consultada **a mano** | El revisor consulta Conoce Aquí y pega el texto; el comprador o el revisor abren el Visor BGR | El sistema no consulta ni lee SUNARP: solo abre enlaces | `lib/fuentes.ts`, D20. Sin conexión en el backend |
-| ACT-08 | Municipalidad | Externo, fuente consultada **a mano** | Emite la declaración jurada (HR y PU) que aporta el propietario y, en un lote, el certificado de zonificación y vías; el revisor marca el ítem del checklist o sube el PDF | El sistema no consulta a la Municipalidad | Ítem «Declaración Jurada Municipal (HR y PU)»; `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos`; documento `CERTIFICADO_ZONIFICACION` (RV-07) |
-| ACT-09 | SBN | Externo, fuente pública | Publica las bases de la II Subasta Pública 2026 y el plano perimétrico de los lotes `11045763` y `80194645` | El sistema solo guarda el PDF publicado y enlaza la fuente (D57) | `CasosApiTest.contenidoCargado` (fuente, enlace y fecha de consulta) |
-
-**Cambios de la v0.9 por actor:**
-- **Revisor (ACT-02):** el origen de la captación se rotula «Transcrita de Conoce Aquí (SUNARP)» o «Registro interno de
-  cartera» (este sigue exigiendo el prefijo `SIM-`); sube el PDF de los cuatro documentos de un lote.
-- **Propietario (ACT-05):** `propietario-03` ve en «Mis inmuebles» los dos lotes de la SBN.
-- **Especialistas (ACT-04):** firman con nombre y colegiatura sin prefijo `SIM-` (sección 9); la interfaz ya no dice «perfil
-  ficticio».
-
-**Cambios de la v0.8 por actor:**
-- **Revisor (ACT-02):** sube el PDF de cada plano (también si estaba no presentado: al subirlo queda presentado); ya no puede
-  marcar un plano presentado u observado sin archivo (422). Registra acreedor (persona jurídica o «no consta») y plazo del
-  gravamen en el rubro D. Ve el semáforo de gestión y el historial de decisiones, pero no registra decisiones (403).
-- **Gestor (ACT-03):** ve el panel por tipo de alerta, por esfuerzo y por estado de gestión; registra la decisión de captación
-  (lista cerrada, sin texto libre) y, si la última es «no captar por ahora», confirma antes de publicar (no lo bloquea).
-- **Comprador, propietario y especialista (ACT-01, ACT-05, ACT-04):** ven la ruta de regularización con la visibilidad del
-  detalle; no reciben el semáforo de gestión (el campo no existe en sus respuestas) y reciben 403 en los endpoints de decisión
-  (I15). `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`.
-
-## 4. Flujo de vida del inmueble
-
-Las etapas ETP-1 a ETP-8 se recorrieron en Chrome con las 8 cuentas el 9 de noviembre de 2026 (`docs/pruebas/uso-v09/`, 27 de 27
-pasos; antes, `docs/pruebas/RESULTADO-recorrido-v08.md`). La tabla conserva los nombres de prueba; las que citan «los diez casos»
-hoy recorren los 12.
-
-| ID | Etapa | Quién | Qué ocurre | Pantalla / ruta del frontend | Endpoint | Prueba | Estado |
-|---|---|---|---|---|---|---|---|
-| ETP-1 | Captación | Propietario (fuera) y revisor | El propietario **inicia el proceso fuera del sistema**: entrega sus documentos a la inmobiliaria. El revisor registra el caso con el código de cuenta del propietario; nace en `BORRADOR` y sin autorización. **El indicador A se calcula en ese mismo momento** (origen `PARTIDA_TRANSCRITA` del historial). El revisor elige un **origen obligatorio**: «Transcrita de Conoce Aquí (SUNARP)» = `TRANSCRITA_CONOCE_AQUI` (número sin `SIM-`, fuente «Conoce Aquí – SUNARP») o «Registro interno de cartera» = `SIMULADA_DEMOSTRACION` (número con `SIM-` obligatorio aunque el mensaje del campo diga «Código interno de ocho dígitos.»; fuente «Partida simulada para demostración», `sintetico = true`; en el historial, «Partida interna incorporada»). El **precio referencial** es opcional y `ProteccionDatos` se aplica a ambos orígenes. Los 12 casos de la semilla no pasan por aquí: los carga `CasosSeeder` ya publicados | Menú «Registrar partida» → `#/casos/nueva` (`RegistrarPartida.tsx`) | `POST /api/v1/casos` | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.revisorRegistra`, `origenObligatorio`, `prefijoSegunElOrigen`, `simuladaRegistrada`, `precioEnElCatalogo`, `precioInvalido` | Implementado |
-| ETP-2 | Autorización | Propietario | El propietario entra con su cuenta y confirma su autorización. **El indicador A ya está calculado antes de autorizar** (desde ETP-1) y el propietario lo ve; autorizar **no** recalcula ni cambia el color. La autorización solo habilita la publicación. Retirarla de un caso publicado lo deja `RETIRADO`. Autorizar dos veces conserva la primera fecha | Panel «Publicación y autorización» (`PanelPublicacion.tsx`), botones «Autorizar publicación» y «Retirar autorización», en `#/mis-inmuebles` y en la columna lateral del detalle `#/casos/{código}` | `PUT` y `DELETE /api/v1/casos/{código}/autorizacion` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor`; `CicloCarteraTest.cicloCompleto` | Implementado |
-| ETP-3 | Pre-evaluación documental (indicador A) | Motor de reglas (automático) | Calcula verde, amarillo, rojo o gris con las reglas `v0.5` sobre el rubro D, los datos mínimos, los planos de una vivienda y los documentos de un lote (v0.9). Recalcula al registrar, al editar, al subir el PDF del caso, de un plano o de un documento del lote, y al arrancar si falta o cambió la versión. Cada recálculo agrega una fila al historial | Semáforo del detalle `#/casos/{código}` y de las tarjetas de `#/casos` | Sin endpoint propio: lo disparan `POST /casos`, `PUT /casos/{c}/expediente`, `POST /casos/{c}/documento`, `POST /casos/{c}/planos/{e}/documento` | `MotorClasificacionTest` (10), `MotorPlanosTest` (7), `CasosApiTest.losDiezCasosTienenSuColor`, `colorNoSeFijaAMano` | Implementado |
-| ETP-4 | Subsanación | Revisor | Incorpora asientos, planos o el PDF que faltaban; el motor recalcula y el historial lo registra con su origen | Detalle: botón «Editar partida» (`EditorExpediente.tsx`) y subida de PDF en el panel de planos (`PanelPlanos.tsx`); historial en `HistorialEvaluaciones.tsx` | `PUT /casos/{c}/expediente`, `POST /casos/{c}/planos/{e}/documento`, `POST /casos/{c}/documento`, `GET /casos/{c}/historial` | `HistorialEvaluacionTest.planoFaltanteLlevaAVerde`, `cadaRecalculoAgregaUnaFila`, `pdfNoLevantaElEmbargo` | Implementado |
-| ETP-5 | Publicación | Gestor | Publica solo con autorización vigente (422 sin ella; 409 si ya está publicado); puede volver a publicar un caso retirado si sigue autorizado. No mira el color de A | Botones «Publicar» y «Retirar» en el panel «Publicación y autorización» del **detalle** del caso, no en la lista de `#/cartera` (la propia pantalla lo indica) | `POST` y `DELETE /api/v1/casos/{código}/publicacion` | `CaptacionPublicacionTest.soloElGestorPublica`, `sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor`; `MigracionV6Test.conservaLosDiezCasos` | Implementado |
-| ETP-6 | Consulta y contacto | Comprador y gestor | El comprador ve el catálogo de publicados y pide contacto con un motivo de lista cerrada (sin texto libre; una pendiente por caso). El gestor la marca atendida. El comprador **no** puede consultar después si fue atendida (D46) | Comprador: `#/casos` (menú «Expedientes») y botón «Solicitar contacto» en el detalle (`SolicitudContacto.tsx`). Gestor: bandeja de `#/cartera`, botón «Marcar atendida» | `GET /casos`, `GET /casos/{c}`, `POST /casos/{c}/contactos`, `GET /contactos?estado=`, `PUT /contactos/{id}/atencion` | `CarteraTest.contactoSoloPublicado`, `motivoCerrado`, `contactoSobreRojo`; `CaptacionPublicacionTest.visibilidadPorRol`; Vitest `contacto.test.ts` | Implementado |
-| ETP-7 | Evaluación técnica presencial (indicador B) | Comprador, gestor y especialista | El comprador la solicita (costo referencial S/ 250.00, sin pago en línea); el gestor **debe** asignar un especialista (lista fija `especialista-01` y `especialista-02`, D45); sin asignación nadie registra avance ni emite (409, D51); el asignado registra el avance y emite el informe, firmado con su cuenta. No cambia A | Panel de evaluación técnica del detalle (`PanelEvaluacionTecnica.tsx`): «Solicitar inspección técnica» (comprador), «Asignar especialista» / «Reasignar» (gestor), formulario del informe (especialista), «Ver informe técnico (PDF)» | `POST /casos/{c}/inspeccion/solicitud`, `PUT /casos/{c}/inspeccion/asignacion`, `PUT /casos/{c}/inspeccion`, `GET /casos/{c}/inspeccion/documento` | `InspeccionTest.flujoCompleto`, `CatalogoYServiciosTest.soloElCompradorSolicita`, `informeConRiesgoNoCambiaElColor`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite`, `cargaConAsignacion`, `asignacionInvalida` | Implementado |
-| ETP-8 | Seguimiento de la cartera | Gestor | Totales por color de A y por publicación, casos con faltantes, inspecciones solicitadas o en curso con su asignación, contactos pendientes y lista filtrable. Solo lectura | Menú «Cartera» → `#/cartera` (`Cartera.tsx`) | `GET /cartera/panel`, `GET /casos`, `GET /contactos?estado=PENDIENTE` | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Implementado |
-| ETP-9 | Verificación jurídica | Comprador con abogado o notario | Fuera del sistema. El detalle muestra a todos «Siguiente paso: verificación jurídica con abogado o notario, fuera del sistema» | Texto fijo en la columna lateral del detalle | — | Sin prueba | Fuera del sistema |
-
-**ETP-1 dejó de ser parcial:** la captación admite los dos orígenes y el precio referencial. La entrega de documentos del
-propietario sigue ocurriendo fuera del sistema y no se registra en él.
-
-**Cambios de la v0.8 en el flujo:**
-- **ETP-1 (captación):** al registrar, los planos solo pueden quedar no presentados o «no aplica»: un plano presentado exige su
-  PDF y aún no hay archivos (422). El gestor puede registrar la **decisión de captación** con el semáforo de gestión del caso
-  (`POST /casos/{c}/decision-captacion`, D54); la decisión no cambia A ni B ni bloquea publicar (I15).
-  `DocumentosApiTest.presentadoSinArchivoDa422`, `GestionInmobiliariaTest`. Recorrido v0.8, pasos 1 y 16.
-- **ETP-4 (subsanación):** la **ruta de regularización** (`GET /casos/{c}/ruta-regularizacion`) dice, por cada motivo de la
-  evaluación, qué pasos siguen, quién los gestiona, qué documento se necesita y su esfuerzo (D55). El revisor presenta un plano
-  subiendo su PDF (validado y, si pasa de 5 MB, optimizado; D53); cada subida deja una fila `PLANO_ADJUNTO` en el historial.
-  `RutaRegularizacionTest`, `DocumentosApiTest.subirAPlanoNoPresentado`. Recorrido v0.8, pasos 2, 3, 8 y 14.
-- **ETP-8 (seguimiento):** el panel cuenta los casos por tipo de alerta, por esfuerzo y por estado de gestión, con la matriz
-  tipo de alerta × estado de gestión y la lista «Por regularizar» ordenada por esfuerzo y código, solo para organizar la
-  subsanación (D52). `PanelTiposAlertaTest`, `GestionInmobiliariaTest.conteosDelPanel`. Recorrido v0.8, paso 15.
-
-**Cambios de la v0.9 en el flujo** (recorrido de uso del 9/11/2026, pasos 21 a 24):
-- **ETP-3 y ETP-4 (lotes):** un lote tiene cuatro documentos (`documento_lote`, V15): plano perimétrico y de ubicación,
-  memoria descriptiva, certificado de zonificación y vías, y tasación. Panel «Documentos del lote» con «Documentos presentados N
-  de 4», visor de PDF en el expediente y subida por el revisor (`GET`/`POST /casos/{c}/documentos-lote/{tipo}/documento`).
-  `DocumentosLoteApiTest`, `MotorDocumentosLoteTest`. Santiago (`11081204`) trae los cuatro generados y queda en verde; Huarmey y
-  Supe tienen solo el plano perimétrico oficial y quedan en gris (falta la memoria) con RV-07.
-- **ETP-6 (catálogo):** precio con su moneda (`US$ 90,096` y `US$ 16,802` en los lotes de la SBN), con la nota del precio y la
-  fuente enlazada en el detalle. `CatalogoYServiciosTest`, Vitest `formato.test.ts`.
-
-## 5. Servicios
-
-| | Indicador A — pre-evaluación documental | Indicador B — evaluación técnica presencial |
-|---|---|---|
-| Quién lo activa | Nadie lo pide: el motor lo calcula para todo caso al registrarlo o cambiar sus datos | Solo el comprador, a pedido, una vez por caso (409 a la segunda) |
-| Costo | Incluido. El código no tiene precio para A | S/ 250.00 referencial (`app.inspeccion.costo-referencial`, valor por defecto en `InspeccionService`). Sin pasarela de pago ni agenda |
-| Resultado | Color con motivos, alertas, faltantes, versión de reglas y el texto de límite | Estado (no solicitada, solicitada, en inspección, emitido) y, si se emite, conclusión favorable, con observaciones o con riesgo; informe en PDF |
-| Reglas | Tabla `v0.5` en `contenido/v0.5/reglas.json` (`app.reglas.version=v0.5`), borrador del equipo pendiente de revisión especializada. Desde `d7803f8` la pantalla dice «Reglas de evaluación v0.5» sin «(en revisión especializada)» | Solo el especialista que el gestor asignó registra avance o emite; firma desde la cuenta (M8); fecha de inspección no futura |
-| Relación | Nunca lo cambia B (RN-10, I2) | No lee ni escribe el módulo `clasificacion` |
-
-### Colores del indicador A
-
-Etiquetas exactas (`EstadoSemaforo.java`) y cuándo salen (`MotorClasificacion.evaluar`). La precedencia es, en este orden:
-faltantes → gris; alerta prioritaria → rojo; alerta de revisión → amarillo; condición no contemplada → gris; si no, verde.
-
-| Color | Etiqueta exacta | Cuándo sale |
-|---|---|---|
-| Verde | «Sin alertas en los campos evaluados» | Datos mínimos completos, ninguna regla aplicada y condición representada contemplada. Agrega el motivo «Esto no significa saneamiento» |
-| Amarillo | «Requiere revisión» | Al menos una regla de revisión vigente: RV-01 otro acto en gravámenes, RV-02 hipoteca, RV-03 carga técnica o servidumbre, RV-04 falta plano de II.EE. o II.SS., RV-05 el área del plano difiere más de 1 % de la inscrita (o no hay inscrita), RV-06 plano o documento del lote observado, RV-07 (v0.5) falta el certificado de zonificación y vías de un lote; sin alerta prioritaria ni faltantes |
-| Rojo | «Alerta prioritaria» | Al menos una regla prioritaria vigente: RP-01 embargo, RP-02 anotación de demanda o medida cautelar, RP-03 bloqueo registral; sin faltantes |
-| Gris | «Información insuficiente o condición no evaluable» | Falta un dato mínimo (condición representada, titularidad, extracto completo, estado de alguna anotación del rubro D o, en una vivienda, el plano de arquitectura o de estructuras; en un lote, el plano perimétrico o la memoria descriptiva), **aunque haya un rojo**: las alertas conocidas se siguen mostrando. También sale si la condición representada no está contemplada y no hay otra alerta |
-
-Los gravámenes cancelados y la copropiedad no generan alerta (`MotorClasificacionTest.canceladoYCopropiedadNoAlertan`). En
-un lote los planos no aplican (`MotorPlanosTest.loteSinPlanos`); en su lugar cuentan sus documentos (D58,
-`MotorDocumentosLoteTest`). La tasación es informativa y no interviene en A.
-
-### Servicios internos de la v0.8 (no cambian A ni B)
-
-| | Ruta de regularización | Semáforo de gestión |
-|---|---|---|
-| Quién lo ve | Los mismos que ven el detalle (el comprador, solo en casos publicados) | Solo gestor y revisor (I15) |
-| Qué dice | Un ítem por motivo de A (alerta, dato faltante o condición no contemplada): pasos, quién gestiona (propietario, acreedor, revisor, juzgado, municipalidad o notaría), documento requerido, esfuerzo BAJO, MEDIO o ALTO y nota; en una hipoteca, acreedor y plazo si constan | VIABLE, VIABLE_CON_CONDICIONES, REQUIERE_REGULARIZACION o COMPLETAR_INFORMACION, con etiqueta, explicación y sugerencia |
-| Cómo se calcula | `RutasRegularizacion`, de solo lectura, desde la evaluación vigente y `contenido/v0.5/rutas.json`. Esfuerzo del caso = el máximo de sus ítems | `SemaforoGestion`: faltantes o condición no contemplada → completar información; si no, ALTO → requiere regularización; MEDIO → viable con condiciones; si no, viable (`gestion.json`) |
-| Límite | «Orientativo: no es asesoría legal ni recomendación de compra». Sin plazos ni costos: «el plazo depende del trámite; consultar con abogado o notario» | «Uso interno de la inmobiliaria; no se muestra al comprador ni es una recomendación de compra». Contorno sin relleno y otro ícono, para no confundirlo con A |
-| Criterio | Borrador del equipo, pendiente de revisión especializada: BAJO solo documentos del propietario; MEDIO un tercero sin proceso judicial; ALTO un proceso judicial o administrativo | El mismo borrador |
-
-## 6. Reglas de negocio
-
-RN-01 a RN-08 vienen de `docs/trazabilidad.md`; RN-09 y RN-10, de `docs/notas-informe.md`. Algunas pruebas que cita
-`trazabilidad.md` ya no existen con ese nombre (ver la entrega de esta revisión); abajo van las que existen hoy.
-
-| ID | Regla | Estado | Evidencia en código o prueba |
-|---|---|---|---|
-| RN-01 | Solo casos sintéticos | Parcial: las 10 partidas de Ica siguen siendo contenido redactado por el equipo (`sintetico = true`), pero desde `d7803f8` **ya no llevan el prefijo `SIM-`** y nada las rotula como simuladas; las partidas transcritas (D20) y los lotes de la SBN (D57) son desvíos **pendientes de aprobación del asesor**. Las captadas con «Registro interno de cartera» sí llevan `SIM-` | `sintetico = true`; `CasosApiTest.contenidoCargado` (ahora exige que **ninguna** partida del catálogo lleve `SIM-`), `sinRastrosDelEstudio`, `RegistrarPartidaTest.prefijoSegunElOrigen` |
-| RN-02 | Datos mínimos; desconocido no equivale a ausencia | Implementado | `MotorClasificacion` (faltantes); `MotorClasificacionTest.desconocidoNoEsAusencia` |
-| RN-03 | Clasificación y precedencia | Implementado | `MotorClasificacionTest.verde`, `amarilloYRojoPorTipoDeActo`, `demandaYMedidaCautelar` |
-| RN-04 | Información insuficiente da gris y conserva las alertas | Implementado | `MotorClasificacionTest.grisConservaAlertas`; `CasosApiTest.subtanjallaGrisConservaAlerta`, `sinCopiaLiteralGris` |
-| RN-05 | Límite de salida en toda evaluación | Implementado | `MotorClasificacion.LIMITE`; `MotorClasificacionTest.verde`, `CasosApiTest.parconaVerde` |
-| RN-06 | El color se recalcula, no se escribe | Implementado | No hay ruta que fije el color; `CasosApiTest.colorNoSeFijaAMano`, `cancelarLaHipotecaRecalcula`; `MotorClasificacionTest.llevaVersion` |
-| RN-07 | Solo el revisor modifica el checklist | Implementado | `SecurityConfig` (PATCH `/casos/**`); `CasosApiTest.checklistSoloRevisor` |
-| RN-08 | Fecha referencial sin vencimiento automático | Implementado, **sin prueba automática** | Comprobado leyendo el código: no hay lógica de vencimiento. La advertencia visible en pantalla: **No verificado** tras el rediseño |
-| RN-09 | La pre-evaluación documental no afirma el estado físico | Implementado por diseño, **sin prueba específica** | La entrada del motor (`EntradaClasificacion`) no tiene datos físicos; no hay regla por estado físico (D21). Fuente: `notas-informe.md`, propuesta para el informe |
-| RN-10 | El informe técnico no cambia el color documental | Implementado | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto`, `CicloCarteraTest.cicloCompleto` |
-
-## 7. Invariantes
-
-| ID | Invariante | Prueba | Estado |
-|---|---|---|---|
-| I1 | Verde significa exactamente «Sin alertas en los campos evaluados»; no certifica saneamiento | `CatalogoYServiciosTest.verdeSignificaSinAlertas`, `CicloCarteraTest.cicloCompleto` | Probado en el backend |
-| I2 | B nunca cambia A | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto`, `CicloCarteraTest.cicloCompleto` | Probado |
-| I3 | El checklist (incluida HR y PU) no cambia A | `CatalogoYServiciosTest.hrPuNoCambiaElColor`, `HistorialEvaluacionTest.operacionesSinRecalculo` | Probado |
-| I4 | La autorización está en el servidor | `SeguridadTest` (8), `CaptacionPublicacionTest`, `CarteraTest.permisosPorRol` | Probado |
-| I5 | Los módulos solo se comunican por sus APIs públicas | `ModularityTests.respetaLosLimitesEntreModulos` | Probado |
-| I6 | El backend escucha solo en `127.0.0.1` | `ConfiguracionLocalTest.soloEscuchaEnLocal` (lee `application.properties`) | Probado para la ejecución local. En Docker, dentro del contenedor el backend escucha en `0.0.0.0` (`SERVER_ADDRESS` en `trustinmuebles-backend/Dockerfile`), pero no publica puertos, y el frontend se publica en `127.0.0.1`. **Desde `d7803f8`** el CORS por defecto incluye `https://trust.aurorabeauty.site` y el flujo de Docker publica imágenes en cada push a `main`: hay una demo pensada para internet, fuera del alcance de I6 y D9. No verificado |
-| I7 | Los límites legales se muestran en el pie | `limitesLegales.test.tsx` (renderiza `components/layout/Footer.tsx`, el pie activo) | Probado y visto en Chrome el 9/11/2026. **Cambio de `d7803f8`:** el pie ya no dice «Los datos y los especialistas son simulados», sino «La información presentada es referencial y se basa en los documentos registrados en cada expediente.»; el login dice «Plataforma de transparencia inmobiliaria · Acceso seguro» en lugar de «Entorno académico demostrativo · Datos sintéticos». La parte de I7 que pedía avisar de los datos simulados ya no se cumple |
-| I8 | El color de A solo cambia cuando el motor recalcula | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor`; `HistorialEvaluacionTest.operacionesSinRecalculo`; `CarteraTest.contactoSobreRojo`, `soloElAsignadoEmite` | Probado |
-| I9 | Un plano o un PDF no levanta un rojo por embargo, bloqueo o demanda | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo`; `MotorPlanosTest.losPlanosNoCambianElRojo` | Probado |
-| I10 | Publicar y pedir contacto no dependen del color de A | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `CarteraTest.contactoSobreRojo` | Probado |
-| I11 | Sin nombres, DNI ni teléfonos de propietarios o compradores; contacto con motivos cerrados | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado`, `CaptacionPublicacionTest.demostracionPublicada`; Vitest `contacto.test.ts` | Probado (`sinDatosPersonales` solo revisa las cuentas GESTOR y PROPIETARIO). El campo de titulares de 7 de los 10 casos de Ica nombra titulares personas naturales (por ejemplo, «Marco Antonio Quispe Huamaní» en `11052690`), y la copia literal los imprime |
-| I12 | Historial de evaluaciones de solo adición | `HistorialEvaluacionTest.historialInmutable` | Probado |
-| I13 | El propietario solo autoriza sus propios casos | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioSoloLectura`; Vitest `permisos.test.ts` | Probado |
-| I14 | Nada se publica sin autorización vigente | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `MigracionV6Test.conservaLosDiezCasos`, `CicloCarteraTest.cicloCompleto`; restricción `ck_caso_publicado_autorizado` (V6) | Probado |
-| I15 | El semáforo de gestión es interno (solo GESTOR y REVISOR): no cambia A ni B, no se muestra al comprador, al propietario ni al especialista y no bloquea la publicación (v0.8, D54) | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `permisosDeDecision`, `decisionNoCambiaAniB`, `decisionNoBloqueaPublicar`; `gestion.test.ts` | Probado |
-
-**Sin prueba automática:** el texto del login (comprobado en el recorrido del 9/11/2026). I6 está probada solo como propiedad de
-configuración, no sobre el despliegue con Docker ni sobre el dominio.
-
-## 8. Fuentes de información
-
-| Gratuitas (consultadas a mano) | Aportadas por el propietario o de pago |
+| Tema | Respuesta registrada |
 |---|---|
-| Conoce Aquí (SUNARP): el revisor transcribe el texto de la partida | Copia literal certificada (SUNARP, con costo) |
-| Visor Catastral BGR (SUNARP): solo se enlaza | Planos de las 4 especialidades |
-| | Declaración jurada municipal (HR y PU) |
-| | Inspección presencial del especialista (S/ 250.00 referencial) |
-| SBN (v0.9): bases de la II Subasta Pública 2026 y plano perimétrico de cada lote, consultados el 08/11/2026 y enlazados | Memoria descriptiva, certificado de zonificación y tasación de un lote |
+| Tamaño y tipo de cartera | Alrededor de 400 lotes al mes en proyectos de lotización; trabajan sobre todo con lotes y pocas viviendas |
+| Zonas | Sector Nueva Ica (carretera a Carhuaz), Monte Alegre y Residencial Villa Macacona. Sol de Carhuaz es un proyecto ofrecido a LedCons y a Ceinys, por eso compiten en él |
+| Origen de los inmuebles | Lotes de proyectos, mayormente de urbanización; también inmuebles de particulares que les asignan para vender |
+| Documentos que piden | Documentos básicos: partida registral y documentos legales. No mostraron una lista o formato |
+| Quién revisa y quién atiende | Un asesor; la contadora confirma que los papeles están en orden |
+| Dónde guardan la información | Excel |
+| Tiempo de revisión | Alrededor de un día, a cargo de la contadora |
+| Inmuebles con problemas | Respondió «7» de cada 10; mencionó un caso con levantamiento, ya resuelto. Por confirmar |
+| Qué hacen ante un problema | Lo gestionan hasta tener todo en orden; si no, toman otras medidas (no detalladas) |
+| Ventas caídas o demoradas | Sí hubo; no dio detalles |
+| Preocupación del comprador | Temor a estafas relacionadas con la ubicación de los lotes |
+| Revisión por ingeniero o arquitecto | Rara vez o nunca; no trabajan con especialistas habituales |
+| Datos para el sistema | Dispuestos a entregar de 5 a 10 inmuebles de ejemplo |
+| Moneda | Soles |
+| Autorización | Verbal el 09/11 y el 13/11 (datos de marca); escrita pendiente |
+| Opinión tras la demostración | Útil. Pidió: formulario de interés (datos, zona y presupuesto), mapa de lotes, menos actores, catálogo con filtros sin salir del sitio (referencia: Urbania), recorrido 3D con sus recursos y compararse con Ceinys |
+| Prueba con su equipo | Siguiente reunión: 16/11/2026 |
 
-**Precio en US$ (v0.9).** `caso_lote` guarda `moneda` (PEN o USD), `precio_nota` y `fuente_url` (V15). Los lotes de la SBN
-muestran el precio base en US$ («US$ 90,096» y «US$ 16,802» en el catálogo), la nota «Precio base de la II Subasta Pública 2026 de
-la SBN (venta ad corpus). Las ofertas se presentan según las bases; no es una oferta de la inmobiliaria.» y la fuente «SBN – II
-Subasta Pública 2026 (Anexo 1 de las bases y plano perimétrico oficial)», con su enlace.
+**Cómo se atendió cada pedido en la v1.0:** formulario de interés y solicitud de cita (D65, D68); plano interactivo de
+lotes por proyecto (D63); un solo rol de asesor y visitante sin cuenta (D59 a D61); catálogo con filtros, orden y asistente
+de búsqueda (D62, D66); enlace al recorrido o video de LedCons por proyecto (D63); comparación con Ceinys en
+[PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md), sección 10.
 
-**Sin scraping ni APIs:** el backend no hace ninguna petición a SUNARP ni a otros portales; la interfaz abre los sitios con
-`abrirExterno` (`lib/fuentes.ts`). SUNARP no ofrece una API pública de partidas (D20).
+**Qué respuestas de la entrevista atiende la etapa 9** (son respuestas, no pedidos literales): Excel → exportar a CSV
+(D74); temor a estafas por la ubicación → dirección y «Cómo llegar» (D75); un solo asesor que atiende → cuentas de asesor por
+configuración, para cuando sumen otros (D77; que vayan a sumarlos es Supuesto). El aviso de nuevos (D76), el embudo (D78) y las condiciones de pago en
+texto (D75) son propuestas del equipo para el seguimiento y frente a la oferta de financiamiento de Ceinys; LedCons no
+las pidió.
 
-## 9. Datos y privacidad
+**Lo que la entrevista cambia en el modelo:** la contadora hace hoy la revisión documental (en el sistema, la tarea del rol
+REVISOR; no tiene cuenta todavía); LedCons **rara vez o nunca** recurre a un ingeniero o arquitecto, así que el indicador B
+y su ingreso son una hipótesis más débil (sección 12); y el «7 de cada 10» inmuebles con problemas, si se confirma, respalda
+la propuesta del indicador A y de la ruta de regularización.
 
-- **Identificación por código de cuenta:** compradores y propietarios se identifican solo por su código (`comprador-01`,
-  `propietario-01`, …). Las cuentas GESTOR y PROPIETARIO no guardan nombre ni colegiatura (`CuentasDemoTest.sinDatosPersonales`).
-  El modelo `Usuario` no tiene campos de DNI ni teléfono.
-- **El comprador no ve al propietario:** el bloque de publicación llega sin `propietarioCodigo` al comprador
-  (`ExpedienteService.publicacion`).
-- **Contacto:** motivos de lista cerrada (`INFORMACION_GENERAL`, `CONSULTA_DOCUMENTOS`, `CONSULTA_INSPECCION`), sin texto
-  libre; un campo desconocido da 400 (`CarteraTest.motivoCerrado`).
-- **Partidas transcritas:** el navegador reemplaza nombres de personas naturales por «Persona natural N» (`lib/disociar.ts`,
-  heurística) y el servidor rechaza DNI, estado civil y domicilio (`ProteccionDatos`; `RegistrarPartidaTest.entradasInvalidas`).
-- **Historial:** guarda códigos de cuenta, no nombres (V7).
-- **v0.8, evidencia de archivos (V12):** de cada PDF subido se guarda solo el archivo final (optimizado o no), cifrado, con su
-  tamaño original y final, si se optimizó, la huella SHA-256 del archivo guardado, la cuenta que lo subió y la fecha. Las láminas
-  y copias generadas por el sistema no llevan cuenta y se rotulan «Generado por el sistema a partir de la transcripción, no es un
-  documento oficial».
-- **v0.8, acreedor del gravamen (V13):** solo una persona jurídica (banco, caja, S.A., S.A.C., …) o «no consta»; un nombre de
-  persona natural da 400 (`ProteccionDatos.verificarAcreedor`, `GravamenTest.soloPersonasJuridicasEnElRubroD`).
-- **v0.8, decisión de captación (V14):** solo códigos de cuenta, fecha, una decisión y un motivo de listas cerradas; cualquier
-  otro campo (por ejemplo, un comentario) da 400. Historial de solo adición.
-- **Datos del especialista que usa hoy la semilla** (`DemoUsuariosSeeder`; V16 los actualiza en bases anteriores, también en los
-  informes ya firmados):
+**Pendiente:** acta firmada; confirmar el «7 de cada 10»; quién autoriza en nombre de la empresa la publicación de sus
+lotes; gasto actual en publicidad y portales, y disposición a pagar (sección 12; la entrevista no los respondió); los 5 a 10
+inmuebles de ejemplo que ofreció LedCons; prueba con su equipo el 16/11/2026.
 
-| Cuenta | Nombre | Especialidad | Colegiatura | ¿Prefijo `SIM-`? |
+## 3. Lienzo del modelo
+
+| Bloque | Contenido | Estado |
+|---|---|---|
+| Segmentos | (a) Compradores de lotes y casas en Ica; (b) la inmobiliaria que opera el portal (LedCons) | (a) **Supuesto** (sin estudio con compradores); (b) **Validado** como caso de referencia |
+| Propuesta de valor | Sección 4 | Implementada; valor percibido **Supuesto** |
+| Canales | Portal web público (no indexado mientras se prueba); WhatsApp, teléfono, oficina y Facebook de la inmobiliaria | Portal **implementado**; canales propios **Validados** (datos de la empresa) |
+| Relación con el cliente | Asistida: el asesor responde, confirma o reprograma la cita y lleva al interesado por etapas | Implementado |
+| Fuentes de ingreso | La inmobiliaria paga el sistema; parte del costo de la inspección B | **Supuesto** (sección 12). El sistema no cobra nada |
+| Recursos clave | Catálogo y partidas de la inmobiliaria, motor de reglas versionado, plano de lotes, asesores | Implementado |
+| Actividades clave | Cargar y mantener inmuebles y lotes, publicar con autorización, atender interesados, exportar a Excel | Implementado |
+| Socios clave | LedCons (operadora); abogado o notario (verificación fuera del sistema); SUNARP y municipalidad (fuentes consultadas a mano) | LedCons **Validado** (verbal); el resto **Supuesto** |
+| Estructura de costos | Hospedaje en contenedores, dominio, mantenimiento, especialistas para B | **Supuesto**, sin cifras (sección 12) |
+
+## 4. Propuesta de valor
+
+**Para el comprador** (sin cuenta): todo el catálogo de la inmobiliaria en un sitio, con filtros, orden y un asistente; el
+**plano de lotes** de cada proyecto; la ficha de cada lote con precio, precio por m², zonificación y **usos que suelen
+permitirse**; la **dirección del proyecto y «Cómo llegar»**; las **condiciones de pago** en texto; el **indicador A**
+explicado (o el de la partida matriz, rotulado así); y **pedir una cita sin crear cuenta**. Nada de esto promete una compra
+segura.
+
+**Para la inmobiliaria:** un portal propio con su marca; carga de cientos de lotes por CSV con vista previa (todo o nada) y
+**exportación a CSV para Excel** (la misma plantilla de ida y vuelta); publicación solo de lo autorizado; un **CRM** de
+interesados con etapas, notas, agenda de citas, demanda y **embudo** por etapa y proyecto; **aviso de interesados nuevos**
+en el menú; registro de quien llega por llamada, oficina, WhatsApp o referido; y una cuenta por asesor.
+
+## 5. Actores y roles
+
+| ID | Actor | Rol en el sistema | Qué hace | Qué no puede hacer |
 |---|---|---|---|---|
-| `especialista-01` | Ing. Carlos Alberto Mendoza Quispe | Ingeniero Civil | CIP N.° 248910 | No (desde `d7803f8`) |
-| `especialista-02` | Arq. Valeria Sofía Paredes Rojas | Arquitecto | CAP N.° 19432 | No (desde `d7803f8`) |
+| ACT-00 | Visitante | Sin cuenta | Busca, filtra, usa el asistente, abre planos y fichas, ve la ubicación y las condiciones de pago, pide cita con nombre de pila y un medio de contacto (con consentimiento) | Ver borradores; ver la partida completa (sale parcial) |
+| ACT-10 | Asesor inmobiliario | `ASESOR` (`asesor-01` y los de `app.asesores`) | Permisos de revisor y de gestor: registra inmuebles, carga y exporta lotes por CSV, edita ubicación y condiciones de pago, autoriza en nombre de la inmobiliaria, publica, atiende interesados y citas, exporta la bandeja | Cambiar el color de A a mano; autorizar el inmueble de un particular |
+| ACT-03 | Gestor (asesor comercial) | `GESTOR` (`gestor-01`) | Publica y retira, atiende contactos e interesados (con el aviso de nuevos), exporta, asigna especialistas, ve el panel y el semáforo interno | Editar la partida o el checklist |
+| ACT-02 | Revisor | `REVISOR` (`revisor-01`) | Registra partidas, planos, documentos del lote y checklist; ve los proyectos | Publicar, autorizar, exportar CSV, ver interesados |
+| ACT-04 | Especialista | `ESPECIALISTA` (`especialista-01`, `-02`) | Registra el avance y emite el informe técnico (B) de la inspección que le asignaron | Actuar sin asignación; cambiar A |
+| ACT-05 | Propietario particular | `PROPIETARIO` (`propietario-01` a `-03`) | Ve sus inmuebles y autoriza o retira la publicación de los suyos | Editar; ver casos ajenos |
+| ACT-01 | Comprador con cuenta | `COMPRADOR` (`comprador-01`) | Pide contacto (motivo cerrado) e inspección B sobre un caso publicado | Ver borradores; exportar; ver interesados |
+| ACT-06 | Abogado o notario | Externo | Verificación jurídica antes de comprar | No tiene cuenta |
+| ACT-07 | SUNARP | Externo, consultado a mano | Conoce Aquí (el asesor o revisor transcribe) y Visor BGR (solo enlace) | El sistema no se conecta |
+| ACT-08 | Municipalidad | Externo, consultado a mano | Declaración jurada (HR y PU) y certificado de zonificación | El sistema no se conecta |
+| ACT-09 | Contadora de LedCons | Sin cuenta todavía | Confirma que los papeles están en orden (alrededor de un día por inmueble); recibe los CSV que exporta el asesor (Supuesto de uso) | Su tarea corresponde al rol REVISOR; hoy no tiene cuenta |
 
-  Los 5 informes de demostración (4 emitidos y 1 en inspección) los firma `especialista-01`. El informe emitido en el recorrido
-  del 9/11/2026 salió firmado «Arq. Valeria Sofía Paredes Rojas · Arquitecto · CAP N.° 19432». La credencial en pantalla usa las
-  iniciales y **ya no dice** «Perfil ficticio de demostración»; el PDF del informe tampoco lo rotula. Son perfiles redactados
-  por el equipo; si esos nombres y números corresponden a profesionales colegiados reales **no se verificó**. Ver el reporte.
-- **Titulares en los asientos:** las partidas de Ica nombran titulares personas naturales (redactados por el equipo). Antes los
-  rodeaba el prefijo `SIM-`; hoy la copia literal se titula «COPIA LITERAL DE PARTIDA REGISTRAL», sin marca de agua.
+Todas las cuentas usan la contraseña de `APP_SEED_PASSWORD` y nacen al arrancar si faltan; no hay registro abierto. El
+servidor comprueba el rol en cada operación (I4).
 
-## 10. Modelo de ingresos (HIPÓTESIS NO VALIDADAS)
+## 6. Flujo (5 pasos)
 
-Ninguna de estas hipótesis se ha validado con una inmobiliaria. No hay cifras de ingresos, clientes ni pilotos.
+| Paso | Quién | Qué pasa | Pantalla | Regla que se mantiene |
+|---|---|---|---|---|
+| 1. Carga | Asesor | Carga los lotes de un proyecto por CSV (vista previa por fila, todo o nada, historial) o registra un inmueble propio o de un particular; registra la ubicación y las condiciones de pago del proyecto. Puede exportar los lotes a CSV, editarlos en Excel y volver a cargarlos | `#/proyectos`, `#/proyectos/{c}/carga`, `#/casos/nueva` | La carga no recalcula A; un lote se ofrece solo con la partida matriz autorizada (I14) |
+| 2. Evaluación | Motor de reglas | Calcula el indicador A del inmueble o de la partida matriz con las reglas `v0.5` | Expediente | Nadie fija el color a mano (I8) |
+| 3. Autorización y publicación | Asesor (inmobiliaria) o propietario (particular); asesor o gestor publica | Sin autorización vigente no se publica | Expediente | Publicar no cambia A (I10) |
+| 4. Búsqueda y cita | Visitante | Asistente, filtros y plano; ficha con ubicación, «Cómo llegar» y condiciones de pago; pide cita o llega por llamada, oficina, WhatsApp o referido y el asesor lo registra | Portal | Sin pagos en línea; sin DNI |
+| 5. Seguimiento | Asesor o gestor | Ve el aviso de nuevos, confirma o reprograma la cita, lleva al interesado por etapas (Nuevo → Contactado → Cita agendada → Visita realizada → Separación → Venta, o Descartado), marca el lote, revisa el embudo y exporta la bandeja | `#/interesados` | Marcar el lote no cambia A. La verificación jurídica ocurre fuera del sistema |
 
-| Hipótesis | Qué soporte da hoy el sistema |
-|---|---|
-| **Suscripción de la inmobiliaria** por usar el sistema con su cartera | Ninguno: no hay planes, cobros, facturación ni medición de uso. El sistema es de una sola inmobiliaria |
-| **Parte del ingreso de cada inspección** (indicador B, S/ 250.00 referencial) | Registra cada solicitud con la cuenta y la fecha, y el costo referencial viaja en la respuesta. El panel de cartera **cuenta las inspecciones solicitadas o en curso** y cuántas están asignadas o sin asignar. **No** cuenta las emitidas, no suma importes y no hay pago en línea |
+## 7. Servicios
 
-**Validación propuesta:** un piloto con 3 a 5 inmobiliarias de Ica para comprobar si la propuesta de valor les sirve y si
-pagarían por ella. **No se ha realizado.**
+| Servicio | Quién lo usa | Qué hace | Límite |
+|---|---|---|---|
+| Portal público | Visitante | Catálogo unido (casos y lotes de proyecto), 24 por página, filtros y orden en la URL | Solo lo publicado |
+| Asistente de búsqueda | Visitante | Reglas sobre la frase (zona, proyecto, tipo, precio, área, uso, orden) y 3 recomendaciones con motivos | Sin IA; la frase no sale del navegador |
+| Plano de lotes | Visitante | SVG propio por manzanas, con teclado y leyenda en texto | Plano referencial de la lotización |
+| Ubicación del proyecto (etapa 9) | Visitante; edita el asesor o el gestor | Dirección en la página del proyecto y en la ficha del lote; «Cómo llegar» abre en otra pestaña el enlace https que registró la inmobiliaria | Sin mapa embebido ni dependencias. Sin enlace no hay botón |
+| Condiciones de pago (etapa 9) | Visitante; edita el asesor o el gestor | Texto de hasta 500 caracteres con el título «Condiciones de pago» y la nota «Consulta con un asesor» | Sin simulador ni tasas calculadas |
+| Usos del lote | Visitante | Usos que suele permitir la zonificación según el área | Orientativo; con el aviso de verificar el certificado de parámetros |
+| Cita | Visitante | Visita al lote, reunión en oficina o llamada; una o dos fechas con franja | 10 envíos por hora por IP; consentimiento obligatorio |
+| CRM de interesados | Asesor y gestor | Bandeja con filtros, etapas, notas, próxima acción, agenda de 7 días, demanda, registro desde el panel, borrado a pedido | El asesor contacta por fuera: el sistema no envía mensajes |
+| Aviso de nuevos (etapa 9) | Asesor y gestor | Cantidad en etapa Nuevo junto a «Interesados», con texto para lectores de pantalla | Se actualiza al cambiar de página, al cambiar la bandeja y cada minuto |
+| Embudo (etapa 9) | Asesor y gestor | Cantidad y porcentaje por etapa, del total y por proyecto (y «Sin proyecto») | Incluye los descartados, para que las etapas sumen el total |
+| Carga CSV | Asesor y gestor | Vista previa con errores por fila; confirmación todo o nada; historial de solo adición | 2000 filas y 1 MB por archivo |
+| Exportar a CSV (etapa 9) | Asesor y gestor | Bandeja con los filtros aplicados y lotes de un proyecto; punto y coma, UTF-8 con BOM (Excel lo abre directo) | El de lotes usa las columnas de la carga: volver a cargarlo sin cambios no cambia nada. El de interesados lleva datos de contacto |
+| Indicador A | Todos los que ven la ficha | Verde «Sin alertas en los campos evaluados», amarillo «Requiere revisión», rojo «Alerta prioritaria», gris «Información insuficiente» | No certifica saneamiento; reglas pendientes de revisión especializada |
+| Indicador B | Comprador con cuenta, gestor, especialista | Inspección presencial de 6 pasos, S/ 250 referencial, informe en PDF | No cambia A; sin pago en línea; la inspección real no se ha hecho |
+| Ruta de regularización | Quien ve el detalle | Pasos por motivo de A, quién gestiona, documento y esfuerzo | Orientativa; sin plazos ni costos |
+| Semáforo de gestión interno | Gestor y revisor (y asesor) | Cuatro estados y decisión de captación de solo adición | No se muestra al comprador; no bloquea publicar (I15) |
 
-**Propuesta de valor para la inmobiliaria (v0.8, hipótesis):** además de ordenar la información para el comprador, el sistema le
-muestra a la inmobiliaria su cartera por tipo de problema («de 11 casos, 1 con embargo, 1 con hipoteca…»), qué casos son más
-viables o requerirán más gestión (esfuerzo y semáforo de gestión) y qué falta para regularizar cada uno (ruta), y deja
-constancia de su decisión de captación. Sigue siendo una hipótesis: no hay cifras ni validación con una inmobiliaria.
+## 8. Reglas e invariantes vigentes
+
+| ID | Regla | Prueba principal |
+|---|---|---|
+| I1 / RN01 | Verde es exactamente «Sin alertas en los campos evaluados»; no certifica saneamiento | `CatalogoYServiciosTest.verdeSignificaSinAlertas` |
+| I2 / RN-10 | B nunca cambia A | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor` |
+| I3 | El checklist (incluida HR y PU) no cambia A | `CatalogoYServiciosTest.hrPuNoCambiaElColor` |
+| I4 | La autorización está en el servidor | `SeguridadTest`, `AsesorTest`, `Etapa9Test` (permisos de exportar y de editar el proyecto) |
+| I5 | Los módulos se comunican solo por sus API públicas | `ModularityTests` |
+| I7 | Los límites legales se ven en el pie | `limitesLegales.test.tsx` |
+| I8 / RN-06 | El color de A solo cambia cuando el motor recalcula | `CasosApiTest.colorNoSeFijaAMano`, `CaptacionPublicacionTest.publicarRojoNoCambiaElColor` |
+| I9 | Un PDF o plano no levanta un rojo | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` |
+| I10 | Publicar y pedir contacto no dependen del color de A | `CarteraTest.contactoSobreRojo` |
+| I11 (con la excepción D68) | Sin DNI ni datos personales fuera de lo necesario; el interés guarda solo nombre de pila y un medio de contacto, con consentimiento, y se borra a pedido | `CuentasDemoTest.sinDatosPersonales`, `InteresApiTest.validaciones`, `RegistroPanelYMarcaTest` |
+| I12 | Historiales de solo adición (A, lotes por CSV, decisiones) | `HistorialEvaluacionTest.historialInmutable`, `CargaLotesApiTest` |
+| I13 | El propietario autoriza solo lo suyo; en un inmueble de la inmobiliaria autoriza el asesor o el gestor | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `TitularidadComercialTest` |
+| I14 / RN05 | Nada se publica ni se ofrece sin autorización vigente (un lote, sin la de su partida matriz) | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `ProyectosApiTest` |
+| I15 | El semáforo de gestión es interno y no bloquea publicar | `GestionInmobiliariaTest` |
+| RN-csv | La carga por CSV es todo o nada y no recalcula A; la exportación usa las mismas columnas y vuelve a cargarse sin cambios | `CargaLotesApiTest`, `Etapa9Test.lotesIdaYVuelta` |
+| RN-verbal | El consentimiento verbal queda con quién lo registró y cuándo | `RegistroPanelYMarcaTest.registraConConsentimientoVerbal` |
+| RN-marca | Ningún PDF se presenta como emitido por SUNARP, una municipalidad o un colegio | `CopiaLiteralPdfTest.sinElementosOficiales` |
+| RN-ubicación (etapa 9) | «Cómo llegar» solo con un enlace https con dominio registrado por la inmobiliaria; no se embebe ningún mapa | `Etapa9Test.enlaceInvalido`, `pages/etapa9.test.tsx` |
+| RN-exportar (etapa 9) | Solo el asesor y el gestor exportan; los CSV no ejecutan fórmulas en Excel | `Etapa9Test.lotesPermisos`, `interesadosPermisos`, `protegeFormulas` |
+
+**Ya no es una regla:** «solo uso local» (I6). El backend escucha en `127.0.0.1` cuando se ejecuta en una laptop, pero la
+1.0.0 se despliega en la nube con Docker detrás de un dominio (sección 11). La regla vigente es la de exposición mínima: el
+backend no publica puertos y el sitio no se indexa mientras `app.sitio.indexable` sea false.
+
+## 9. Fuentes de información
+
+| Fuente | Qué aporta | Cómo entra |
+|---|---|---|
+| LedCons | Marca, razón social, RUC, dirección, teléfonos, WhatsApp y Facebook (`contenido/empresa.json`) | Autorización verbal; escrita pendiente |
+| LedCons (pendiente) | Proyectos, lotes, precios y partidas reales | Ofreció de 5 a 10 inmuebles de ejemplo; aún no entregados. El sistema usa contenido preparado por el equipo (sección 13), en otras zonas que las suyas |
+| Asesor de la inmobiliaria | Inmuebles, lotes por CSV, ubicación y enlace de mapa, condiciones de pago | Panel |
+| SUNARP (Conoce Aquí, Visor BGR) | Texto de la partida; ubicación catastral | A mano; el sistema solo enlaza |
+| Municipalidad | HR y PU; certificado de zonificación y vías | Los aporta el propietario |
+| SBN | Bases de la II Subasta Pública 2026 y plano perimétrico de dos lotes | PDF publicado y enlace (D57) |
+| Urbania | Rango de precio por m² por distrito para la precarga (D70) | Revisión manual del equipo, 13/11/2026 |
+
+Sin scraping ni API: el backend no hace ninguna petición a SUNARP ni a otros portales (D20).
+
+## 10. Datos y privacidad
+
+- **Titulares reservados:** «Persona natural (datos reservados)» o empresas inventadas; sin DNI ni nombres de personas.
+- **Partida oculta sin sesión:** `1105••••` en la ficha, la tarjeta, el proyecto, la portada y los PDF públicos.
+- **Ficha registral propia:** el PDF se titula «FICHA REGISTRAL DEL INMUEBLE», con la marca de agua «FICHA INFORMATIVA ·
+  DOCUMENTO REFERENCIAL · SIN VALOR LEGAL» y el logo de la inmobiliaria; no imita la copia literal de SUNARP ni lleva escudos,
+  sellos, firmas, códigos de verificación o QR.
+- **Sin colegiaturas inventadas:** los especialistas no tienen número de colegiatura registrado; se registra al asignar al
+  profesional real (V22, D67).
+- **No indexar:** `robots.txt` con `Disallow: /` y `meta robots noindex` mientras `app.sitio.indexable` sea false.
+- **Consentimiento:** el formulario exige la casilla (versión `2026-11-v1`) y guarda solo nombre de pila y un correo o
+  celular; el registro desde el panel exige la constancia del consentimiento verbal y guarda quién lo registró y cuándo;
+  todo se borra a pedido. La precarga y el kit usan correos `@example.com` y ningún celular.
+- **Datos de contacto que sí existen:** los de la inmobiliaria (públicos) y los de los interesados (con consentimiento).
+  El **CSV de interesados** los lleva: solo el asesor y el gestor lo descargan, la pantalla avisa que no se comparta fuera
+  del equipo y la respuesta va sin caché.
+- **Cuentas:** se identifican por su código; no guardan DNI ni teléfono. En la nube, `APP_SEED_PASSWORD` debe ser una
+  contraseña propia del despliegue, no la de las pruebas ([demo/CHECKLIST-LUNES.md](demo/CHECKLIST-LUNES.md)).
 
 ## 11. Arquitectura resumida
 
-- **Backend:** Java 21, Spring Boot 4.0.8, Spring Modulith 2.0.8, Spring Security con JWT (HS256), Flyway, H2 en archivo en
-  modo PostgreSQL (`./data/h2/`), PDFBox para los PDF, Swagger en `/swagger-ui.html`.
-- **Módulos** (9; `ModularityTests`): `identidad`, `expediente`, `clasificacion`, `inspeccion`, `cartera`, `checklist`,
-  `orientacion`, `almacenamiento` y `shared`.
-- **Migraciones:** `V1__esquema` a `V16__perfiles_especialistas`. V6 captación y publicación, V7 historial, V8 contacto y
-  asignación, V9 perfil ficticio de `especialista-01`, V10 asignación de la inspección en curso de la demostración, V11 origen
-  `PARTIDA_SIMULADA` en el historial; v0.8: V12 evidencia de documentos, V13 acreedor y plazo del gravamen, V14 decisiones de
-  captación; v0.9: V15 documentos del lote, moneda, nota y fuente del precio; `d7803f8`: V16 perfiles de los especialistas.
-- **Contenido:** casos, reglas, glosario, rutas de regularización (`rutas.json`) y estados de gestión (`gestion.json`) en JSON
-  versionado; versión activa **`v0.5`** (`app.reglas.version`), con los PDF oficiales de los lotes de la SBN en
-  `contenido/v0.5/documentos/`. Los 12 casos están en `contenido/v0.5/casos/` con nombre de archivo sin `SIM-`.
-- **Servicios nuevos de la v0.8:** `almacenamiento.DocumentosPdf` (validación y optimización con PDFBox y `javax.imageio`, sin
-  dependencias nuevas), `expediente.RutasRegularizacion` y `expediente.SemaforoGestion` (API pública de solo lectura que usa la
-  cartera), y en `cartera` la decisión de captación. `ModularityTests` sigue en verde.
-- **Propiedades nuevas:** `app.archivos.max-entrada-mb=25`, `app.archivos.umbral-optimizacion-mb=5`,
-  `app.archivos.max-almacenado-mb=10`; `spring.servlet.multipart.max-file-size=25MB`, `max-request-size=26MB` y
-  `server.tomcat.max-swallow-size=30MB`.
-- **Interfaz:** React 19, Vite 8, Tailwind 4, React Router 8 con rutas `#/…`. El servidor de desarrollo reenvía `/api` al
-  backend.
-- **Ejecución local:** el backend escucha solo en `127.0.0.1:8080` y la interfaz en `localhost:5173`.
-- **Docker y demo en la nube:** `docker-compose.yml` (para Portainer), un `Dockerfile` por carpeta y un flujo de GitHub Actions
-  que publica `ghcr.io/ansufati2211/trustinmuebles-backend` y `…-frontend` **en cada push a `main`** (desde `d7803f8`) y a mano.
-  El frontend se publica en `127.0.0.1:${FRONTEND_PORT:-8081}` y el backend no publica puertos. `APP_CORS_ALLOWED_ORIGINS` admite
-  por defecto `https://trust.aurorabeauty.site` y localhost en los puertos 8085, 8081 y 5173. El proxy que sirva ese dominio no
-  está en el repositorio. Que funcione: **No verificado** en esta revisión. Ver D3 y D9.
-- **Dependencias de internet:** la interfaz no carga fotografías externas: están en `public/img/`. Las 12 tarjetas usan fotos de
-  `public/img/casas/` (créditos en `CREDITOS.md`: 7 de Wikimedia Commons con licencia CC y 5 con «Referencial académico», tomadas
-  de anuncios o sitios comerciales). Las láminas son dibujos propios y la credencial del especialista usa iniciales. Los enlaces
-  a SUNARP y a la SBN sí necesitan internet.
+- **Backend:** Java 21, Spring Boot 4, Spring Modulith 2, Spring Security con JWT, Flyway, H2 en archivo (modo PostgreSQL),
+  PDFBox. Diez módulos verificados por `ModularityTests`: `identidad`, `expediente`, `clasificacion`, `inspeccion`, `cartera`,
+  `interes`, `checklist`, `orientacion`, `almacenamiento` y `shared` (errores, datos de la empresa y, desde la etapa 9, el
+  escritor de CSV).
+- **Migraciones:** V1 a **V24**. La 1.0.0 agrega V17 (asesor y titularidad), V18 (filtros), V19 (proyectos y lotes), V20
+  (historial de lotes), V21 (interés y citas), V22 (realismo), V23 (canal y consentimiento verbal) y **V24 (dirección, enlace
+  de mapa y condiciones de pago del proyecto)**.
+- **Interfaz:** React 19, Vite, Tailwind 4, React Router con rutas `#/…`. Sin dependencias nuevas en la 1.0.0.
+- **Despliegue:** local (backend en `127.0.0.1:8080`, interfaz en `localhost:5173`) o en la nube con `docker-compose.yml`
+  (backend sin puertos publicados, frontend detrás de un proxy, imágenes publicadas por GitHub Actions). La demo en la nube
+  se comprueba con `scripts/verificar-sitio.mjs`.
+- **Propiedades nuevas de la etapa 9:** `app.asesores` (`APP_ASESORES`, por omisión `asesor-01`).
 
-## 12. Casos de demostración
+## 12. Ingresos y costos (hipótesis)
 
-Estado al cargar una base nueva (`CasosSeeder`, contenido `v0.5`), comprobado en el recorrido del 9/11/2026. Color de A y estado
-de B fijados por `CasosApiTest`. Todos nacen **publicados y autorizados** (`CaptacionPublicacionTest.demostracionPublicada`).
-**Solo la inspección en curso de `11098467` tiene especialista asignado** (`especialista-01`, V10 en bases existentes); los
-informes emitidos los firma `especialista-01`, pero eso no es una asignación. Desde `d7803f8` los códigos no llevan `SIM-`; una
-base anterior se renombra al arrancar.
+Ninguna cifra está validada. El sistema no cobra, no factura y no tiene pasarela de pago.
 
-| Partida | Distrito | Propietario | A | Reglas | B | Publicación | Especialista asignado |
-|---|---|---|---|---|---|---|---|
-| `11045763` | Huarmey (SBN) | propietario-03 | Gris | RV-07, información insuficiente | No solicitada | Publicado | No aplica |
-| `11048217` | Parcona | propietario-01 | Verde | — | Emitido, favorable | Publicado | No (firma `especialista-01`) |
-| `11052690` | La Tinguiña | propietario-02 | Amarillo | RV-02, RV-04 | Emitido, con observaciones | Publicado | No (firma `especialista-01`) |
-| `11061555` | Subtanjalla | propietario-01 | Gris | RP-02, RV-04 | No solicitada | Publicado | No aplica |
-| `11070419` | Los Aquijes | propietario-02 | Gris | RV-04 | No solicitada | Publicado | No aplica |
-| `11075836` | Pueblo Nuevo | propietario-01 | Rojo | RP-01 | No solicitada | Publicado | No aplica |
-| `11081204` | Santiago | propietario-02 | Verde | — | No solicitada | Publicado | No aplica |
-| `11087751` | Salas | propietario-01 | Amarillo | RV-03 | Emitido, con riesgo | Publicado | No (firma `especialista-01`) |
-| `11093320` | San José de los Molinos | propietario-02 | Rojo | RP-03 | Solicitada | Publicado | **No: pendiente de asignación por el gestor** |
-| `11098467` | Pachacútec | propietario-01 | Amarillo | RV-05 | En inspección | Publicado | `especialista-01` |
-| `11104029` | Ica | propietario-02 | Amarillo | RV-03, RV-06 | Emitido, favorable | Publicado | No (firma `especialista-01`) |
-| `80194645` | Supe (SBN) | propietario-03 | Gris | RV-07, información insuficiente | No solicitada | Publicado | No aplica |
+| Hipótesis | Qué soporta hoy el sistema | Estado |
+|---|---|---|
+| La inmobiliaria paga una suscripción mensual por el portal y el panel | Nada: no hay planes ni medición de uso | Supuesto |
+| Parte del costo de cada inspección B (S/ 250 referencial) | Registra solicitudes y asignaciones; no suma importes | Supuesto, **debilitado**: LedCons rara vez o nunca recurre a un ingeniero o arquitecto (entrevista) |
+| El portal propio reemplaza parte del gasto en portales y publicidad | El embudo y la demanda muestran de dónde vienen los interesados y cuántos avanzan | Supuesto |
+| Costos: hospedaje en contenedores, dominio, mantenimiento, especialistas para B | Sin cifras | Supuesto |
 
-Hay 9 viviendas y 3 lotes (D23 según D58). Los casos 1 a 4 de Ica son los del instrumento del estudio (D22). El catálogo los
-ordena con Huarmey primero y Supe al final. Conteo del panel con una base nueva: 2 verdes, 4 amarillos, 2 rojos y 4 grises; por
-tipo, RV-07 = 2 (los dos lotes de la SBN).
+**Preguntas abiertas a LedCons** (no constan en el repositorio):
 
-**Ruta y semáforo de gestión de los casos de Ica (v0.8, obtenidos de la base de pruebas; en esta revisión solo se volvieron a comprobar Pueblo Nuevo y La Tinguiña):**
+1. ¿Cuánto gasta hoy al mes en publicidad y en portales (Facebook, Urbania u otros)?
+2. ¿Cuánto estaría dispuesta a pagar por el portal y el panel (al mes o por lote vendido)?
+3. ¿Cuántos interesados recibe al mes y cuántos llegan a separar?
+4. ¿Quién autoriza en nombre de la empresa la publicación de sus lotes?
+5. ¿Qué columnas usa hoy en su Excel de lotes y de clientes?
 
-| Partida | A | Tipos de alerta | Pasos de la ruta (esfuerzo) | Esfuerzo | Gestión (interno) |
-|---|---|---|---|---|---|
-| `11048217` Parcona | Verde | — | Sin pasos | — | Viable |
-| `11052690` La Tinguiña | Amarillo | RV-02, RV-04 | Hipoteca (medio), 2 planos de instalaciones (bajo) | Medio | Viable con condiciones |
-| `11061555` Subtanjalla | Gris | RP-02, RV-04, información insuficiente | Demanda (alto), 2 planos (bajo), titularidad, completitud y planos base (bajo) | Alto | Completar información |
-| `11070419` Los Aquijes | Gris | RV-04, información insuficiente | 2 planos (bajo), titularidad, completitud y planos base (bajo) | Bajo | Completar información |
-| `11075836` Pueblo Nuevo | Rojo | RP-01 | Embargo (alto) | Alto | Requiere regularización |
-| `11081204` Santiago | Verde | — | Sin pasos | — | Viable |
-| `11087751` Salas | Amarillo | RV-03 | Carga técnica o servidumbre (medio) | Medio | Viable con condiciones |
-| `11093320` San José de los Molinos | Rojo | RP-03 | Bloqueo (alto) | Alto | Requiere regularización |
-| `11098467` Pachacútec | Amarillo | RV-05 | Diferencia de área: ampliación o licencia (alto) | Alto | Requiere regularización |
-| `11104029` Ica | Amarillo | RV-03, RV-06 | Servidumbre (medio), plano observado (bajo) | Medio | Viable con condiciones |
+## 13. Contenido precargado
 
-Los dos lotes de la SBN quedan en «Completar información» (faltan la partida transcrita y la memoria descriptiva).
+Para que la demo funcione sin datos reales de LedCons. Lo carga el sistema al arrancar con una base nueva.
 
-Pachacútec es amarillo en A pero «requiere regularización» en gestión: una ampliación no declarada pide un trámite municipal
-(esfuerzo alto). Los dos indicadores responden preguntas distintas y ninguno cambia al otro.
+| Contenido | Detalle |
+|---|---|
+| Proyectos | 4: Altos de Ventisca (Subtanjalla, 56 lotes), Rinconada del Lúcumo (La Tinguiña, 44), Terrazas de Sauzal (Salas, 68) y Horizonte de Los Aquijes (Los Aquijes, 0 lotes, para cargar el CSV del kit en la demo) |
+| Ubicación (etapa 9) | Una dirección referencial verosímil por distrito en cada proyecto, **sin enlace de mapa** (el asesor pega el de la ubicación real) y **sin condiciones de pago** |
+| Precios | Rango por m² por distrito (D70): Ica y Subtanjalla según avisos de Urbania; La Tinguiña, Los Aquijes y Salas estimados |
+| Casos | Los 12 de siempre (10 de Ica y 2 lotes de la SBN) más las 4 partidas matrices de los proyectos |
+| Interesados y citas | 15 interesados con correos `@example.com` y 4 citas en los próximos 7 días |
+| Glosario | 57 términos (`contenido/v0.5/glosario.json`) |
+| Cuentas | 9 por omisión (`comprador-01`, `revisor-01`, `especialista-01`, `especialista-02`, `gestor-01`, `propietario-01` a `-03`, `asesor-01`) más las de `app.asesores` |
+| Kit de respaldo | `docs/demo/kit/` (CSV de 80 lotes, textos de partida, PDF) y `scripts/preparar-demo.mjs` |
 
-## 13. Lo que NO incluye y hoja de ruta
+## 14. Lo que no hace
 
-**Fuera de alcance** (decidido; no se piensa hacer en este MVP): integraciones estatales, scraping de portales, OCR,
-inteligencia artificial o visión artificial, autenticidad documental, dictámenes jurídicos, pagos en línea, contratos, firmas,
-agenda de visitas, tours, reportes descargables y búsquedas avanzadas (sección 1.7 del informe). La verificación jurídica
-(ETP-9) queda fuera del sistema.
+Pagos en línea; simulador de crédito o tasas; mapas embebidos o de terceros; IA u OCR; consultas en línea a SUNARP o a la
+municipalidad; envío de correos o mensajes desde el sistema; firma de contratos; certificar saneamiento, recomendar comprar o
+reemplazar a un abogado o notario; documentos que se presenten como oficiales.
 
-**Planeado** (hoja de ruta, sin fecha ni código):
-- Vigencia automática de la información registral (hoy no existe a propósito: RN-08).
-- Comparador de inmuebles.
-- Posventa.
-- Uso de IA para leer documentos (hoy no hay OCR ni IA).
+## 15. Limitaciones
 
-**Huecos del flujo actual que piden una ruta nueva** (no planeados formalmente): consulta del estado del contacto por el
-comprador (D46) y listado de especialistas para la asignación (D45).
+- Autorización escrita de LedCons y acta firmada de la entrevista: pendientes.
+- Datos reales de LedCons (proyectos, lotes, precios, partidas): no cargados.
+- Estudio con compradores: no se ha aplicado; no hay resultados.
+- Reglas `v0.5`, glosario, ruta y criterios de esfuerzo: pendientes de revisión especializada.
+- Respaldo y restauración: sin ejecutar (CP13 parcial). Accesibilidad con lector de pantalla: no verificada.
+- La duración del guion con una persona no se ha medido.
+- El enlace de mapa lo pega una persona: el sistema comprueba que sea https, no que apunte al lugar correcto.
 
-## 14. Limitaciones y pendientes reales
-
-- **Revisión especializada** de las reglas `v0.5`, el glosario y la redacción de los casos: pendiente (CP-05b no se da por
-  aprobado).
-- **Aprobación de D20 y D57** (partidas transcritas y lotes de la SBN, desvíos de RN-01 y PA2) por el asesor: pendiente.
-- **Lotes de la SBN:** transcribir sus partidas de Conoce Aquí y pedir las memorias descriptivas (D57).
-- **Decisión del equipo sobre `d7803f8`:** quitar los rótulos de simulado, la marca de agua y el prefijo `SIM-`, los nombres y
-  colegiaturas de los especialistas, las fotos con licencia «Referencial académico» y la demo pública cambian supuestos de I6,
-  I7, I11, RN-01 y D9. Están listados, sin corregir, en [REPORTE-v0.9-real.md](REPORTE-v0.9-real.md).
-- **Supuestos D32 a D49** por confirmar con el equipo y el docente.
-- **Respaldo y restauración (CP13):** sin ejecutar.
-- **Separación de demostración, estudio y operación (CP15) e inspección presencial real (CP16):** pendientes.
-- **Docker y la demo en la nube** no se probaron en esta revisión: ni las imágenes, ni el enlace a `127.0.0.1`, ni el dominio.
-- **Instalación en otro equipo (CP-07)**, piloto, reclutamiento, consentimientos y aplicación del estudio: pendientes.
-- **Accesibilidad** con teclado y lector de pantalla de los componentes de la v0.7 y del rediseño: No verificado.
-- **Tamaño del paquete** del frontend: supera los 500 kB del aviso de Vite.
-- **Archivos de datos en el historial:** el commit `567cbfc` agregó `data/h2/trustinmuebles.mv.db` y 10 archivos de `data/uploads/`
-  en la raíz. La rama `mejoras-v0.7` dejó de rastrearlos e ignora `data/`, pero **siguen en el historial de Git**. Qué contienen:
-  **No verificado**.
-
-## 15. Matriz de trazabilidad
-
-| ID | Componente de código | Prueba | Estado |
-|---|---|---|---|
-| ACT-01 | `Rol.COMPRADOR`, `ExpedienteService.visible`, `SecurityConfig` | `CaptacionPublicacionTest.visibilidadPorRol`, `CatalogoYServiciosTest.soloElCompradorSolicita` | Implementado |
-| ACT-02 | `Rol.REVISOR`, `SecurityConfig`, `ExpedienteService.registrar`/`actualizar` | `CasosApiTest.checklistSoloRevisor`, `RegistrarPartidaTest.permisos` | Implementado |
-| ACT-03 | `Rol.GESTOR`, `DemoUsuariosSeeder.FUNCION_GESTOR`, `CarteraService` | `CaptacionPublicacionTest.soloElGestorPublica`, `CarteraTest.permisosPorRol` | Implementado |
-| ACT-04 | `Rol.ESPECIALISTA`, `InspeccionService.registrar` | `CarteraTest.soloElAsignadoEmite`, `CatalogoYServiciosTest.otroRolNoEmite` | Implementado |
-| ACT-05 | `Rol.PROPIETARIO`, `ExpedienteService.casoDelPropietario` | `CaptacionPublicacionTest.propietarioSoloLectura`, `propietarioVeSoloLoSuyo` | Implementado |
-| ACT-06 | Texto fijo en `Expediente.tsx` | — | Fuera del sistema |
-| ACT-07 | `lib/fuentes.ts`, `ExpedienteService.FUENTE_CONOCE_AQUI` | — | Fuente externa manual |
-| ACT-08 | Ítem HR y PU del checklist | `CatalogoYServiciosTest.itemHrPuEnLosDiezCasos` | Fuente externa manual |
-| ETP-1 | `ExpedienteService.registrar`, `OrigenCaptacion`, `RegistrarPartida.tsx` | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.prefijoSegunElOrigen` | Implementado |
-| ETP-2 | `ExpedienteService.autorizar`/`retirarAutorizacion`, `PanelPublicacion.tsx`, `MisInmuebles.tsx` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Implementado |
-| ETP-3 | `MotorClasificacion`, `ClasificacionService`, `reglas.json` v0.5 | `MotorClasificacionTest`, `MotorPlanosTest`, `MotorDocumentosLoteTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Implementado |
-| v0.9 Documentos del lote | `DocumentoLote`, `DocumentoDelLote`, `DocumentoLotePdf`, `DocumentosDelLote.tsx`, `VisorPdf.tsx`, V15 | `DocumentosLoteApiTest`, `MotorDocumentosLoteTest`; recorrido v0.9, pasos 21 a 23 | Implementado |
-| v0.9 Precio con moneda y fuente | `CasoLote.moneda`/`precioNota`/`fuenteUrl`, `lib/formato.ts` (`precio`), V15 | `CatalogoYServiciosTest`; Vitest `formato.test.ts`; recorrido v0.9, pasos 22 y 23 | Implementado |
-| ETP-4 | `ExpedienteService.actualizar`/`asociarDocumentoPlano`, `HistorialEvaluacion` | `HistorialEvaluacionTest.planoFaltanteLlevaAVerde`, `cadaRecalculoAgregaUnaFila` | Implementado |
-| ETP-5 | `ExpedienteService.publicar`/`retirarPublicacion`, `PanelPublicacion.tsx` | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `soloElGestorPublica` | Implementado |
-| ETP-6 | `CarteraService` (contacto), `SolicitudContacto.tsx`, `Cartera.tsx` | `CarteraTest.contactoSoloPublicado`, `motivoCerrado`; Vitest `contacto.test.ts` | Implementado |
-| ETP-7 | `InspeccionService`, `PanelEvaluacionTecnica.tsx`, `InformeTecnicoPdf` | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite` | Implementado |
-| ETP-8 | `CarteraService.panel`, `Cartera.tsx` | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Implementado |
-| v0.8 PDF de planos | `DocumentosPdf`, `AlmacenamientoService.guardarDocumento`, `ExpedienteService.asociarDocumentoPlano`, `PanelPlanos.tsx`, `DocumentoPdf.tsx`, V12 | `DocumentosApiTest`, `DocumentosPdfTest`; Vitest `archivos.test.ts` | Implementado |
-| v0.8 Ruta y gravamen | `RutasRegularizacion`, `rutas.json`, `Asiento.acreedor`/`plazoOVencimiento`, `RutaRegularizacion.tsx`, V13 | `RutaRegularizacionTest`, `GravamenTest`; Vitest `ruta.test.ts` | Implementado |
-| v0.8 Panel por tipo de alerta | `CarteraService.panel`, `FiltroCatalogo.tipoAlerta`, `ClasificacionService.tiposDeAlerta`, `PanelRegularizacion.tsx` | `PanelTiposAlertaTest`; Vitest `catalogo.test.ts`, `cartera.test.ts` | Implementado |
-| v0.8 Semáforo de gestión | `SemaforoGestion`, `gestion.json`, `CarteraService.registrarDecision`, `PanelGestion.tsx`, V14 | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Implementado |
-| v0.8 Resaltado de A | `lib/resaltado.ts`, `EtiquetaResaltado.tsx`, tokens de `index.css` | Vitest `resaltado.test.ts`; recorrido v0.8, paso 18 | Implementado |
-| v0.8 Diagnóstico del 409 | `ManejadorErrores.causaRaiz` | `ManejadorErroresTest` | Implementado |
-| ETP-9 | Texto fijo en `Expediente.tsx` | — | Fuera del sistema |
-| RN-01 | `CasoLote.sintetico` (el prefijo `SIM-` ya no se usa en el catálogo) | `CasosApiTest.contenidoCargado` | Parcial (desvíos D20 y D57; ver `d7803f8`) |
-| RN-02 | `MotorClasificacion` (faltantes) | `MotorClasificacionTest.desconocidoNoEsAusencia` | Implementado |
-| RN-03 | `MotorClasificacion` (precedencia) | `MotorClasificacionTest.amarilloYRojoPorTipoDeActo` | Implementado |
-| RN-04 | `MotorClasificacion` (gris conserva alertas) | `MotorClasificacionTest.grisConservaAlertas` | Implementado |
-| RN-05 | `MotorClasificacion.LIMITE` | `MotorClasificacionTest.verde` | Implementado |
-| RN-06 | Sin ruta para fijar el color | `CasosApiTest.colorNoSeFijaAMano` | Implementado |
-| RN-07 | `SecurityConfig` | `CasosApiTest.checklistSoloRevisor` | Implementado |
-| RN-08 | Sin lógica de vencimiento | — | Implementado, sin prueba |
-| RN-09 | `EntradaClasificacion` sin datos físicos | — | Implementado, sin prueba |
-| RN-10 | `InspeccionService` no escribe en `clasificacion` | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor` | Implementado |
-| I1 | `EstadoSemaforo.VERDE` | `CatalogoYServiciosTest.verdeSignificaSinAlertas` | Probado |
-| I2 | `InspeccionService` | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor` | Probado |
-| I3 | `ChecklistService` | `CatalogoYServiciosTest.hrPuNoCambiaElColor` | Probado |
-| I4 | `SecurityConfig`, `ExpedienteService.exigirRol` | `SeguridadTest` | Probado |
-| I5 | Spring Modulith | `ModularityTests` | Probado |
-| I6 | `application.properties` (`server.address`), `docker-compose.yml` | `ConfiguracionLocalTest.soloEscuchaEnLocal` | Probado en local; Docker sin ejecutar |
-| I7 | `layout/Footer.tsx` (activo), `lib/limitesLegales.ts`, `Login.tsx` | `limitesLegales.test.tsx` | Probado el pie |
-| I8 | `ExpedienteService.recalcular` (único punto) | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor` | Probado |
-| I9 | `ExpedienteService.origenDeLaEdicion` | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` | Probado |
-| I10 | `ExpedienteService.publicar`, `CarteraService` | `CarteraTest.contactoSobreRojo` | Probado |
-| I11 | `Usuario`, `MotivoContacto`, `ExpedienteService.publicacion` | `CuentasDemoTest.sinDatosPersonales`, `CarteraTest.motivoCerrado` | Probado |
-| I12 | `HistorialEvaluacion` (`@Immutable`) | `HistorialEvaluacionTest.historialInmutable` | Probado |
-| I13 | `ExpedienteService.casoDelPropietario` | `CaptacionPublicacionTest.autorizacionSoloDelPropietario` | Probado |
-| I14 | `ExpedienteService.publicar`, restricción V6 | `CaptacionPublicacionTest.sinAutorizacionNoSePublica` | Probado |
-| I15 | `SemaforoGestion.puedeVer`, `ExpedienteService.gestionPara`, `CarteraService.registrarDecision`, `SecurityConfig` | `GestionInmobiliariaTest.soloGestorYRevisorVenElCampo`, `decisionNoCambiaAniB` | Probado |
-
-## 16. Correspondencia con el informe
-
-Relaciona los identificadores del informe del curso con los de este documento. Las pruebas son automáticas salvo «Paso n», que es un
-paso del recorrido de navegador. «Paso n» numera los pasos del guion (`docs/demo/GUION-DEMO.md`); la numeración histórica viene del
-recorrido v0.7 (`docs/pruebas/RESULTADO-recorrido-v07.md`, 15 de 15 el 30 de octubre de 2026) y las filas de la v0.8 citan «Paso
-v08-n» (`docs/pruebas/RESULTADO-recorrido-v08.md`, 20 de 20 el 2 de noviembre de 2026). **Todos esos pasos se volvieron a ejecutar
-sobre la versión actual** en el recorrido de uso v0.9 (`docs/pruebas/uso-v09/recorrido-v09.mjs`, 27 de 27 el 9 de noviembre de
-2026), con los códigos sin `SIM-`; la correspondencia está en la tabla del guion.
+## 16. Trazabilidad
 
 ### 16.1 Requisitos funcionales
 
-| RF | Requisito | ETP | Prueba | Recorrido | Estado |
-|---|---|---|---|---|---|
-| RF01 | Acceso: autenticar y autorizar cinco roles en el servidor | Transversal | `SeguridadTest`, `CuentasDemoTest`, `CarteraTest.permisosPorRol` | Pasos 2, 3, 4 y 11 | Implementado |
-| RF02 | Captación: crear expediente en borrador vinculado al propietario por código | ETP-1 | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`; `RegistrarPartidaTest.prefijoSegunElOrigen` | Paso 1 | Implementado |
-| RF03 | Autorización: otorgar o retirar autorización solo sobre casos propios | ETP-2 | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `autorizarNoCambiaElColor` | Pasos 5 y 14 | Implementado |
-| RF04 | Expediente: mantener partida transcrita, planos y checklist. **v0.8:** un plano presentado u observado exige su PDF real (o la lámina generada de la demostración), con validación, límites y evidencia del archivo | ETP-1, ETP-4 | `CasosApiTest.guardarPersiste`, `checklistSoloRevisor`; `PlanosApiTest`; `DocumentosApiTest` | Paso 7; pasos v08-1 a v08-3 | Implementado |
-| RF05 | Indicador A: calcular color, motivos y faltantes por reglas | ETP-3 | `MotorClasificacionTest`, `MotorPlanosTest`, `CasosApiTest.losDiezCasosTienenSuColor` | Pasos 1, 6 y 7 | Implementado. Reglas pendientes de revisión especializada |
-| RF06 | Historial: registrar recálculos de A por adición | ETP-3, ETP-4 | `HistorialEvaluacionTest.cadaRecalculoAgregaUnaFila`, `historialInmutable` | Pasos 6 y 7 | Implementado |
-| RF07 | Publicación: el gestor publica o retira y el comprador ve publicados | ETP-5 | `CaptacionPublicacionTest.soloElGestorPublica`, `sinAutorizacionNoSePublica`, `visibilidadPorRol` | Pasos 2, 4, 8 y 14 | Implementado |
-| RF08 | Consulta: expediente, glosario, documentos y filtros simples | ETP-6 | `CatalogoYServiciosTest.filtrosCombinados`, `CasosApiTest.glosario`; `CopiaLiteralPdfTest`; Vitest `catalogo.test.ts` | Paso 9 | Implementado |
-| RF09 | Contacto: el comprador solicita con motivo cerrado; el gestor atiende | ETP-6 | `CarteraTest.contactoSobreRojo`, `motivoCerrado`, `contactoSoloPublicado` | Pasos 9 y 10 | Implementado |
-| RF10 | Inspección B: solicitar, asignar y registrar informe de seis pasos | ETP-7 | `InspeccionTest.flujoCompleto`, `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite` | Pasos 9 a 12 | Implementado |
-| RF11 | Propietario: consultar casos propios sin editar | ETP-2 | `CaptacionPublicacionTest.propietarioVeSoloLoSuyo`, `propietarioSoloLectura` | Pasos 3 y 5 | Implementado |
-| RF12 | Cartera: el gestor consulta estados, contactos e inspecciones. **v0.8:** también por tipo de alerta, esfuerzo y estado de gestión, con la lista «Por regularizar» | ETP-8 | `CarteraTest.panelCoherente`, `PanelTiposAlertaTest`; Vitest `cartera.test.ts` | Paso 13; paso v08-15 | Implementado |
-| RF13 | Ruta de regularización por caso, con el plazo del gravamen si consta | ETP-4 | `RutaRegularizacionTest`, `GravamenTest`; Vitest `ruta.test.ts` | Pasos v08-8 y v08-14 | Implementado. Criterios en borrador |
-| RF14 | Cartera por tipo de alerta y esfuerzo, con filtro por tipo de alerta en el catálogo y en Cartera | ETP-6, ETP-8 | `PanelTiposAlertaTest`; Vitest `catalogo.test.ts`, `cartera.test.ts` | Pasos v08-15 y v08-17 | Implementado |
-| RF15 | Semáforo de gestión interno y decisión de captación con historial | ETP-1, ETP-8 | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Pasos v08-12, v08-14, v08-16 y v08-18 | Implementado |
+| RF | Requisito | Prueba principal | Estado |
+|---|---|---|---|
+| RF01 | Autenticar y autorizar los roles en el servidor | `SeguridadTest`, `AsesorTest` | Implementado |
+| RF02 | Captar un inmueble en borrador (inmobiliaria o particular) | `CaptacionPublicacionTest`, `TitularidadComercialTest` | Implementado |
+| RF03 | Autorizar o retirar la publicación | `TitularidadComercialTest`, `CaptacionPublicacionTest` | Implementado |
+| RF04 | Partida, planos, documentos del lote y checklist | `CasosApiTest`, `PlanosApiTest`, `DocumentosLoteApiTest` | Implementado |
+| RF05 | Indicador A por reglas | `MotorClasificacionTest`, `CasosApiTest` | Implementado (reglas en revisión) |
+| RF06 | Historial de A de solo adición | `HistorialEvaluacionTest` | Implementado |
+| RF07 | Publicar y retirar; el público ve solo lo publicado | `PortalPublicoTest`, `CaptacionPublicacionTest` | Implementado |
+| RF08 | Catálogo público con filtros y orden | `FiltrosCatalogoTest`, `ProyectosApiTest` | Implementado |
+| RF09 | Contacto del comprador con cuenta | `CarteraTest` | Implementado |
+| RF10 | Inspección B | `InspeccionTest`, `CicloCarteraTest` | Implementado |
+| RF11 | El propietario consulta lo suyo sin editar | `CaptacionPublicacionTest.propietarioSoloLectura` | Implementado |
+| RF12 | Panel de cartera | `CarteraTest.panelCoherente`, `PanelTiposAlertaTest` | Implementado |
+| RF13 | Ruta de regularización | `RutaRegularizacionTest` | Implementado (criterios en borrador) |
+| RF14 | Cartera por tipo de alerta y esfuerzo | `PanelTiposAlertaTest` | Implementado |
+| RF15 | Semáforo de gestión y decisión de captación | `GestionInmobiliariaTest` | Implementado |
+| RF16 | Proyectos con plano de lotes y ficha del lote | `ProyectosApiTest`, `pages/proyectos.test.tsx` | Implementado |
+| RF17 | Carga de lotes por CSV | `CargaLotesApiTest` | Implementado |
+| RF18 | Interés y cita desde el portal | `InteresApiTest` | Implementado |
+| RF19 | CRM de interesados | `InteresApiTest` | Implementado |
+| RF20 | Asistente y usos del lote | `lib/asistente.test.ts`, `lib/usosLote.test.ts` | Implementado |
+| RF21 | Registro de interesados desde el panel | `RegistroPanelYMarcaTest` | Implementado |
+| RF22 | Portada con cifras reales y marca | `RegistroPanelYMarcaTest`, `pages/etapa8.test.tsx` | Implementado |
+| RF26 | Exportar a CSV la bandeja (con filtros) y los lotes de un proyecto, solo asesor y gestor | `Etapa9Test` (lotes e interesados), `pages/etapa9.test.tsx` | Implementado (etapa 9) |
+| RF27 | Dirección y enlace de mapa del proyecto con «Cómo llegar» | `Etapa9Test.ubicacionPublica`, `enlaceInvalido`, `precargaDirecciones` | Implementado (etapa 9) |
+| RF28 | Condiciones de pago del proyecto | `Etapa9Test.ubicacionPublica`, `limites`; `pages/etapa9.test.tsx` | Implementado (etapa 9) |
+| RF29 | Aviso de interesados nuevos en el menú | `Etapa9Test.avisoNuevos`; `pages/etapa9.test.tsx` | Implementado (etapa 9) |
+| RF30 | Cuentas de asesor por configuración | `Etapa9Test.asesoresConfigurables`, `listaAsesores` | Implementado (etapa 9) |
+| RF31 | Embudo por etapa, total y por proyecto | `Etapa9Test.embudo`; `pages/etapa9.test.tsx` | Implementado (etapa 9) |
+| RF23 | Pagos en línea | — | Fuera de alcance |
+| RF24 | Consulta automática a SUNARP o a la municipalidad | — | Fuera de alcance |
+| RF25 | Mapas georreferenciados embebidos | — | Fuera de alcance (la etapa 9 solo enlaza el mapa) |
 
 ### 16.2 Reglas de negocio
 
 | Informe | Identificador aquí | Prueba | Estado |
 |---|---|---|---|
 | RN01 | I1 | `CatalogoYServiciosTest.verdeSignificaSinAlertas` | Probado |
-| RN02 | I8 | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `autorizarNoCambiaElColor` | Probado |
+| RN02 | I8 | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor` | Probado |
 | RN03 | I2 + I3 | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `hrPuNoCambiaElColor` | Probado |
 | RN04 | I9 | `HistorialEvaluacionTest.pdfNoLevantaElEmbargo` | Probado |
-| RN05 | I10 + I14 | `CaptacionPublicacionTest.publicarRojoNoCambiaElColor`, `sinAutorizacionNoSePublica` | Probado |
+| RN05 | I10 + I14 | `CaptacionPublicacionTest.sinAutorizacionNoSePublica` | Probado |
 | RN06 | I13 | `CaptacionPublicacionTest.autorizacionSoloDelPropietario` | Probado |
 | RN07 | I12 | `HistorialEvaluacionTest.historialInmutable` | Probado |
-| RN08 | RN-08 | Sin prueba automática | Implementado, sin prueba |
-| RN09 | M8 | `CatalogoYServiciosTest.identidadDelEspecialistaBloqueada` | Probado |
-| RN10 | RN-10 | `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor`, `InspeccionTest.flujoCompleto` | Probado |
-| RN11 | RN-04 | `MotorClasificacionTest.grisConservaAlertas` | Probado |
-| RN12 | Fuera de alcance | — | Fuera de alcance |
-| RN13 | v0.8: un plano solo queda presentado u observado con su PDF | `DocumentosApiTest.presentadoSinArchivoDa422`, `subirAPlanoNoPresentado` | Probado |
-| RN14 | v0.8: PDF de hasta 25 MB, optimizado sobre 5 MB, máximo guardado 10 MB; si no baja, 413 | `DocumentosApiTest.optimiza`, `rechazaPorTamano`; `DocumentosPdfTest` | Probado |
-| RN15 | v0.8: la ruta de regularización es orientativa, de solo lectura y no cambia A | `RutaRegularizacionTest.soloLectura`, `GravamenTest.guardarYLeerSinCambiarElColor` | Probado |
-| RN16 | v0.8: la priorización por esfuerzo solo existe en el panel del gestor (D52) | `PanelTiposAlertaTest.soloGestor`, `porRegularizarOrdenada` | Probado |
-| RN17 | v0.8: el semáforo de gestión es interno y no bloquea publicar (I15) | `GestionInmobiliariaTest` | Probado |
+| RN08 | Sin vencimiento automático de la información registral | Sin prueba automática | Implementado, sin prueba |
+| RN09 | El especialista firma desde su cuenta | `CatalogoYServiciosTest.identidadDelEspecialistaBloqueada` | Probado |
+| RN10 | B no cambia A | `InspeccionTest.flujoCompleto` | Probado |
+| RN11 | Gris conserva las alertas | `MotorClasificacionTest.grisConservaAlertas` | Probado |
+| RN13 a RN17 | Plano con PDF, límites de archivo, ruta orientativa, priorización solo interna, semáforo interno | `DocumentosApiTest`, `RutaRegularizacionTest`, `PanelTiposAlertaTest`, `GestionInmobiliariaTest` | Probado |
+| RN18 (etapa 9) | RN-exportar | `Etapa9Test.lotesPermisos`, `interesadosPermisos`, `protegeFormulas` | Probado |
+| RN19 (etapa 9) | RN-ubicación | `Etapa9Test.enlaceInvalido` | Probado |
 
-### 16.3 Casos de uso de negocio
+### 16.3 Casos de prueba
 
-| Informe | Etapas | Prueba de punta a punta | Recorrido | Estado |
+Los CP01 a CP25 son los del informe (detalle histórico en
+[historico/MODELO-NEGOCIO-v0.9.md](historico/MODELO-NEGOCIO-v0.9.md), sección 16.4). La 1.0.0 los mantiene aprobados con las
+mismas pruebas, salvo CP13 (respaldo y restauración, parcial), CP15 y CP16 (pendientes). La etapa 9 agrega:
+
+| CP | Caso | Prueba automática | Recorrido | Estado |
 |---|---|---|---|---|
-| CUN01 | ETP-1, ETP-2, ETP-4 | `CicloCarteraTest.cicloCompleto` | Pasos 1, 5 y 7 | Implementado |
-| CUN02 | ETP-3, ETP-5, ETP-6 | `CicloCarteraTest.cicloCompleto` | Pasos 6, 8 y 9 | Implementado |
-| CUN03 | ETP-6 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.contactoSobreRojo` | Pasos 9 y 10 | Implementado |
-| CUN04 | ETP-7 | `CicloCarteraTest.cicloCompleto`, `InspeccionTest.flujoCompleto` | Pasos 10 a 12 | Implementado |
-| CUN05 | ETP-8 | `CicloCarteraTest.cicloCompleto`, `CarteraTest.panelCoherente` | Paso 13 | Implementado |
-| CUN06 | ETP-4, ETP-8: priorizar y regularizar la cartera con la ruta y el panel por tipo de alerta | `RutaRegularizacionTest`, `PanelTiposAlertaTest`, `DocumentosApiTest` | Pasos v08-2, v08-3, v08-8, v08-14 y v08-15 | Implementado |
-| CUN07 | ETP-1, ETP-5: decidir la captación con el semáforo de gestión y publicar con confirmación | `GestionInmobiliariaTest.decisionNoCambiaAniB`, `decisionNoBloqueaPublicar` | Paso v08-16 | Implementado |
-
-### 16.4 Casos de prueba
-
-**Nota sobre la numeración:** los CP-01 a CP-07 de `docs/pruebas/registro.md` y `docs/trazabilidad.md` son de una etapa anterior y **no
-coinciden** con los CP01 a CP07 del informe: por ejemplo, allí CP-04 es orientación y CP-07 es la instalación en otro equipo. Esta tabla usa
-la numeración del informe. CP-05b (reglas con tabla especializada) sigue sin aprobarse, y CP-07 del repositorio equivale en parte a CP13.
-
-| Informe | Caso | Prueba | Recorrido | Estado |
-|---|---|---|---|---|
-| CP01 | Permisos por cinco roles | `SeguridadTest`, `CarteraTest.permisosPorRol` | Pasos 2, 3, 4 y 11 | Aprobado |
-| CP02 | Crear expediente y vincular propietario; borrador no visible al comprador | `CaptacionPublicacionTest.naceEnBorrador`, `propietarioObligatorio`, `visibilidadPorRol` | Pasos 1 y 2 | Aprobado |
-| CP03 | Autorizar o retirar, y acceso a caso ajeno | `CaptacionPublicacionTest.autorizacionSoloDelPropietario`, `propietarioVeSoloLoSuyo` | Pasos 3, 5 y 14 | Aprobado |
-| CP04 | Editar partida, planos y HR/PU; el checklist no cambia A | `CasosApiTest.guardarPersiste`, `PlanosApiTest`, `CatalogoYServiciosTest.hrPuNoCambiaElColor` | Paso 7 (planos) | Aprobado |
-| CP05 | Recalcular A: motivos y faltantes, sin color manual | `CasosApiTest.cancelarLaHipotecaRecalcula`, `colorNoSeFijaAMano`; `MotorClasificacionTest` | Paso 7 | Aprobado. Reglas pendientes de revisión especializada |
-| CP06 | Historial: entrada nueva y anterior conservada | `HistorialEvaluacionTest.cadaRecalculoAgregaUnaFila`, `historialInmutable` | Pasos 6 y 7 | Aprobado |
-| CP07 | Publicar sin autorización y con distintos colores | `CaptacionPublicacionTest.sinAutorizacionNoSePublica`, `publicarRojoNoCambiaElColor` | Pasos 4 y 8 | Aprobado |
-| CP08 | Consulta de casos y glosario por el comprador | `CasosApiTest.glosario`, `CatalogoYServiciosTest.filtrosCombinados` | Paso 9 | Aprobado |
-| CP09 | Solicitar contacto y atender | `CarteraTest.contactoSobreRojo`, `motivoCerrado` | Pasos 9 y 10 | Aprobado |
-| CP10 | Asignar B, emitir y comparar A | `CarteraTest.soloElAsignadoEmite`, `sinAsignacionNadieEmite`; `CatalogoYServiciosTest.informeConRiesgoNoCambiaElColor` | Pasos 10 a 12 | Aprobado |
-| CP11 | El propietario consulta e intenta editar | `CaptacionPublicacionTest.propietarioSoloLectura` | Paso 5 (consulta). El intento de editar se probó solo en el backend | Aprobado |
-| CP12 | Panel de cartera | `CarteraTest.panelCoherente`; Vitest `cartera.test.ts` | Paso 13 | Aprobado |
-| CP13 | Versiones, arranque, respaldo y restauración, y localhost | `ConfiguracionLocalTest.soloEscuchaEnLocal`; versiones en `docs/PARA-INFORME.md` | Arranque local correcto | **Parcial:** respaldo y restauración sin ejecutar, y sin prueba en otro equipo |
-| CP14 | NF02: 20 mediciones, 19 de 20 en 2 s o menos | `scripts/medir-nf02.mjs` | Tras el paso 15 | Aprobado: 20 de 20, máximo 54,3 ms, solo la API |
-| CP15 | Separación de demostración, estudio y operación | Sin prueba | — | **Pendiente:** los materiales del estudio están fuera del repositorio, pero no se comprobó la separación |
-| CP16 | Inspección presencial real | Fuera del software | — | **Pendiente:** no se ha realizado |
-| CP17 | Textos, motivos, faltantes y distinción A/B | Vitest `limitesLegales.test.tsx`; `CatalogoYServiciosTest.verdeSignificaSinAlertas` | Pasos 6, 12 y 15 | Aprobado técnicamente. Contenido pendiente de revisión especializada |
-| CP18 | Plano presentado sin PDF: 422; subir el PDF a un plano no presentado lo presenta y agrega historial | `DocumentosApiTest.presentadoSinArchivoDa422`, `subirAPlanoNoPresentado` | Pasos v08-1 y v08-2 | Aprobado |
-| CP19 | Archivo que no es PDF, cifrado o dañado: 400; entrada sobre el límite o PDF que no baja del máximo: 413 | `DocumentosApiTest.validacion`, `rechazaPorTamano`; `DocumentosPdfTest.rechazos`, `noReducible` | Paso v08-3 (aviso previo); el 413 solo en prueba automática | Aprobado |
-| CP20 | Optimización con las mismas páginas; descarga con la misma huella; origen del documento; I9 | `DocumentosApiTest.optimiza`, `descargaYOrigen`, `pdfNoLevantaUnRojo`; `DocumentosPdfTest.optimizaImagenes` | Pasos v08-3 y v08-10 | Aprobado |
-| CP21 | Ruta de regularización de los casos semilla, de solo lectura y con la visibilidad del detalle | `RutaRegularizacionTest` | Pasos v08-8 y v08-14 | Aprobado. Criterios en borrador |
-| CP22 | Acreedor y plazo del gravamen: guardar, leer, «No consta» y sin cambio de color | `GravamenTest` | Paso v08-14 | Aprobado |
-| CP23 | Panel por tipo de alerta y esfuerzo, filtro por tipo de alerta y 403 a otros roles | `PanelTiposAlertaTest` | Pasos v08-15 y v08-17 | Aprobado |
-| CP24 | Semáforo de gestión: visibilidad, decisión de solo adición, sin cambio de A o B y sin bloquear publicar | `GestionInmobiliariaTest`; Vitest `gestion.test.ts` | Pasos v08-12, v08-14, v08-16 y v08-18 | Aprobado |
-| CP25 | Resaltado de A (nunca solo color) y causa raíz del 409 en el log sin cambiar la respuesta | Vitest `resaltado.test.ts`; `ManejadorErroresTest` | Paso v08-18 (el log del 409 no se recorre) | Aprobado |
+| CP26 | Exportar lotes: permisos (401/403/200), columnas de la carga, BOM y punto y coma; volver a cargarlo no cambia nada | `Etapa9Test.lotesPermisos`, `lotesContenido`, `lotesIdaYVuelta` | Paso 14 | Aprobado |
+| CP27 | Exportar interesados: permisos, mismos filtros y orden que la bandeja, protección contra fórmulas | `Etapa9Test.interesadosPermisos`, `interesadosContenido`, `protegeFormulas` | Paso 14 | Aprobado |
+| CP28 | Ubicación: guardar, mostrar en el proyecto y en el lote, enlace solo https, vacío borra | `Etapa9Test.ubicacionPublica`, `enlaceInvalido`, `precargaDirecciones`; `pages/etapa9.test.tsx` | Pasos 14 y 15 | Aprobado |
+| CP29 | Condiciones de pago: hasta 500 caracteres, título y nota, vacías en la precarga | `Etapa9Test.limites`, `ubicacionPublica`; `pages/etapa9.test.tsx` | Paso 15 | Aprobado |
+| CP30 | Aviso de nuevos: cuenta la etapa Nuevo, baja al cambiar la etapa, solo asesor y gestor, texto para lectores de pantalla | `Etapa9Test.avisoNuevos`; `pages/etapa9.test.tsx` | Paso 14 | Aprobado |
+| CP31 | Cuentas de asesor por `app.asesores`, sin duplicar ni cambiar las existentes | `Etapa9Test.asesoresConfigurables`, `listaAsesores` | — | Aprobado |
+| CP32 | Embudo: cantidades y porcentajes que suman el total, por proyecto | `Etapa9Test.embudo`; `pages/etapa9.test.tsx` | — | Aprobado |

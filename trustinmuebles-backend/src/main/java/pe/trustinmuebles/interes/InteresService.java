@@ -47,8 +47,6 @@ class InteresService {
             + "coordinar.";
     static final String MENSAJE_RECIBIDO_CITA = "Recibimos tu pedido de cita. Un asesor te escribirá para confirmar "
             + "una de las fechas que propusiste.";
-    /** Cuentas que pueden ser responsables de un interesado (deben existir y ser asesor o gestor). */
-    static final List<String> RESPONSABLES = List.of("asesor-01", "gestor-01");
 
     private final InteresRepository intereses;
     private final NotaInteresRepository notas;
@@ -117,7 +115,8 @@ class InteresService {
         UsuarioActual u = exigirEquipo();
         RegistroPanel r = RegistroPanel.de(cuerpo, hoy());
         Interes i = crear(r.solicitud(), r.canal(), FormaConsentimiento.VERBAL, u.codigoCuenta());
-        if (RESPONSABLES.contains(u.codigoCuenta())) i.setResponsable(u.codigoCuenta());
+        // v1.0 (etapa 9): quien registra (asesor o gestor) queda como responsable; ya no hay una lista fija de cuentas.
+        i.setResponsable(u.codigoCuenta());
         i = intereses.saveAndFlush(i);
         nota(i.getId(), "Registrado desde el panel (" + r.canal().etiqueta + "). El interesado dio su consentimiento "
                 + "de forma verbal; lo registró " + u.codigoCuenta() + ".", u.codigoCuenta());
@@ -317,7 +316,108 @@ class InteresService {
     @Transactional(readOnly = true)
     OpcionesBandeja opciones() {
         exigirEquipo();
-        return new OpcionesBandeja(inmuebles.proyectos(), RESPONSABLES.stream().filter(auth::existeCuenta).toList());
+        return new OpcionesBandeja(inmuebles.proyectos(), responsables());
+    }
+
+    /**
+     * v1.0 (etapa 9): cuentas que pueden ser responsables de un interesado: todas las de asesor (las de app.asesores) y
+     * de gestor, en orden alfabético.
+     */
+    private List<String> responsables() {
+        return auth.cuentasConRol(Rol.ASESOR, Rol.GESTOR);
+    }
+
+    /** v1.0 (etapa 9): cuántos interesados están en etapa NUEVO, para el aviso del menú «Interesados». */
+    @Transactional(readOnly = true)
+    ConteoNuevos nuevos() {
+        exigirEquipo();
+        return new ConteoNuevos(intereses.countByEtapa(EtapaInteres.NUEVO));
+    }
+
+    /** Encabezado del CSV de la bandeja (etapa 9). */
+    static final List<String> COLUMNAS_CSV = List.of("Registrado el", "Nombre", "Medio", "Contacto", "Canal", "Etapa",
+            "Inmueble o búsqueda", "Proyecto", "Lote", "Zona", "Tipo", "Presupuesto mínimo", "Presupuesto máximo",
+            "Moneda", "Área deseada (m²)", "Forma de pago", "Responsable", "Próxima acción", "Fecha de la próxima acción",
+            "Acción vencida", "Cita por confirmar", "Notas");
+
+    private static final java.time.format.DateTimeFormatter FECHA_HORA =
+            java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+    /**
+     * v1.0 (etapa 9): la bandeja con los mismos filtros y el mismo orden que en pantalla, en un CSV para Excel (punto y
+     * coma, UTF-8 con BOM). Lleva datos de contacto: solo asesor y gestor (SecurityConfig y exigirEquipo).
+     */
+    @Transactional(readOnly = true)
+    byte[] exportar(EtapaInteres etapa, String proyecto, String responsable, boolean soloVencidos) {
+        List<InteresDto> lista = listar(etapa, proyecto, responsable, soloVencidos);
+        Map<String, String> nombres = new HashMap<>();
+        inmuebles.proyectos().forEach(p -> nombres.put(p.codigo(), p.nombre()));
+        List<List<String>> filas = new ArrayList<>();
+        for (InteresDto d : lista) {
+            String busqueda = d.inmueble() != null ? d.inmueble()
+                    : "Búsqueda: " + (d.tipo() == null ? "sin tipo" : d.tipo().equals("VIVIENDA") ? "vivienda" : "lote")
+                            + (d.zona() == null ? "" : " en " + d.zona());
+            filas.add(java.util.Arrays.asList(FECHA_HORA.format(d.creadoEn().atZone(ZONA)), d.nombre(),
+                    d.medio().etiqueta, d.contacto(), d.canal().etiqueta, d.etapaEtiqueta(), busqueda,
+                    d.proyectoCodigo() == null ? null : nombres.getOrDefault(d.proyectoCodigo(), d.proyectoCodigo()),
+                    d.loteClave(), d.zona(),
+                    d.tipo() == null ? null : d.tipo().equals("VIVIENDA") ? "Vivienda" : "Lote o terreno",
+                    plano(d.presupuestoMin()), plano(d.presupuestoMax()), d.moneda(), plano(d.areaDeseada()),
+                    d.formaPagoEtiqueta(), d.responsable(), d.proximaAccion(),
+                    d.proximaAccionFecha() == null ? null : d.proximaAccionFecha().toString(), d.vencido() ? "Sí" : "No",
+                    d.citaPorConfirmar() ? "Sí" : "No", String.valueOf(d.notas())));
+        }
+        return pe.trustinmuebles.shared.EscritorCsv.excel(COLUMNAS_CSV, filas);
+    }
+
+    private static String plano(BigDecimal n) {
+        return n == null ? null : n.stripTrailingZeros().toPlainString();
+    }
+
+    /**
+     * v1.0 (etapa 9): embudo de la bandeja. Cantidad y porcentaje por etapa del total y de cada proyecto con interesados
+     * (y, si hay, de los que no tienen proyecto). Cuenta también los descartados, para que las etapas sumen el total.
+     */
+    @Transactional(readOnly = true)
+    Embudo embudo() {
+        exigirEquipo();
+        List<Interes> todos = intereses.findAll();
+        Map<String, List<Interes>> porProyecto = new LinkedHashMap<>();
+        for (pe.trustinmuebles.expediente.InmueblesInteres.ProyectoOpcion p : inmuebles.proyectos()) {
+            porProyecto.put(p.codigo(), new ArrayList<>());
+        }
+        List<Interes> sinProyecto = new ArrayList<>();
+        for (Interes i : todos) {
+            if (i.getProyectoCodigo() == null) sinProyecto.add(i);
+            else porProyecto.computeIfAbsent(i.getProyectoCodigo(), k -> new ArrayList<>()).add(i);
+        }
+        Map<String, String> nombres = new HashMap<>();
+        inmuebles.proyectos().forEach(p -> nombres.put(p.codigo(), p.nombre()));
+        List<FilaEmbudo> filas = new ArrayList<>();
+        porProyecto.forEach((codigo, lista) -> {
+            if (!lista.isEmpty()) filas.add(filaEmbudo(codigo, nombres.getOrDefault(codigo, codigo), lista));
+        });
+        if (!sinProyecto.isEmpty()) {
+            filas.add(filaEmbudo("SIN_PROYECTO", "Sin proyecto (búsqueda general o inmueble suelto)", sinProyecto));
+        }
+        return new Embudo(filaEmbudo("TOTAL", "Todos los interesados", todos), filas);
+    }
+
+    static FilaEmbudo filaEmbudo(String clave, String etiqueta, List<Interes> lista) {
+        Map<EtapaInteres, Long> n = new EnumMap<>(EtapaInteres.class);
+        for (Interes i : lista) n.merge(i.getEtapa(), 1L, Long::sum);
+        List<EtapaEmbudo> etapas = new ArrayList<>();
+        for (EtapaInteres e : EtapaInteres.values()) {
+            long c = n.getOrDefault(e, 0L);
+            etapas.add(new EtapaEmbudo(e, e.etiqueta(), c, porcentaje(c, lista.size())));
+        }
+        return new FilaEmbudo(clave, etiqueta, lista.size(), etapas);
+    }
+
+    /** Porcentaje con un decimal (redondeo al más cercano); 0.0 si no hay ninguno. */
+    static BigDecimal porcentaje(long parte, long total) {
+        if (total == 0) return BigDecimal.ZERO.setScale(1);
+        return BigDecimal.valueOf(parte * 100L).divide(BigDecimal.valueOf(total), 1, java.math.RoundingMode.HALF_UP);
     }
 
     // ------------------------------------------------------------------ citas

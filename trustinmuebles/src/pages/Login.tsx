@@ -151,7 +151,7 @@ export default function Login() {
                     <HardHat className="size-4 text-emerald-400" aria-hidden="true" /> Indicador B
                   </div>
                   <p className="font-bold text-white">Inspección favorable</p>
-                  <p className="mt-0.5 text-gray-400">Especialista colegiado de la inmobiliaria</p>
+                  <p className="mt-0.5 text-gray-400">Especialista de la inmobiliaria</p>
                 </div>
               </div>
             </div>

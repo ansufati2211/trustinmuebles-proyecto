@@ -30,12 +30,20 @@ más las 4 partidas matrices, 15 interesados con correos `@example.com` y 4 cita
 Antes: `scripts/reiniciar-demo.ps1`, arrancar backend e interfaz (abajo) y
 `APP_SEED_PASSWORD=<clave> node scripts/preparar-demo.mjs` (verifica por la API la precarga y completa lo que falte, sin
 borrar nada). Recorrido automático: `node docs/pruebas/uso-v10/recorrido-v10.mjs` (arranca el jar con una base nueva fuera
-del repositorio, la interfaz y Chrome, y apaga todo al final): 13 de 13 pasos y 12 de 12 pantallas en tableta (820 × 1180
-y 1180 × 820) el 13/11/2026.
+del repositorio, la interfaz y Chrome, y apaga todo al final): 15 de 15 pasos (los 13 del guion y 2 de la etapa 9) y 12 de
+12 pantallas en tableta (820 × 1180 y 1180 × 820) el 14/11/2026.
 
-**Pruebas de la 1.0.0:** backend **332** (antes de la etapa 8, 318), interfaz **290** en 32 archivos (antes, 276). La API
-nueva está en [docs/api.md](docs/api.md) («Versión 1.0.0» y «Etapa 8»); las decisiones, en
-[docs/decisiones.md](docs/decisiones.md) (D59 a D73).
+**Pruebas de la 1.0.0:** backend **347** (antes de la etapa 9, 332), interfaz **309** en 33 archivos (antes, 290). La API
+nueva está en [docs/api.md](docs/api.md) («Versión 1.0.0», «Etapa 8» y «Etapa 9»); las decisiones, en
+[docs/decisiones.md](docs/decisiones.md) (D59 a D79). Modelo de negocio de la 1.0.0 (uno solo):
+[docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md); funcionalidades:
+[docs/funcionalidades.md](docs/funcionalidades.md); textos de versiones anteriores en `docs/historico/`.
+
+**Etapa 9 (adopción):** exportar a CSV para Excel la bandeja de interesados (con los filtros) y los lotes de un proyecto
+(mismas columnas que la carga: se edita y se vuelve a cargar); dirección del proyecto con botón «Cómo llegar» (enlace de
+mapa opcional, sin mapa embebido) y condiciones de pago en texto, editables en «Proyectos → Ubicación y pago» (V24); aviso
+de interesados nuevos junto a «Interesados» (asesor y gestor); pestaña «Embudo»; y cuentas de asesor por configuración:
+`APP_ASESORES=asesor-01,asesor-02` (por omisión solo `asesor-01`; en la nube, `APP_SEED_PASSWORD` propia, no la de demo).
 
 **Etapa 8 (ajustes finales):** el portal lleva la marca de la inmobiliaria, **LEDCONS** (logo, razón social, RUC,
 dirección, teléfonos, WhatsApp y Facebook en la barra, el pie y los PDF; «con tecnología Trustinmuebles» en el pie; uso
@@ -54,7 +62,8 @@ informe: [docs/PARA-INFORME-v1.0.md](docs/PARA-INFORME-v1.0.md).
 
 
 > **Modelo de negocio implementado, comprobado contra el código y las pruebas:**
-> [docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md). Este LEEME usa sus mismos identificadores
+> [docs/historico/MODELO-NEGOCIO-v0.9.md](docs/historico/MODELO-NEGOCIO-v0.9.md) (el de la 1.0.0 está en
+> [docs/MODELO-NEGOCIO-IMPLEMENTADO.md](docs/MODELO-NEGOCIO-IMPLEMENTADO.md)). Este LEEME usa sus mismos identificadores
 > (ACT, ETP, RN, I). El estado de esta versión, con sus pruebas y observaciones, está en
 > [docs/REPORTE-v0.9-real.md](docs/REPORTE-v0.9-real.md).
 

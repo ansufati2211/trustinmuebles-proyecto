@@ -71,7 +71,11 @@ export function navegacion(rol: Rol | undefined): EnlaceNav[] {
   }
   if (rol === "PROPIETARIO") return [inicio, { clave: "mis-inmuebles", etiqueta: "Mis inmuebles", ruta: "/mis-inmuebles" }];
   const enlaces: EnlaceNav[] = [inicio, { clave: "casos", etiqueta: "Expedientes", ruta: "/casos" }];
-  if (rol === "GESTOR") enlaces.push({ clave: "cartera", etiqueta: "Cartera", ruta: "/cartera" });
+  if (rol === "GESTOR") {
+    enlaces.push({ clave: "cartera", etiqueta: "Cartera", ruta: "/cartera" });
+    // v1.0 (etapa 9): el gestor también tiene «Interesados» en el menú, con el aviso de los nuevos.
+    enlaces.push({ clave: "interesados", etiqueta: "Interesados", ruta: "/interesados" });
+  }
   if (rol === "REVISOR") enlaces.push({ clave: "registrar", etiqueta: "Registrar partida", ruta: "/casos/nueva" });
   return enlaces;
 }

@@ -10,6 +10,14 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
       nuevos, los 15 interesados y las 4 citas de los próximos 7 días (las fechas se mueven con el día de arranque).
 - [ ] Contraseñas del stack: `APP_SEED_PASSWORD` (la de las 9 cuentas), `APP_JWT_SECRET` (32+ caracteres) y
       `APP_STORAGE_KEY`, anotadas fuera del repositorio. `APP_CONTACTO_WHATSAPP` vacía (usa el de LEDCONS) o con el número correcto.
+- [ ] **En la nube, `APP_SEED_PASSWORD` es una contraseña propia del despliegue**, larga y distinta de la que se usa en las
+      pruebas, en el recorrido o en la laptop de ensayo (la «de demo»). Es la contraseña con la que nacen **todas** las
+      cuentas, también las de los asesores: quien la conozca entra como asesor y ve datos de contacto de los interesados.
+      Nunca la dictes ni la escribas en el chat del curso.
+- [ ] **Cuentas de asesor (etapa 9):** `APP_ASESORES` lista los códigos que el arranque crea si faltan, con
+      `APP_SEED_PASSWORD` (por omisión, solo `asesor-01`; por ejemplo `asesor-01,asesor-02` para dos asesores). No cambia la
+      contraseña ni el rol de una cuenta que ya existe: para cambiarla hay que reiniciar la base. Con un asesor más, la
+      demo tiene 10 cuentas en lugar de 9.
 - [ ] `node scripts/verificar-sitio.mjs https://<dominio-de-la-demo>` → **6 de 6 OK** (sitio, lista, detalle, plano,
       `robots.txt` con `Disallow`, partida oculta).
 - [ ] `API_URL=https://<dominio-de-la-demo>/api/v1 APP_SEED_PASSWORD=<clave> node scripts/preparar-demo.mjs --solo-verificar`
@@ -29,6 +37,10 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
 - [ ] Textos del kit a mano: `kit/partidas/INT-99000611-vivienda-sin-cargas.txt`, las 4 láminas de `kit/pdf/INT-99000611/`
       y `kit/datos-cita.md` (Carla, correo `@example.com`). Frase del asistente: `lote en Subtanjalla de menos de 80 mil soles`.
 - [ ] Registrar un interesado **desde el panel** (canal Llamada, consentimiento verbal) si preguntan por clientes que llaman.
+- [ ] **Etapa 9, si preguntan por Excel o por la ubicación:** el número junto a «Interesados» (interesados nuevos);
+      «Exportar a CSV» en la bandeja (lleva datos de contacto: no abrirlo en pantalla compartida con datos reales) y
+      «Exportar lotes (CSV)» en Proyectos (abre en Excel y se puede volver a cargar); «Ubicación y pago» en Proyectos para
+      pegar el enlace de Google Maps del lugar real (sin enlace no aparece «Cómo llegar»). Pestaña «Embudo» en Interesados.
 - [ ] No mostrar ni dictar contraseñas en pantalla.
 
 ## Plan B (si la nube falla)

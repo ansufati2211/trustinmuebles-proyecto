@@ -45,6 +45,8 @@ class ProyectosSeeder implements ApplicationRunner {
     static final BigDecimal EXTRA_ESQUINA = new BigDecimal("1.50");
     /** Marca del ajuste de precios de la etapa 8 en una base existente (tabla ajuste_contenido). */
     static final String AJUSTE_PRECIOS = "v1.0-etapa-8-precios";
+    /** v1.0 (etapa 9): marca de las direcciones referenciales de los proyectos precargados. */
+    static final String AJUSTE_DIRECCIONES = "v1.0-etapa-9-direcciones";
     /** Precio por m² con el que se generaron los lotes hasta la etapa 7 (para reconocer los que nadie editó). */
     static final Map<String, BigDecimal> PRECIO_M2_ANTERIOR = Map.of("Ica", new BigDecimal("450"),
             "Subtanjalla", new BigDecimal("250"), "La Tinguiña", new BigDecimal("300"),
@@ -75,7 +77,8 @@ class ProyectosSeeder implements ApplicationRunner {
 
     record HitoJson(String nombre, EstadoHito estado, LocalDate fecha) {}
 
-    record ProyectoJson(String codigo, String nombre, String distrito, String descripcion, String recorridoUrl,
+    record ProyectoJson(String codigo, String nombre, String distrito, String descripcion, String direccion,
+            String recorridoUrl,
             String casoMatriz, long semilla, Independizacion independizacion, List<ManzanaJson> manzanas,
             List<HitoJson> hitos) {}
 
@@ -95,6 +98,7 @@ class ProyectosSeeder implements ApplicationRunner {
             List<ProyectoJson> lista = leer("contenido/proyectos.json", ProyectosJson.class).proyectos();
             for (ProyectoJson p : lista) cargar(p, precios);
             ajustarPrecios(lista, precios);
+            completarDirecciones(lista);
         }
         // Siempre: un caso con texto de proyecto y sin referencia (una base anterior o una carga nueva) se vincula.
         for (CasoLote c : casos.findAll()) {
@@ -220,6 +224,26 @@ class ProyectosSeeder implements ApplicationRunner {
             }
         }
         jdbc.update("insert into ajuste_contenido (clave, aplicado_en) values (?, ?)", AJUSTE_PRECIOS,
+                java.sql.Timestamp.from(java.time.Instant.now()));
+    }
+
+    /**
+     * v1.0 (etapa 9): una sola vez por base, la dirección referencial de cada proyecto precargado que no tenga una. Sin
+     * enlace de mapa: lo registra la inmobiliaria con la ubicación real (el botón «Cómo llegar» solo aparece con él). Si
+     * el equipo después borra o cambia la dirección, no se vuelve a escribir.
+     */
+    private void completarDirecciones(List<ProyectoJson> lista) {
+        Integer hecho = jdbc.queryForObject("select count(*) from ajuste_contenido where clave = ?", Integer.class,
+                AJUSTE_DIRECCIONES);
+        if (hecho != null && hecho > 0) return;
+        for (ProyectoJson j : lista) {
+            if (j.direccion() == null) continue;
+            proyectos.findByCodigo(j.codigo()).filter(p -> p.getDireccion() == null).ifPresent(p -> {
+                p.setDireccion(j.direccion());
+                proyectos.save(p);
+            });
+        }
+        jdbc.update("insert into ajuste_contenido (clave, aplicado_en) values (?, ?)", AJUSTE_DIRECCIONES,
                 java.sql.Timestamp.from(java.time.Instant.now()));
     }
 

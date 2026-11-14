@@ -4,6 +4,7 @@ import type { LucideIcon } from "lucide-react";
 import { Cargando, ErrorCarga } from "@/components/base/Estados";
 import { PlanoLotes } from "@/components/PlanoLotes";
 import { IndicadorProyecto } from "@/components/IndicadorProyecto";
+import { CondicionesPago, UbicacionProyecto } from "@/components/UbicacionProyecto";
 import { useApi } from "@/lib/useApi";
 import { ETIQUETA_ESTADO_PLANO, fecha } from "@/lib/semaforo";
 import { enlaceCatalogoDelProyecto, recorridoDe, rutaDocumentoProyecto, rutaProyectoPublico, urlDocumentoProyecto } from "@/lib/proyectos";
@@ -65,6 +66,8 @@ export default function Proyecto() {
               <MapPin className="size-4 text-emerald-300" aria-hidden="true" /> {p.distrito}, Ica
             </p>
           )}
+          {/* v1.0 (etapa 9): dirección y «Cómo llegar» (abre el enlace de la inmobiliaria en otra pestaña). */}
+          <div className="mt-3"><UbicacionProyecto direccion={p.direccion} mapaUrl={p.mapaUrl} nombre={p.nombre} oscuro /></div>
           {p.descripcion && <p className="mt-4 max-w-3xl text-base leading-relaxed text-gray-300 sm:text-lg">{p.descripcion}</p>}
           {p.lotes.length > 0 && (
             <ul className="cifras mt-6 flex flex-wrap gap-3 text-sm font-bold text-white" aria-label="Lotes por estado">
@@ -99,6 +102,9 @@ export default function Proyecto() {
             Plano referencial de la lotización: las medidas exactas de cada lote están en su partida y en el plano aprobado.
           </p>
         </section>
+
+        {/* v1.0 (etapa 9): condiciones de pago en texto; no se calculan cuotas ni tasas. */}
+        {p.condicionesPago && <CondicionesPago texto={p.condicionesPago} className={tarjeta} />}
 
         <div className="grid gap-8 lg:grid-cols-2">
           <div className={tarjeta}><IndicadorProyecto indicador={p.indicadorA} /></div>

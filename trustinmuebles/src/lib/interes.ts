@@ -225,6 +225,37 @@ export const rutaInteresados = (f: { etapa?: string; proyecto?: string; responsa
   return `/interesados${q ? `?${q}` : ""}`;
 };
 
+/** v1.0 (etapa 9): la misma bandeja (con los filtros aplicados) en CSV para Excel. */
+export const rutaExportarInteresados = (f: Parameters<typeof rutaInteresados>[0]) =>
+  rutaInteresados(f).replace(/^\/interesados/, "/interesados/exportar.csv");
+
+/** v1.0 (etapa 9): ruta del aviso de interesados nuevos del menú. */
+export const RUTA_NUEVOS = "/interesados/nuevos";
+/** Evento que avisa al menú que la bandeja cambió (una etapa, un registro o una eliminación). */
+export const EVENTO_INTERESADOS = "tm:interesados-cambio";
+export const avisarCambioInteresados = () => {
+  if (typeof window !== "undefined") window.dispatchEvent(new Event(EVENTO_INTERESADOS));
+};
+
+/** v1.0 (etapa 9): texto del aviso para lectores de pantalla. 0 o menos: sin aviso. */
+export function textoAvisoNuevos(n: number): string | null {
+  if (!Number.isFinite(n) || n <= 0) return null;
+  return n === 1 ? "1 interesado nuevo" : `${n} interesados nuevos`;
+}
+
+/** Lo que se dibuja en la burbuja: hasta 99 y luego «99+». */
+export const burbujaNuevos = (n: number) => (n > 99 ? "99+" : String(n));
+
+export interface EtapaEmbudo { etapa: EtapaInteres; etiqueta: string; cantidad: number; porcentaje: number }
+export interface FilaEmbudo { clave: string; etiqueta: string; total: number; etapas: EtapaEmbudo[] }
+export interface Embudo { total: FilaEmbudo; porProyecto: FilaEmbudo[] }
+
+/** «6 (35.3 %)»: cantidad y porcentaje con un decimal, con el punto decimal de es-PE como el resto del sitio. */
+export function textoEtapaEmbudo(e: Pick<EtapaEmbudo, "cantidad" | "porcentaje">): string {
+  const pct = Number(e.porcentaje).toLocaleString("es-PE", { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  return `${e.cantidad} (${pct} %)`;
+}
+
 /** Se ofrece marcar el lote solo en Separación o en Venta, y con el interesado vinculado a un lote o inmueble. */
 export const ofreceMarcarLote = (i: Pick<Interesado, "etapa" | "origen">) =>
   (i.etapa === "SEPARACION" || i.etapa === "VENTA") && (i.origen === "LOTE" || i.origen === "CASO");

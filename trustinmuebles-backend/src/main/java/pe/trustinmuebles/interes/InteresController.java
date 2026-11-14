@@ -55,6 +55,30 @@ class InteresController {
         return ResponseEntity.status(201).body(servicio.registrar(cuerpo));
     }
 
+    /**
+     * v1.0 (etapa 9): la bandeja en CSV para Excel, con los mismos filtros que la lista. Lleva datos de contacto: solo
+     * asesor y gestor.
+     */
+    @GetMapping(value = "/interesados/exportar.csv", produces = "text/csv")
+    ResponseEntity<byte[]> exportar(@RequestParam(required = false) EtapaInteres etapa,
+            @RequestParam(required = false) String proyecto, @RequestParam(required = false) String responsable,
+            @RequestParam(defaultValue = "false") boolean vencidos) {
+        byte[] csv = servicio.exportar(etapa, proyecto, responsable, vencidos);
+        return pe.trustinmuebles.shared.EscritorCsv.descarga("interesados-" + InteresService.hoy() + ".csv", csv);
+    }
+
+    /** v1.0 (etapa 9): cuántos interesados están en etapa NUEVO (aviso del menú). */
+    @GetMapping("/interesados/nuevos")
+    ConteoNuevos nuevos() {
+        return servicio.nuevos();
+    }
+
+    /** v1.0 (etapa 9): embudo por etapa, del total y por proyecto. */
+    @GetMapping("/interesados/embudo")
+    Embudo embudo() {
+        return servicio.embudo();
+    }
+
     @GetMapping("/interesados/resumen")
     ResumenDemanda resumen() {
         return servicio.resumen();

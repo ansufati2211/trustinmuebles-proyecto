@@ -511,3 +511,22 @@ Columnas del CSV: `manzana,lote,area_m2,precio,moneda,estado,independizacion,zon
 
 Los PDF que genera el servidor (ficha registral, láminas y documentos del lote) llevan el logo y el nombre de LEDCONS
 (D72). Los precios de los lotes precargados salen de rangos por distrito (D70).
+
+### Etapa 9
+
+Todas bajo `/api/v1`. Las descargas CSV usan punto y coma, UTF-8 con BOM y CRLF; van con `Content-Type: text/csv;
+charset=UTF-8`, `Content-Disposition: attachment; filename="…"`, `Cache-Control: no-store` y `X-Content-Type-Options:
+nosniff`. Un texto que empieza con `=`, `+`, `-` o `@` sale con un apóstrofo delante (D74).
+
+| Qué | Petición | Respuesta |
+|---|---|---|
+| Lotes de un proyecto en CSV (ASESOR o GESTOR) | `GET /proyectos/{c}/lotes/exportar.csv` → `lotes-{c}-{fecha}.csv` con `manzana;lote;area_m2;precio;moneda;estado;independizacion;zonificacion;codigo_caso`, un lote por fila en orden de manzana y número; el estado es el vigente | 200; 401 sin sesión; 403 con otro rol (también REVISOR); 404 si el proyecto no existe |
+| Bandeja de interesados en CSV (ASESOR o GESTOR) | `GET /interesados/exportar.csv?etapa=&proyecto=&responsable=&vencidos=` (mismos filtros y orden que `GET /interesados`) → `interesados-{fecha}.csv` con «Registrado el; Nombre; Medio; Contacto; Canal; Etapa; Inmueble o búsqueda; Proyecto; Lote; Zona; Tipo; Presupuesto mínimo; Presupuesto máximo; Moneda; Área deseada (m²); Forma de pago; Responsable; Próxima acción; Fecha de la próxima acción; Acción vencida; Cita por confirmar; Notas» | 200; 401; 403 |
+| Ubicación y condiciones de pago (ASESOR o GESTOR) | `PUT /proyectos/{c}/datos` con `{"direccion": "…", "mapaUrl": "https://…", "condicionesPago": "…"}`; vacío o `null` borra el dato. `direccion` hasta 200, `mapaUrl` hasta 500 y solo https con dominio, `condicionesPago` hasta 500 | 200 con el resumen del proyecto (`direccion`, `mapaUrl`, `condicionesPago`); 400 si un campo no es válido; 401; 403 (también REVISOR); 404 |
+| Ubicación en el portal (sin sesión) | `GET /publico/proyectos/{c}` agrega `direccion`, `mapaUrl` y `condicionesPago`; `GET /publico/proyectos/{c}/lotes/{A-7}` agrega `proyectoDireccion` y `proyectoMapaUrl`; `GET /proyectos` agrega los tres campos al resumen | 200 |
+| Aviso de interesados nuevos (ASESOR o GESTOR) | `GET /interesados/nuevos` → `{"nuevos": 3}` (etapa NUEVO) | 200; 401; 403 |
+| Embudo (ASESOR o GESTOR) | `GET /interesados/embudo` → `{"total": {"clave": "TOTAL", "etiqueta": "…", "total": 15, "etapas": [{"etapa": "NUEVO", "etiqueta": "Nuevo", "cantidad": 3, "porcentaje": 20.0}, …]}, "porProyecto": [{"clave": "altos-de-ventisca", …}, {"clave": "SIN_PROYECTO", …}]}`; las siete etapas siempre, porcentaje sobre el total de la fila con un decimal | 200; 401; 403 |
+| Responsables de la bandeja | `GET /interesados/opciones` → `responsables`: todas las cuentas ASESOR y GESTOR en orden alfabético (antes, una lista fija) | 200 |
+
+**Configuración nueva:** `app.asesores` (`APP_ASESORES`, por omisión `asesor-01`): códigos de asesor que el arranque crea si
+faltan, con `APP_SEED_PASSWORD` (D77). **Migración:** `V24__ubicacion_y_condiciones_proyecto.sql` (D75).

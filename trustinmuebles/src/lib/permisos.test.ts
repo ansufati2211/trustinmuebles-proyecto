@@ -53,7 +53,7 @@ describe("navegación por rol (v0.7)", () => {
     expect(claves("COMPRADOR")).toEqual(["inicio", "casos"]);
     expect(claves("ESPECIALISTA")).toEqual(["inicio", "casos"]);
     expect(claves("REVISOR")).toEqual(["inicio", "casos", "registrar"]);
-    expect(claves("GESTOR")).toEqual(["inicio", "casos", "cartera"]);
+    expect(claves("GESTOR")).toEqual(["inicio", "casos", "cartera", "interesados"]);
     expect(claves("PROPIETARIO")).toEqual(["inicio", "mis-inmuebles"]);
   });
 

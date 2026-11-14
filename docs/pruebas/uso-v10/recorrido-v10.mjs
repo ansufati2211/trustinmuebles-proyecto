@@ -1,7 +1,8 @@
 // Recorrido de uso de la versión 1.0.0 (etapa 7): el guion de 15 minutos de docs/demo/GUION-DEMO.md, con el kit de
 // docs/demo/kit. Visitante sin sesión: asistente, filtros, plano, ficha del lote y solicitud de cita. Asesor: carga el CSV
 // del kit, registra un particular con un texto del kit, sube sus láminas, el propietario autoriza, publica, confirma la
-// cita y lleva al interesado hasta separación. Una captura por paso; un paso en FALLA se registra y el recorrido sigue.
+// cita y lleva al interesado hasta separación. Etapa 9 (pasos 14 y 15): aviso de nuevos, exportar a CSV (con ida y vuelta),
+// ubicación con «Cómo llegar» y condiciones de pago. Una captura por paso; un paso en FALLA se registra y el recorrido sigue.
 //
 // Arranca todo solo y lo apaga al final: el backend (target/backend-1.0.0.jar) con una base NUEVA en una carpeta temporal
 // fuera del repositorio, la interfaz con Vite en http://localhost:5173 y Chrome sin ventana. Antes corre
@@ -497,6 +498,76 @@ await paso(13, "visitante", "Pie con el aviso legal y la versión 1.0.0", "pie-v
   v(t.includes("Trustinmuebles · versión 1.0.0"), "versión 1.0.0 en el pie");
   const s = await (await fetch("http://127.0.0.1:8080/api/v1/publico/sitio")).json();
   v(s.version === "1.0.0" && s.indexable === false, `/publico/sitio: versión ${s.version}, indexable ${s.indexable}`);
+});
+
+// ================================================================ ETAPA 9: adopción (CSV, ubicación, pago, aviso)
+/** Un CSV protegido, con la sesión del navegador: estado, tipo, si trae BOM y el texto sin él. */
+const csvSesion = (ruta) => page.evaluate(async (r) => {
+  const t = sessionStorage.getItem("tm_token");
+  const res = await fetch("/api/v1" + r, { headers: t ? { Authorization: "Bearer " + t } : {} });
+  const b = new Uint8Array(await res.arrayBuffer());
+  const bom = b[0] === 0xef && b[1] === 0xbb && b[2] === 0xbf;
+  return { status: res.status, tipo: res.headers.get("content-type"), bom, texto: new TextDecoder().decode(bom ? b.slice(3) : b) };
+}, ruta);
+const lineasCsv = (t) => t.split("\r\n").filter((l) => l.length > 0);
+const MAPA_DEMO = "https://www.google.com/maps/search/?api=1&query=Subtanjalla%2C+Ica";
+const CONDICIONES_DEMO = "Inicial desde S/ 5,000 y saldo en cuotas directas con la inmobiliaria.";
+
+await paso(14, "asesor-01", "Etapa 9: el menú avisa los interesados nuevos; exporta la bandeja y los lotes a CSV para Excel (ida y vuelta sin cambios) y registra la ubicación y las condiciones de pago", "exportar-ubicacion", async (v) => {
+  await ingresar("asesor-01");
+  await ir("/interesados");
+  const nuevos = (await apiSesion("GET", "/interesados/nuevos")).body?.nuevos;
+  const aviso = await page.$eval("[data-aviso-nuevos]", (e) => e.getAttribute("data-aviso-nuevos")).catch(() => null);
+  v(nuevos > 0 && String(nuevos) === aviso, `aviso junto a «Interesados»: ${aviso} (API: ${nuevos} en etapa Nuevo)`);
+  v((await page.$("[data-exportar-interesados]")) !== null, "botón «Exportar a CSV» en la bandeja");
+  const lista = (await apiSesion("GET", "/interesados")).body;
+  const ci = await csvSesion("/interesados/exportar.csv");
+  const li = lineasCsv(ci.texto);
+  v(ci.status === 200 && ci.bom && /text\/csv/.test(ci.tipo ?? ""), `CSV de interesados: ${ci.status}, ${ci.tipo}, BOM ${ci.bom}`);
+  v(li[0].startsWith("Registrado el;Nombre;") && li.length === lista.length + 1, `${li.length - 1} filas para ${lista.length} interesados, separador «;»`);
+  const cl = await csvSesion("/proyectos/horizonte-de-los-aquijes/lotes/exportar.csv");
+  const ll = lineasCsv(cl.texto);
+  v(cl.status === 200 && cl.bom && ll[0] === "manzana;lote;area_m2;precio;moneda;estado;independizacion;zonificacion;codigo_caso",
+    "CSV de lotes con las columnas de la carga");
+  v(ll.length - 1 === 80, `${ll.length - 1} lotes de Horizonte de Los Aquijes (los 80 del CSV del kit)`);
+  const previa = await page.evaluate(async (texto) => {
+    const t = sessionStorage.getItem("tm_token");
+    const f = new FormData();
+    f.append("archivo", new Blob(["﻿" + texto], { type: "text/csv" }), "lotes.csv");
+    const r = await fetch("/api/v1/proyectos/horizonte-de-los-aquijes/lotes/carga/vista-previa", { method: "POST", headers: { Authorization: "Bearer " + t }, body: f });
+    return r.json();
+  }, cl.texto);
+  v(previa.valida && previa.sinCambios === 80 && previa.nuevas === 0 && previa.actualizadas === 0,
+    `volver a cargarlo: ${previa.sinCambios} sin cambios, ${previa.nuevas} nuevos, ${previa.actualizadas} actualizados`);
+  await ir("/proyectos");
+  await page.click('[data-editar-datos="altos-de-ventisca"]');
+  await page.waitForSelector("[data-guardar-datos]");
+  const direccion = await page.evaluate(() => {
+    const l = [...document.querySelectorAll("label")].find((x) => x.textContent.trim() === "Dirección");
+    return document.getElementById(l.htmlFor).value;
+  });
+  v(direccion.includes("Subtanjalla"), `dirección precargada: ${direccion}`);
+  await escribir("Enlace de mapa", MAPA_DEMO);
+  await escribir("Condiciones de pago", CONDICIONES_DEMO);
+  await page.click("[data-guardar-datos]");
+  await conTexto("Datos del proyecto guardados.");
+  const p = (await apiSesion("GET", "/proyectos")).body.find((x) => x.codigo === "altos-de-ventisca");
+  v(p?.mapaUrl === MAPA_DEMO && p?.condicionesPago === CONDICIONES_DEMO, "enlace de mapa y condiciones guardados");
+});
+
+await paso(15, "visitante", "Etapa 9: la página del proyecto y la ficha del lote muestran la dirección, «Cómo llegar» (otra pestaña) y las condiciones de pago", "ubicacion-pago", async (v) => {
+  await salir();
+  await ir("/proyectos/altos-de-ventisca/lotes/" + loteElegido);
+  const enLote = await page.$eval("[data-como-llegar]", (a) => ({ href: a.href, target: a.target })).catch(() => null);
+  v(enLote?.href === MAPA_DEMO && enLote?.target === "_blank", `ficha del lote ${loteElegido}: «Cómo llegar» abre ${enLote?.href ?? "nada"} en otra pestaña`);
+  await ir("/proyectos/altos-de-ventisca");
+  const t = await texto();
+  v(t.includes("Sector La Ventisca"), "dirección en la cabecera del proyecto");
+  const enProyecto = await page.$eval("[data-como-llegar]", (a) => a.href).catch(() => null);
+  v(enProyecto === MAPA_DEMO, "«Cómo llegar» en la página del proyecto");
+  v(t.includes("Condiciones de pago") && t.includes(CONDICIONES_DEMO) && t.includes("Consulta con un asesor."), "«Condiciones de pago» con la nota «Consulta con un asesor»");
+  v((await page.$("iframe[src*='maps']")) === null, "sin mapa embebido");
+  await page.$eval("[data-condiciones-pago]", (e) => e.scrollIntoView({ block: "center" })).catch(() => {});
 });
 
 // ================================================================ TABLETA (etapa 8)

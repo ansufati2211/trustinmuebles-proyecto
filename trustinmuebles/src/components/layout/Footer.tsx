@@ -175,7 +175,7 @@ export function Footer() {
               <div>
                 <p className="text-xs font-bold text-white">Indicador B · En Campo</p>
                 <p className="text-[11px] text-gray-400 leading-snug mt-0.5">
-                  Inspección presencial por un especialista colegiado de la inmobiliaria.
+                  Inspección presencial por un especialista de la inmobiliaria.
                 </p>
               </div>
             </div>

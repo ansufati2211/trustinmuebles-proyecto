@@ -21,7 +21,9 @@ describe("límites legales del pie (I7)", () => {
 
   it("el pie atribuye la inspección a un especialista de la inmobiliaria", () => {
     const html = renderToStaticMarkup(<MemoryRouter><Footer /></MemoryRouter>);
-    expect(html).toContain("especialista colegiado de la inmobiliaria");
+    expect(html).toContain("especialista de la inmobiliaria");
+    // Los especialistas no tienen colegiatura registrada (D67): el pie no lo afirma.
+    expect(html).not.toMatch(/colegiad/i);
     expect(html).not.toContain("independiente");
   });
 
