@@ -1221,7 +1221,7 @@ class ExpedienteService {
     static final String ORIGEN_PROYECTO = "PROYECTO";
 
     static String denominacionDe(LoteProyecto l) {
-        return "Mz. " + l.getManzana() + " Lote " + l.getNumero() + " · " + l.getProyecto().getNombre() + " · "
+        return "Mz. " + l.getManzana() + " Lote " + l.etiqueta() + " · " + l.getProyecto().getNombre() + " · "
                 + contextoDe(l.getProyecto());
     }
 

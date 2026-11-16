@@ -225,7 +225,7 @@ class ProyectoService {
         boolean autoriza = ExpedienteService.autorizaLotes(matriz);
         List<LoteDto> lista = new ArrayList<>();
         for (LoteProyecto l : lotes.findDelProyecto(p.getCodigo())) lista.add(dto(l, autoriza));
-        lista.sort(java.util.Comparator.comparing(LoteDto::manzana).thenComparingInt(LoteDto::numero));
+        lista.sort(java.util.Comparator.comparing(LoteDto::manzana).thenComparingInt(LoteDto::numero).thenComparing(LoteDto::sufijo));
         int publicados = (int) expedientes.findPublicados().stream()
                 .filter(e -> p.getCodigo().equals(e.getCaso().getProyectoCodigo())).count();
         return new Vista(p, matriz, lista, publicados);
@@ -245,7 +245,7 @@ class ProyectoService {
             publicado = l.isPublicado() && matrizAutoriza;
         }
         boolean conPrecio = publicado && l.getPrecio() != null;
-        return new LoteDto(l.codigo(), l.clave(), l.getManzana(), l.getNumero(), l.getAreaM2(),
+        return new LoteDto(l.codigo(), l.clave(), l.getManzana(), l.getNumero(), l.getSufijo(), l.getAreaM2(),
                 conPrecio ? l.getPrecio() : null, conPrecio ? l.getMoneda() : null,
                 conPrecio ? FiltroPublico.precioPorM2(l.getPrecio(), l.getAreaM2()) : null, estado, estado.etiqueta(),
                 l.getIndependizacion(), l.getIndependizacion().etiqueta(), l.getZonificacion(), publicado,
@@ -283,17 +283,15 @@ class ProyectoService {
                 n.getOrDefault(EstadoComercial.SEPARADO, 0), n.getOrDefault(EstadoComercial.VENDIDO, 0));
     }
 
-    /** Clave «A-7» (sin distinguir mayúsculas en la manzana). Una clave mal formada es un lote que no existe. */
+    /** Clave «A-7» o «228A-10A» (sin distinguir mayúsculas en la manzana). Una clave mal formada es un lote que no existe. */
     private LoteProyecto buscarLote(String codigo, String clave) {
         int guion = clave == null ? -1 : clave.lastIndexOf('-');
         if (guion <= 0) throw new NoEncontradoException("Lote", String.valueOf(clave));
         String manzana = clave.substring(0, guion).trim().toUpperCase(java.util.Locale.ROOT);
-        int numero;
-        try {
-            numero = Integer.parseInt(clave.substring(guion + 1).trim());
-        } catch (NumberFormatException ex) {
-            throw new NoEncontradoException("Lote", clave);
-        }
-        return lotes.findLote(codigo, manzana, numero).orElseThrow(() -> new NoEncontradoException("Lote", clave));
+        java.util.regex.Matcher m = java.util.regex.Pattern.compile("(\\d{1,4})([A-Z]{0,2})")
+                .matcher(clave.substring(guion + 1).trim().toUpperCase(java.util.Locale.ROOT));
+        if (!m.matches()) throw new NoEncontradoException("Lote", clave);
+        int numero = Integer.parseInt(m.group(1));
+        return lotes.findLote(codigo, manzana, numero, m.group(2)).orElseThrow(() -> new NoEncontradoException("Lote", clave));
     }
 }

@@ -9,7 +9,8 @@
 // scripts/preparar-demo.mjs. Los puertos 8080 y 5173 deben estar libres.
 // Requisitos: Java 21, Google Chrome, el jar compilado (cd trustinmuebles-backend && ./mvnw -DskipTests package) y las
 // dependencias de la interfaz instaladas. puppeteer-core es una devDependency de trustinmuebles.
-// Uso: node docs/pruebas/uso-v10/recorrido-v10.mjs      (APP_SEED_PASSWORD opcional; si falta, se genera una)
+// Uso: node docs/pruebas/uso-v10/recorrido-v10.mjs      (APP_SEED_PASSWORD opcional; si falta, se genera una;
+//      CHROME_PATH opcional: la ruta de Chrome si no es la de Windows)
 // Genera docs/pruebas/uso-v10/capturas/, capturas-tableta/ (etapa 8: 820 x 1180 y 1180 x 820) y
 // docs/pruebas/uso-v10/RESULTADO-recorrido-v10.json (con la duración del guion y el resultado en tableta).
 import { createRequire } from "node:module";
@@ -137,7 +138,7 @@ function textoPdf(buf) {
 
 // ---------------------------------------------------------------- navegador
 const espera = (ms) => new Promise((r) => setTimeout(r, ms));
-const browser = await puppeteer.launch({ executablePath: "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--no-sandbox"] });
+const browser = await puppeteer.launch({ executablePath: process.env.CHROME_PATH ?? "C:/Program Files/Google/Chrome/Application/chrome.exe", headless: true, args: ["--no-sandbox"] });
 const page = await browser.newPage();
 await page.setViewport({ width: 1280, height: 900 });
 const errores = [];

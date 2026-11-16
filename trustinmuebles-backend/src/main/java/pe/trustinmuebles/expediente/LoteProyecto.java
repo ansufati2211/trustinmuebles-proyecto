@@ -30,6 +30,10 @@ class LoteProyecto {
     @Column(nullable = false)
     private int numero;
 
+    /** Letras del lote tras el número («A» en 10A); vacío en un lote numérico. */
+    @Column(nullable = false, length = 2)
+    private String sufijo = "";
+
     @Column(name = "area_m2", nullable = false)
     private BigDecimal areaM2;
 
@@ -67,11 +71,16 @@ class LoteProyecto {
 
     /** Clave del lote dentro del proyecto, por ejemplo «A-7». */
     String clave() {
-        return clave(manzana, numero);
+        return clave(manzana, numero, sufijo);
     }
 
-    static String clave(String manzana, int numero) {
-        return manzana + "-" + numero;
+    static String clave(String manzana, int numero, String sufijo) {
+        return manzana + "-" + numero + (sufijo == null ? "" : sufijo);
+    }
+
+    /** El lote como se escribe: «10A», o «7» si no tiene letra. */
+    String etiqueta() {
+        return numero + (sufijo == null ? "" : sufijo);
     }
 
     /** Código del lote en el catálogo, único entre casos y lotes: «altos-de-ventisca-A-7». */

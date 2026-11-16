@@ -57,6 +57,28 @@ El asesor reúne los permisos del revisor y del gestor. El gestor tiene los de g
 | **Ubicación y pago** | Dirección (hasta 200 caracteres), enlace de mapa opcional (solo https, por ejemplo el de «Compartir» de Google Maps) y condiciones de pago opcionales (hasta 500 caracteres, con contador). Un campo vacío borra el dato. No se calculan cuotas ni tasas |
 | Ver página pública | Abre `#/proyectos/{c}` |
 
+### Proyectos precargados
+
+Una base nueva nace con cinco proyectos (`contenido/proyectos.json`); una base que ya existe recibe el que le falte al
+arrancar, sin duplicarlo y sin pisar lo que el asesor editó.
+
+| Proyecto | Distrito | Lotes al nacer | Partida matriz |
+|---|---|---|---|
+| Altos de Ventisca | Subtanjalla | 56 | `11112001` (de demostración) |
+| Rinconada del Lúcumo | La Tinguiña | 44 | `11112002` (de demostración) |
+| Terrazas de Sauzal | Salas | 68 | `11112003` (de demostración) |
+| Horizonte de Los Aquijes | Los Aquijes | 0 (se cargan por CSV) | `11112004` (de demostración) |
+| **Sol de Carhuaz – IV etapa** (primer proyecto real de LedCons) | Ica | 0 (se cargan por CSV) | `INT-99000700`, registro interno de cartera **sin asientos**: su indicador A es gris («información insuficiente») hasta registrar la copia literal |
+
+Sol de Carhuaz – IV etapa lleva la dirección y las condiciones de pago que entregó LedCons (15/11/2026), sin enlace de mapa,
+y solo estos hitos, sin fechas: «Lanzamiento de la IV etapa (preventa)» en curso, y «Luz», «Agua» y «Desagüe» pendientes. Su
+partida matriz tiene la autorización de la inmobiliaria vigente (verbal, registrada por el asesor), así que los lotes que se
+carguen se ofrecen. Su CSV real (214 lotes, 32 manzanas, de 94,15 a 172 m²) está en `docs/demo/kit/sol-de-carhuaz-iv-etapa-lotes.csv`.
+
+**Lotes con letra.** El lote de la carga es un número de 1 a 9999 seguido, si hace falta, de una o dos letras (`10A`, `15C`;
+minúsculas se pasan a mayúsculas); la manzana admite hasta 4 letras o números (`228A`). La clave es `228A-10A` y sirve en
+la ficha (`#/proyectos/{c}/lotes/228A-10A`), en el plano, en el historial y en la exportación a CSV. Un lote numérico no cambia.
+
 ### Expedientes, Registrar y Cartera
 
 - **Registrar** (`#/casos/nueva`): inmueble de la inmobiliaria o de un particular (titularidad comercial, proyecto, estado

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   ESTILO_LOTE, PLANO, activaLote, conteoPlano, descripcionLote, dibujarPlano, enlaceCatalogoDelProyecto, enlaceInmueble,
-  enlaceLote, estadoEnPlano, nombreLote, recorridoDe, rutaLotePublico, rutaProyectoPublico, siguienteIndice,
+  enlaceLote, estadoEnPlano, etiquetaLote, nombreLote, recorridoDe, rutaLotePublico, rutaProyectoPublico, siguienteIndice,
   urlDocumentoProyecto,
 } from "./proyectos";
 import { precio } from "./formato";
@@ -176,5 +176,26 @@ describe("recorrido o video del proyecto", () => {
       "https://youtu.be/", "https://www.youtube.com/channel/abc"]) {
       expect(recorridoDe(url as string | null), String(url)).toBeNull();
     }
+  });
+});
+
+describe("lotes con letra (v1.0, etapa 10)", () => {
+  it("escribe el lote con su letra y la clave y los enlaces la conservan", () => {
+    expect(etiquetaLote({ numero: 10, sufijo: "A" })).toBe("10A");
+    expect(etiquetaLote({ numero: 7, sufijo: "" })).toBe("7");
+    expect(etiquetaLote({ numero: 7 })).toBe("7"); // un lote sin letra o de una respuesta anterior
+    expect(nombreLote("228A-10A")).toBe("Mz. 228A · Lote 10A");
+    expect(enlaceLote("p", { clave: "228A-10A", casoCodigo: null })).toBe("/proyectos/p/lotes/228A-10A");
+    expect(enlaceInmueble({ codigo: "p-228A-10A", clase: "LOTE_PROYECTO", proyectoCodigo: "p", lote: "228A-10A" }))
+      .toBe("/proyectos/p/lotes/228A-10A");
+  });
+
+  it("lo lee un lector de pantalla con su letra y el plano ordena 2, 10, 10A, 10B", () => {
+    const lotes = [lote("228A", 10, { sufijo: "B", clave: "228A-10B" }), lote("228A", 10, { sufijo: "A", clave: "228A-10A" }),
+      lote("228A", 10), lote("228A", 2)];
+    expect(descripcionLote(lotes[1], precio)).toContain("Manzana 228A, lote 10A: disponible");
+    const p = dibujarPlano(lotes);
+    expect(p.orden.map((l) => etiquetaLote(l))).toEqual(["2", "10", "10A", "10B"]);
+    expect(p.manzanas[0].lotes.map((d) => etiquetaLote(d.lote))).toEqual(["2", "10", "10A", "10B"]);
   });
 });

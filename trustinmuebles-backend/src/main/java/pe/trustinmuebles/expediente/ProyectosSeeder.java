@@ -78,7 +78,7 @@ class ProyectosSeeder implements ApplicationRunner {
     record HitoJson(String nombre, EstadoHito estado, LocalDate fecha) {}
 
     record ProyectoJson(String codigo, String nombre, String distrito, String descripcion, String direccion,
-            String recorridoUrl,
+            String recorridoUrl, String condicionesPago,
             String casoMatriz, long semilla, Independizacion independizacion, List<ManzanaJson> manzanas,
             List<HitoJson> hitos) {}
 
@@ -114,6 +114,10 @@ class ProyectosSeeder implements ApplicationRunner {
             Proyecto n = new Proyecto();
             n.setCodigo(j.codigo());
             n.setNombre(j.nombre());
+            // v1.0 (etapa 10): un proyecto que nace ahora (también en una base existente) trae su dirección y sus
+            // condiciones de pago; uno que ya existe no se toca, para no pisar lo que el asesor editó.
+            n.setDireccion(j.direccion());
+            n.setCondicionesPago(j.condicionesPago());
             return n;
         });
         if (p.getDistrito() == null) p.setDistrito(j.distrito());

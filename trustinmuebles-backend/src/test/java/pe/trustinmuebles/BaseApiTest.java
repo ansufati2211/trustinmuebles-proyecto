@@ -58,9 +58,12 @@ public abstract class BaseApiTest {
     protected static final String MATRIZ_SAUZAL = "11112003";
     /** Etapa 3b: la matriz del cuarto proyecto, que empieza sin lotes (se cargan desde un CSV). */
     protected static final String MATRIZ_AQUIJES = "11112004";
-    protected static final String[] MATRICES = {MATRIZ_VENTISCA, MATRIZ_LUCUMO, MATRIZ_SAUZAL, MATRIZ_AQUIJES};
-    /** Casos de la carga: los 12 de siempre (10 de demostración y 2 de la SBN) más las 4 partidas matrices. */
-    protected static final int CASOS_CARGA = 16;
+    /** v1.0 (etapa 10): partida matriz interna (INT-) de Sol de Carhuaz – IV etapa, sin asientos: su indicador A es gris. */
+    protected static final String MATRIZ_CARHUAZ = "INT-99000700";
+    protected static final String[] MATRICES = {MATRIZ_VENTISCA, MATRIZ_LUCUMO, MATRIZ_SAUZAL, MATRIZ_AQUIJES,
+            MATRIZ_CARHUAZ};
+    /** Casos de la carga: los 12 de siempre (10 de demostración y 2 de la SBN) más las 5 partidas matrices. */
+    protected static final int CASOS_CARGA = 17;
 
     /**
      * v1.0 (etapa 3a): cuántos inmuebles ofrece el catálogo público, contados en la base: los casos publicados más los

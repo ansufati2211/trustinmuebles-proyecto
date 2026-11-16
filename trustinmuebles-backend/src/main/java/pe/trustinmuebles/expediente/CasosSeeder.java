@@ -144,6 +144,8 @@ class CasosSeeder implements ApplicationRunner {
         caso.setPrecioReferencial(c.precioReferencial());
         if (c.moneda() != null) caso.setMoneda(c.moneda());
         caso.setPrecioNota(c.precioNota());
+        // v1.0 (etapa 10): una partida con prefijo INT- es un registro interno de cartera (como en «Registrar partida»).
+        if (ExpedienteService.esCodigoInterno(c.codigo())) caso.setFuente(ExpedienteService.FUENTE_SIMULADA);
         caso.setResponsableId(responsableId);
         // v0.7: los casos de demostración nacen publicados, con la autorización de su propietario (I14).
         // v1.0 (etapa 3a): una partida matriz es de la inmobiliaria (sin cuenta de propietario) y queda en borrador.

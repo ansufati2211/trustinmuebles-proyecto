@@ -97,7 +97,10 @@ export type EstadoHito = "COMPLETADO" | "EN_PROCESO" | "PENDIENTE";
 
 /** v1.0 (etapa 3a): un lote del plano de un proyecto. Sin publicar, no trae precio. */
 export interface LoteProyecto {
-  codigo: string; clave: string; manzana: string; numero: number; areaM2: number; precio: number | null;
+  codigo: string; clave: string; manzana: string; numero: number;
+  /** Letras tras el número («A» en 10A); vacío (o ausente) en un lote numérico. */
+  sufijo?: string;
+  areaM2: number; precio: number | null;
   moneda: string | null; precioPorM2: number | null; estadoComercial: EstadoComercial; estadoComercialEtiqueta: string;
   independizacion: Independizacion; independizacionEtiqueta: string; zonificacion: string | null; publicado: boolean;
   /** Si el lote tiene un caso propio publicado, su ficha es la de ese caso. */

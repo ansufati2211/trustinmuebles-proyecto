@@ -1,0 +1,54 @@
+{
+  "codigo": "INT-99000700",
+  "denominacion": "Partida matriz · Sol de Carhuaz – IV etapa · Ica",
+  "contexto": "Ica",
+  "distrito": "Ica",
+  "precioReferencial": null,
+  "proyecto": "Sol de Carhuaz – IV etapa",
+  "titularidadComercial": "INMOBILIARIA",
+  "estadoPublicacion": "BORRADOR",
+  "expediente": {
+    "condicionRepresentada": "Desconocido",
+    "completitud": "DESCONOCIDA",
+    "fechaReferencial": "2026-11-15",
+    "nota": "Registro interno de cartera de LedCons. Todavía no se cuenta con la copia literal de la partida matriz: no consta el número de partida ni su contenido, así que el indicador A queda en «información insuficiente» hasta registrarla.",
+    "zonaRegistral": null,
+    "oficinaRegistral": null,
+    "ubicacion": "Km 10 de la carretera a Carhuaz, Ica.",
+    "areaM2": null,
+    "linderos": null,
+    "antecedenteDominial": null,
+    "asientos": [],
+    "checklist": [
+      {
+        "nombre": "Copia literal de la partida matriz",
+        "estado": "PENDIENTE",
+        "observacion": "Solo se tiene una imagen en el folleto del proyecto; falta la partida."
+      },
+      {
+        "nombre": "Habilitación urbana",
+        "estado": "PENDIENTE",
+        "observacion": "Mostrada en el folleto como imagen; falta el documento."
+      },
+      {
+        "nombre": "Certificado de factibilidad de luz",
+        "estado": "PENDIENTE",
+        "observacion": "Mostrado en el folleto como imagen; falta el documento."
+      }
+    ],
+    "terminos": [
+      "Partida registral",
+      "Copia literal",
+      "Documento referencial",
+      "Independización",
+      "Checklist",
+      "Pendiente",
+      "Semáforo informativo"
+    ],
+    "tipoPredio": "LOTE",
+    "areaConstruidaInscrita": null,
+    "planos": [],
+    "informeTecnico": null,
+    "documentosLote": []
+  }
+}

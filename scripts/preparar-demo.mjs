@@ -1,8 +1,8 @@
 // v1.0 (etapa 7): deja lista la base para la demostración, solo a través de la API y sin borrar nada.
 //
 // Con el backend recién iniciado (base nueva), comprueba que estén los datos precargados:
-//   - los 4 proyectos de contenido/proyectos.json con sus lotes (Horizonte de Los Aquijes va sin lotes: los carga el CSV
-//     del kit durante la demo);
+//   - los 5 proyectos de contenido/proyectos.json con sus lotes (Horizonte de Los Aquijes y Sol de Carhuaz – IV etapa van
+//     sin lotes: los carga el CSV del kit);
 //   - los 15 interesados precargados (correos @example.com) y sus 4 citas de los próximos 7 días.
 // Si algo falta o cambió, lo repone (etapa 8):
 //   - lotes: los que faltan se cargan por CSV y los que cambiaron de estado vuelven al de la semilla (el mismo reparto
@@ -34,7 +34,11 @@ const CONTENIDO = path.join(RAIZ, "trustinmuebles-backend", "src", "main", "reso
 const PROYECTOS = JSON.parse(readFileSync(path.join(CONTENIDO, "proyectos.json"), "utf8")).proyectos;
 const PRECIOS = JSON.parse(readFileSync(path.join(CONTENIDO, "precios-zona.json"), "utf8"));
 /** v1.0 (etapa 8): estados del CSV del kit para el proyecto que se carga en vivo. */
-const KIT_CSV = { "horizonte-de-los-aquijes": path.join(RAIZ, "docs", "demo", "kit", "proyecto-nuevo-80-lotes.csv") };
+const KIT_CSV = {
+  "horizonte-de-los-aquijes": path.join(RAIZ, "docs", "demo", "kit", "proyecto-nuevo-80-lotes.csv"),
+  // v1.0 (etapa 10): el primer proyecto real de LedCons también va sin lotes; el asesor carga su CSV desde Proyectos.
+  "sol-de-carhuaz-iv-etapa": path.join(RAIZ, "docs", "demo", "kit", "sol-de-carhuaz-iv-etapa-lotes.csv"),
+};
 
 /**
  * Respaldo de la precarga de interesados (la misma de InteresSeeder: nombre de pila, correo @example.com, etapa y a qué

@@ -35,6 +35,7 @@ class CargaLotesService {
     static final List<String> COLUMNAS = List.of("manzana", "lote", "area_m2", "precio", "moneda", "estado",
             "independizacion", "zonificacion", "codigo_caso");
     static final List<String> OBLIGATORIAS = List.of("manzana", "lote", "area_m2");
+    static final java.util.regex.Pattern LOTE = java.util.regex.Pattern.compile("(\\d{1,4})([A-Z]{0,2})");
     static final BigDecimal MAX_AREA = new BigDecimal("99999999.99");
     static final BigDecimal MAX_PRECIO = new BigDecimal("9999999999.99");
 
@@ -89,6 +90,7 @@ class CargaLotesService {
                 l.setProyecto(p);
                 l.setManzana(f.manzana);
                 l.setNumero(f.lote);
+                l.setSufijo(f.sufijo);
                 // Un lote nuevo se ofrece solo si la partida matriz tiene autorización vigente (I14).
                 l.setPublicado(autoriza);
             }
@@ -121,7 +123,7 @@ class CargaLotesService {
         lista.sort(java.util.Comparator.comparing(LoteProyecto::getManzana).thenComparingInt(LoteProyecto::getNumero));
         List<List<String>> filas = new ArrayList<>();
         for (LoteProyecto l : lista) {
-            filas.add(java.util.Arrays.asList(l.getManzana(), String.valueOf(l.getNumero()), plano(l.getAreaM2()),
+            filas.add(java.util.Arrays.asList(l.getManzana(), l.etiqueta(), plano(l.getAreaM2()),
                     plano(l.getPrecio()), l.getMoneda(), estadoVigente(l).name(), l.getIndependizacion().name(),
                     l.getZonificacion(), l.getCasoCodigo()));
         }
@@ -157,6 +159,7 @@ class CargaLotesService {
         int linea;
         String manzana;
         Integer lote;
+        String sufijo = "";
         String clave;
         AccionFila accion = AccionFila.ERROR;
         List<String> cambios = new ArrayList<>();
@@ -248,11 +251,16 @@ class CargaLotesService {
         else if (!manzana.matches("[A-Z0-9]{1,4}")) f.errores.add("manzana: «" + celda.apply("manzana") + "» no es válida. Usa de 1 a 4 letras o números, por ejemplo A.");
         else f.manzana = manzana;
 
+        // v1.0 (etapa 10): el lote es un número de 1 a 9999 y, si quiere, una o dos letras mayúsculas (10A, 15C).
         String textoLote = celda.apply("lote");
+        java.util.regex.Matcher ml = LOTE.matcher(textoLote.toUpperCase(Locale.ROOT));
         if (textoLote.isEmpty()) f.errores.add("lote: es obligatorio.");
-        else if (!textoLote.matches("\\d{1,4}") || Integer.parseInt(textoLote) < 1) {
-            f.errores.add("lote: «" + textoLote + "» no es válido. Usa un número entero de 1 a 9999.");
-        } else f.lote = Integer.parseInt(textoLote);
+        else if (!ml.matches() || Integer.parseInt(ml.group(1)) < 1) {
+            f.errores.add("lote: «" + textoLote + "» no es válido. Usa un número entero de 1 a 9999, con una o dos letras si hace falta (por ejemplo 7 o 10A).");
+        } else {
+            f.lote = Integer.parseInt(ml.group(1));
+            f.sufijo = ml.group(2);
+        }
 
         BigDecimal area = null;
         String textoArea = celda.apply("area_m2");
@@ -277,7 +285,7 @@ class CargaLotesService {
         String casoCodigo = celda.apply("codigo_caso");
 
         if (f.manzana != null && f.lote != null) {
-            f.clave = LoteProyecto.clave(f.manzana, f.lote);
+            f.clave = LoteProyecto.clave(f.manzana, f.lote, f.sufijo);
             Integer antes = vistos.putIfAbsent(f.clave, r.linea());
             if (antes != null) f.errores.add("El lote " + f.clave + " ya aparece en la fila " + antes + ": cada lote va una sola vez.");
             f.existente = existentes.get(f.clave);

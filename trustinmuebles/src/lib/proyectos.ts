@@ -81,7 +81,10 @@ export function enlaceInmueble(c: Pick<InmueblePublico, "codigo" | "clase" | "pr
   return `/inmuebles/${encodeURIComponent(c.codigo)}`;
 }
 
-/** «A-7» → «Mz. A · Lote 7». */
+/** El lote como se escribe: «10A», o «7» si no tiene letra. */
+export const etiquetaLote = (l: Pick<LoteProyecto, "numero" | "sufijo">): string => `${l.numero}${l.sufijo ?? ""}`;
+
+/** «A-7» → «Mz. A · Lote 7»; «228A-10A» → «Mz. 228A · Lote 10A». */
 export function nombreLote(clave: string): string {
   const i = clave.lastIndexOf("-");
   return i <= 0 ? clave : `Mz. ${clave.slice(0, i)} · Lote ${clave.slice(i + 1)}`;
@@ -116,7 +119,7 @@ export function conteoPlano(lotes: Pick<LoteProyecto, "publicado" | "estadoComer
 
 /** Texto para lectores de pantalla: «Manzana A, lote 7: disponible, 140 m², S/ 35,000». */
 export function descripcionLote(l: LoteProyecto, formatoPrecio: (monto: number, moneda: string | null) => string): string {
-  const partes = [`Manzana ${l.manzana}, lote ${l.numero}: ${ESTILO_LOTE[estadoEnPlano(l)].etiqueta.toLowerCase()}`,
+  const partes = [`Manzana ${l.manzana}, lote ${etiquetaLote(l)}: ${ESTILO_LOTE[estadoEnPlano(l)].etiqueta.toLowerCase()}`,
     `${formatoArea(l.areaM2)} m²`];
   if (l.precio != null) partes.push(formatoPrecio(l.precio, l.moneda));
   return partes.join(", ");
@@ -147,7 +150,7 @@ export function dibujarPlano(lotes: LoteProyecto[], porFila: number = PLANO.porF
   }
   const nombres = [...porManzana.keys()].sort((a, b) => a.localeCompare(b, "es"));
   const bloques = nombres.map((m) => {
-    const lista = porManzana.get(m)!.slice().sort((a, b) => a.numero - b.numero);
+    const lista = porManzana.get(m)!.slice().sort((a, b) => a.numero - b.numero || (a.sufijo ?? "").localeCompare(b.sufijo ?? ""));
     const columnas = Math.max(1, Math.ceil(lista.length / 2));
     return { manzana: m, lista, columnas };
   });

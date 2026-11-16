@@ -4,7 +4,7 @@ import { Link } from "react-router";
 import { ArrowRight, X } from "lucide-react";
 import { precio, m2 } from "@/lib/formato";
 import {
-  ESTILO_LOTE, ORDEN_LEYENDA, activaLote, conteoPlano, descripcionLote, dibujarPlano, enlaceLote, estadoEnPlano,
+  ESTILO_LOTE, ORDEN_LEYENDA, activaLote, conteoPlano, descripcionLote, dibujarPlano, enlaceLote, estadoEnPlano, etiquetaLote,
   siguienteIndice, type EstadoPlano,
 } from "@/lib/proyectos";
 import type { LoteProyecto } from "@/lib/types";
@@ -79,7 +79,7 @@ export function PlanoLotes({ proyectoCodigo, lotes, inicial = null }: {
                       <rect x={x + 1} y={y + 1} width={w - 2} height={h - 2} rx="2" fill={est.relleno} />
                       {est.patron && <rect x={x + 1} y={y + 1} width={w - 2} height={h - 2} rx="2" fill={`url(#patron-${est.patron})`} />}
                       <text x={x + w / 2} y={y + h / 2 + 4} textAnchor="middle" fontSize="12" fontWeight="700" fill={est.texto}>
-                        {l.numero}
+                        {etiquetaLote(l)}
                       </text>
                       <rect x={x + 1} y={y + 1} width={w - 2} height={h - 2} rx="2" fill="none"
                         stroke={activo ? "#022C22" : est.borde} strokeWidth={activo ? 3 : 1.2} strokeDasharray={est.trazo} />
@@ -133,9 +133,9 @@ export function PanelLote({ proyectoCodigo, lote, cerrar }: {
   const estado = estadoEnPlano(lote);
   return (
     <aside className="space-y-4 rounded-2xl border border-border bg-card p-5 shadow-tarjeta" aria-live="polite"
-      aria-label={`Manzana ${lote.manzana}, lote ${lote.numero}`} data-panel-lote={lote.clave}>
+      aria-label={`Manzana ${lote.manzana}, lote ${etiquetaLote(lote)}`} data-panel-lote={lote.clave}>
       <div className="flex items-start justify-between gap-3">
-        <h3 className="text-lg font-extrabold text-foreground">Mz. {lote.manzana} · Lote {lote.numero}</h3>
+        <h3 className="text-lg font-extrabold text-foreground">Mz. {lote.manzana} · Lote {etiquetaLote(lote)}</h3>
         <button type="button" onClick={cerrar} aria-label="Cerrar el detalle del lote"
           className="rounded-full p-1.5 text-tinta-2 hover:bg-muted hover:text-foreground">
           <X className="size-4" aria-hidden="true" />
@@ -158,7 +158,7 @@ export function PanelLote({ proyectoCodigo, lote, cerrar }: {
           {/* v1.0 (etapa 4): cita desde el plano. Un lote con caso propio la pide desde la ficha de su caso. */}
           {!lote.casoCodigo && (
             <SolicitarCita compacto key={lote.clave}
-              destino={{ proyectoCodigo, lote: lote.clave, nombre: `Mz. ${lote.manzana} Lote ${lote.numero}`, referencia: lote.codigo }} />
+              destino={{ proyectoCodigo, lote: lote.clave, nombre: `Mz. ${lote.manzana} Lote ${etiquetaLote(lote)}`, referencia: lote.codigo }} />
           )}
         </div>
       ) : (

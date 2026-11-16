@@ -6,7 +6,7 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
 
 - [ ] `main` tiene la etapa 8 fusionada y GitHub Actions publicó las imágenes nuevas (`ghcr.io/…-backend` y `…-frontend`, `latest`).
 - [ ] **Reinicio de la base de la nube** (Portainer → Stacks → `trustinmuebles`): detener el stack, borrar el volumen
-      `trustinmuebles_backend-data`, volver a desplegar con «Pull latest image». La base nace con los 4 proyectos, los precios
+      `trustinmuebles_backend-data`, volver a desplegar con «Pull latest image». La base nace con los 5 proyectos (el 5.º es Sol de Carhuaz – IV etapa, sin lotes), los precios
       nuevos, los 15 interesados y las 4 citas de los próximos 7 días (las fechas se mueven con el día de arranque).
 - [ ] Contraseñas del stack: `APP_SEED_PASSWORD` (la de las 9 cuentas), `APP_JWT_SECRET` (32+ caracteres) y
       `APP_STORAGE_KEY`, anotadas fuera del repositorio. `APP_CONTACTO_WHATSAPP` vacía (usa el de LEDCONS) o con el número correcto.
@@ -34,6 +34,16 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
       razón social, RUC, dirección, teléfonos, WhatsApp, Facebook y «con tecnología Trustinmuebles · versión 1.0.0».
 - [ ] **CSV del kit en vivo:** `docs/demo/kit/proyecto-nuevo-80-lotes.csv` a mano (Horizonte de Los Aquijes debe tener 0
       lotes antes del paso 6). Vista previa sin errores → confirmar → 80 lotes. `proyecto-con-errores.csv` por si piden ver errores.
+- [ ] **Etapa 10, primer proyecto real (Sol de Carhuaz – IV etapa, LedCons):** el proyecto ya viene en la base (también en la
+      nube, sin reiniciarla: se crea al arrancar la versión nueva) sin lotes. Desde **Proyectos → Sol de Carhuaz – IV etapa →
+      Cargar lotes**, subir `docs/demo/kit/sol-de-carhuaz-iv-etapa-lotes.csv`: vista previa **214 nuevos, 0 errores** →
+      «Confirmar 214 lotes». Cargarlo otra vez debe dar «sin cambios» en las 214 filas. Los lotes con letra (`10A`, `15C`) y
+      las manzanas como `228A` son válidos. Su indicador A es **gris** («información insuficiente») a propósito: todavía no se
+      tiene la copia literal de la partida matriz. **No reiniciar la base después de cargarlo** (es información real; si se
+      reinicia, hay que volver a cargar el CSV). Este proyecto no es parte del guion de 15 minutos.
+- [ ] **Cuando LedCons entregue el enlace de mapa:** Proyectos → «Ubicación y pago» del proyecto → pegar el enlace de Google
+      Maps (solo https); recién entonces aparece «Cómo llegar». La dirección y las condiciones de pago ya están cargadas;
+      revisarlas con LedCons (el distrito «Ica» está por confirmar).
 - [ ] Textos del kit a mano: `kit/partidas/INT-99000611-vivienda-sin-cargas.txt`, las 4 láminas de `kit/pdf/INT-99000611/`
       y `kit/datos-cita.md` (Carla, correo `@example.com`). Frase del asistente: `lote en Subtanjalla de menos de 80 mil soles`.
 - [ ] Registrar un interesado **desde el panel** (canal Llamada, consentimiento verbal) si preguntan por clientes que llaman.

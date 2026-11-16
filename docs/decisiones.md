@@ -1083,3 +1083,38 @@ marca y de contacto **sí** vienen de LedCons (autorización verbal); **sí** ha
 interesados con consentimiento); los especialistas **no** tienen colegiatura registrada; el sistema **no** es solo de uso
 local (se despliega en la nube); y los conteos de pruebas y de contenido son los de la 1.0.0. Lo que no consta en el
 repositorio (acta de la entrevista, gasto en publicidad, disposición a pagar) se marca como pendiente o supuesto.
+
+## D80. v1.0 (etapa 10): primer proyecto real, partida matriz interna hasta tener la copia literal (V25)
+
+**Contexto.** LedCons entregó el 15/11/2026 los datos de su primer proyecto real, Sol de Carhuaz – IV etapa, y una lista
+de 214 lotes para cargar el lunes 16/11 desde el panel del asesor. **Decisión.**
+
+1. **Mismo mecanismo que los demás.** Entra por `contenido/proyectos.json` (sin manzanas: los lotes van por CSV, como
+   Horizonte de Los Aquijes) y por un caso de `contenido/v0.5/casos/`. No es una migración de datos: una base existente lo
+   recibe al arrancar, una sola vez (el proyecto y el caso se buscan por código antes de crearlos). Un proyecto que ya
+   existe no se vuelve a tocar, así que lo que el asesor editó (dirección, mapa, pago, hitos) se conserva. Lo nuevo es que un
+   proyecto que **nace** ahora trae su dirección y sus condiciones de pago; antes la dirección se completaba solo una vez por
+   base (`v1.0-etapa-9-direcciones`) y las condiciones de pago no tenían precarga.
+2. **Código del proyecto: `sol-de-carhuaz-iv-etapa`.** Es el que resulta del nombre «Sol de Carhuaz – IV etapa» con la regla
+   de siempre (`CodigoProyecto`). El sugerido, `sol-de-carhuaz-iv`, hubiera dejado dos proyectos: al vincular el caso por su
+   texto de proyecto el sistema crea el que falte con el código del nombre. Coincide con el nombre del CSV (`…-iv-etapa-…`).
+3. **Partida matriz como registro interno de cartera**, `INT-99000700` (prefijo INT-, etapa 6), con `fuente` «Registro
+   interno de cartera»: es un código interno, **no** un número de partida de SUNARP. No tiene asientos, ni área, ni linderos,
+   ni zona registral, ni documentos del lote: nada de eso consta. Condición representada «Desconocido» y completitud
+   «Desconocida», así que su **indicador A es gris** («información insuficiente») y eso es lo correcto hasta tener la copia
+   literal. El checklist lo dice (copia literal, habilitación urbana y factibilidad de luz: pendientes, «solo se tiene una
+   imagen en el folleto»). La fecha de referencia (15/11/2026) es la de la entrega de datos.
+4. **Autorización vigente de la inmobiliaria**, registrada por el asesor en su nombre (LedCons la dio de forma verbal): es lo
+   que permite ofrecer los lotes cargados. La partida matriz queda en borrador (no se ofrece como inmueble).
+5. **Hitos sin fechas** y solo los que se sostienen con lo entregado. El folleto anuncia luz, agua y desagüe, pero no hay
+   fechas ni avance: quedan pendientes. No se agregaron «Compra del terreno», «Habilitación urbana» ni «Independización».
+6. **Lotes con letra (V25).** La carga aceptaba solo números; el CSV real trae `10A`, `12C`, `15A`. V25 agrega
+   `lote_proyecto.sufijo` (vacío por omisión, hasta 2 letras) y cambia la restricción única a
+   `(proyecto, manzana, número, sufijo)`: el número sigue entero y los lotes existentes no cambian (su clave sigue siendo
+   `A-7`). La clave nueva es `228A-10A`. Se prefirió a convertir `numero` en texto porque ese campo ordena, filtra y
+   alimenta el plano. `10` y `10A` son lotes distintos; `10a` y `10A` son el mismo.
+7. **Independización «No consta»** en los 214 lotes (así viene en el CSV): no se asume que estén en la partida matriz ni que
+   tengan partida propia.
+8. **Zonificación y mapa vacíos**: LedCons no los entregó.
+
+Nada de esto interviene en el motor de reglas, en los casos C1–C4 ni en el indicador A de otro inmueble.

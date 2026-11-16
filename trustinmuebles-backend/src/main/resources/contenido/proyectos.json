@@ -98,6 +98,25 @@
         { "nombre": "Red eléctrica y alumbrado público", "estado": "PENDIENTE", "fecha": null },
         { "nombre": "Independización de los lotes en el Registro de Predios", "estado": "PENDIENTE", "fecha": null }
       ]
+    },
+    {
+      "codigo": "sol-de-carhuaz-iv-etapa",
+      "nombre": "Sol de Carhuaz – IV etapa",
+      "distrito": "Ica",
+      "descripcion": "Proyecto de lotes de LedCons, cuarta etapa, en el km 10 de la carretera a Carhuaz, Ica. Servicios anunciados en el folleto: luz, agua y desagüe. Su lista de lotes se carga desde el panel del asesor.",
+      "direccion": "Km 10 de la carretera a Carhuaz, Ica",
+      "condicionesPago": "Crédito directo: inicial de S/ 1 000 y saldo en 75 cuotas sin intereses. Precio al contado: S/ 500 menos que el financiado. Separa tu lote con S/ 200.",
+      "recorridoUrl": null,
+      "casoMatriz": "INT-99000700",
+      "semilla": 3505,
+      "independizacion": "NO_CONSTA",
+      "manzanas": [],
+      "hitos": [
+        { "nombre": "Lanzamiento de la IV etapa (preventa)", "estado": "EN_PROCESO", "fecha": null },
+        { "nombre": "Luz", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Agua", "estado": "PENDIENTE", "fecha": null },
+        { "nombre": "Desagüe", "estado": "PENDIENTE", "fecha": null }
+      ]
     }
   ]
 }

@@ -1,7 +1,7 @@
 # Reporte de la versión 1.0.0 de Trustinmuebles
 
-Fecha: 14 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-9`, creada
-desde `main` en `7d6f044` (merge de la etapa 8). Material autocontenido para redactar el informe:
+Fecha: 15 de noviembre de 2026. Entrega: lunes 16 de noviembre de 2026. Rama de la última etapa: `v1.0-etapa-10`, creada
+desde `main` en `ff573d1` (merge de la etapa 9). Material autocontenido para redactar el informe:
 [PARA-INFORME-v1.0.md](PARA-INFORME-v1.0.md). Modelo de negocio único de la 1.0.0:
 [MODELO-NEGOCIO-IMPLEMENTADO.md](MODELO-NEGOCIO-IMPLEMENTADO.md).
 
@@ -24,6 +24,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | 7. Kit, documentación y versión | `d88bfe1` | Partida oculta también en la tarjeta, el proyecto, la portada y los PDF de la partida matriz; «Plano de plano» corregido; kit de respaldo; `preparar-demo.mjs`; versión 1.0.0; documentación; recorrido de 15 minutos | — | D68, D69 |
 | 8. Ajustes finales y verificación | `7d6f044` | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
 | 9. Modelo consolidado y adopción | `v1.0-etapa-9` (sin merge) | Modelo de negocio y funcionalidades en una sola descripción de la 1.0.0 (lo anterior, a `docs/historico/`); exportar a CSV para Excel la bandeja (con filtros) y los lotes de un proyecto (plantilla de ida y vuelta); dirección, enlace de mapa y «Cómo llegar»; condiciones de pago en texto; aviso de interesados nuevos en el menú; cuentas de asesor por `app.asesores`; embudo por etapa y proyecto | V24 | D74–D78 |
+| 10. Primer proyecto real | `v1.0-etapa-10` (sin merge) | Sol de Carhuaz – IV etapa de LedCons (sin lotes, partida matriz interna `INT-` con indicador A gris y autorización de la inmobiliaria); lotes con letra (`10A`) en la carga, la ficha y el plano; CSV real de 214 lotes en el kit | V25 | D80 |
 
 ## 2. Pruebas
 
@@ -36,6 +37,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | Después de la etapa 7 | **318**, 0 fallos | **276** (30 archivos), 0 fallos |
 | Después de la etapa 8 | **332**, 0 fallos | **290** (32 archivos), 0 fallos |
 | Después de la etapa 9 | **347**, 0 fallos, 0 errores, 0 omitidas | **309** (33 archivos), 0 fallos |
+| Después de la etapa 10 | **353** (medido en la rama: 346 antes, 0 fallos; ver §9), 0 fallos | **311** (33 archivos), 0 fallos |
 
 Build de la interfaz (`tsc --noEmit && vite build`): correcto, con el aviso de tamaño del JS principal que ya existía.
 
@@ -237,7 +239,40 @@ ver `docs/demo/CHECKLIST-LUNES.md`).
   o «profesional responsable», porque los especialistas no tienen colegiatura registrada (D67). `limitesLegales.test.tsx`
   sigue exigiendo el texto del pie y además que no diga «colegiado».
 
-## 9. Pendientes y límites conocidos
+## 9. Etapa 10: primer proyecto real de LedCons (Sol de Carhuaz – IV etapa)
+
+Rama `v1.0-etapa-10`, creada desde `main` en `ff573d1` (la etapa 9 ya estaba unida a `main`). Decisión: D80. Migración: V25.
+
+- **Cómo se precargan los proyectos (investigado antes de cambiar nada).** Los cuatro de demostración se definen en
+  `contenido/proyectos.json` (nombre, distrito, dirección, partida matriz, semilla, manzanas, hitos) y su partida matriz en
+  `contenido/v0.5/casos/1111200N.json`. Al arrancar, `CasosSeeder` (orden 40) crea los casos que faltan (la partida matriz de
+  la inmobiliaria con su `HistorialAutorizacion` OTORGADA y la autorización vigente, en borrador) y `ProyectosSeeder` (orden
+  45) crea el proyecto, sus hitos y sus lotes solo si faltan. No es una migración: en una base existente, como la de la
+  nube, el arranque agrega lo que falta sin reiniciarla ni duplicar, y no pisa lo editado.
+- **Sol de Carhuaz – IV etapa** entra por ese mismo mecanismo, sin lotes (`sol-de-carhuaz-iv-etapa`): dirección y
+  condiciones de pago de LedCons, sin enlace de mapa, y los hitos «Lanzamiento de la IV etapa (preventa)» (en curso) y «Luz»,
+  «Agua», «Desagüe» (pendientes), sin fechas. Un proyecto que **nace** ahora trae su dirección y sus condiciones de pago (antes
+  solo la dirección, una vez por base).
+- **Partida matriz `INT-99000700`:** registro interno de cartera, sin asientos ni documentos; indicador A **gris**;
+  autorización vigente de la inmobiliaria (verbal), registrada por el asesor. No es un número de SUNARP.
+- **Lotes con letra:** la carga **no** los aceptaba (el lote era un entero). V25 agrega `lote_proyecto.sufijo`; la validación
+  acepta un número de 1 a 9999 más una o dos letras (`10A`, `15C`), la clave es `228A-10A` y la ficha, el plano, el historial,
+  la exportación y el catálogo la usan. Los lotes numéricos no cambian.
+- **Carga real:** `docs/demo/kit/sol-de-carhuaz-iv-etapa-lotes.csv` (214 lotes, 32 manzanas, 94,15 a 172 m², todos
+  `DISPONIBLE` y `NO_CONSTA`): 214 nuevos, 0 errores; la segunda carga da «sin cambios» en las 214 filas.
+- **Pruebas:** backend 346 → **353** (`Etapa10Test`: 7 pruebas); interfaz 309 → **311** (2 pruebas de lotes con letra). Se
+  actualizaron 3 constantes de conteo del contenido sembrado (16 → 17 casos; 4 → 5 partidas matrices; 4 → 5 casos grises);
+  ninguna prueba se borró, se desactivó ni se debilitó. Build de la interfaz correcto.
+- **Recorrido `recorrido-v10.mjs`:** **15 de 15** pasos, tableta 12 de 12, 0 errores de consola, 0 respuestas 409/500. El
+  script ahora acepta `CHROME_PATH` (antes solo la ruta de Chrome de Windows); no se agregó ningún paso.
+  `preparar-demo.mjs` reconoce el quinto proyecto («0 lotes, va sin lotes») y puede reponer sus lotes con el CSV.
+- **Falta de LedCons:** enlace de mapa; zonificación; independización de cada lote (hoy «No consta»); copia literal de la
+  partida matriz (con ella se registra el número real y los asientos, y el indicador A deja de ser gris); confirmar el
+  distrito «Ica»; fechas de los hitos.
+
+## 10. Pendientes y límites conocidos
+
+- **Etapa 10:** sin push ni merge de `v1.0-etapa-10`. El proyecto nuevo no se probó en la nube ni con la base de la nube.
 
 - **Sin push ni merge** de `v1.0-etapa-9`: lo decide el equipo.
 - `preparar-demo.mjs` no puede **crear un proyecto** que falte (no hay endpoint): lo informa y pide reiniciar la base.
@@ -245,7 +280,7 @@ ver `docs/demo/CHECKLIST-LUNES.md`).
   endpoint para borrar lotes, así que la carga de lotes **faltantes** por CSV no se ensayó en vivo (sí el cambio de estado).
 - Los PDF de la partida matriz con sesión se abren con `abrirPdf` (fetch con el token): un bloqueador de ventanas
   emergentes puede impedir que se abra la pestaña.
-- El recorrido usa la ruta de Chrome de Windows (`C:/Program Files/Google/Chrome/Application/chrome.exe`) y no se probó en
+- El recorrido usa por omisión la ruta de Chrome de Windows (`C:/Program Files/Google/Chrome/Application/chrome.exe`; con `CHROME_PATH` se cambia, y la etapa 10 lo corrió en Linux) y no se probó en
   otros navegadores ni con lectores de pantalla. No se ensayó el guion a mano con público ni se cronometró con una persona.
 - El aviso de tamaño del JS principal de la interfaz sigue (no se partió el paquete).
 - La demo en la nube no se verificó en esta etapa.

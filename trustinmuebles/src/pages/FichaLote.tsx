@@ -9,7 +9,7 @@ import { SolicitarCita } from "@/components/SolicitarCita";
 import { UsosDelLote } from "@/components/UsosDelLote";
 import { UbicacionProyecto } from "@/components/UbicacionProyecto";
 import { m2, precio } from "@/lib/formato";
-import { enlaceProyecto, rutaLotePublico } from "@/lib/proyectos";
+import { enlaceProyecto, etiquetaLote, rutaLotePublico } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
 import type { LotePublico } from "@/lib/types";
 
@@ -83,7 +83,7 @@ export default function FichaLote() {
               {p.precioPorM2 != null && (
                 <p className="cifras mt-1 text-sm font-semibold text-tinta-2">{precio(p.precioPorM2, p.moneda)} por m²</p>
               )}
-              <p className="cifras mt-1 text-xs font-semibold text-tinta-2">Mz. {d.lote.manzana} · Lote {d.lote.numero}</p>
+              <p className="cifras mt-1 text-xs font-semibold text-tinta-2">Mz. {d.lote.manzana} · Lote {etiquetaLote(d.lote)}</p>
             </div>
             <LineaIndependizacion predio={p} />
             {/* v1.0 (etapa 9): dirección del proyecto y «Cómo llegar». */}

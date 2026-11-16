@@ -81,7 +81,7 @@ public class InmueblesInteres {
             for (LoteDto l : p.lotes()) {
                 if (l.publicado() && l.casoCodigo() == null && l.estadoComercial() == EstadoComercial.DISPONIBLE) {
                     salida.add(deLote(p.codigo(), p.nombre(), p.distrito(), l,
-                            "Mz. " + l.manzana() + " Lote " + l.numero() + " · " + p.nombre()));
+                            "Mz. " + l.manzana() + " Lote " + l.etiqueta() + " · " + p.nombre()));
                 }
             }
         } catch (NoEncontradoException e) {
