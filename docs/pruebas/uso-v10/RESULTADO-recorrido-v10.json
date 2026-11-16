@@ -1,8 +1,8 @@
 {
-  "fecha": "2026-11-16T02:38:16.277Z",
+  "fecha": "2026-11-16T03:11:46.930Z",
   "version": "1.0.0",
-  "totalSegundos": 72,
-  "guionSegundos": 41,
+  "totalSegundos": 75,
+  "guionSegundos": 42.9,
   "correctos": 15,
   "pasos": 15,
   "tableta": {
@@ -52,7 +52,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-05-interesados.png",
-        "segundos": "2.2"
+        "segundos": "2.3"
       },
       {
         "orientacion": "vertical",
@@ -115,14 +115,14 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-06-registrar-interesado.png",
-        "segundos": "1.4"
+        "segundos": "1.5"
       }
     ]
   },
   "erroresConsola": [],
   "respuestas409o500": [],
   "datos": {
-    "arranqueBackendS": "11.2",
+    "arranqueBackendS": "12.2",
     "baseDatos": "carpeta temporal nueva (fuera del repositorio)",
     "preparar": {
       "codigo": 0,
@@ -140,7 +140,7 @@
       "obtenido": "etiqueta «Lotes o terrenos»; etiqueta «En Subtanjalla»; etiqueta «Hasta S/ 80,000»; 19 resultados; URL: #/inmuebles?distrito=Subtanjalla&tipo=LOTE&moneda=PEN&precioMax=80000; ningún texto promete compra segura ni saneamiento",
       "ok": true,
       "captura": "01-asistente.png",
-      "segundos": "4.5"
+      "segundos": "4.6"
     },
     {
       "n": 2,
@@ -149,7 +149,7 @@
       "obtenido": "hay orden «Precio: de menor a mayor»; orden: «Precio: de menor a mayor»; Mostrando 1–12 de 12 inmuebles; filtro y orden quedan en la URL; 12 tarjetas, todas disponibles; 9 tarjetas de casos, 0 con la partida completa; ejemplo: «N.° 1110••••»",
       "ok": true,
       "captura": "02-filtros.png",
-      "segundos": "2.3"
+      "segundos": "2.5"
     },
     {
       "n": 3,
@@ -176,7 +176,7 @@
       "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-17, mañana",
       "ok": true,
       "captura": "05-solicitar-cita.png",
-      "segundos": "2.0"
+      "segundos": "2.1"
     },
     {
       "n": 6,
@@ -194,7 +194,7 @@
       "obtenido": "la lectura no deja avisos; la vista previa no detecta nombres de personas; borrador y sin autorización; propietario-02; A = GRIS (sin planos); 2 asientos leídos",
       "ok": true,
       "captura": "07-registro-particular.png",
-      "segundos": "3.2"
+      "segundos": "3.6"
     },
     {
       "n": 8,
@@ -203,7 +203,7 @@
       "obtenido": "los 4 planos quedan presentados; A = VERDE",
       "ok": true,
       "captura": "08-laminas-kit.png",
-      "segundos": "3.6"
+      "segundos": "3.8"
     },
     {
       "n": 9,
@@ -212,7 +212,7 @@
       "obtenido": "autorizado y todavía en borrador",
       "ok": true,
       "captura": "09-propietario-autoriza.png",
-      "segundos": "2.9"
+      "segundos": "3.1"
     },
     {
       "n": 10,
@@ -230,7 +230,7 @@
       "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-17; total de interesados: 16",
       "ok": true,
       "captura": "11-confirma-cita.png",
-      "segundos": "2.4"
+      "segundos": "2.6"
     },
     {
       "n": 12,
@@ -248,7 +248,7 @@
       "obtenido": "«No certifica saneamiento.»; «No recomienda comprar.»; «No reemplaza asesoría legal.»; versión 1.0.0 en el pie; /publico/sitio: versión 1.0.0, indexable false",
       "ok": true,
       "captura": "13-pie-version.png",
-      "segundos": "3.9"
+      "segundos": "4.1"
     },
     {
       "n": 14,
@@ -257,7 +257,7 @@
       "obtenido": "aviso junto a «Interesados»: 3 (API: 3 en etapa Nuevo); botón «Exportar a CSV» en la bandeja; CSV de interesados: 200, text/csv;charset=UTF-8, BOM true; 16 filas para 16 interesados, separador «;»; CSV de lotes con las columnas de la carga; 80 lotes de Horizonte de Los Aquijes (los 80 del CSV del kit); volver a cargarlo: 80 sin cambios, 0 nuevos, 0 actualizados; dirección precargada: Sector La Ventisca, a la altura del km 301 de la Panamericana Sur, Subtanjalla, Ica; enlace de mapa y condiciones guardados",
       "ok": true,
       "captura": "14-exportar-ubicacion.png",
-      "segundos": "3.1"
+      "segundos": "3.4"
     },
     {
       "n": 15,

@@ -79,6 +79,12 @@ carguen se ofrecen. Su CSV real (214 lotes, 32 manzanas, de 94,15 a 172 m²) est
 minúsculas se pasan a mayúsculas); la manzana admite hasta 4 letras o números (`228A`). La clave es `228A-10A` y sirve en
 la ficha (`#/proyectos/{c}/lotes/228A-10A`), en el plano, en el historial y en la exportación a CSV. Un lote numérico no cambia.
 
+**Plano de la lotización (Sol de Carhuaz – IV etapa).** La página del proyecto muestra, bajo el plano de lotes, el plano de
+lotización de LedCons con un punto por lote (se toca uno para elegirlo). El panel del lote y su ficha pública muestran el
+plano acercado con un **pin** sobre el lote, con «Ver plano completo» y «Abrir el plano completo». La ubicación es referencial
+(sale de la imagen del plano, no de coordenadas topográficas) y el «Cómo llegar» de Google Maps sigue siendo el del proyecto.
+Un proyecto sin plano no muestra nada de esto. Archivos: `public/planos/{proyecto}.jpg` y `.json`.
+
 ### Expedientes, Registrar y Cartera
 
 - **Registrar** (`#/casos/nueva`): inmueble de la inmobiliaria o de un particular (titularidad comercial, proyecto, estado

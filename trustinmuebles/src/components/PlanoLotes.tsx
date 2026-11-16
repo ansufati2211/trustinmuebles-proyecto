@@ -8,6 +8,7 @@ import {
   siguienteIndice, type EstadoPlano,
 } from "@/lib/proyectos";
 import type { LoteProyecto } from "@/lib/types";
+import { PlanoLotizacion } from "@/components/PlanoLotizacion";
 import { SolicitarCita } from "@/components/SolicitarCita";
 
 /**
@@ -92,6 +93,9 @@ export function PlanoLotes({ proyectoCodigo, lotes, inicial = null }: {
         </div>
         <PanelLote proyectoCodigo={proyectoCodigo} lote={lote} cerrar={() => setElegido(null)} />
       </div>
+      {/* v1.0 (etapa 11): el plano de la lotización entero, con un punto por lote; tocar uno lo elige en el panel. */}
+      <PlanoLotizacion proyectoCodigo={proyectoCodigo} lote={lote} lotes={lotes} soloCompleto titulo="Plano de la lotización"
+        alElegir={(c) => { setElegido(c); setFoco(indice.get(c) ?? 0); }} />
     </div>
   );
 }
@@ -164,6 +168,8 @@ export function PanelLote({ proyectoCodigo, lote, cerrar }: {
       ) : (
         <p className="text-xs text-tinta-2">Este lote no se ofrece en línea. Consulta por él con un asesor.</p>
       )}
+      {/* v1.0 (etapa 11): dónde está el lote en el plano de la lotización (si el proyecto lo tiene). */}
+      <PlanoLotizacion proyectoCodigo={proyectoCodigo} lote={lote} />
     </aside>
   );
 }

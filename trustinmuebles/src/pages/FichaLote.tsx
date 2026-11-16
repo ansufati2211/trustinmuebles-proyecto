@@ -5,6 +5,7 @@ import { PredioImagen } from "@/components/base/PredioImagen";
 import { EtiquetaResaltado } from "@/components/EtiquetaResaltado";
 import { IndicadorProyecto } from "@/components/IndicadorProyecto";
 import { LineaIndependizacion } from "@/components/LineaIndependizacion";
+import { PlanoLotizacion } from "@/components/PlanoLotizacion";
 import { SolicitarCita } from "@/components/SolicitarCita";
 import { UsosDelLote } from "@/components/UsosDelLote";
 import { UbicacionProyecto } from "@/components/UbicacionProyecto";
@@ -104,6 +105,9 @@ export default function FichaLote() {
             </div>
           </div>
         </div>
+
+        {/* v1.0 (etapa 11): dónde está el lote en el plano de la lotización (solo si el proyecto tiene plano). */}
+        <div className={`${tarjeta} mt-10 empty:hidden`}><PlanoLotizacion proyectoCodigo={d.proyectoCodigo} lote={d.lote} /></div>
 
         {/* v1.0 (etapa 5): usos que suelen permitirse según la zonificación y el área, con el aviso de verificar. */}
         <div className={`${tarjeta} mt-10`}><UsosDelLote zonificacion={p.zonificacion ?? d.lote.zonificacion} areaM2={p.areaM2 ?? d.lote.areaM2} /></div>

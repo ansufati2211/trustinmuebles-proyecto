@@ -41,6 +41,11 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
       las manzanas como `228A` son válidos. Su indicador A es **gris** («información insuficiente») a propósito: todavía no se
       tiene la copia literal de la partida matriz. **No reiniciar la base después de cargarlo** (es información real; si se
       reinicia, hay que volver a cargar el CSV). Este proyecto no es parte del guion de 15 minutos.
+- [ ] **Etapa 11, plano de la lotización:** con los 214 lotes cargados, abrir un lote de Sol de Carhuaz (por ejemplo `236-10B`):
+      el panel y la ficha muestran el plano con el pin sobre el lote; la página del proyecto muestra el plano entero con un
+      punto por lote. La ubicación es **referencial**. Avisar a LedCons que 12 lotes del CSV salen en blanco en su plano
+      (`219-8`, `219-9`, `219-13`, `225-22`, `230-5`, `231-12`, `238A-1`, `239-5`, `242A-8` a `242A-11`) y que el plano trae
+      amarillo el `225-2`, que no está en el CSV.
 - [ ] **Cuando LedCons entregue el enlace de mapa:** Proyectos → «Ubicación y pago» del proyecto → pegar el enlace de Google
       Maps (solo https); recién entonces aparece «Cómo llegar». La dirección y las condiciones de pago ya están cargadas;
       revisarlas con LedCons (el distrito «Ica» está por confirmar).

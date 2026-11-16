@@ -1118,3 +1118,21 @@ de 214 lotes para cargar el lunes 16/11 desde el panel del asesor. **Decisión.*
 8. **Zonificación y mapa vacíos**: LedCons no los entregó.
 
 Nada de esto interviene en el motor de reglas, en los casos C1–C4 ni en el indicador A de otro inmueble.
+
+## D81. v1.0 (etapa 11): plano de la lotización con un pin por lote (sin migración)
+
+**Contexto.** LedCons entregó el plano de lotización de Sol de Carhuaz – IV etapa y el comprador quiere ver dónde queda el lote
+que le interesa. El enlace de Google Maps del proyecto es un solo punto, sin lotes. **Decisión.**
+
+1. **El plano de LedCons es el mapa del lote**, no Google Maps. La imagen se publica en `public/planos/{proyecto}.jpg` y las
+   posiciones en `public/planos/{proyecto}.json` (fracciones del ancho y del alto, por clave de lote). Sin plano, no se muestra
+   nada. Es un archivo estático y no una columna: así funciona aunque los lotes se carguen después y no cambia el contrato del CSV.
+2. **Posición leída del plano, referencial.** No hay coordenadas topográficas: las posiciones salen de la imagen (celdas
+   detectadas, numeración de cada manzana verificada con los números impresos y a ojo). La pantalla lo dice («Ubicación
+   referencial… confírmala con un asesor») y el pin no se presenta como un punto de navegación. Si LedCons entrega el DWG o un
+   KML, se reemplaza por posiciones exactas y recién ahí podría haber «Cómo llegar» por lote.
+3. **Dónde se ve:** el plano entero con un punto por lote en la página del proyecto (cada punto lleva el nombre y el estado
+   del lote para lectores de pantalla y elige el lote en el panel); el panel del lote y la ficha pública del lote, acercados a
+   su zona, con «Ver plano completo» y «Abrir el plano completo». Sin dependencias nuevas, sin mapa embebido.
+4. **El plano y el CSV no coinciden en 13 lotes** (12 del CSV en blanco en el plano y `225-2`, amarillo en el plano y ausente
+   del CSV, probablemente `225-22` mal escrito). No se corrigió ninguno: se informa a LedCons. El sistema usa el CSV.

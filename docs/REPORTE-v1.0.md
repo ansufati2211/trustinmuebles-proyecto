@@ -25,6 +25,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | 8. Ajustes finales y verificación | `7d6f044` | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
 | 9. Modelo consolidado y adopción | `v1.0-etapa-9` (sin merge) | Modelo de negocio y funcionalidades en una sola descripción de la 1.0.0 (lo anterior, a `docs/historico/`); exportar a CSV para Excel la bandeja (con filtros) y los lotes de un proyecto (plantilla de ida y vuelta); dirección, enlace de mapa y «Cómo llegar»; condiciones de pago en texto; aviso de interesados nuevos en el menú; cuentas de asesor por `app.asesores`; embudo por etapa y proyecto | V24 | D74–D78 |
 | 10. Primer proyecto real | `v1.0-etapa-10` (sin merge) | Sol de Carhuaz – IV etapa de LedCons (sin lotes, partida matriz interna `INT-` con indicador A gris y autorización de la inmobiliaria); lotes con letra (`10A`) en la carga, la ficha y el plano; CSV real de 214 lotes en el kit | V25 | D80 |
+| 11. Plano de la lotización | `v1.0-etapa-11` (sin merge) | Plano de LedCons con un pin en el lote de su ficha y de su panel, y el plano entero con un punto por lote en la página del proyecto | — | D81 |
 
 ## 2. Pruebas
 
@@ -38,6 +39,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | Después de la etapa 8 | **332**, 0 fallos | **290** (32 archivos), 0 fallos |
 | Después de la etapa 9 | **347**, 0 fallos, 0 errores, 0 omitidas | **309** (33 archivos), 0 fallos |
 | Después de la etapa 10 | **353** (medido en la rama: 346 antes, 0 fallos; ver §9), 0 fallos | **311** (33 archivos), 0 fallos |
+| Después de la etapa 11 | **353**, 0 fallos | **319** (34 archivos), 0 fallos |
 
 Build de la interfaz (`tsc --noEmit && vite build`): correcto, con el aviso de tamaño del JS principal que ya existía.
 
@@ -270,8 +272,34 @@ Rama `v1.0-etapa-10`, creada desde `main` en `ff573d1` (la etapa 9 ya estaba uni
   partida matriz (con ella se registra el número real y los asientos, y el indicador A deja de ser gris); confirmar el
   distrito «Ica»; fechas de los hitos.
 
-## 10. Pendientes y límites conocidos
+## 10. Etapa 11: plano de la lotización con la ubicación de cada lote
 
+Rama `v1.0-etapa-11` (desde `v1.0-etapa-10`). Decisión: D81. Sin migración.
+
+- **Qué hace:** en la página del proyecto, el plano de la lotización de LedCons se muestra entero con un punto por lote (se
+  toca uno para elegirlo). Al elegir un lote, su panel y su ficha (`#/proyectos/{c}/lotes/{mz-lote}`) muestran el plano
+  acercado a su zona con un pin sobre el lote, con «Ver plano completo» y «Abrir el plano completo». Un proyecto sin plano no
+  muestra nada nuevo.
+- **De dónde sale la posición:** de la imagen del plano (11 589 × 13 205 px) y del CSV, sin servicios externos ni Google
+  Maps: se detectaron las celdas del plano, se siguió la numeración de cada manzana y se verificó contra los números
+  impresos en el plano (lectura por OCR en una herramienta temporal, que no es dependencia del proyecto) y a ojo, con las 214
+  posiciones dibujadas sobre el plano. Está en `public/planos/sol-de-carhuaz-iv-etapa.json` (fracciones de la imagen) y la
+  imagen web (4000 px, 3,3 MB) en `public/planos/sol-de-carhuaz-iv-etapa.jpg`. Es **referencial**: así lo dice la pantalla.
+- **El «Cómo llegar» de Google Maps** sigue siendo el del proyecto: el enlace de Google es un solo punto (no tiene lotes).
+- **Pruebas de la interfaz:** 311 → **319** (8 nuevas: ventana y pin, lectura del plano y que el archivo publicado tenga los
+  214 lotes del CSV, sin repetir posiciones). Build correcto. El backend no cambió salvo el texto de la descripción del
+  proyecto (353 pruebas, sin cambios).
+- **Para revisar con LedCons (el plano y el CSV no coinciden en 13 lotes):**
+  - 12 lotes del CSV aparecen **en blanco** en el plano (no amarillos): `219-8`, `219-9`, `219-13`, `225-22`, `230-5`,
+    `231-12`, `238A-1`, `239-5` y `242A-8`, `242A-9`, `242A-10`, `242A-11`. Están en el CSV como disponibles; el plano
+    amarillo los muestra como no disponibles (o el plano está desactualizado).
+  - Un lote **amarillo** del plano no está en el CSV: `225-2`. Parece que el CSV trae `225-22` donde debía decir `225-2`
+    (confirmarlo antes de corregir; no se tocó el CSV).
+
+## 11. Pendientes y límites conocidos
+
+- **Etapa 11:** sin push ni merge de `v1.0-etapa-11`. Las posiciones del plano son una lectura de la imagen, no coordenadas
+  topográficas: no sirven para un «Cómo llegar» exacto por lote (para eso LedCons tendría que entregar el DWG o un KML).
 - **Etapa 10:** sin push ni merge de `v1.0-etapa-10`. El proyecto nuevo no se probó en la nube ni con la base de la nube.
 
 - **Sin push ni merge** de `v1.0-etapa-9`: lo decide el equipo.
