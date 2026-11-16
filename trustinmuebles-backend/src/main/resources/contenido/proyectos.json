@@ -117,6 +117,20 @@
         { "nombre": "Agua", "estado": "PENDIENTE", "fecha": null },
         { "nombre": "Desagüe", "estado": "PENDIENTE", "fecha": null }
       ]
+    },
+    {
+      "codigo": "vista-alegre",
+      "nombre": "Vista Alegre",
+      "distrito": null,
+      "descripcion": null,
+      "direccion": null,
+      "condicionesPago": null,
+      "recorridoUrl": null,
+      "casoMatriz": null,
+      "semilla": 0,
+      "independizacion": null,
+      "manzanas": [],
+      "hitos": []
     }
   ]
 }

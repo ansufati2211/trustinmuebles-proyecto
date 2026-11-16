@@ -16,7 +16,8 @@ persona que presenta y explica; el script tarda unos 2 minutos. No se ensayó a 
 2. Terminal 1 (backend): `cd trustinmuebles-backend`, `$env:APP_SEED_PASSWORD = '<clave de 8 o más caracteres>'`,
    `.\mvnw.cmd spring-boot:run`. Terminal 2 (interfaz): `cd trustinmuebles`, `npx pnpm@9 dev`.
 3. Terminal 3, con la misma clave: `node scripts/preparar-demo.mjs`. Debe terminar en «La base está lista para la
-   demostración. No se borró nada.» con 4 proyectos, 15 de 15 interesados y 4 citas.
+   demostración. No se borró nada.» con Altos de Ventisca en línea, Sol de Carhuaz – IV etapa sin lotes (se cargan en el paso 5), Vista Alegre sin datos,
+   los proyectos de demostración retirados del portal, 15 de 15 interesados y 4 citas.
 4. Ten abiertos `docs/demo/kit/datos-cita.md` y `docs/demo/kit/partidas/INT-99000611-vivienda-sin-cargas.txt`.
 5. Abre `http://localhost:5173` en una ventana sin sesión.
 
@@ -30,7 +31,7 @@ No edites `11048217`, `11052690`, `11061555` ni `11070419`.
 | 2–3 | 2. Filtros | Visitante | En los filtros, **Estado comercial: Disponible**; cambia el orden. | El conteo baja y el filtro queda en la dirección. Sin sesión, las tarjetas de casos (por ejemplo, con el filtro Tipo: Viviendas) muestran la partida oculta, como `1110••••`. |
 | 3–5 | 3. Plano y ficha | Visitante | Abre **Altos de Ventisca** (desde una tarjeta o `#/proyectos/altos-de-ventisca`). En el plano elige **Mz. C Lote 12** → **Ver ficha del lote**. | Plano por manzanas con leyenda en texto, indicador A «de la partida matriz del proyecto» con `N.° 1111••••`; en la ficha: S/ 82,000 (144 m²), «Usos que suelen permitirse» con el aviso de parámetros urbanísticos y los documentos del proyecto (sus PDF ocultan la partida). |
 | 5–6 | 4. Cita | Visitante | **Solicitar cita** con [datos-cita.md](kit/datos-cita.md): visita al lote, pasado mañana por la mañana, `Carla`, `carla.visita@example.com`. | «Recibimos tu pedido de cita…». Sin DNI, sin cuenta, sin pagos. |
-| 6–8 | 5. CSV | `asesor-01` | Ingresa → **Proyectos** → **Horizonte de Los Aquijes** → «Cargar lotes (CSV)» → `kit/proyecto-nuevo-80-lotes.csv`. (Opcional: `proyecto-con-errores.csv` antes, para ver que no deja confirmar.) | Vista previa «80 lotes nuevos · 0 filas con errores» → **Confirmar 80 lotes**; el plano del proyecto ya tiene 80 lotes. |
+| 6–8 | 5. CSV | `asesor-01` | Ingresa → **Proyectos** → **Sol de Carhuaz – IV etapa** → «Cargar lotes (CSV)» → `kit/sol-de-carhuaz-iv-etapa-lotes.csv` (la lista real de LedCons). (Opcional: `proyecto-con-errores.csv` antes, para ver que no deja confirmar.) | Vista previa «214 lotes nuevos · 0 filas con errores» → **Confirmar 214 lotes**; el proyecto ya tiene 214 lotes, con su plano de lotización y un punto por lote. |
 | 8–10 | 6. Particular | `asesor-01` | **Registrar**: origen «Registro interno de cartera», número `INT-99000611`, precio `285000`, denominación `Mz. K Lote 9 · Urb. Los Viñedos de Ica · Ica`, titularidad **Particular**, propietario `propietario-02`, distrito `Ica, Ica`. Pega el texto del kit → **Leer asientos** → tipo **Vivienda**, área construida `120` → marca la casilla de la vista previa → **Registrar partida**. | Sin avisos de lectura, «No se detectó ningún nombre de persona», 2 asientos. El caso nace en borrador, sin autorización y en **gris** (faltan los planos). |
 | 10–11 | 7. Láminas | `asesor-01` | En el expediente, sube en «Planos» las 4 láminas de `kit/pdf/INT-99000611/`. | Los 4 planos «Presentado» y el indicador A en **verde**. Lo calcula el motor de reglas. |
 | 11–12 | 8. Autorización | `propietario-02` | Ingresa → abre `#/casos/INT-99000611` → **Autorizar publicación**. | «Autorización registrada.»; sigue en borrador. En un caso de la inmobiliaria la registraría el asesor. |

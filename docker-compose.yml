@@ -13,6 +13,8 @@ services:
       APP_STORAGE_KEY: ${APP_STORAGE_KEY:?Define APP_STORAGE_KEY}
       # v1.0 (etapa 9): cuentas de asesor que el arranque crea si faltan (con APP_SEED_PASSWORD), separadas por comas.
       APP_ASESORES: ${APP_ASESORES:-asesor-01}
+      # v1.0 (etapa 10): proyectos de demostración que se retiran del portal (vacío: ninguno).
+      APP_PROYECTOS_RETIRADOS: ${APP_PROYECTOS_RETIRADOS-rinconada-del-lucumo,terrazas-de-sauzal,horizonte-de-los-aquijes}
       APP_CORS_ALLOWED_ORIGINS: ${APP_CORS_ALLOWED_ORIGINS:-https://trust.aurorabeauty.site,http://localhost:8085,http://127.0.0.1:8085,http://localhost:8081,http://127.0.0.1:8081,http://localhost:5173,http://127.0.0.1:5173}
     volumes:
       - backend-data:/app/data

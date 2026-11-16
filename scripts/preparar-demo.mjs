@@ -1,8 +1,8 @@
 // v1.0 (etapa 7): deja lista la base para la demostración, solo a través de la API y sin borrar nada.
 //
 // Con el backend recién iniciado (base nueva), comprueba que estén los datos precargados:
-//   - los 5 proyectos de contenido/proyectos.json con sus lotes (Horizonte de Los Aquijes y Sol de Carhuaz – IV etapa van
-//     sin lotes: los carga el CSV del kit);
+//   - los proyectos de contenido/proyectos.json con sus lotes (Sol de Carhuaz – IV etapa va sin lotes: los carga el CSV
+//     real en la demo). Los retirados del portal (app.proyectos.retirados) y Vista Alegre, sin partida matriz, solo se informan;
 //   - los 15 interesados precargados (correos @example.com) y sus 4 citas de los próximos 7 días.
 // Si algo falta o cambió, lo repone (etapa 8):
 //   - lotes: los que faltan se cargan por CSV y los que cambiaron de estado vuelven al de la semilla (el mismo reparto
@@ -192,6 +192,13 @@ async function prepararProyectos(resumen) {
     const actual = existentes.get(p.codigo);
     if (!actual) {
       resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "FALTA", detalle: "no existe y no se puede crear por la API: reinicia la base" });
+      continue;
+    }
+    // v1.0 (etapa 10): un proyecto sin autorización vigente en su partida matriz (los de demostración retirados del portal
+    // con app.proyectos.retirados, o uno sin partida matriz como Vista Alegre) no se ofrece en línea: no se repone nada.
+    if (actual.autorizacionVigente === false) {
+      resumen.push({ grupo: "Proyecto", nombre: p.nombre, estado: "OK",
+        detalle: `${actual.lotes} lotes; no se ofrece en línea (partida matriz sin autorización vigente o sin partida matriz)` });
       continue;
     }
     // Sin manzanas en el contenido (Horizonte de Los Aquijes): se carga en vivo con el CSV del kit. Si ya se cargó, se

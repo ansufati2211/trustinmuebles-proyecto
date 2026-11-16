@@ -146,7 +146,7 @@ class ProyectosSeeder implements ApplicationRunner {
 
     /** Los lotes de un proyecto, en orden de manzana y número. Determinista: la misma semilla da los mismos lotes. */
     static List<LoteProyecto> generarLotes(Proyecto p, ProyectoJson j, PreciosZona precios) {
-        Rango rango = precios.rangoPorM2().get(j.distrito());
+        Rango rango = j.distrito() == null ? null : precios.rangoPorM2().get(j.distrito());
         String moneda = precios.moneda();
         List<LoteProyecto> salida = new ArrayList<>();
         for (ManzanaJson m : j.manzanas()) {
@@ -209,6 +209,7 @@ class ProyectosSeeder implements ApplicationRunner {
                 AJUSTE_PRECIOS);
         if (hecho != null && hecho > 0) return;
         for (ProyectoJson j : lista) {
+            if (j.distrito() == null) continue; // v1.0 (etapa 10): un proyecto sin distrito (Vista Alegre) no tiene rango
             Rango rango = precios.rangoPorM2().get(j.distrito());
             BigDecimal anterior = PRECIO_M2_ANTERIOR.get(j.distrito());
             if (rango == null || anterior == null || j.manzanas() == null || j.manzanas().isEmpty()) continue;

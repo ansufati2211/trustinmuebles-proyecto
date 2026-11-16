@@ -6,7 +6,8 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
 
 - [ ] `main` tiene la etapa 8 fusionada y GitHub Actions publicó las imágenes nuevas (`ghcr.io/…-backend` y `…-frontend`, `latest`).
 - [ ] **Reinicio de la base de la nube** (Portainer → Stacks → `trustinmuebles`): detener el stack, borrar el volumen
-      `trustinmuebles_backend-data`, volver a desplegar con «Pull latest image». La base nace con los 5 proyectos (el 5.º es Sol de Carhuaz – IV etapa, sin lotes), los precios
+      `trustinmuebles_backend-data`, volver a desplegar con «Pull latest image». La base nace con Altos de Ventisca en línea, Sol de Carhuaz – IV etapa (sin lotes) y Vista Alegre (solo el nombre);
+      Rinconada, Terrazas y Horizonte quedan fuera del portal (`APP_PROYECTOS_RETIRADOS`), con los precios
       nuevos, los 15 interesados y las 4 citas de los próximos 7 días (las fechas se mueven con el día de arranque).
 - [ ] Contraseñas del stack: `APP_SEED_PASSWORD` (la de las 9 cuentas), `APP_JWT_SECRET` (32+ caracteres) y
       `APP_STORAGE_KEY`, anotadas fuera del repositorio. `APP_CONTACTO_WHATSAPP` vacía (usa el de LEDCONS) o con el número correcto.
@@ -32,8 +33,8 @@ Una página. Marca cada casilla. Guion: [GUION-DEMO.md](GUION-DEMO.md) · kit: [
 - [ ] Dos ventanas abiertas: una **sin sesión** (visitante) y otra **privada** para las cuentas `asesor-01` y `propietario-02`.
 - [ ] Portada: barra con el logo y «LEDCONS»; cifras reales (inmuebles publicados, proyectos, lotes disponibles); pie con
       razón social, RUC, dirección, teléfonos, WhatsApp, Facebook y «con tecnología Trustinmuebles · versión 1.0.0».
-- [ ] **CSV del kit en vivo:** `docs/demo/kit/proyecto-nuevo-80-lotes.csv` a mano (Horizonte de Los Aquijes debe tener 0
-      lotes antes del paso 6). Vista previa sin errores → confirmar → 80 lotes. `proyecto-con-errores.csv` por si piden ver errores.
+- [ ] **CSV en vivo:** `docs/demo/kit/sol-de-carhuaz-iv-etapa-lotes.csv` a mano (Sol de Carhuaz – IV etapa debe tener 0
+      lotes antes del paso 6). Vista previa sin errores → confirmar → 214 lotes. `proyecto-con-errores.csv` por si piden ver errores.
 - [ ] **Etapa 10, primer proyecto real (Sol de Carhuaz – IV etapa, LedCons):** el proyecto ya viene en la base (también en la
       nube, sin reiniciarla: se crea al arrancar la versión nueva) sin lotes. Desde **Proyectos → Sol de Carhuaz – IV etapa →
       Cargar lotes**, subir `docs/demo/kit/sol-de-carhuaz-iv-etapa-lotes.csv`: vista previa **214 nuevos, 0 errores** →

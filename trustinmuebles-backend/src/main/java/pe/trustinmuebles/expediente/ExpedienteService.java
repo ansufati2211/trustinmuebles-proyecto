@@ -1285,11 +1285,12 @@ class ExpedienteService {
     OpcionesFiltro opcionesFiltro() {
         java.util.TreeSet<String> proyectos = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
         java.util.TreeSet<String> distritos = new java.util.TreeSet<>(String.CASE_INSENSITIVE_ORDER);
+        // v1.0 (etapa 10): el selector «Proyecto» ofrece solo proyectos de lotes que se ofrecen en línea; la urbanización de
+        // una casa suelta ya no aparece ahí (la casa sigue en el catálogo y se puede filtrar por su distrito).
         for (Expediente e : expedientes.findPublicados()) {
-            if (e.getCaso().getProyecto() != null) proyectos.add(e.getCaso().getProyecto());
             if (e.getCaso().getDistrito() != null) distritos.add(e.getCaso().getDistrito());
         }
-        // v1.0 (etapa 3a): también los proyectos y distritos de los lotes de proyecto que se ofrecen.
+        // v1.0 (etapa 3a): los proyectos y distritos de los lotes de proyecto que se ofrecen.
         for (FiltroPublico.Candidato c : lotesPublicados()) {
             if (c.predio().proyecto() != null) proyectos.add(c.predio().proyecto());
             if (c.predio().distrito() != null) distritos.add(c.predio().distrito());

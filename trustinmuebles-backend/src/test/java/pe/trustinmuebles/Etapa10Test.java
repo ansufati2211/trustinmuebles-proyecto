@@ -288,4 +288,45 @@ class Etapa10Test extends BaseApiTest {
         assertThat(jdbc.queryForObject("select count(*) from historial_lote_proyecto where proyecto_codigo = ?", Integer.class, SOL))
                 .as("la segunda carga no agrega historial").isEqualTo(214);
     }
+
+    // ------------------------------------------------------------------ Vista Alegre y el selector de proyectos
+
+    @Test
+    @DisplayName("Vista Alegre existe como proyecto solo con su nombre: sin distrito, dirección, pago, mapa, hitos ni lotes")
+    void vistaAlegre() throws Exception {
+        Map<String, Object> p = jdbc.queryForMap("select * from proyecto where codigo = 'vista-alegre'");
+        assertThat(p.get("nombre")).isEqualTo("Vista Alegre");
+        for (String campo : new String[] {"distrito", "descripcion", "direccion", "condiciones_pago", "mapa_url",
+                "recorrido_url", "caso_matriz_codigo"}) {
+            assertThat(p.get(campo)).as(campo).isNull();
+        }
+        assertThat(jdbc.queryForObject("select count(*) from hito_proyecto h join proyecto p on p.id = h.proyecto_id "
+                + "where p.codigo = 'vista-alegre'", Integer.class)).isZero();
+        assertThat(jdbc.queryForObject("select count(*) from lote_proyecto l join proyecto p on p.id = l.proyecto_id "
+                + "where p.codigo = 'vista-alegre'", Integer.class)).isZero();
+        // Sin lotes no se muestra en el portal; el asesor sí lo ve en el panel (sin partida matriz que autorice sus lotes).
+        mvc.perform(get("/api/v1/publico/proyectos/vista-alegre")).andExpect(status().isNotFound());
+        JsonNode panel = json(mvc.perform(get("/api/v1/proyectos").header("Authorization", token("asesor-01"))).andExpect(status().isOk()));
+        JsonNode va = null;
+        for (JsonNode x : panel) if (x.get("codigo").asString().equals("vista-alegre")) va = x;
+        assertThat(va).isNotNull();
+        assertThat(va.get("lotes").asInt()).isZero();
+        assertThat(va.get("autorizacionVigente").asBoolean()).isFalse();
+    }
+
+    @Test
+    @DisplayName("El selector «Proyecto» solo ofrece proyectos de lotes en línea; las casas siguen en el catálogo")
+    void selectorSoloProyectosDeLotes() throws Exception {
+        JsonNode filtros = json(mvc.perform(get("/api/v1/publico/filtros")).andExpect(status().isOk()));
+        List<String> proyectos = new java.util.ArrayList<>();
+        filtros.get("proyectos").forEach(x -> proyectos.add(x.asString()));
+        assertThat(proyectos).contains("Altos de Ventisca", "Rinconada del Lúcumo", "Terrazas de Sauzal")
+                .doesNotContain("Santa Elvira", "Rincón del Sauce", "Mirador del Sol", "Villa del Algarrobo",
+                        "Campiña del Olivar", "Jardines del Pacae", "Vista Alegre", "Sol de Carhuaz – IV etapa");
+        // C1 (Santa Elvira) sigue publicado y se puede filtrar por su proyecto desde la dirección.
+        mvc.perform(get("/api/v1/publico/inmuebles/" + PARCONA)).andExpect(status().isOk());
+        assertThat(json(mvc.perform(get("/api/v1/publico/inmuebles").param("proyecto", "Santa Elvira"))).get("total").asInt())
+                .isEqualTo(1);
+        assertThat(filtros.get("distritos").toString()).contains("Parcona");
+    }
 }

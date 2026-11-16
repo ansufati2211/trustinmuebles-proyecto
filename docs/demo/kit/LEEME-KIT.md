@@ -19,7 +19,8 @@ titulares figuran como «Persona natural (datos reservados)» o como empresas in
 |---|---|---|
 | [frases-asistente.md](frases-asistente.md) | 10 frases probadas para el asistente de búsqueda, con etiquetas, resultados y recomendaciones. La primera es la de la demo. | 1 |
 | [datos-cita.md](datos-cita.md) | Lo que se escribe en el formulario «Solicitar cita» (nombre de pila `Carla`, correo `@example.com`, visita al lote). | 4 y 10 |
-| [proyecto-nuevo-80-lotes.csv](proyecto-nuevo-80-lotes.csv) | 80 lotes en 8 manzanas para *Horizonte de Los Aquijes*, que viene sin lotes. La vista previa no marca errores. | 5 |
+| [sol-de-carhuaz-iv-etapa-lotes.csv](sol-de-carhuaz-iv-etapa-lotes.csv) | Lista real de LedCons: 214 lotes en 32 manzanas para *Sol de Carhuaz – IV etapa*, que viene sin lotes. La vista previa no marca errores. | 5 |
+| [proyecto-nuevo-80-lotes.csv](proyecto-nuevo-80-lotes.csv) | 80 lotes para *Horizonte de Los Aquijes* (proyecto de demostración retirado del portal desde la etapa 10: se cargan, pero no se ofrecen). | — |
 | [proyecto-con-errores.csv](proyecto-con-errores.csv) | 11 filas, 3 malas (filas 8, 10 y 12): la vista previa las marca y no deja confirmar. | 5 (opcional) |
 | [partidas/INT-99000611-vivienda-sin-cargas.txt](partidas/INT-99000611-vivienda-sin-cargas.txt) | Texto para pegar de una vivienda de un particular, sin cargas. Nace en gris (sin planos) y queda en **verde** al subir sus 4 láminas. | 6 y 7 |
 | [partidas/INT-99000612-lote-con-hipoteca.txt](partidas/INT-99000612-lote-con-hipoteca.txt) | Lote de la inmobiliaria con una hipoteca vigente. Con sus 4 documentos queda en **amarillo** (RV-02). | Respaldo |

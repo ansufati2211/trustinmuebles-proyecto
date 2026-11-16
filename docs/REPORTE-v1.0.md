@@ -313,7 +313,24 @@ Expedientes, quedaron guardadas sin usar a pedido del equipo). Decisión: D84. S
 - **Pruebas:** interfaz 319 → **325** (6 nuevas: agrupar proyectos, claves que cumplen, proyecto inicial, vista en la URL y el
   selector en pantalla). Build y recorrido (15/15) correctos.
 
-## 12. Pendientes y límites conocidos
+## 12. Etapa 10 (cierre): portal con los proyectos de LedCons
+
+Rama `v1.0-etapa-10`. Decisión: D85. Sin migración.
+
+- **Vista Alegre** se agregó como proyecto solo con su nombre (`vista-alegre`): no hay datos de LedCons todavía, así que no
+  tiene distrito, dirección, pago, plano, hitos, lotes ni partida matriz. No se ve en el portal hasta tener lotes ofrecidos.
+- **Proyectos de demostración fuera del portal:** `app.proyectos.retirados` (por omisión Rinconada del Lúcumo, Terrazas de
+  Sauzal y Horizonte de Los Aquijes) retira, una sola vez por base y después de precargar los interesados, la autorización de
+  su partida matriz, con su fila RETIRADA en el historial. No se borra nada; si el equipo vuelve a autorizar uno, no se retira
+  otra vez. Queda en línea Altos de Ventisca, que usa la guía de la demo.
+- **Selector «Proyecto»:** ofrece solo proyectos con lotes en línea. Las urbanizaciones de las casas (Santa Elvira, Rincón del
+  Sauce, etc.) ya no aparecen ahí, pero las casas siguen en el catálogo, incluidas C1–C4 del estudio.
+- **Guía de la demo:** el paso del CSV en vivo usa la lista real de Sol de Carhuaz (214 lotes) en lugar de Horizonte (80).
+  `recorrido-v10.mjs` y `preparar-demo.mjs` se ajustaron.
+- **Pruebas:** las existentes corren con todos los proyectos en línea (`src/test/resources/config/application.properties`);
+  `RetiroProyectosDemoTest` (4) prueba el retiro y `Etapa10Test` suma 2 (Vista Alegre y el selector).
+
+## 13. Pendientes y límites conocidos
 
 - **Etapa 14:** sin push ni merge de `v1.0-etapa-14`. La vista «Plano» solo muestra los lotes que el catálogo ofrece (no incluye vendidos).
 - **Etapa 11:** sin push ni merge de `v1.0-etapa-11`. Las posiciones del plano son una lectura de la imagen, no coordenadas

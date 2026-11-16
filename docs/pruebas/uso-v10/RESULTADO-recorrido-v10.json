@@ -1,8 +1,8 @@
 {
-  "fecha": "2026-11-16T04:43:44.882Z",
+  "fecha": "2026-11-16T19:19:42.858Z",
   "version": "1.0.0",
-  "totalSegundos": 74,
-  "guionSegundos": 42,
+  "totalSegundos": 75,
+  "guionSegundos": 42.5,
   "correctos": 15,
   "pasos": 15,
   "tableta": {
@@ -16,7 +16,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-01-portada.png",
-        "segundos": "1.1"
+        "segundos": "1.2"
       },
       {
         "orientacion": "vertical",
@@ -52,7 +52,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (820 px); barra con el logo de LEDCONS",
         "captura": "vertical-05-interesados.png",
-        "segundos": "2.5"
+        "segundos": "2.2"
       },
       {
         "orientacion": "vertical",
@@ -106,7 +106,7 @@
         "ok": true,
         "obtenido": "sin desplazamiento horizontal (1180 px); barra con el logo de LEDCONS",
         "captura": "horizontal-05-interesados.png",
-        "segundos": "2.2"
+        "segundos": "2.3"
       },
       {
         "orientacion": "horizontal",
@@ -122,14 +122,14 @@
   "erroresConsola": [],
   "respuestas409o500": [],
   "datos": {
-    "arranqueBackendS": "12.3",
+    "arranqueBackendS": "12.2",
     "baseDatos": "carpeta temporal nueva (fuera del repositorio)",
     "preparar": {
       "codigo": 0,
-      "salida": "Preparando la demostración contra http://127.0.0.1:8080/api/v1…\n\nResumen:\n  [OK      ] Proyecto · Altos de Ventisca                   56 lotes, 56 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Rinconada del Lúcumo                44 lotes, 44 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Terrazas de Sauzal                  68 lotes, 68 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Horizonte de Los Aquijes            0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Proyecto · Sol de Carhuaz – IV etapa           0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Interesados · Precarga (correos @example.com)  15 de 15\n  [INFO    ] Interesados · Por etapa                        Nuevo 3, Contactado 3, Visita realizada 2, Cita agendada 3, Separación 2, Venta 1, Descartado 1\n  [OK      ] Citas · Agenda 2026-11-15 a 2026-11-21         4 citas (se esperan al menos 4): Confirmada 2, Por confirmar 1, Reprogramada 1\n  [OK      ] Catálogo · Inmuebles publicados                180 en el portal público\n  [INFO    ] Sistema · Versión                              1.0.0 · indexable: no\n\nLa base está lista para la demostración. No se borró nada.\n"
+      "salida": "Preparando la demostración contra http://127.0.0.1:8080/api/v1…\n\nResumen:\n  [OK      ] Proyecto · Altos de Ventisca                   56 lotes, 56 publicados, estados como en la semilla, autorización vigente\n  [OK      ] Proyecto · Rinconada del Lúcumo                44 lotes; no se ofrece en línea (partida matriz sin autorización vigente o sin partida matriz)\n  [OK      ] Proyecto · Terrazas de Sauzal                  68 lotes; no se ofrece en línea (partida matriz sin autorización vigente o sin partida matriz)\n  [OK      ] Proyecto · Horizonte de Los Aquijes            0 lotes; no se ofrece en línea (partida matriz sin autorización vigente o sin partida matriz)\n  [OK      ] Proyecto · Sol de Carhuaz – IV etapa           0 lotes (va sin lotes: se cargan en la demo con el CSV del kit)\n  [OK      ] Proyecto · Vista Alegre                        0 lotes; no se ofrece en línea (partida matriz sin autorización vigente o sin partida matriz)\n  [OK      ] Interesados · Precarga (correos @example.com)  15 de 15\n  [INFO    ] Interesados · Por etapa                        Nuevo 3, Contactado 3, Visita realizada 2, Cita agendada 3, Separación 2, Venta 1, Descartado 1\n  [OK      ] Citas · Agenda 2026-11-16 a 2026-11-22         4 citas (se esperan al menos 4): Confirmada 2, Por confirmar 1, Reprogramada 1\n  [OK      ] Catálogo · Inmuebles publicados                68 en el portal público\n  [INFO    ] Sistema · Versión                              1.0.0 · indexable: no\n\nLa base está lista para la demostración. No se borró nada.\n"
     },
     "asistenteResultados": 19,
-    "fechaCita": "2026-11-17",
+    "fechaCita": "2026-11-18",
     "interesadoId": 16
   },
   "detalle": [
@@ -173,7 +173,7 @@
       "n": 5,
       "quien": "visitante",
       "esperado": "Solicita una visita al lote con los datos de datos-cita.md (Carla, correo @example.com)",
-      "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-17, mañana",
+      "obtenido": "mensaje: «Recibimos tu pedido de cita. Un asesor te escribirá para confirmar una de las fechas que propusiste.»; fecha propuesta 2026-11-18, mañana",
       "ok": true,
       "captura": "05-solicitar-cita.png",
       "segundos": "2.0"
@@ -181,11 +181,11 @@
     {
       "n": 6,
       "quien": "asesor-01",
-      "esperado": "Carga el CSV del kit (80 lotes) en Horizonte de Los Aquijes: vista previa sin errores y confirmación",
-      "obtenido": "80 lotes nuevos · 0 por actualizar · 0 sin cambios · 0 filas con errores; el proyecto tiene 80 lotes (80 publicados); la página pública del proyecto muestra 80 lotes",
+      "esperado": "Carga el CSV real de Sol de Carhuaz – IV etapa (214 lotes): vista previa sin errores y confirmación",
+      "obtenido": "214 lotes nuevos · 0 por actualizar · 0 sin cambios · 0 filas con errores; el proyecto tiene 214 lotes (214 publicados); la página pública del proyecto muestra 214 lotes",
       "ok": true,
       "captura": "06-carga-csv.png",
-      "segundos": "2.4"
+      "segundos": "2.5"
     },
     {
       "n": 7,
@@ -194,7 +194,7 @@
       "obtenido": "la lectura no deja avisos; la vista previa no detecta nombres de personas; borrador y sin autorización; propietario-02; A = GRIS (sin planos); 2 asientos leídos",
       "ok": true,
       "captura": "07-registro-particular.png",
-      "segundos": "3.5"
+      "segundos": "3.3"
     },
     {
       "n": 8,
@@ -203,7 +203,7 @@
       "obtenido": "los 4 planos quedan presentados; A = VERDE",
       "ok": true,
       "captura": "08-laminas-kit.png",
-      "segundos": "3.7"
+      "segundos": "3.8"
     },
     {
       "n": 9,
@@ -221,16 +221,16 @@
       "obtenido": "publicado; A sigue en VERDE; la ficha pública muestra «INT-••••»; la ficha registral pública no trae el número completo",
       "ok": true,
       "captura": "10-publica.png",
-      "segundos": "4.1"
+      "segundos": "4.3"
     },
     {
       "n": 11,
       "quien": "asesor-01",
       "esperado": "Abre a Carla en Interesados y confirma su cita: pasa a «Cita agendada»",
-      "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-17; total de interesados: 16",
+      "obtenido": "ficha abierta: Carla; etapa: Cita agendada; vinculado a altos-de-ventisca C-12; cita Confirmada para 2026-11-18; total de interesados: 16",
       "ok": true,
       "captura": "11-confirma-cita.png",
-      "segundos": "2.6"
+      "segundos": "2.5"
     },
     {
       "n": 12,
@@ -254,10 +254,10 @@
       "n": 14,
       "quien": "asesor-01",
       "esperado": "Etapa 9: el menú avisa los interesados nuevos; exporta la bandeja y los lotes a CSV para Excel (ida y vuelta sin cambios) y registra la ubicación y las condiciones de pago",
-      "obtenido": "aviso junto a «Interesados»: 3 (API: 3 en etapa Nuevo); botón «Exportar a CSV» en la bandeja; CSV de interesados: 200, text/csv;charset=UTF-8, BOM true; 16 filas para 16 interesados, separador «;»; CSV de lotes con las columnas de la carga; 80 lotes de Horizonte de Los Aquijes (los 80 del CSV del kit); volver a cargarlo: 80 sin cambios, 0 nuevos, 0 actualizados; dirección precargada: Sector La Ventisca, a la altura del km 301 de la Panamericana Sur, Subtanjalla, Ica; enlace de mapa y condiciones guardados",
+      "obtenido": "aviso junto a «Interesados»: 3 (API: 3 en etapa Nuevo); botón «Exportar a CSV» en la bandeja; CSV de interesados: 200, text/csv;charset=UTF-8, BOM true; 16 filas para 16 interesados, separador «;»; CSV de lotes con las columnas de la carga; 214 lotes de Sol de Carhuaz (los 214 del CSV real); volver a cargarlo: 214 sin cambios, 0 nuevos, 0 actualizados; dirección precargada: Sector La Ventisca, a la altura del km 301 de la Panamericana Sur, Subtanjalla, Ica; enlace de mapa y condiciones guardados",
       "ok": true,
       "captura": "14-exportar-ubicacion.png",
-      "segundos": "3.1"
+      "segundos": "3.5"
     },
     {
       "n": 15,

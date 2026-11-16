@@ -60,16 +60,23 @@ El asesor reúne los permisos del revisor y del gestor. El gestor tiene los de g
 
 ### Proyectos precargados
 
-Una base nueva nace con cinco proyectos (`contenido/proyectos.json`); una base que ya existe recibe el que le falte al
+Una base nueva nace con seis proyectos (`contenido/proyectos.json`); una base que ya existe recibe el que le falte al
 arrancar, sin duplicarlo y sin pisar lo que el asesor editó.
 
 | Proyecto | Distrito | Lotes al nacer | Partida matriz |
 |---|---|---|---|
 | Altos de Ventisca | Subtanjalla | 56 | `11112001` (de demostración) |
-| Rinconada del Lúcumo | La Tinguiña | 44 | `11112002` (de demostración) |
-| Terrazas de Sauzal | Salas | 68 | `11112003` (de demostración) |
-| Horizonte de Los Aquijes | Los Aquijes | 0 (se cargan por CSV) | `11112004` (de demostración) |
+| Rinconada del Lúcumo | La Tinguiña | 44 (fuera del portal) | `11112002` (de demostración; autorización retirada) |
+| Terrazas de Sauzal | Salas | 68 (fuera del portal) | `11112003` (de demostración; autorización retirada) |
+| Horizonte de Los Aquijes | Los Aquijes | 0 (fuera del portal) | `11112004` (de demostración; autorización retirada) |
 | **Sol de Carhuaz – IV etapa** (primer proyecto real de LedCons) | Ica | 0 (se cargan por CSV) | `INT-99000700`, registro interno de cartera **sin asientos**: su indicador A es gris («información insuficiente») hasta registrar la copia literal |
+| **Vista Alegre** (LedCons) | — | 0 | Ninguna. Solo tiene el nombre: distrito, dirección, pago, plano y lotes, cuando LedCons los entregue |
+
+**Proyectos de demostración fuera del portal.** Con `app.proyectos.retirados` (variable `APP_PROYECTOS_RETIRADOS`; por
+omisión Rinconada del Lúcumo, Terrazas de Sauzal y Horizonte de Los Aquijes), al arrancar se retira una sola vez la
+autorización de su partida matriz: sus lotes no se ofrecen en el portal, pero siguen en el panel, en el CRM y en la base.
+El portal queda con Altos de Ventisca (demostración), Sol de Carhuaz – IV etapa y, cuando tenga lotes, Vista Alegre. El
+selector «Proyecto» del catálogo ofrece solo proyectos con lotes en línea; las casas siguen en el catálogo (también C1–C4).
 
 Sol de Carhuaz – IV etapa lleva la dirección y las condiciones de pago que entregó LedCons (15/11/2026), sin enlace de mapa,
 y solo estos hitos, sin fechas: «Lanzamiento de la IV etapa (preventa)» en curso, y «Luz», «Agua» y «Desagüe» pendientes. Su

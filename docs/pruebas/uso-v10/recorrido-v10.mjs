@@ -36,7 +36,11 @@ const BASE = "http://localhost:5173/#";
 const KIT = path.join(RAIZ, "docs", "demo", "kit");
 const NUEVO = "INT-99000611";
 const TEXTO_NUEVO = readFileSync(path.join(KIT, "partidas", "INT-99000611-vivienda-sin-cargas.txt"), "utf8");
-const CSV_KIT = path.join(KIT, "proyecto-nuevo-80-lotes.csv");
+// v1.0 (etapa 10): el CSV en vivo es el real de LedCons (Sol de Carhuaz – IV etapa); los proyectos de demostración
+// Rinconada, Terrazas y Horizonte están retirados del portal (app.proyectos.retirados).
+const CSV_KIT = path.join(KIT, "sol-de-carhuaz-iv-etapa-lotes.csv");
+const PROYECTO_CSV = "sol-de-carhuaz-iv-etapa";
+const LOTES_CSV = 214;
 const LAMINAS = { ARQUITECTURA: "plano-arquitectura.pdf", ESTRUCTURAS: "plano-estructuras.pdf",
   ELECTRICAS: "plano-electricas.pdf", SANITARIAS: "plano-sanitarias.pdf" };
 const VISITANTE = { nombre: "Carla", correo: "carla.visita@example.com" };
@@ -341,20 +345,20 @@ await paso(5, "visitante", `Solicita una visita al lote con los datos de datos-c
 });
 
 // ================================================================ ASESOR
-await paso(6, "asesor-01", "Carga el CSV del kit (80 lotes) en Horizonte de Los Aquijes: vista previa sin errores y confirmación", "carga-csv", async (v, nota) => {
+await paso(6, "asesor-01", "Carga el CSV real de Sol de Carhuaz – IV etapa (214 lotes): vista previa sin errores y confirmación", "carga-csv", async (v, nota) => {
   await ingresar("asesor-01");
-  await ir("/proyectos/horizonte-de-los-aquijes/carga");
+  await ir(`/proyectos/${PROYECTO_CSV}/carga`);
   const entrada = await page.waitForSelector("input[type=file][aria-label='Archivo CSV de lotes']");
   await entrada.uploadFile(CSV_KIT);
-  await conTexto("Confirmar 80 lotes");
+  await conTexto(`Confirmar ${LOTES_CSV} lotes`);
   const t = await texto();
-  nota(t.match(/80 [^\n]*nuev[^\n]*/i)?.[0] ?? "vista previa lista");
-  await pulsar("Confirmar 80 lotes", true);
+  nota(t.match(/214 [^\n]*nuev[^\n]*/i)?.[0] ?? "vista previa lista");
+  await pulsar(`Confirmar ${LOTES_CSV} lotes`, true);
   await page.waitForFunction(() => /se guardaron|guardad|cargad/i.test(document.body.innerText), { timeout: 20000 });
-  const p = (await apiSesion("GET", "/proyectos")).body.find((x) => x.codigo === "horizonte-de-los-aquijes");
-  v(p?.lotes === 80, `el proyecto tiene ${p?.lotes} lotes (${p?.publicados} publicados)`);
-  const pub = (await apiSesion("GET", "/publico/proyectos/horizonte-de-los-aquijes")).body;
-  v((pub?.lotes?.length ?? 0) === 80, `la página pública del proyecto muestra ${pub?.lotes?.length} lotes`);
+  const p = (await apiSesion("GET", "/proyectos")).body.find((x) => x.codigo === PROYECTO_CSV);
+  v(p?.lotes === LOTES_CSV, `el proyecto tiene ${p?.lotes} lotes (${p?.publicados} publicados)`);
+  const pub = (await apiSesion("GET", `/publico/proyectos/${PROYECTO_CSV}`)).body;
+  v((pub?.lotes?.length ?? 0) === LOTES_CSV, `la página pública del proyecto muestra ${pub?.lotes?.length} lotes`);
 });
 
 await paso(7, "asesor-01", `Registra el particular ${NUEVO} pegando el texto del kit (propietario-02, vivienda); nace en borrador y gris`, "registro-particular", async (v, nota) => {
@@ -526,19 +530,19 @@ await paso(14, "asesor-01", "Etapa 9: el menú avisa los interesados nuevos; exp
   const li = lineasCsv(ci.texto);
   v(ci.status === 200 && ci.bom && /text\/csv/.test(ci.tipo ?? ""), `CSV de interesados: ${ci.status}, ${ci.tipo}, BOM ${ci.bom}`);
   v(li[0].startsWith("Registrado el;Nombre;") && li.length === lista.length + 1, `${li.length - 1} filas para ${lista.length} interesados, separador «;»`);
-  const cl = await csvSesion("/proyectos/horizonte-de-los-aquijes/lotes/exportar.csv");
+  const cl = await csvSesion(`/proyectos/${PROYECTO_CSV}/lotes/exportar.csv`);
   const ll = lineasCsv(cl.texto);
   v(cl.status === 200 && cl.bom && ll[0] === "manzana;lote;area_m2;precio;moneda;estado;independizacion;zonificacion;codigo_caso",
     "CSV de lotes con las columnas de la carga");
-  v(ll.length - 1 === 80, `${ll.length - 1} lotes de Horizonte de Los Aquijes (los 80 del CSV del kit)`);
-  const previa = await page.evaluate(async (texto) => {
+  v(ll.length - 1 === LOTES_CSV, `${ll.length - 1} lotes de Sol de Carhuaz (los ${LOTES_CSV} del CSV real)`);
+  const previa = await page.evaluate(async (texto, codigo) => {
     const t = sessionStorage.getItem("tm_token");
     const f = new FormData();
     f.append("archivo", new Blob(["﻿" + texto], { type: "text/csv" }), "lotes.csv");
-    const r = await fetch("/api/v1/proyectos/horizonte-de-los-aquijes/lotes/carga/vista-previa", { method: "POST", headers: { Authorization: "Bearer " + t }, body: f });
+    const r = await fetch(`/api/v1/proyectos/${codigo}/lotes/carga/vista-previa`, { method: "POST", headers: { Authorization: "Bearer " + t }, body: f });
     return r.json();
-  }, cl.texto);
-  v(previa.valida && previa.sinCambios === 80 && previa.nuevas === 0 && previa.actualizadas === 0,
+  }, cl.texto, PROYECTO_CSV);
+  v(previa.valida && previa.sinCambios === LOTES_CSV && previa.nuevas === 0 && previa.actualizadas === 0,
     `volver a cargarlo: ${previa.sinCambios} sin cambios, ${previa.nuevas} nuevos, ${previa.actualizadas} actualizados`);
   await ir("/proyectos");
   await page.click('[data-editar-datos="altos-de-ventisca"]');

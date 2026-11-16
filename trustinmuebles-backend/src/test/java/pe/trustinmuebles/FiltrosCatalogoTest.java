@@ -273,10 +273,14 @@ class FiltrosCatalogoTest extends BaseApiTest {
     }
 
     @Test
-    @DisplayName("Los selectores se llenan con los proyectos, distritos y tipos de alerta, sin sesión")
+    @DisplayName("Los selectores se llenan con los proyectos de lotes en línea, los distritos y los tipos de alerta, sin sesión")
     void opciones() throws Exception {
+        // v1.0 (etapa 10, D85): el selector «Proyecto» ofrece solo proyectos de lotes en línea; las urbanizaciones de las
+        // casas sueltas (Santa Elvira, Campiña del Olivar) ya no aparecen, aunque las casas siguen en el catálogo.
         mvc.perform(get("/api/v1/publico/filtros")).andExpect(status().isOk())
-                .andExpect(jsonPath("$.proyectos", hasItems("Santa Elvira", "Campiña del Olivar")))
+                .andExpect(jsonPath("$.proyectos", hasItems("Altos de Ventisca", "Rinconada del Lúcumo", "Terrazas de Sauzal")))
+                .andExpect(jsonPath("$.proyectos", not(hasItems("Santa Elvira"))))
+                .andExpect(jsonPath("$.proyectos", not(hasItems("Campiña del Olivar"))))
                 .andExpect(jsonPath("$.distritos", hasItems("Parcona", "Santiago", "Huarmey")))
                 .andExpect(jsonPath("$.tiposAlerta[*].codigo", hasItem("INFORMACION_INSUFICIENTE")));
     }

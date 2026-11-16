@@ -1151,3 +1151,20 @@ equipo y quedaron en sus ramas sin usar. **Decisión.**
 4. **Plano real o esquemático:** Sol de Carhuaz – IV etapa usa el plano de LedCons (D81, ubicación referencial); los demás proyectos
    usan el plano de manzanas que ya existía, con el mismo panel.
 5. Sin endpoint, sin migración, sin dependencias nuevas; el zoom es CSS (los puntos van en porcentaje, así que escalan con el plano).
+
+## D85. v1.0 (etapa 10): el portal muestra los proyectos de LedCons; los de demostración se retiran sin borrarlos
+
+**Contexto.** El catálogo mostraba cuatro proyectos y diez urbanizaciones inventadas; el equipo pidió que el portal muestre
+Sol de Carhuaz – IV etapa, Vista Alegre y un solo proyecto de demostración. **Decisión.**
+
+1. **Vista Alegre** entra en `proyectos.json` solo con su nombre. No se inventan distrito, dirección, lotes ni partida matriz.
+2. **Retiro por configuración, no por borrado.** `app.proyectos.retirados` lista los proyectos que salen del portal; a cada uno
+   se le retira la autorización de su partida matriz en nombre de la inmobiliaria (fila RETIRADA por `asesor-01`), una sola vez
+   por base (`ajuste_contenido`). Se eligió la autorización porque es la regla que ya decide si un lote se ofrece (I14): los
+   lotes, los casos, los interesados y el historial quedan intactos y es reversible autorizando de nuevo. Corre después de la
+   precarga de interesados para que estos conserven su proyecto.
+3. **Altos de Ventisca queda en línea:** es el proyecto de la guía (asistente, plano, ficha, cita y separación). El CSV en
+   vivo pasa a ser el real de Sol de Carhuaz.
+4. **El selector «Proyecto» solo lista proyectos de lotes en línea.** Las casas no se tocan: C1–C4 son los casos del estudio.
+5. **Pruebas:** las existentes siguen probando las funciones con los proyectos de demostración en línea (configuración de
+   prueba con la lista vacía); una clase aparte prueba el retiro.
