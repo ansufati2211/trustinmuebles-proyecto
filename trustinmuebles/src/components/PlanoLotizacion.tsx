@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { ExternalLink, MapPin, ZoomIn, ZoomOut } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { ExternalLink, MapPin, Minus, Plus, ZoomIn, ZoomOut } from "lucide-react";
 import {
   VENTANA_COMPLETA, cargarPlano, posicionEnVentana, ventanaDe, type PlanoLotizacion as Plano, type Ventana,
 } from "@/lib/planoLotizacion";
@@ -11,7 +11,7 @@ import type { LoteProyecto } from "@/lib/types";
  * puede ver completo); sin lote muestra todo el plano con un punto por lote, que se puede tocar. La imagen es la que
  * entrega la inmobiliaria; la ubicación es referencial. Si el proyecto no tiene plano, no se dibuja nada.
  */
-export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, soloCompleto = false, titulo = "Ubicación en el plano" }: {
+export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, soloCompleto = false, titulo = "Ubicación en el plano", resaltados, conZoom = false }: {
   proyectoCodigo: string;
   lote?: Pick<LoteProyecto, "clave" | "manzana" | "numero" | "sufijo"> | null;
   /** Para dibujar un punto por lote en la vista completa. */
@@ -20,9 +20,20 @@ export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, 
   /** Siempre el plano entero (con el lote elegido señalado), sin botón para acercar. */
   soloCompleto?: boolean;
   titulo?: string;
+  /** v1.0 (etapa 14): claves de los lotes que cumplen los filtros; los demás puntos se ven atenuados. */
+  resaltados?: Set<string>;
+  /** v1.0 (etapa 14): botones «+» y «−» para agrandar el plano entero (hasta 3×) y recorrerlo con scroll. */
+  conZoom?: boolean;
 }) {
   const [plano, setPlano] = useState<Plano | null>(null);
   const [completo, setCompleto] = useState(false);
+  const [nivel, setNivel] = useState(1);
+  const pin = useRef<HTMLSpanElement | null>(null);
+  const claveElegida = lote?.clave;
+  // Con el plano agrandado, al elegir un lote el pin queda a la vista.
+  useEffect(() => {
+    if (conZoom && nivel > 1) pin.current?.scrollIntoView({ block: "center", inline: "center", behavior: "smooth" });
+  }, [conZoom, nivel, claveElegida]);
 
   useEffect(() => {
     let vivo = true;
@@ -52,8 +63,23 @@ export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, 
         )}
       </figcaption>
 
-      <div className="relative mx-auto w-full overflow-hidden rounded-xl border border-border bg-muted"
-        style={{ aspectRatio: String(razon), maxWidth: ver === "completo" ? `min(100%, ${(80 * razon).toFixed(1)}vh)` : undefined }}
+      {conZoom && ver === "completo" && (
+        <div className="flex items-center gap-2" role="group" aria-label="Tamaño del plano">
+          <button type="button" onClick={() => setNivel((n) => Math.max(1, n - 1))} disabled={nivel === 1} aria-label="Alejar el plano" data-zoom="menos"
+            className="grid size-9 place-items-center rounded-lg border border-border hover:bg-muted disabled:opacity-40"><Minus className="size-4" aria-hidden="true" /></button>
+          <span className="cifras w-8 text-center text-sm font-bold text-foreground" aria-live="polite">{nivel}×</span>
+          <button type="button" onClick={() => setNivel((n) => Math.min(3, n + 1))} disabled={nivel === 3} aria-label="Acercar el plano" data-zoom="mas"
+            className="grid size-9 place-items-center rounded-lg border border-border hover:bg-muted disabled:opacity-40"><Plus className="size-4" aria-hidden="true" /></button>
+        </div>
+      )}
+
+      <div className={conZoom && ver === "completo" && nivel > 1 ? "max-h-[75vh] overflow-auto rounded-xl border border-border" : ""}>
+      <div className={`relative mx-auto overflow-hidden bg-muted ${conZoom && ver === "completo" && nivel > 1 ? "" : "w-full rounded-xl border border-border"}`}
+        style={{
+          aspectRatio: String(razon),
+          maxWidth: ver === "completo" && !(conZoom && nivel > 1) ? `min(100%, ${(80 * razon).toFixed(1)}vh)` : undefined,
+          width: conZoom && ver === "completo" && nivel > 1 ? `${nivel * 100}%` : undefined,
+        }}
         role="img"
         aria-label={nombre && pos
           ? `Plano de la lotización con ${nombre} señalado. Ubicación referencial.`
@@ -67,10 +93,12 @@ export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, 
           if (!p || l.clave === lote?.clave) return null;
           const { izq, arr } = posicionEnVentana(p, ventana);
           const est = ESTILO_LOTE[estadoEnPlano(l)];
+          const cumple = !resaltados || resaltados.has(l.clave);
           return (
             <button key={l.clave} type="button" onClick={() => alElegir?.(l.clave)} disabled={!alElegir} data-punto-lote={l.clave}
-              aria-label={`Mz. ${l.manzana} · Lote ${etiquetaLote(l)}: ${est.etiqueta.toLowerCase()}`}
-              className="absolute size-2.5 -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow disabled:cursor-default"
+              data-cumple={cumple}
+              aria-label={`Mz. ${l.manzana} · Lote ${etiquetaLote(l)}: ${est.etiqueta.toLowerCase()}${cumple ? "" : ". No cumple tus filtros"}`}
+              className={`absolute -translate-x-1/2 -translate-y-1/2 rounded-full border-2 shadow disabled:cursor-default ${cumple ? "size-2.5" : "size-2 opacity-30"}`}
               style={{ left: `${izq}%`, top: `${arr}%`, background: est.relleno, borderColor: est.borde }} />
           );
         })}
@@ -78,12 +106,13 @@ export function PlanoLotizacion({ proyectoCodigo, lote = null, lotes, alElegir, 
         {pos && (() => {
           const { izq, arr } = posicionEnVentana(pos, ventana);
           return (
-            <span className="pointer-events-none absolute -translate-x-1/2 -translate-y-full" data-pin-lote={lote!.clave}
+            <span ref={pin} className="pointer-events-none absolute -translate-x-1/2 -translate-y-full" data-pin-lote={lote!.clave}
               style={{ left: `${izq}%`, top: `${arr}%` }}>
               <MapPin className="size-9 fill-red-600 text-white drop-shadow-md" strokeWidth={1.75} aria-hidden="true" />
             </span>
           );
         })()}
+      </div>
       </div>
 
       <p className="text-xs leading-relaxed text-tinta-2">

@@ -1,8 +1,10 @@
 import { useState } from "react";
 import { Link, useSearchParams } from "react-router";
-import { ChevronLeft, ChevronRight, Home } from "lucide-react";
+import { ChevronLeft, ChevronRight, Home, LayoutGrid, List } from "lucide-react";
 import { Cargando, ErrorCarga, Vacio } from "@/components/base/Estados";
 import { TarjetaPredio } from "@/components/TarjetaPredio";
+import { PlanoCatalogo } from "@/components/PlanoCatalogo";
+import { conVista, vistaDeLaUrl } from "@/lib/planoCatalogo";
 import { FiltrosInmuebles } from "@/components/FiltrosInmuebles";
 import { AsistenteBusqueda } from "@/components/AsistenteBusqueda";
 import { quitarEtiqueta } from "@/lib/asistente";
@@ -22,17 +24,19 @@ export default function Inmuebles() {
   const [params, setParams] = useSearchParams();
   const pagina = paginaDeLaUrl(params.get("pagina"));
   const filtros = filtrosDeLaUrl(params);
+  // v1.0 (etapa 14): «Lista» (tarjetas) o «Plano» (plano de lotes con pin); va en la URL (?vista=plano).
+  const vista = vistaDeLaUrl(params);
   // v1.0 (etapa 5): el asistente de búsqueda escribe los filtros en la URL. Etapa 6: el uso deseado también es un filtro
   // (`uso`, según usos-lote.json) y las recomendaciones se eligen sobre todos los resultados, no solo esta página.
   const [asistente, setAsistente] = useState(false);
   const uso = filtros.uso || null;
   const conFiltros = contarFiltros(filtros) > 0;
-  const { data, loading, error, reload } = useApi<PaginaPublica>(rutaCatalogoPublico(filtros, pagina));
+  const { data, loading, error, reload } = useApi<PaginaPublica>(vista === "lista" ? rutaCatalogoPublico(filtros, pagina) : null);
   const opciones = useApi<OpcionesFiltro>("/publico/filtros");
   const recomendables = useApi<Recomendables>(asistente ? rutaRecomendables(filtros) : null);
 
   /** Cambiar un filtro o el orden vuelve a la primera página; cambiar de página conserva los filtros. */
-  const aplicar = (siguientes: FiltrosPublico, nuevaPagina = 0) => setParams(filtrosALaUrl(siguientes, nuevaPagina));
+  const aplicar = (siguientes: FiltrosPublico, nuevaPagina = 0) => setParams(conVista(filtrosALaUrl(siguientes, nuevaPagina), vista));
   const cambiar = (parcial: Partial<FiltrosPublico>) => aplicar({ ...filtros, ...parcial });
   const limpiar = () => aplicar(sinFiltros(filtros));
   const irA = (n: number) => {
@@ -68,6 +72,21 @@ export default function Inmuebles() {
         {data && conFiltros && data.total > 0 && (
           <p className="cifras mt-4 text-sm font-semibold text-tinta-2">{textoRango(data)}</p>
         )}
+        <div className="mt-6 flex justify-end">
+          <div role="group" aria-label="Forma de ver los inmuebles" className="inline-flex rounded-full border border-border bg-card p-1">
+            {([["lista", "Lista", List], ["plano", "Plano", LayoutGrid]] as const).map(([v, texto, Icono]) => (
+              <button key={v} type="button" aria-pressed={vista === v} data-vista={v}
+                onClick={() => setParams(conVista(filtrosALaUrl(filtros, 0), v))}
+                className={`inline-flex h-9 items-center gap-1.5 rounded-full px-4 text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                  vista === v ? "bg-foreground text-white" : "text-foreground hover:bg-muted"}`}>
+                <Icono className="size-4" aria-hidden="true" /> {texto}
+              </button>
+            ))}
+          </div>
+        </div>
+        {vista === "plano" ? (
+          <div className="mt-4"><PlanoCatalogo filtros={filtros} alVerLista={() => setParams(conVista(filtrosALaUrl(filtros, 0), "lista"))} /></div>
+        ) : (
         <div className="mt-6" aria-busy={loading}>
         {loading && !data ? (
           <Cargando texto="Cargando inmuebles…" tarjetas={6} />
@@ -99,6 +118,7 @@ export default function Inmuebles() {
           </>
         )}
         </div>
+        )}
         <p className="mt-10 text-center text-sm text-tinta-2">
           ¿Trabajas en la inmobiliaria? <Link to="/login" className="font-bold text-primary hover:underline">Ingresar</Link>
           <span className="sr-only"> · {TAMANO_PAGINA} inmuebles por página</span>

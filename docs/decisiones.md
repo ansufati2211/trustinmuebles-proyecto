@@ -1136,3 +1136,18 @@ que le interesa. El enlace de Google Maps del proyecto es un solo punto, sin lot
    su zona, con «Ver plano completo» y «Abrir el plano completo». Sin dependencias nuevas, sin mapa embebido.
 4. **El plano y el CSV no coinciden en 13 lotes** (12 del CSV en blanco en el plano y `225-2`, amarillo en el plano y ausente
    del CSV, probablemente `225-22` mal escrito). No se corrigió ninguno: se informa a LedCons. El sistema usa el CSV.
+
+## D84. v1.0 (etapa 14): vista «Plano» en el catálogo, con un pin por lote (sin backend)
+
+**Contexto.** El comprador quiere elegir su lote viendo dónde queda, sin salir del catálogo. Una prueba de agrupar el catálogo por
+proyecto y mostrar los lotes en tarjetas compactas (etapa 12) y otra de mostrar Expedientes como tabla (etapa 13) no convencieron al
+equipo y quedaron en sus ramas sin usar. **Decisión.**
+
+1. **Selector «Lista | Plano»** en el catálogo; la lista es la de siempre. La vista va en la URL (`?vista=plano`) y se conserva al
+   cambiar filtros.
+2. **El plano respeta los filtros:** pide los lotes que cumplen (`/publico/inmuebles/recomendables`, sin vendidos) y atenúa los que no.
+   Un proyecto sin lotes que cumplan no aparece en el selector; si ninguno cumple, se ofrece volver a la lista.
+3. **Un solo pin:** tocar un lote lo marca y abre su detalle a un costado; tocar otro mueve el pin. No se compara ni se marcan varios.
+4. **Plano real o esquemático:** Sol de Carhuaz – IV etapa usa el plano de LedCons (D81, ubicación referencial); los demás proyectos
+   usan el plano de manzanas que ya existía, con el mismo panel.
+5. Sin endpoint, sin migración, sin dependencias nuevas; el zoom es CSS (los puntos van en porcentaje, así que escalan con el plano).

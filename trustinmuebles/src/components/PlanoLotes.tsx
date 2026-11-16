@@ -17,8 +17,10 @@ import { SolicitarCita } from "@/components/SolicitarCita";
  * recorren los lotes en orden y Enter o Espacio abren el panel con el área, el precio, el precio por m², el estado y el
  * enlace a la ficha.
  */
-export function PlanoLotes({ proyectoCodigo, lotes, inicial = null }: {
+export function PlanoLotes({ proyectoCodigo, lotes, inicial = null, resaltados }: {
   proyectoCodigo: string; lotes: LoteProyecto[]; inicial?: string | null;
+  /** v1.0 (etapa 14): claves de los lotes que cumplen los filtros del catálogo; los demás se dibujan atenuados. */
+  resaltados?: Set<string>;
 }) {
   const plano = dibujarPlano(lotes);
   const [elegido, setElegido] = useState<string | null>(inicial);
@@ -71,8 +73,9 @@ export function PlanoLotes({ proyectoCodigo, lotes, inicial = null }: {
                   const estado = estadoEnPlano(l);
                   const est = ESTILO_LOTE[estado];
                   const activo = elegido === l.clave;
+                  const cumple = !resaltados || resaltados.has(l.clave);
                   return (
-                    <g key={l.clave} ref={(el) => { refs.current[i] = el; }} role="button" tabIndex={i === foco ? 0 : -1}
+                    <g key={l.clave} opacity={cumple ? 1 : 0.3} data-cumple={cumple} ref={(el) => { refs.current[i] = el; }} role="button" tabIndex={i === foco ? 0 : -1}
                       aria-label={descripcionLote(l, precio)} aria-pressed={activo} data-lote={l.clave} data-estado={estado}
                       onClick={() => { setElegido(l.clave); setFoco(i); }} onKeyDown={(e) => alTeclear(e, l)}
                       onFocus={() => setFoco(i)}

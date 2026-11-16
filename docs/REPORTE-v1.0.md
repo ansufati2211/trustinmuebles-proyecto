@@ -25,6 +25,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | 8. Ajustes finales y verificación | `7d6f044` | Precios de mercado por rango de distrito; cifras reales en la portada; registro de interesados desde el panel con consentimiento verbal; marca LEDCONS en la barra, el pie y los PDF; `preparar-demo` con reposición; `verificar-sitio`; pasada en tableta; lista del lunes; documento para el informe | V23 | D70–D73 |
 | 9. Modelo consolidado y adopción | `v1.0-etapa-9` (sin merge) | Modelo de negocio y funcionalidades en una sola descripción de la 1.0.0 (lo anterior, a `docs/historico/`); exportar a CSV para Excel la bandeja (con filtros) y los lotes de un proyecto (plantilla de ida y vuelta); dirección, enlace de mapa y «Cómo llegar»; condiciones de pago en texto; aviso de interesados nuevos en el menú; cuentas de asesor por `app.asesores`; embudo por etapa y proyecto | V24 | D74–D78 |
 | 10. Primer proyecto real | `v1.0-etapa-10` (sin merge) | Sol de Carhuaz – IV etapa de LedCons (sin lotes, partida matriz interna `INT-` con indicador A gris y autorización de la inmobiliaria); lotes con letra (`10A`) en la carga, la ficha y el plano; CSV real de 214 lotes en el kit | V25 | D80 |
+| 14. Plano de lotes en el catálogo | `v1.0-etapa-14` (sin merge) | Selector Lista \| Plano en `#/inmuebles`: plano con pin, zoom y los lotes que no cumplen los filtros atenuados | — | D84 |
 | 11. Plano de la lotización | `v1.0-etapa-11` (sin merge) | Plano de LedCons con un pin en el lote de su ficha y de su panel, y el plano entero con un punto por lote en la página del proyecto | — | D81 |
 
 ## 2. Pruebas
@@ -40,6 +41,7 @@ anterior (expedientes, indicador A, ruta, semáforo interno, documentos del lote
 | Después de la etapa 9 | **347**, 0 fallos, 0 errores, 0 omitidas | **309** (33 archivos), 0 fallos |
 | Después de la etapa 10 | **353** (medido en la rama: 346 antes, 0 fallos; ver §9), 0 fallos | **311** (33 archivos), 0 fallos |
 | Después de la etapa 11 | **353**, 0 fallos | **319** (34 archivos), 0 fallos |
+| Después de la etapa 14 | **353**, 0 fallos | **325** (36 archivos), 0 fallos |
 
 Build de la interfaz (`tsc --noEmit && vite build`): correcto, con el aviso de tamaño del JS principal que ya existía.
 
@@ -296,8 +298,24 @@ Rama `v1.0-etapa-11` (desde `v1.0-etapa-10`). Decisión: D81. Sin migración.
   - Un lote **amarillo** del plano no está en el CSV: `225-2`. Parece que el CSV trae `225-22` donde debía decir `225-2`
     (confirmarlo antes de corregir; no se tocó el CSV).
 
-## 11. Pendientes y límites conocidos
+## 11. Etapa 14: plano de lotes en el catálogo
 
+Rama `v1.0-etapa-14` (desde `v1.0-etapa-11`; las ramas `v1.0-etapa-12` y `-13`, con un catálogo por proyectos y una tabla de
+Expedientes, quedaron guardadas sin usar a pedido del equipo). Decisión: D84. Sin backend nuevo ni migración.
+
+- **Qué hace:** el catálogo (`#/inmuebles`) tiene un selector **Lista | Plano** (`?vista=plano` en la URL). En «Plano» se elige un
+  proyecto entre los que tienen lotes que cumplen los filtros y se ve su plano: el de la lotización de LedCons (Sol de Carhuaz –
+  IV etapa) con un punto por lote, **pin** y botones **+ / −** (hasta 3×), o el plano de manzanas de los demás proyectos. Tocar un
+  lote pone el pin y abre a un costado su detalle (área, precio, estado, «Ver ficha», «Solicitar cita» y el acercamiento).
+- **Filtros:** siguen funcionando; los lotes que no cumplen se ven atenuados y el selector dice cuántos lotes cumplen en cada proyecto.
+- **Cómo:** reutiliza `GET /publico/inmuebles/recomendables` (los lotes que cumplen), `GET /publico/proyectos/{c}`, `PlanoLotizacion`,
+  `PlanoLotes` y `PanelLote`. Lógica pura en `src/lib/planoCatalogo.ts`.
+- **Pruebas:** interfaz 319 → **325** (6 nuevas: agrupar proyectos, claves que cumplen, proyecto inicial, vista en la URL y el
+  selector en pantalla). Build y recorrido (15/15) correctos.
+
+## 12. Pendientes y límites conocidos
+
+- **Etapa 14:** sin push ni merge de `v1.0-etapa-14`. La vista «Plano» solo muestra los lotes que el catálogo ofrece (no incluye vendidos).
 - **Etapa 11:** sin push ni merge de `v1.0-etapa-11`. Las posiciones del plano son una lectura de la imagen, no coordenadas
   topográficas: no sirven para un «Cómo llegar» exacto por lote (para eso LedCons tendría que entregar el DWG o un KML).
 - **Etapa 10:** sin push ni merge de `v1.0-etapa-10`. El proyecto nuevo no se probó en la nube ni con la base de la nube.
