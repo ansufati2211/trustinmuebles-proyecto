@@ -8,6 +8,7 @@ import {
 } from "@/lib/filtrosPublico";
 import { nombreTipoAlerta } from "@/lib/cartera";
 import type { OpcionesFiltro } from "@/lib/types";
+import { OPCIONES_POSICION, posicionesDe } from "@/lib/posicionLote";
 import { CATEGORIAS_USO, etiquetaUso, USOS_LOTE, type CategoriaUso } from "@/lib/usosLote";
 
 const etiqueta = "mb-1.5 block text-xs font-bold uppercase tracking-wider text-tinta-2";
@@ -81,6 +82,14 @@ export function FiltrosInmuebles({ filtros, opciones, cambiar, limpiar, total }:
         <Lista id="f-uso" nombre="Uso que buscas" valor={filtros.uso ?? ""} todos="Cualquiera"
           opciones={CATEGORIAS_USO.map((c) => ({ valor: c, etiqueta: etiquetaUso(c) }))}
           alCambiar={(v) => cambiar({ uso: (v || undefined) as CategoriaUso | undefined })} />
+        {/* v2.0 (RF49): posición del lote. Un lote sin dato de posición no entra en este filtro, pero sigue en todos los demás. */}
+        <div>
+          <Lista id="f-posicion" nombre="Posición del lote" valor={posicionesDe(filtros.posicion)[0] ?? ""} todos="Cualquiera"
+            opciones={OPCIONES_POSICION} alCambiar={(v) => cambiar({ posicion: v || undefined })} />
+          <p className="mt-1 text-[11px] leading-snug text-tinta-2" data-aviso-posicion>
+            {filtros.posicion ? "Los lotes sin dato de posición no aparecen con este filtro." : "Los lotes sin dato de posición se ven en todo lo demás."}
+          </p>
+        </div>
         <div className="flex items-end sm:col-span-2">
           <label htmlFor="f-sin-zonificacion" className={`flex min-h-11 items-center gap-2.5 text-sm font-semibold ${filtros.zonificacion || filtros.uso ? "text-foreground" : "text-tinta-2/60"}`}>
             <input id="f-sin-zonificacion" type="checkbox" className="size-4 accent-primary"

@@ -1,6 +1,6 @@
 import { Link } from "react-router";
-import { ArrowRight, Building2, CheckCircle2, Clock, FileSearch, Handshake, LandPlot, MapPin, Ruler, Tag, type LucideIcon } from "lucide-react";
-import { Badge, type TonoBadge } from "@/components/base/Badge";
+import { ArrowRight, Building2, CheckCircle2, Clock, FileSearch, LandPlot, MapPin, Ruler } from "lucide-react";
+import { InsigniaEstadoLote } from "@/components/base/EstadoLote";
 import { PredioImagen } from "@/components/base/PredioImagen";
 import { IndicadorA, IndicadorB } from "@/components/base/Indicadores";
 import { m2, precio } from "@/lib/formato";
@@ -14,8 +14,6 @@ import { partidaVisible } from "@/lib/publico";
 import { useAuth } from "@/lib/auth";
 import type { EstadoComercial, InmueblePublico, ResumenCaso } from "@/lib/types";
 
-const TONO_COMERCIAL: Record<EstadoComercial, TonoBadge> = { DISPONIBLE: "marca", SEPARADO: "arena", VENDIDO: "info" };
-const ICONO_COMERCIAL: Record<EstadoComercial, LucideIcon> = { DISPONIBLE: Tag, SEPARADO: Handshake, VENDIDO: CheckCircle2 };
 
 /**
  * Tarjeta de un inmueble. Con {@code publico} (v1.0) enlaza a la ficha pública y no muestra datos internos (pendientes,
@@ -48,6 +46,11 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
           className="transition-transform duration-700 ease-expo group-hover:scale-[1.06]"
         />
         <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-foreground/70 via-foreground/5 to-transparent" />
+
+        {/* v2.0 (RF40): separado y vendido se leen de inmediato sobre la foto: franja de color fuerte con ícono y texto. */}
+        {p.estadoComercial && p.estadoComercial !== "DISPONIBLE" && (
+          <InsigniaEstadoLote estado={p.estadoComercial} tamano="lg" className="absolute left-3 top-14 z-10 shadow-elevada ring-2 ring-white" />
+        )}
 
         <span className="absolute left-3 top-3 inline-flex items-center gap-1.5 rounded-full bg-card/95 px-3 py-1.5 text-xs font-bold text-foreground shadow-tarjeta backdrop-blur">
           <LandPlot className="size-3.5 text-primary" aria-hidden="true" /> {p.tipoInmuebleEtiqueta}
@@ -108,9 +111,7 @@ export function TarjetaPredio({ c, conPublicacion = false, publico = false }: {
           aria-label="Indicadores del inmueble"
         >
           {p.estadoComercial && (
-            <Badge tono={TONO_COMERCIAL[p.estadoComercial]} icono={ICONO_COMERCIAL[p.estadoComercial]} tamano="sm">
-              Estado comercial: {p.estadoComercialEtiqueta ?? p.estadoComercial}
-            </Badge>
+            <InsigniaEstadoLote estado={p.estadoComercial} tamano="md" etiqueta={`Estado comercial: ${p.estadoComercialEtiqueta ?? p.estadoComercial}`} />
           )}
           <IndicadorA estado={c.estado} tamano="sm" />
           {loteProyecto ? (

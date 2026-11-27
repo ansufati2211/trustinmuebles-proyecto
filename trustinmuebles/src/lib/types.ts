@@ -47,6 +47,8 @@ export interface Predio {
   /** v1.0 (etapa 2): proyecto o urbanización; null si el inmueble no es de uno. */
   proyecto?: string | null;
   estadoComercial?: EstadoComercial; estadoComercialEtiqueta?: string;
+  /** v2.0 (RF49): posición del lote («ESQUINA+PARQUE»); null o ausente = sin dato. */
+  posicion?: string | null;
   /** v1.0 (etapa 2): independización del lote, con su etiqueta y una línea de explicación. No cambia el indicador A. */
   independizacion?: Independizacion; independizacionEtiqueta?: string; independizacionExplicacion?: string;
   /** v1.0 (etapa 3a): zonificación del lote de un proyecto (por ejemplo, RDM) y código del proyecto para su página. */
@@ -105,6 +107,10 @@ export interface LoteProyecto {
   independizacion: Independizacion; independizacionEtiqueta: string; zonificacion: string | null; publicado: boolean;
   /** Si el lote tiene un caso propio publicado, su ficha es la de ese caso. */
   casoCodigo: string | null;
+  /** v2.0 (RF49): posición («ESQUINA+PARQUE», códigos separados por «+»); null o ausente = sin dato. */
+  posicion?: string | null;
+  /** v2.0 (RF43): preparados para cuando LedCons los entregue; mientras no vengan, la ficha dice «Sin dato». */
+  frontis?: number | null; fondo?: number | null; notaReserva?: string | null;
 }
 
 export interface HitoProyecto { orden: number; nombre: string; estado: EstadoHito; estadoEtiqueta: string; fecha: string | null }

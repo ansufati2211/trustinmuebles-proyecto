@@ -1,4 +1,5 @@
 import type { EstadoComercial, EstadoSemaforo } from "./types";
+import { posicionesDe } from "./posicionLote";
 import type { CategoriaUso } from "./usosLote";
 
 /*
@@ -24,6 +25,8 @@ export interface FiltrosPublico {
    * zonificación (solo si el comprador lo elige).
    */
   zonificacion?: string; uso?: "" | CategoriaUso; incluirSinZonificacion?: boolean;
+  /** v2.0 (RF49): posiciones del lote separadas por coma («ESQUINA,PARQUE»); un lote sin dato de posición no las cumple. */
+  posicion?: string;
 }
 
 /** v1.0 (etapa 6): usos que se pueden pedir como filtro (los de usos-lote.json). */
@@ -103,6 +106,8 @@ export function filtrosDeLaUrl(p: URLSearchParams): FiltrosPublico {
   const uso = (p.get("uso") ?? "").toUpperCase();
   if ((USOS_FILTRO as string[]).includes(uso)) f.uso = uso as CategoriaUso;
   if (p.get("incluirSinZonificacion") === "true" && (f.zonificacion || f.uso)) f.incluirSinZonificacion = true;
+  const pos = posicionesDe(p.get("posicion"));
+  if (pos.length) f.posicion = pos.join(",");
   return f;
 }
 
@@ -123,6 +128,7 @@ export function filtrosALaUrl(f: FiltrosPublico, pagina = 0): URLSearchParams {
   if (f.zonificacion) p.set("zonificacion", f.zonificacion);
   if (f.uso) p.set("uso", f.uso);
   if (f.incluirSinZonificacion && (f.zonificacion || f.uso)) p.set("incluirSinZonificacion", "true");
+  if (f.posicion) p.set("posicion", f.posicion);
   if (f.orden !== "novedad") p.set("orden", f.orden);
   if (f.sentido !== sentidoPorOmision(f.orden)) p.set("sentido", f.sentido);
   if (pagina > 0) p.set("pagina", String(pagina + 1));
@@ -154,6 +160,7 @@ export function contarFiltros(f: FiltrosPublico): number {
   if (f.tipoAlerta) n++;
   if (f.zonificacion) n++;
   if (f.uso) n++;
+  if (f.posicion) n++;
   return n;
 }
 

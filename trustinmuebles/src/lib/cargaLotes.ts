@@ -10,7 +10,7 @@ export const MAX_FILAS = 2000;
 /** La vista previa dibuja a lo sumo estas filas a la vez; las demás se pueden ver filtrando por errores. */
 export const FILAS_VISIBLES = 200;
 
-export const COLUMNAS_CSV = ["manzana", "lote", "area_m2", "precio", "moneda", "estado", "independizacion", "zonificacion", "codigo_caso"] as const;
+export const COLUMNAS_CSV = ["manzana", "lote", "area_m2", "precio", "moneda", "estado", "independizacion", "zonificacion", "codigo_caso", "posicion"] as const;
 
 const base = (codigo: string) => `/proyectos/${encodeURIComponent(codigo)}/lotes`;
 export const rutaPlantilla = (codigo: string) => `${base(codigo)}/plantilla.csv`;

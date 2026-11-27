@@ -5,8 +5,9 @@ import { Desplegable } from "@/components/base/Desplegable";
 import { Button } from "@/components/ui/button";
 import { PanelLote, PlanoLotes } from "@/components/PlanoLotes";
 import { PlanoLotizacion } from "@/components/PlanoLotizacion";
-import { rutaRecomendables, type FiltrosPublico } from "@/lib/filtrosPublico";
+import { hayFiltrosPublico, rutaRecomendables, type FiltrosPublico } from "@/lib/filtrosPublico";
 import { cargarPlano } from "@/lib/planoLotizacion";
+import { sinDatoDePosicion } from "@/lib/posicionLote";
 import { clavesQueCoinciden, proyectoInicial, proyectosConLotes } from "@/lib/planoCatalogo";
 import { rutaProyectoPublico } from "@/lib/proyectos";
 import { useApi } from "@/lib/useApi";
@@ -40,7 +41,10 @@ export function PlanoCatalogo({ filtros, alVerLista }: { filtros: FiltrosPublico
     return () => { vivo = false; };
   }, [codigo]);
 
-  const resaltados = useMemo(() => (codigo ? clavesQueCoinciden(recom.data?.items ?? [], codigo) : new Set<string>()), [recom.data, codigo]);
+  // Sin filtros todos los lotes se ven por igual; con filtros, los que cumplen llevan un aro dorado y los demás se atenúan.
+  const conFiltros = hayFiltrosPublico(filtros);
+  const resaltadosTodos = useMemo(() => (codigo ? clavesQueCoinciden(recom.data?.items ?? [], codigo) : new Set<string>()), [recom.data, codigo]);
+  const resaltados = conFiltros ? resaltadosTodos : undefined;
 
   if (recom.loading && !recom.data) return <Cargando texto="Cargando el plano…" tarjetas={1} />;
   if (recom.error) return <ErrorCarga mensaje={recom.error.message} alReintentar={recom.reload} />;
@@ -63,22 +67,36 @@ export function PlanoCatalogo({ filtros, alVerLista }: { filtros: FiltrosPublico
             opciones={proyectos.map((x) => ({ valor: x.codigo, etiqueta: `${x.nombre} (${x.coinciden} ${x.coinciden === 1 ? "lote cumple" : "lotes cumplen"})` }))} />
         </div>
         <p className="max-w-md text-sm text-tinta-2">
-          Toca un lote del plano para ver su detalle.{resaltados.size > 0 && " Los lotes atenuados no cumplen tus filtros."}
+          Toca un lote del plano para ver su ficha.{conFiltros && " Los lotes con aro dorado cumplen tus filtros; los atenuados no."}
         </p>
       </div>
+
+      {filtros.posicion && p && <NotaSinDatoPosicion lotes={p.lotes} />}
 
       {proyecto.loading && !p ? <Cargando texto="Cargando el plano del proyecto…" tarjetas={1} />
         : proyecto.error || !p ? <ErrorCarga mensaje={proyecto.error?.message ?? "No se pudo cargar el proyecto."} alReintentar={proyecto.reload} />
         : conPlanoReal === null ? <Cargando texto="Cargando el plano…" tarjetas={1} />
         : conPlanoReal ? (
           <div className="grid gap-5 lg:grid-cols-[1fr_20rem]">
-            <PlanoLotizacion proyectoCodigo={p.codigo} lote={lote} lotes={p.lotes} resaltados={resaltados} conZoom soloCompleto
+            <PlanoLotizacion proyectoCodigo={p.codigo} lote={lote} lotes={p.lotes} resaltados={resaltados} destacar={conFiltros} soloCompleto
               titulo="Plano de la lotización" alElegir={setElegido} />
             <PanelLote proyectoCodigo={p.codigo} lote={lote} cerrar={() => setElegido(null)} />
           </div>
         ) : (
-          <PlanoLotes key={p.codigo} proyectoCodigo={p.codigo} lotes={p.lotes} resaltados={resaltados} />
+          <PlanoLotes key={p.codigo} proyectoCodigo={p.codigo} lotes={p.lotes} resaltados={resaltados} destacar={conFiltros} />
         )}
     </section>
+  );
+}
+
+/** v2.0 (RF49): con el filtro de posición, cuántos lotes del proyecto no traen el dato (no aparecen en el filtro, pero siguen en el plano). */
+export function NotaSinDatoPosicion({ lotes }: { lotes: { posicion?: string | null }[] }) {
+  const sin = sinDatoDePosicion(lotes);
+  return (
+    <p className="rounded-xl border border-marca-dorado/40 bg-lote-separado-suave px-3 py-2 text-sm font-semibold text-lote-separado-tinta" data-nota-sin-dato role="note">
+      {sin === 0 ? "Todos los lotes de este proyecto tienen dato de posición."
+        : sin === lotes.length ? "Sin dato: este proyecto todavía no tiene la posición de sus lotes, por eso ninguno cumple este filtro."
+        : `Sin dato de posición: ${sin} ${sin === 1 ? "lote" : "lotes"}. No aparecen con este filtro, pero siguen visibles en el plano.`}
+    </p>
   );
 }

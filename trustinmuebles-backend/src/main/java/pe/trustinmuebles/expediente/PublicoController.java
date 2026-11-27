@@ -37,10 +37,11 @@ class PublicoController {
             @RequestParam(required = false) String indicadorA, @RequestParam(required = false) String tipoAlerta,
             @RequestParam(required = false) String orden, @RequestParam(required = false) String sentido,
             @RequestParam(required = false) String clase, @RequestParam(required = false) String zonificacion,
-            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion) {
+            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion,
+            @RequestParam(required = false) String posicion) {
         FiltroPublico filtro = FiltroPublico.de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax,
                 precioM2Min, precioM2Max, areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, zonificacion,
-                uso, incluirSinZonificacion, servicio.codigosDeAlerta());
+                uso, incluirSinZonificacion, posicion, servicio.codigosDeAlerta());
         return servicio.listarPublico(pagina, filtro);
     }
 
@@ -59,10 +60,11 @@ class PublicoController {
             @RequestParam(required = false) String indicadorA, @RequestParam(required = false) String tipoAlerta,
             @RequestParam(required = false) String orden, @RequestParam(required = false) String sentido,
             @RequestParam(required = false) String clase, @RequestParam(required = false) String zonificacion,
-            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion) {
+            @RequestParam(required = false) String uso, @RequestParam(required = false) String incluirSinZonificacion,
+            @RequestParam(required = false) String posicion) {
         FiltroPublico filtro = FiltroPublico.de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax,
                 precioM2Min, precioM2Max, areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, zonificacion,
-                uso, incluirSinZonificacion, servicio.codigosDeAlerta());
+                uso, incluirSinZonificacion, posicion, servicio.codigosDeAlerta());
         return servicio.recomendables(filtro);
     }
 
