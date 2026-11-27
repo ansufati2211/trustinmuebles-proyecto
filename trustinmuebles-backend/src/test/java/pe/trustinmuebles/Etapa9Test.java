@@ -321,7 +321,7 @@ class Etapa9Test extends BaseApiTest {
         long total = jdbc.queryForObject("select count(*) from interes", Long.class);
         JsonNode t = e.get("total");
         assertThat(t.get("total").asLong()).isEqualTo(total);
-        assertThat(t.get("etapas")).hasSize(7);
+        assertThat(t.get("etapas")).hasSize(9); // v2.0 (RF36): con Revisado y Acuerdo
         long suma = 0;
         for (JsonNode x : t.get("etapas")) {
             suma += x.get("cantidad").asLong();

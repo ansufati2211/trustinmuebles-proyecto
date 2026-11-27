@@ -8,8 +8,10 @@ export type Modalidad = "VISITA_AL_LOTE" | "REUNION_EN_OFICINA" | "LLAMADA";
 export type FranjaCita = "MANANA" | "TARDE";
 export type Medio = "CELULAR" | "CORREO";
 export type FormaPago = "CONTADO" | "FINANCIADO" | "POR_DEFINIR";
+/** v2.0 (RF36): con Revisado y Acuerdo, el seguimiento va contactado → revisado → … → acuerdo → separación → venta. */
 export type EtapaInteres =
-  | "NUEVO" | "CONTACTADO" | "CITA_AGENDADA" | "VISITA_REALIZADA" | "SEPARACION" | "VENTA" | "DESCARTADO";
+  | "NUEVO" | "CONTACTADO" | "REVISADO" | "CITA_AGENDADA" | "VISITA_REALIZADA" | "ACUERDO" | "SEPARACION" | "VENTA"
+  | "DESCARTADO";
 export type EstadoCita = "SOLICITADA" | "CONFIRMADA" | "REPROGRAMADA" | "RECHAZADA";
 
 export const MODALIDADES: { valor: Modalidad; etiqueta: string; ayuda: string }[] = [
@@ -32,8 +34,10 @@ export const FORMAS_PAGO: { valor: FormaPago; etiqueta: string }[] = [
 export const ETAPAS: { valor: EtapaInteres; etiqueta: string }[] = [
   { valor: "NUEVO", etiqueta: "Nuevo" },
   { valor: "CONTACTADO", etiqueta: "Contactado" },
+  { valor: "REVISADO", etiqueta: "Revisado" },
   { valor: "CITA_AGENDADA", etiqueta: "Cita agendada" },
   { valor: "VISITA_REALIZADA", etiqueta: "Visita realizada" },
+  { valor: "ACUERDO", etiqueta: "Acuerdo" },
   { valor: "SEPARACION", etiqueta: "Separación" },
   { valor: "VENTA", etiqueta: "Venta" },
   { valor: "DESCARTADO", etiqueta: "Descartado" },
@@ -65,12 +69,34 @@ export interface Cita {
   modalidad: Modalidad; modalidadEtiqueta: string; opciones: OpcionCita[]; estado: EstadoCita; estadoEtiqueta: string;
   fechaAcordada: string | null; franjaAcordada: FranjaCita | null; franjaAcordadaEtiqueta: string | null;
   motivoRechazo: string | null; atendidaPor: string | null; creadaEn: string;
+  /** v2.0 (RF35): asesor a cargo (el de la cita o, si no tiene, el responsable del interesado). */
+  asesor?: string | null;
 }
 export interface InteresadoDetalle {
   interes: Interesado; mensaje: string | null; consentimientoVersion: string; consentimientoEn: string;
   notas: NotaInteres[]; citas: Cita[]; puedeMarcarLote: boolean;
   /** v1.0 (etapa 8): casilla del formulario o verbal (con la cuenta que lo registró). */
   consentimientoForma?: "FORMULARIO" | "VERBAL"; consentimientoFormaEtiqueta?: string; consentimientoRegistradoPor?: string | null;
+  /** v2.0: historial de etapas (RF36), separación o venta vigente (RF41), descartes (RN31) y si se puede liberar (RF42). */
+  historialEtapas?: CambioDeEtapa[]; separacion?: Separacion | null; descartes?: number; puedeLiberar?: boolean;
+}
+
+/** v2.0 (RF36): un cambio de etapa con quién lo hizo y cuándo. */
+export interface CambioDeEtapa {
+  desde: EtapaInteres; desdeEtiqueta: string; hacia: EtapaInteres; haciaEtiqueta: string; cuentaCodigo: string;
+  registradoEn: string; motivo: string | null;
+}
+
+/** v2.0 (RF41): la separación (ACTIVA) o venta (VENDIDA) vigente del interesado. */
+export interface Separacion { id: number; estado: "ACTIVA" | "VENDIDA"; conDeposito: boolean; creadaEn: string; creadaPor: string }
+
+/** v2.0 (RF37): una cita del asesor en su día. */
+export interface CitaDelDia { cita: Cita; fecha: string; franja: FranjaCita; franjaEtiqueta: string; porConfirmar: boolean }
+
+/** v2.0 (RF37): el día del asesor (GET /interesados/mi-dia). */
+export interface MiDia {
+  cuenta: string; hoy: string; hoyCitas: CitaDelDia[]; proximas: CitaDelDia[]; seguimientosPendientes: number;
+  seguimientosVencidos: number; alerta: boolean;
 }
 export interface CitaEnAgenda { cita: Cita; porConfirmar: boolean; opcion: number | null; franja: FranjaCita; franjaEtiqueta: string }
 export interface Agenda { desde: string; hasta: string; dias: { fecha: string; citas: CitaEnAgenda[] }[] }
@@ -79,7 +105,94 @@ export interface ResumenDemanda {
   activos: number; porEtapa: Record<EtapaInteres, number>; porZona: Conteo[]; porTipo: Conteo[];
   porPresupuesto: Conteo[]; porProyecto: Conteo[];
 }
-export interface OpcionesBandeja { proyectos: { codigo: string; nombre: string; distrito: string | null }[]; responsables: string[] }
+export interface OpcionesBandeja {
+  proyectos: { codigo: string; nombre: string; distrito: string | null }[]; responsables: string[];
+  /** v2.0 (RN28): la cuenta que pide y si ve a todos (coordinación) o solo a los suyos y a los sin asignar. */
+  cuenta?: string; veTodo?: boolean;
+}
+
+// ------------------------------------------------------------------------------------------------- v2.0 (tanda 2)
+
+/**
+ * RN28: a quién puede asignar la cuenta. Un coordinador, a cualquiera de la lista; un asesor, solo a sí mismo (o dejarlo
+ * sin asignar). El servidor lo vuelve a validar.
+ */
+export function responsablesPermitidos(o: OpcionesBandeja | null | undefined): string[] {
+  if (!o) return [];
+  if (o.veTodo !== false || !o.cuenta) return o.responsables;
+  return o.responsables.filter((r) => r === o.cuenta);
+}
+
+/** RN28: título de la bandeja: «Mis interesados» para un asesor; «Interesados» para quien coordina. */
+export const tituloBandeja = (o: OpcionesBandeja | null | undefined) =>
+  o && o.veTodo === false ? "Mis interesados" : "Interesados";
+
+/** RF35: formulario de una cita agendada por el asesor. */
+export interface FormularioCitaPanel { tipo: Modalidad | ""; fecha: string; franja: FranjaCita; fechaOpcional: string; franjaOpcional: FranjaCita }
+
+export const formularioCitaVacio = (): FormularioCitaPanel =>
+  ({ tipo: "", fecha: "", franja: "MANANA", fechaOpcional: "", franjaOpcional: "TARDE" });
+
+/** RF35: el primer problema del formulario de cita, o null. Las fechas van desde hoy (el servidor lo vuelve a validar). */
+export function validarCitaPanel(f: FormularioCitaPanel, hoy: string): string | null {
+  if (!f.tipo) return "Elige el tipo de cita: visita al lote, reunión en oficina o llamada.";
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(f.fecha)) return "Indica la fecha principal.";
+  if (f.fecha < hoy) return "La fecha principal no puede ser anterior a hoy.";
+  if (f.fechaOpcional) {
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(f.fechaOpcional)) return "La fecha opcional no es válida.";
+    if (f.fechaOpcional < hoy) return "La fecha opcional no puede ser anterior a hoy.";
+    if (f.fechaOpcional === f.fecha && f.franjaOpcional === f.franja) return "La fecha opcional debe ser distinta de la principal.";
+  }
+  return null;
+}
+
+/** RF35: cuerpo de POST /interesados/{id}/citas. Sin fecha opcional, no se envía. */
+export function cuerpoCitaPanel(f: FormularioCitaPanel): Record<string, string> {
+  const c: Record<string, string> = { tipo: f.tipo, fecha: f.fecha, franja: f.franja };
+  if (f.fechaOpcional) { c.fechaOpcional = f.fechaOpcional; c.franjaOpcional = f.franjaOpcional; }
+  return c;
+}
+
+/** RN29: una venta con depósito ya no se retrotrae; la etapa queda fija. */
+export const etapaBloqueada = (d: Pick<InteresadoDetalle, "separacion">) =>
+  !!d.separacion && d.separacion.estado === "VENDIDA" && d.separacion.conDeposito;
+
+/**
+ * RF41 y RF42: con el lote separado o vendido para este interesado, la etapa solo avanza a Venta; para retroceder se
+ * libera con motivo. Sin separación, todas las etapas.
+ */
+export function etapasDisponibles(d: Pick<InteresadoDetalle, "separacion" | "interes">): { valor: EtapaInteres; etiqueta: string }[] {
+  if (!d.separacion) return ETAPAS;
+  if (etapaBloqueada(d)) return ETAPAS.filter((e) => e.valor === d.interes.etapa);
+  return ETAPAS.filter((e) => e.valor === d.interes.etapa || e.valor === "VENTA");
+}
+
+/** RF37: ¿mostrar el aviso grande? Solo con citas o llamadas hoy o mañana (lo decide el servidor en {@code alerta}). */
+export const mostrarAlertaDia = (d: MiDia | null | undefined) => !!d && d.alerta && d.hoyCitas.length + d.proximas.length > 0;
+
+/** RF37: «Hoy tienes 2 citas y 1 llamada» o «Mañana tienes 1 cita». */
+export function textoAlertaDia(d: MiDia): string {
+  const contar = (l: CitaDelDia[]) => {
+    const llamadas = l.filter((c) => c.cita.modalidad === "LLAMADA").length;
+    const citas = l.length - llamadas;
+    const partes: string[] = [];
+    if (citas) partes.push(`${citas} ${citas === 1 ? "cita" : "citas"}`);
+    if (llamadas) partes.push(`${llamadas} ${llamadas === 1 ? "llamada" : "llamadas"}`);
+    return partes.join(" y ");
+  };
+  const partes: string[] = [];
+  if (d.hoyCitas.length) partes.push(`Hoy tienes ${contar(d.hoyCitas)}`);
+  if (d.proximas.length) partes.push(`${partes.length ? "mañana" : "Mañana tienes"} ${contar(d.proximas)}`);
+  return partes.join(" y ") + ".";
+}
+
+/** RF37: «3 seguimientos pendientes (1 vencido)». */
+export function textoSeguimientos(d: Pick<MiDia, "seguimientosPendientes" | "seguimientosVencidos">): string {
+  const n = d.seguimientosPendientes;
+  if (n === 0) return "Sin seguimientos pendientes";
+  const base = `${n} ${n === 1 ? "seguimiento pendiente" : "seguimientos pendientes"}`;
+  return d.seguimientosVencidos ? `${base} (${d.seguimientosVencidos} ${d.seguimientosVencidos === 1 ? "vencido" : "vencidos"})` : base;
+}
 
 // ------------------------------------------------------------------------------------------------- formulario público
 

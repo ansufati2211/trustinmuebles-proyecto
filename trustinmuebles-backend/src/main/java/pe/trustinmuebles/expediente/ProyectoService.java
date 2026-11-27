@@ -252,6 +252,12 @@ class ProyectoService {
                 casoPublicado, l.getPosicion());
     }
 
+    /** v2.0 (RF41): el estado comercial vigente de un lote (el de su caso propio, si lo tiene). */
+    @Transactional(readOnly = true)
+    EstadoComercial estadoVigente(String codigo, String clave) {
+        return loteDe(codigo, clave).estadoComercial();
+    }
+
     private LoteDto loteDe(String codigo, String clave) {
         return vista(codigo).lotes().stream().filter(x -> x.clave().equalsIgnoreCase(clave)).findFirst().orElseThrow();
     }

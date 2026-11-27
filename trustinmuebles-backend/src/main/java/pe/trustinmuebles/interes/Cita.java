@@ -61,6 +61,9 @@ class Cita {
     @Column(name = "atendida_por")
     private String atendidaPor;
 
+    /** v2.0 (RF35): cuenta del asesor a cargo; null en una cita pedida desde el portal que nadie atendió todavía. */
+    private String asesor;
+
     /** Precarga: días respecto del arranque; null en una cita real o ya atendida por una persona. */
     @Column(name = "semilla_desfase")
     private Integer semillaDesfase;

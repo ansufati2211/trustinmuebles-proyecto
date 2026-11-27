@@ -120,6 +120,19 @@ public class InmueblesInteres {
         throw new ReglaNegocioException("El interesado no está vinculado a un lote ni a un inmueble");
     }
 
+    /**
+     * v2.0 (RF41, RN29): el estado comercial vigente del lote o del caso de un interesado, para validar antes de separar o
+     * vender. En un lote con caso propio, el del caso.
+     */
+    public EstadoComercial estadoActual(String casoCodigo, String proyectoCodigo, String loteClave) {
+        if (casoCodigo != null) {
+            return casos.findByCodigo(casoCodigo).map(CasoLote::getEstadoComercial)
+                    .orElseThrow(() -> new NoEncontradoException("Caso", casoCodigo));
+        }
+        if (proyectoCodigo != null && loteClave != null) return proyectoService.estadoVigente(proyectoCodigo, loteClave);
+        throw new ReglaNegocioException("El interesado no está vinculado a un lote ni a un inmueble");
+    }
+
     private static Referencia deCaso(Expediente e) {
         CasoLote c = e.getCaso();
         TipoInmueble t = TipoInmueble.de(e.getTipoPredio());

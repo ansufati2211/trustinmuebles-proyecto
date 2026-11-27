@@ -332,8 +332,9 @@ class InteresApiTest extends BaseApiTest {
         assertThat(semilla).hasSize(15);
         Set<String> etapas = new HashSet<>();
         for (var i : semilla) etapas.add((String) i.get("etapa"));
-        assertThat(etapas).containsExactlyInAnyOrder("NUEVO", "CONTACTADO", "CITA_AGENDADA", "VISITA_REALIZADA",
-                "SEPARACION", "VENTA", "DESCARTADO");
+        // v2.0 (RF36): la precarga cubre también las etapas nuevas Revisado y Acuerdo.
+        assertThat(etapas).containsExactlyInAnyOrder("NUEVO", "CONTACTADO", "REVISADO", "CITA_AGENDADA",
+                "VISITA_REALIZADA", "ACUERDO", "SEPARACION", "VENTA", "DESCARTADO");
         // Nunca DNI ni celulares en la precarga: solo nombres de pila y correos @example.com, con consentimiento.
         assertThat(semilla).allSatisfy(i -> {
             assertThat(i.get("medio")).isEqualTo("CORREO");
