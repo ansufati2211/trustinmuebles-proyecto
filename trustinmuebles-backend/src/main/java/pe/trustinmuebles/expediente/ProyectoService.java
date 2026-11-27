@@ -249,7 +249,7 @@ class ProyectoService {
                 conPrecio ? l.getPrecio() : null, conPrecio ? l.getMoneda() : null,
                 conPrecio ? FiltroPublico.precioPorM2(l.getPrecio(), l.getAreaM2()) : null, estado, estado.etiqueta(),
                 l.getIndependizacion(), l.getIndependizacion().etiqueta(), l.getZonificacion(), publicado,
-                casoPublicado);
+                casoPublicado, l.getPosicion());
     }
 
     private LoteDto loteDe(String codigo, String clave) {

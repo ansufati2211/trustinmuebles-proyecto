@@ -42,7 +42,7 @@ final class ProyectoDtos {
     record LoteDto(String codigo, String clave, String manzana, int numero, String sufijo, BigDecimal areaM2, BigDecimal precio,
             String moneda, BigDecimal precioPorM2, EstadoComercial estadoComercial, String estadoComercialEtiqueta,
             Independizacion independizacion, String independizacionEtiqueta, String zonificacion, boolean publicado,
-            String casoCodigo) {
+            String casoCodigo, String posicion) {
 
         /** El lote como se escribe: «10A», o «7» si no tiene letra. */
         String etiqueta() {

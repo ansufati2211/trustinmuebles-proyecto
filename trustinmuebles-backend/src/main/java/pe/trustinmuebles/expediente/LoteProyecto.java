@@ -54,6 +54,10 @@ class LoteProyecto {
     @Column(length = 20)
     private String zonificacion;
 
+    /** v2.0 (RF49): posición del lote («ESQUINA+PARQUE»); null si no hay dato. Ver {@link PosicionLote}. */
+    @Column(length = 40)
+    private String posicion;
+
     /** Caso propio del lote; null si el lote todavía no tiene partida o expediente propio. */
     @Column(name = "caso_codigo", length = 40)
     private String casoCodigo;

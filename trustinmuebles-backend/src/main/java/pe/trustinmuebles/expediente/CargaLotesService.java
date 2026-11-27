@@ -33,7 +33,7 @@ class CargaLotesService {
     static final int MAX_FILAS = 2000;
     static final long MAX_BYTES = 1024 * 1024;
     static final List<String> COLUMNAS = List.of("manzana", "lote", "area_m2", "precio", "moneda", "estado",
-            "independizacion", "zonificacion", "codigo_caso");
+            "independizacion", "zonificacion", "codigo_caso", "posicion");
     static final List<String> OBLIGATORIAS = List.of("manzana", "lote", "area_m2");
     static final java.util.regex.Pattern LOTE = java.util.regex.Pattern.compile("(\\d{1,4})([A-Z]{0,2})");
     static final BigDecimal MAX_AREA = new BigDecimal("99999999.99");
@@ -41,7 +41,7 @@ class CargaLotesService {
 
     /** Plantilla descargable: el encabezado y una fila de ejemplo. */
     static final String PLANTILLA = String.join(",", COLUMNAS) + "\r\n"
-            + "A,1,140.00,35000,PEN,DISPONIBLE,EN_PARTIDA_MATRIZ,RDM,\r\n";
+            + "A,1,140.00,35000,PEN,DISPONIBLE,EN_PARTIDA_MATRIZ,RDM,,ESQUINA\r\n";
 
     private final ProyectoRepository proyectos;
     private final LoteProyectoRepository lotes;
@@ -121,13 +121,17 @@ class CargaLotesService {
         Proyecto p = proyecto(codigo);
         List<LoteProyecto> lista = new ArrayList<>(lotes.findDelProyecto(p.getCodigo()));
         lista.sort(java.util.Comparator.comparing(LoteProyecto::getManzana).thenComparingInt(LoteProyecto::getNumero));
+        // v2.0 (RF49): la columna opcional «posicion» solo se exporta si algún lote la tiene (así el archivo de siempre no cambia).
+        boolean conPosicion = lista.stream().anyMatch(l -> l.getPosicion() != null);
         List<List<String>> filas = new ArrayList<>();
         for (LoteProyecto l : lista) {
-            filas.add(java.util.Arrays.asList(l.getManzana(), l.etiqueta(), plano(l.getAreaM2()),
-                    plano(l.getPrecio()), l.getMoneda(), estadoVigente(l).name(), l.getIndependizacion().name(),
-                    l.getZonificacion(), l.getCasoCodigo()));
+            List<String> fila = new ArrayList<>(java.util.Arrays.asList(l.getManzana(), l.etiqueta(),
+                    plano(l.getAreaM2()), plano(l.getPrecio()), l.getMoneda(), estadoVigente(l).name(),
+                    l.getIndependizacion().name(), l.getZonificacion(), l.getCasoCodigo()));
+            if (conPosicion) fila.add(l.getPosicion());
+            filas.add(fila);
         }
-        return pe.trustinmuebles.shared.EscritorCsv.excel(COLUMNAS, filas);
+        return pe.trustinmuebles.shared.EscritorCsv.excel(conPosicion ? COLUMNAS : COLUMNAS.subList(0, COLUMNAS.size() - 1), filas);
     }
 
     private static String plano(BigDecimal n) {
@@ -153,7 +157,7 @@ class CargaLotesService {
 
     /** Lo que el archivo pide para un lote: null en un campo significa «dejar como estaba» (o el valor por omisión). */
     private record Valores(BigDecimal area, BigDecimal precio, String moneda, EstadoComercial estado,
-            Independizacion independizacion, String zonificacion, String casoCodigo) {}
+            Independizacion independizacion, String zonificacion, String casoCodigo, String posicion) {}
 
     private static final class Fila {
         int linea;
@@ -283,6 +287,14 @@ class CargaLotesService {
             zonificacion = "";
         }
         String casoCodigo = celda.apply("codigo_caso");
+        // v2.0 (RF49): posición opcional («esquina», «parque», «avenida»; varias con «+»). Sin dato, el lote queda como estaba.
+        String posicion = "";
+        try {
+            String cod = PosicionLote.codificar(PosicionLote.leer(celda.apply("posicion"), "+|/"));
+            posicion = cod == null ? "" : cod;
+        } catch (IllegalArgumentException ex) {
+            f.errores.add("posicion: " + ex.getMessage());
+        }
 
         if (f.manzana != null && f.lote != null) {
             f.clave = LoteProyecto.clave(f.manzana, f.lote, f.sufijo);
@@ -293,7 +305,8 @@ class CargaLotesService {
         if (!casoCodigo.isEmpty()) casoCodigo = validarCaso(f, p, casoCodigo, casosEnArchivo);
 
         f.valores = new Valores(area, precio, moneda.isEmpty() ? null : moneda, estado, independizacion,
-                zonificacion.isEmpty() ? null : zonificacion, casoCodigo.isEmpty() ? null : casoCodigo);
+                zonificacion.isEmpty() ? null : zonificacion, casoCodigo.isEmpty() ? null : casoCodigo,
+                posicion.isEmpty() ? null : posicion);
         if (f.errores.isEmpty()) comparar(f);
         return f;
     }
@@ -377,6 +390,7 @@ class CargaLotesService {
             f.cambios.add("independizacion: " + (v.independizacion() == null ? Independizacion.EN_PARTIDA_MATRIZ : v.independizacion()));
             if (v.zonificacion() != null) f.cambios.add("zonificacion: " + v.zonificacion());
             if (v.casoCodigo() != null) f.cambios.add("codigo_caso: " + v.casoCodigo());
+            if (v.posicion() != null) f.cambios.add("posicion: " + v.posicion());
             return;
         }
         LoteProyecto l = f.existente;
@@ -395,6 +409,9 @@ class CargaLotesService {
         }
         if (v.casoCodigo() != null && !v.casoCodigo().equals(l.getCasoCodigo())) {
             f.cambios.add("codigo_caso: " + (l.getCasoCodigo() == null ? "sin caso" : l.getCasoCodigo()) + " → " + v.casoCodigo());
+        }
+        if (v.posicion() != null && !v.posicion().equals(l.getPosicion())) {
+            f.cambios.add("posicion: " + (l.getPosicion() == null ? "sin dato" : l.getPosicion()) + " → " + v.posicion());
         }
         f.accion = f.cambios.isEmpty() ? AccionFila.SIN_CAMBIOS : AccionFila.ACTUALIZA;
     }
@@ -415,6 +432,7 @@ class CargaLotesService {
         if (v.independizacion() != null) l.setIndependizacion(v.independizacion());
         if (v.zonificacion() != null) l.setZonificacion(v.zonificacion());
         if (v.casoCodigo() != null) l.setCasoCodigo(v.casoCodigo());
+        if (v.posicion() != null) l.setPosicion(v.posicion());
         if (v.estado() != null) {
             l.setEstadoComercial(v.estado());
             // Con caso propio, el estado vive en el caso.

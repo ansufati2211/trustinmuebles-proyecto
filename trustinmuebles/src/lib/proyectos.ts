@@ -95,14 +95,29 @@ export function nombreLote(clave: string): string {
 export type EstadoPlano = EstadoComercial | "NO_PUBLICADO";
 
 /**
- * Cómo se ve cada estado en el plano. No usa los colores del semáforo (el indicador A): el color siempre va con un
- * patrón y con el texto de la leyenda, para que no dependa solo del color.
+ * Cómo se ve cada estado en el plano (v2.0, RF40). Los colores son tokens de index.css (NF14): verde = disponible,
+ * dorado/ámbar = separado, gris apagado = vendido. No usa los colores del semáforo (el indicador A) y el color nunca va
+ * solo: lleva un ícono ({@code icono}), un patrón (separado y vendido) y la etiqueta en texto.
+ *  - relleno / borde / texto: lote suave (la celda del plano de manzanas y la leyenda);
+ *  - fuerte / sobreFuerte: franja o marcador de color sólido y el color del texto o ícono encima;
+ *  - corto: etiqueta en mayúsculas que se escribe sobre el lote.
  */
-export const ESTILO_LOTE: Record<EstadoPlano, { etiqueta: string; relleno: string; borde: string; texto: string; patron: string | null; trazo?: string }> = {
-  DISPONIBLE: { etiqueta: "Disponible", relleno: "#ECFDF5", borde: "#047857", texto: "#022C22", patron: null },
-  SEPARADO: { etiqueta: "Separado", relleno: "#F3EAD8", borde: "#7C5A2A", texto: "#3F2D12", patron: "puntos" },
-  VENDIDO: { etiqueta: "Vendido", relleno: "#E3EEF8", borde: "#1C4A73", texto: "#132F4A", patron: "rayas" },
-  NO_PUBLICADO: { etiqueta: "No publicado en línea", relleno: "#FFFFFF", borde: "#6B7771", texto: "#36423C", patron: null, trazo: "4 3" },
+export type IconoEstado = "check" | "reloj" | "equis" | "guion";
+
+export interface EstiloLote {
+  etiqueta: string; corto: string; icono: IconoEstado; relleno: string; borde: string; texto: string;
+  fuerte: string; sobreFuerte: string; patron: string | null; trazo?: string;
+}
+
+export const ESTILO_LOTE: Record<EstadoPlano, EstiloLote> = {
+  DISPONIBLE: { etiqueta: "Disponible", corto: "DISPONIBLE", icono: "check", relleno: "var(--lote-disponible-suave)", borde: "var(--lote-disponible)",
+    texto: "var(--lote-disponible-tinta)", fuerte: "var(--lote-disponible)", sobreFuerte: "#FFFFFF", patron: null },
+  SEPARADO: { etiqueta: "Separado", corto: "SEPARADO", icono: "reloj", relleno: "var(--lote-separado-suave)", borde: "var(--lote-separado)",
+    texto: "var(--lote-separado-tinta)", fuerte: "var(--lote-separado)", sobreFuerte: "var(--lote-separado-tinta)", patron: "puntos" },
+  VENDIDO: { etiqueta: "Vendido", corto: "VENDIDO", icono: "equis", relleno: "var(--lote-vendido-suave)", borde: "var(--lote-vendido)",
+    texto: "var(--lote-vendido-tinta)", fuerte: "var(--lote-vendido)", sobreFuerte: "#FFFFFF", patron: "rayas" },
+  NO_PUBLICADO: { etiqueta: "No publicado en línea", corto: "SIN PUBLICAR", icono: "guion", relleno: "#FFFFFF", borde: "var(--paleta-gris)",
+    texto: "var(--lote-vendido-tinta)", fuerte: "var(--paleta-gris)", sobreFuerte: "#FFFFFF", patron: null, trazo: "4 3" },
 };
 
 export const ORDEN_LEYENDA: EstadoPlano[] = ["DISPONIBLE", "SEPARADO", "VENDIDO", "NO_PUBLICADO"];
@@ -130,7 +145,7 @@ const formatoArea = (n: number) => n.toLocaleString("es-PE", { minimumFractionDi
 // ------------------------------------------------------------------------------------------------- dibujo del plano
 
 /** Medidas del dibujo, en unidades del viewBox. */
-export const PLANO = { ancho: 34, fondo: 46, calle: 34, margen: 18, rotulo: 18, porFila: 2 } as const;
+export const PLANO = { ancho: 46, fondo: 58, calle: 34, margen: 18, rotulo: 18, porFila: 2 } as const;
 
 export interface LoteDibujado { lote: LoteProyecto; x: number; y: number; w: number; h: number }
 export interface ManzanaDibujada { manzana: string; x: number; y: number; w: number; h: number; lotes: LoteDibujado[] }

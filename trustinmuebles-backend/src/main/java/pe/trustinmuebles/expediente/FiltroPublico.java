@@ -22,7 +22,9 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         boolean descendente, Clase clase,
         /* v1.0 (etapa 6): zonificaciones de la guía de usos (null = sin filtro), uso pedido y si entran los inmuebles sin
            zonificación (o con una que la guía no conoce) cuando se filtra por zonificación o por uso. */
-        Set<String> zonificaciones, UsosLote.Categoria uso, boolean incluirSinZonificacion) {
+        Set<String> zonificaciones, UsosLote.Categoria uso, boolean incluirSinZonificacion,
+        /* v2.0 (RF49): posiciones pedidas (null = sin filtro); cumple el lote que tenga alguna. Sin dato no cumple. */
+        Set<PosicionLote> posiciones) {
 
     enum Orden { NOVEDAD, PRECIO, PRECIO_M2, AREA }
 
@@ -57,6 +59,16 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
             String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
             String indicadorA, String tipoAlerta, String orden, String sentido, String clase, String zonificacion,
             String uso, String incluirSinZonificacion, Set<String> tiposAlertaValidos) {
+        return de(proyecto, distrito, tipo, estadoComercial, moneda, precioMin, precioMax, precioM2Min, precioM2Max,
+                areaMin, areaMax, indicadorA, tipoAlerta, orden, sentido, clase, zonificacion, uso,
+                incluirSinZonificacion, null, tiposAlertaValidos);
+    }
+
+    /** v2.0 (RF49): con {@code posicion} (esquina, parque o avenida; varias separadas por coma). */
+    static FiltroPublico de(String proyecto, String distrito, String tipo, String estadoComercial, String moneda,
+            String precioMin, String precioMax, String precioM2Min, String precioM2Max, String areaMin, String areaMax,
+            String indicadorA, String tipoAlerta, String orden, String sentido, String clase, String zonificacion,
+            String uso, String incluirSinZonificacion, String posicion, Set<String> tiposAlertaValidos) {
         String alerta = vacio(tipoAlerta) == null ? null : vacio(tipoAlerta).toUpperCase(Locale.ROOT);
         if (alerta != null && !tiposAlertaValidos.contains(alerta)) {
             throw new IllegalArgumentException("tipoAlerta: valor no válido «" + tipoAlerta + "». Usa uno de: "
@@ -97,7 +109,7 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
                 valor("estadoComercial", estadoComercial, EstadoComercial.class), mon, pMin, pMax, mMin, mMax, aMin,
                 aMax, valor("indicadorA", indicadorA, EstadoSemaforo.class), alerta, o, desc,
                 valor("clase", clase, Clase.class), zonificaciones(zonificacion),
-                valor("uso", uso, UsosLote.Categoria.class), booleano("incluirSinZonificacion", incluirSinZonificacion));
+                valor("uso", uso, UsosLote.Categoria.class), booleano("incluirSinZonificacion", incluirSinZonificacion), posiciones(posicion));
     }
 
     /** Códigos de zona pedidos, ya resueltos a la zona de la guía; un código que la guía no conoce da 400. */
@@ -115,6 +127,17 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
             salida.add(z.codigo());
         }
         return salida.isEmpty() ? null : Set.copyOf(salida);
+    }
+
+    private static Set<PosicionLote> posiciones(String texto) {
+        String v = vacio(texto);
+        if (v == null) return null;
+        try {
+            Set<PosicionLote> s = PosicionLote.leer(v, ",");
+            return s.isEmpty() ? null : Set.copyOf(s);
+        } catch (IllegalArgumentException ex) {
+            throw new IllegalArgumentException("posicion: valor no válido. Usa esquina, parque o avenida (varias, separadas por coma).");
+        }
     }
 
     private static boolean booleano(String parametro, String texto) {
@@ -160,6 +183,7 @@ record FiltroPublico(String proyecto, String distrito, TipoInmueble tipo, Estado
         if (hay(precioMin, precioMax) && !dentro(p.precioReferencial(), precioMin, precioMax)) return false;
         if (hay(precioM2Min, precioM2Max) && !dentro(p.precioPorM2(), precioM2Min, precioM2Max)) return false;
         if (hay(areaMin, areaMax) && !dentro(p.areaM2(), areaMin, areaMax)) return false;
+        if (posiciones != null && PosicionLote.decodificar(p.posicion()).stream().noneMatch(posiciones::contains)) return false;
         return aceptaZonificacion(p);
     }
 

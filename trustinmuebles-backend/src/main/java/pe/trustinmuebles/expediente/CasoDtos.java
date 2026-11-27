@@ -101,7 +101,20 @@ final class CasoDtos {
             Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion,
             /* v1.0 (etapa 3a): zonificación del lote de un proyecto (por ejemplo, RDM); null si no consta. Código del
                proyecto (para enlazar su página); null si el inmueble no es de uno. */
-            String zonificacion, String proyectoCodigo) {
+            String zonificacion, String proyectoCodigo,
+            /* v2.0 (RF49): posición del lote («ESQUINA+PARQUE»); null si no hay dato. */
+            String posicion) {
+
+        /** Sin posición (forma anterior a la v2.0). */
+        PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
+                BigDecimal areaConstruidaInscrita, BigDecimal precioReferencial, String moneda, String precioNota,
+                BigDecimal precioPorM2, String proyecto, EstadoComercial estadoComercial, String estadoComercialEtiqueta,
+                Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion,
+                String zonificacion, String proyectoCodigo) {
+            this(tipoInmueble, tipoInmuebleEtiqueta, distrito, areaM2, areaConstruidaInscrita, precioReferencial, moneda,
+                    precioNota, precioPorM2, proyecto, estadoComercial, estadoComercialEtiqueta, independizacion,
+                    independizacionEtiqueta, independizacionExplicacion, zonificacion, proyectoCodigo, null);
+        }
 
         /** Sin zonificación ni código de proyecto (forma anterior a la etapa 3a). */
         PredioDto(TipoInmueble tipoInmueble, String tipoInmuebleEtiqueta, String distrito, BigDecimal areaM2,
@@ -110,7 +123,7 @@ final class CasoDtos {
                 Independizacion independizacion, String independizacionEtiqueta, String independizacionExplicacion) {
             this(tipoInmueble, tipoInmuebleEtiqueta, distrito, areaM2, areaConstruidaInscrita, precioReferencial, moneda,
                     precioNota, precioPorM2, proyecto, estadoComercial, estadoComercialEtiqueta, independizacion,
-                    independizacionEtiqueta, independizacionExplicacion, null, null);
+                    independizacionEtiqueta, independizacionExplicacion, null, null, null);
         }
     }
 

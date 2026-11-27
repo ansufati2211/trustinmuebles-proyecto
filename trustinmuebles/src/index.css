@@ -41,6 +41,19 @@
   --color-sem-gris: var(--sem-gris);
   --color-sem-gris-suave: var(--sem-gris-suave);
   --color-sem-gris-tinta: var(--sem-gris-tinta);
+  /* v2.0 (NF14): estado del lote (verde / dorado / gris). Fuerte = relleno sólido; suave = fondo; tinta = texto sobre suave. */
+  --color-lote-disponible: var(--lote-disponible);
+  --color-lote-disponible-suave: var(--lote-disponible-suave);
+  --color-lote-disponible-tinta: var(--lote-disponible-tinta);
+  --color-lote-separado: var(--lote-separado);
+  --color-lote-separado-suave: var(--lote-separado-suave);
+  --color-lote-separado-tinta: var(--lote-separado-tinta);
+  --color-lote-vendido: var(--lote-vendido);
+  --color-lote-vendido-suave: var(--lote-vendido-suave);
+  --color-lote-vendido-tinta: var(--lote-vendido-tinta);
+  --color-arena: var(--marca-dorado);
+  --color-arena-suave: var(--lote-separado-suave);
+  --color-arena-tinta: var(--lote-separado-tinta);
   --color-info-suave: var(--info-suave);
   --color-info-tinta: var(--info-tinta);
 
@@ -65,23 +78,42 @@
 }
 
 :root {
-  --background: #FAFAFA;
-  --foreground: #022C22;
-  --card: #FFFFFF;
-  --card-foreground: #022C22;
+  /* ===== PALETA NF14 =====
+     Blanco hueso de fondo, verde como color principal y dorado solo en detalles (acentos, íconos, estados activos).
+     Para ajustar al logo exacto de LedCons basta cambiar --marca-verde, --marca-verde-oscuro, --marca-dorado y
+     --marca-dorado-claro (más abajo) y los tres --lote-* del estado del lote: todo lo demás deriva de ellos. */
+  --paleta-hueso: #FAF8F2;
+  --paleta-blanco: #FFFFFF;
+  --paleta-verde: var(--marca-verde);
+  --paleta-verde-oscuro: var(--marca-verde-oscuro);
+  --paleta-verde-suave: #E8F1EA;
+  --paleta-dorado: var(--marca-dorado);
+  --paleta-dorado-claro: var(--marca-dorado-claro);
+  --paleta-gris: #6B7771;
+
+  --background: var(--paleta-hueso);
+  --foreground: var(--paleta-verde-oscuro);
+  --card: var(--paleta-blanco);
+  --card-foreground: var(--paleta-verde-oscuro);
   --primary: #059669;
   --primary-foreground: #FFFFFF;
-  --secondary: #ECFDF5;
-  --secondary-foreground: #047857;
-  --muted: #F1F5F9;
+  --secondary: var(--paleta-verde-suave);
+  --secondary-foreground: var(--paleta-verde);
+  --muted: #F1EFE8;
   --muted-foreground: #64748B;
-  --border: #E2E8F0;
+  --border: #E4E2D9;
   --success: #10B981;
   --warning: #F59E0B;
   --danger: #EF4444;
   --radius: 1rem;
 
-  --superficie: #F5F8F6;
+  /* Estado del lote (RF40): verde disponible, dorado/ámbar separado, gris apagado vendido. Cada uno con relleno sólido
+     (--lote-*), fondo suave y tinta de texto. Contraste del texto blanco sobre el sólido: más de 4,5:1. */
+  --lote-disponible: #17703F;       --lote-disponible-suave: #DDF1E5;   --lote-disponible-tinta: #0F4A29;
+  --lote-separado: #E0A81F;         --lote-separado-suave: #FCEFC8;     --lote-separado-tinta: #5A3C06;
+  --lote-vendido: #66716B;          --lote-vendido-suave: #E3E6E4;      --lote-vendido-tinta: #3A443F;
+
+  --superficie: #F6F4EC;
   /* v1.0 (etapa 8): verde oscuro y dorado del logo de LEDCONS. Blanco sobre --marca-verde: contraste 10:1; --marca-dorado sobre blanco: 3.2:1 (solo texto grande o detalles). */
   --marca-verde: #1B4D2E;  --marca-verde-oscuro: #0F2E1B;  --marca-dorado: #A8812F;  --marca-dorado-claro: #E3C67E;
   --tinta-2: #4A5F57;        /* texto secundario (contraste 6.5:1 sobre blanco) */

@@ -433,4 +433,20 @@ class CargaLotesApiTest extends BaseApiTest {
         java.util.Arrays.fill(enElLimite, (byte) ' ');
         previa(csv(enElLimite), gestor()).andExpect(status().isOk());
     }
+
+    @Test
+    @DisplayName("v2.0 (RF49): la columna posicion es opcional; se guarda normalizada, una no válida es error y vacía conserva lo anterior")
+    void posicionOpcional() throws Exception {
+        String asesor = token("asesor-01");
+        String cab = CABECERA.trim() + ",posicion\r\n";
+        confirmar(csv(cab + "A,1,140,,,,,,,Frente al parque + esquina\r\nA,2,140,,,,,,,\r\n"), asesor).andExpect(status().isOk());
+        assertThat(dato("l.posicion", "A", 1, String.class)).isEqualTo("ESQUINA+PARQUE");
+        assertThat(dato("l.posicion", "A", 2, String.class)).as("sin dato").isNull();
+        // Un archivo sin la columna sigue cargando y no borra la posición.
+        confirmar(csv(CABECERA + "A,1,150,,,,,,\r\n"), asesor).andExpect(status().isOk());
+        assertThat(dato("l.posicion", "A", 1, String.class)).isEqualTo("ESQUINA+PARQUE");
+        JsonNode v = vista(cab + "A,3,140,,,,,,,rincon\r\n");
+        assertThat(v.get("valida").asBoolean()).isFalse();
+        assertThat(errores(v, 2)).contains("posicion");
+    }
 }

@@ -695,7 +695,7 @@ class ExpedienteService {
                 !hayPrecio ? null : c.getPrecioNota() != null ? c.getPrecioNota() : PRECIO_NOTA,
                 FiltroPublico.precioPorM2(c.getPrecioReferencial(), e.getAreaM2()), c.getProyecto(),
                 c.getEstadoComercial(), c.getEstadoComercial().etiqueta(), c.getIndependizacion(),
-                c.getIndependizacion().etiqueta(), c.getIndependizacion().explicacion(), null, c.getProyectoCodigo());
+                c.getIndependizacion().etiqueta(), c.getIndependizacion().explicacion(), null, c.getProyectoCodigo(), null);
     }
 
     /** Elimina una partida captada (por ejemplo, ante el pedido de un titular). Los casos de demostración no se borran. */
@@ -1237,7 +1237,7 @@ class ExpedienteService {
                 hayPrecio ? l.getMoneda() : null, hayPrecio ? PRECIO_NOTA : null,
                 FiltroPublico.precioPorM2(l.getPrecio(), l.getAreaM2()), l.getProyecto().getNombre(), estado,
                 estado.etiqueta(), l.getIndependizacion(), l.getIndependizacion().etiqueta(),
-                l.getIndependizacion().explicacion(), l.getZonificacion(), l.getProyecto().getCodigo());
+                l.getIndependizacion().explicacion(), l.getZonificacion(), l.getProyecto().getCodigo(), l.getPosicion());
     }
 
     /**
