@@ -120,6 +120,10 @@ class Interes {
     @Column(name = "proxima_accion_fecha")
     private LocalDate proximaAccionFecha;
 
+    /** v2.0 (RN31): cuántas separaciones del interesado se liberaron o descartaron. */
+    @Column(nullable = false)
+    private int descartes;
+
     /** Precarga: días respecto del arranque para la próxima acción; null en un registro real o tocado por una persona. */
     @Column(name = "semilla_desfase")
     private Integer semillaDesfase;

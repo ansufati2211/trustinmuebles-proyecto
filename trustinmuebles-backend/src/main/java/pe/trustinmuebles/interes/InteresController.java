@@ -115,6 +115,27 @@ class InteresController {
         return servicio.marcarLote(id, MarcaLote.de(cuerpo));
     }
 
+    /**
+     * v2.0 (RF42, RN31): libera o descarta la separación del interesado con un motivo; el lote vuelve a estar disponible.
+     * Una venta con depósito no se libera (422); pasado el tope de liberaciones, solo un coordinador (403).
+     */
+    @PostMapping("/interesados/{id}/liberacion")
+    InteresDetalle liberar(@PathVariable Long id, @RequestBody JsonNode cuerpo) {
+        return servicio.liberar(id, Liberacion.de(cuerpo));
+    }
+
+    /** v2.0 (RF35): el asesor agenda una cita con tipo, fecha principal y fecha opcional. 201 con el detalle. */
+    @PostMapping("/interesados/{id}/citas")
+    ResponseEntity<InteresDetalle> agendar(@PathVariable Long id, @RequestBody JsonNode cuerpo) {
+        return ResponseEntity.status(201).body(servicio.agendarCita(id, CitaPanel.de(cuerpo, InteresService.hoy())));
+    }
+
+    /** v2.0 (RF37): citas y llamadas de hoy y de mañana de la cuenta que pide, y sus seguimientos pendientes. */
+    @GetMapping("/interesados/mi-dia")
+    MiDia miDia() {
+        return servicio.miDia();
+    }
+
     /** Elimina el registro a pedido del interesado (con sus notas y citas). */
     @DeleteMapping("/interesados/{id}")
     ResponseEntity<Void> eliminar(@PathVariable Long id) {

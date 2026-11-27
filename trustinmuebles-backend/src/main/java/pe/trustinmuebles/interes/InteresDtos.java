@@ -215,12 +215,67 @@ final class InteresDtos {
         }
     }
 
-    record CambioEtapa(EtapaInteres etapa) {
+    /** v2.0 (RN29): {@code conDeposito} solo cuenta al pasar a Venta; una venta con depósito no se retrotrae. */
+    record CambioEtapa(EtapaInteres etapa, boolean conDeposito) {
+        CambioEtapa(EtapaInteres etapa) {
+            this(etapa, false);
+        }
+
         static CambioEtapa de(JsonNode c) {
-            soloCampos(c, "etapa");
+            soloCampos(c, "etapa", "conDeposito");
             EtapaInteres e = enumerado(c, "etapa", EtapaInteres.class, null);
             if (e == null) throw new IllegalArgumentException("etapa: indica uno de " + valores(EtapaInteres.class));
-            return new CambioEtapa(e);
+            boolean deposito = booleano(c, "conDeposito");
+            if (deposito && e != EtapaInteres.VENTA) {
+                throw new IllegalArgumentException("conDeposito: solo se indica al pasar a Venta");
+            }
+            return new CambioEtapa(e, deposito);
+        }
+    }
+
+    /**
+     * v2.0 (RF42, RN31): liberar o descartar la separación del interesado, con motivo. El interesado vuelve a la etapa
+     * indicada (por omisión, Descartado); nunca a Separación ni a Venta.
+     */
+    record Liberacion(String motivo, EtapaInteres etapa) {
+        static Liberacion de(JsonNode c) {
+            soloCampos(c, "motivo", "etapa");
+            String m = texto(c, "motivo", Integer.MAX_VALUE);
+            if (m.length() < 3) throw new IllegalArgumentException("motivo: explica brevemente por qué se libera el lote");
+            if (m.length() > MAX_MOTIVO) throw new IllegalArgumentException("motivo: máximo " + MAX_MOTIVO + " caracteres");
+            EtapaInteres e = enumerado(c, "etapa", EtapaInteres.class, EtapaInteres.DESCARTADO);
+            if (e == EtapaInteres.SEPARACION || e == EtapaInteres.VENTA) {
+                throw new IllegalArgumentException("etapa: al liberar, el interesado no puede quedar en Separación ni en Venta");
+            }
+            return new Liberacion(m, e);
+        }
+    }
+
+    /**
+     * v2.0 (RF35): cita agendada por el asesor desde el panel: tipo (visita al lote, reunión en oficina o llamada), fecha
+     * principal y, si el cliente la pidió, una fecha alternativa. El asesor es el responsable del interesado (o quien la
+     * agenda, si no tiene).
+     */
+    record CitaPanel(ModalidadCita tipo, OpcionFecha principal, OpcionFecha alternativa) {
+        static CitaPanel de(JsonNode c, LocalDate hoy) {
+            soloCampos(c, "tipo", "fecha", "franja", "fechaOpcional", "franjaOpcional");
+            ModalidadCita t = enumerado(c, "tipo", ModalidadCita.class, null);
+            if (t == null) throw new IllegalArgumentException("tipo: indica uno de " + valores(ModalidadCita.class));
+            Franja f1 = enumerado(c, "franja", Franja.class, null);
+            if (f1 == null) throw new IllegalArgumentException("franja: indica MANANA o TARDE");
+            OpcionFecha principal = new OpcionFecha(fecha(c, "fecha", hoy, hoy), f1);
+            OpcionFecha alternativa = null;
+            if (!texto(c, "fechaOpcional", 10).isEmpty()) {
+                Franja f2 = enumerado(c, "franjaOpcional", Franja.class, null);
+                if (f2 == null) throw new IllegalArgumentException("franjaOpcional: indica MANANA o TARDE");
+                alternativa = new OpcionFecha(fecha(c, "fechaOpcional", hoy, hoy), f2);
+                if (alternativa.equals(principal)) {
+                    throw new IllegalArgumentException("fechaOpcional: debe ser distinta de la fecha principal");
+                }
+            } else if (!texto(c, "franjaOpcional", 10).isEmpty()) {
+                throw new IllegalArgumentException("fechaOpcional: indica la fecha de la franja opcional");
+            }
+            return new CitaPanel(t, principal, alternativa);
         }
     }
 
@@ -320,7 +375,7 @@ final class InteresDtos {
     record CitaDto(Long id, Long interesId, String nombre, String referencia, String inmueble, ModalidadCita modalidad,
             String modalidadEtiqueta, List<OpcionDto> opciones, EstadoCita estado, String estadoEtiqueta,
             LocalDate fechaAcordada, Franja franjaAcordada, String franjaAcordadaEtiqueta, String motivoRechazo,
-            String atendidaPor, Instant creadaEn) {
+            String atendidaPor, Instant creadaEn, String asesor) {
 
         static CitaDto de(Cita c, Interes i) {
             List<OpcionDto> ops = new ArrayList<>();
@@ -330,13 +385,43 @@ final class InteresDtos {
                     i == null ? null : i.getReferencia(), i == null ? null : i.getInmueble(), c.getModalidad(),
                     c.getModalidad().etiqueta, ops, c.getEstado(), c.getEstado().etiqueta, c.getFechaAcordada(),
                     c.getFranjaAcordada(), c.getFranjaAcordada() == null ? null : c.getFranjaAcordada().etiqueta,
-                    c.getMotivoRechazo(), c.getAtendidaPor(), c.getCreadaEn());
+                    c.getMotivoRechazo(), c.getAtendidaPor(), c.getCreadaEn(),
+                    c.getAsesor() != null ? c.getAsesor() : i == null ? null : i.getResponsable());
         }
     }
 
     record InteresDetalle(InteresDto interes, String mensaje, String consentimientoVersion, Instant consentimientoEn,
             List<NotaDto> notas, List<CitaDto> citas, boolean puedeMarcarLote, FormaConsentimiento consentimientoForma,
-            String consentimientoFormaEtiqueta, String consentimientoRegistradoPor) {}
+            String consentimientoFormaEtiqueta, String consentimientoRegistradoPor,
+            /* v2.0: historial de etapas (RF36), separación o venta vigente (RF41), descartes (RN31) y si se puede liberar. */
+            List<HistorialEtapaDto> historialEtapas, SeparacionDto separacion, int descartes, boolean puedeLiberar) {}
+
+    /** v2.0 (RF36): un cambio de etapa con su responsable y fecha. */
+    record HistorialEtapaDto(EtapaInteres desde, String desdeEtiqueta, EtapaInteres hacia, String haciaEtiqueta,
+            String cuentaCodigo, Instant registradoEn, String motivo) {
+        static HistorialEtapaDto de(HistorialEtapa h) {
+            return new HistorialEtapaDto(h.getDesde(), h.getDesde().etiqueta(), h.getHacia(), h.getHacia().etiqueta(),
+                    h.getCuentaCodigo(), h.getRegistradoEn(), h.getMotivo());
+        }
+    }
+
+    /** v2.0 (RF41, RF42): la separación o venta vigente del interesado. */
+    record SeparacionDto(Long id, String estado, boolean conDeposito, Instant creadaEn, String creadaPor) {
+        static SeparacionDto de(SeparacionLote s) {
+            return s == null ? null
+                    : new SeparacionDto(s.getId(), s.getEstado().name(), s.isConDeposito(), s.getCreadaEn(), s.getCreadaPor());
+        }
+    }
+
+    /** v2.0 (RF37): una cita del asesor en su día, con la fecha y la franja en que cae. */
+    record CitaDelDia(CitaDto cita, LocalDate fecha, Franja franja, String franjaEtiqueta, boolean porConfirmar) {}
+
+    /**
+     * v2.0 (RF37): el día del asesor: citas y llamadas de hoy y de mañana (inminentes), y sus seguimientos pendientes
+     * (próxima acción para hoy o vencida). {@code alerta} pide el aviso grande al entrar.
+     */
+    record MiDia(String cuenta, LocalDate hoy, List<CitaDelDia> hoyCitas, List<CitaDelDia> proximas,
+            long seguimientosPendientes, long seguimientosVencidos, boolean alerta) {}
 
     /** Una cita en un día de la agenda. Si está por confirmar, {@code opcion} dice cuál de las propuestas cae ese día. */
     record CitaEnAgenda(CitaDto cita, boolean porConfirmar, Integer opcion, Franja franja, String franjaEtiqueta) {}
@@ -364,7 +449,9 @@ final class InteresDtos {
     record Embudo(FilaEmbudo total, List<FilaEmbudo> porProyecto) {}
 
     record OpcionesBandeja(List<pe.trustinmuebles.expediente.InmueblesInteres.ProyectoOpcion> proyectos,
-            List<String> responsables) {}
+            List<String> responsables,
+            /* v2.0 (RN28): la cuenta que pide y si ve a todos (coordinación) o solo a los suyos y a los sin asignar. */
+            String cuenta, boolean veTodo) {}
 
     // ------------------------------------------------------------------ utilidades de lectura
 
@@ -384,6 +471,14 @@ final class InteresDtos {
         String s = v.asString().trim();
         if (s.length() > max) throw new IllegalArgumentException(campo + ": máximo " + max + " caracteres");
         return s;
+    }
+
+    /** v2.0: verdadero o falso; ausente o null es falso. */
+    static boolean booleano(JsonNode c, String campo) {
+        JsonNode v = c.get(campo);
+        if (v == null || v.isNull()) return false;
+        if (!v.isBoolean()) throw new IllegalArgumentException(campo + ": debe ser true o false");
+        return v.asBoolean();
     }
 
     static String vacio(String s) {

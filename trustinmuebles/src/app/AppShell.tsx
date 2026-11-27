@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { Outlet, useLocation } from "react-router";
 import { Navbar } from "@/components/layout/Navbar";
 import { Footer } from "@/components/layout/Footer";
+import { AvisoDelDia } from "@/components/SeguimientoAsesor";
 
 export function AppShell() {
   const location = useLocation();
@@ -33,6 +34,8 @@ export function AppShell() {
       >
         {/* La `key` hace que cada cambio de ruta remonte el contenedor y reproduzca la transición de entrada. */}
         <div key={location.pathname} className="page-enter flex-1 flex flex-col w-full">
+          {/* v2.0 (RF37): al entrar, el asesor o el gestor con citas o llamadas hoy o mañana ve un aviso grande. */}
+          {!esLogin && !esLanding && <AvisoDelDia />}
           <Outlet />
         </div>
       </main>

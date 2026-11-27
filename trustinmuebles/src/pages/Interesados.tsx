@@ -17,6 +17,8 @@ import {
   type InteresadoDetalle, type OpcionesBandeja, type ResumenDemanda,
 } from "@/lib/interes";
 import { enlaceProyecto } from "@/lib/proyectos";
+import { FormularioCita, HistorialEtapas, PanelSeparacion } from "@/components/SeguimientoAsesor";
+import { etapaBloqueada, etapasDisponibles, responsablesPermitidos, tituloBandeja } from "@/lib/interes";
 import { fecha } from "@/lib/semaforo";
 import { useApi } from "@/lib/useApi";
 
@@ -93,7 +95,15 @@ function Bandeja() {
 
   return (
     <section aria-labelledby="titulo-bandeja" className="space-y-5">
-      <h2 id="titulo-bandeja" className="sr-only">Bandeja de interesados</h2>
+      <div className="space-y-1">
+        <h2 id="titulo-bandeja" className="text-xl font-bold text-foreground" data-titulo-bandeja>{tituloBandeja(opciones)}</h2>
+        {/* v2.0 (RN28): cada asesor ve a los suyos y a los sin asignar; quien coordina ve a todos y asigna. */}
+        <p className="text-sm text-tinta-2" data-alcance-bandeja>
+          {opciones?.veTodo === false
+            ? `Ves a los interesados a tu cargo (${opciones.cuenta}) y a los que todavía no tienen asesor.`
+            : "Coordinas la bandeja: ves a todos los interesados y puedes asignarlos a un asesor."}
+        </p>
+      </div>
       {/* v1.0 (etapa 8): registrar a quien llegó por llamada, oficina, WhatsApp o referido. */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <p className="text-sm text-tinta-2">¿Llamó, vino a la oficina, escribió por WhatsApp o lo refirieron? Regístralo aquí.</p>
@@ -122,7 +132,7 @@ function Bandeja() {
           {(p) => <select {...p} className={claseCampo} value={filtro.responsable} onChange={(e) => setFiltro({ ...filtro, responsable: e.target.value })}>
             <option value="">Todos</option>
             <option value="SIN_ASIGNAR">Sin asignar</option>
-            {opciones?.responsables.map((x) => <option key={x} value={x}>{x}</option>)}
+            {responsablesPermitidos(opciones).map((x) => <option key={x} value={x}>{x}</option>)}
           </select>}
         </Campo>
         <label className="flex items-end gap-2 pb-3 text-sm font-semibold text-foreground">
@@ -316,6 +326,8 @@ function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
   const [seg, setSeg] = useState<{ responsable: string; proximaAccion: string; proximaAccionFecha: string } | null>(null);
   const [confirmarBorrado, setConfirmarBorrado] = useState(false);
   const [ocupado, setOcupado] = useState(false);
+  // v2.0 (RN29): al pasar a Venta se indica si hubo depósito; una venta con depósito no se retrotrae.
+  const [conDeposito, setConDeposito] = useState(false);
 
   const accion = async (fn: () => Promise<unknown>, ok: string, recargar = true) => {
     setMensaje(null);
@@ -368,12 +380,26 @@ function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
 
           <div className="grid gap-4 sm:grid-cols-[1fr_auto] sm:items-end">
             <Campo etiqueta="Etapa">
-              {(p) => <select {...p} className={claseCampo} value={i.etapa} disabled={ocupado}
-                onChange={(e) => void accion(() => put(`/interesados/${id}/etapa`, { etapa: e.target.value as EtapaInteres }),
-                  `Etapa cambiada a ${etiquetaEtapa(e.target.value as EtapaInteres)}.`)}>
-                {ETAPAS.map((x) => <option key={x.valor} value={x.valor}>{x.etiqueta}</option>)}
+              {(p) => <select {...p} className={claseCampo} value={i.etapa} disabled={ocupado || etapaBloqueada(d)}
+                onChange={(e) => {
+                  const etapa = e.target.value as EtapaInteres;
+                  void accion(() => put(`/interesados/${id}/etapa`, etapa === "VENTA" && conDeposito ? { etapa, conDeposito } : { etapa }),
+                    `Etapa cambiada a ${etiquetaEtapa(etapa)}.`);
+                }}>
+                {etapasDisponibles(d).map((x) => <option key={x.valor} value={x.valor}>{x.etiqueta}</option>)}
               </select>}
             </Campo>
+            {i.etapa !== "VENTA" && (i.origen === "LOTE" || i.origen === "CASO") && (
+              <label className="flex items-center gap-2 pb-3 text-sm font-semibold text-foreground sm:col-span-2" data-con-deposito>
+                <input type="checkbox" className="size-4 accent-primary" checked={conDeposito} onChange={(e) => setConDeposito(e.target.checked)} />
+                Si pasa a Venta, fue con depósito (después no se puede retrotraer)
+              </label>
+            )}
+            {(i.origen === "LOTE" || i.origen === "CASO") && !d.separacion && (
+              <p className="text-xs text-tinta-2 sm:col-span-2">
+                Al pasar a Separación o Venta, {i.referencia ?? "el lote"} cambia de estado para todos en el plano.
+              </p>
+            )}
             {d.puedeMarcarLote && (
               <div className="flex flex-wrap gap-2">
                 {(["SEPARADO", "VENDIDO"] as const).map((estado) => (
@@ -392,7 +418,7 @@ function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
             <Campo etiqueta="Responsable">
               {(p) => <select {...p} className={claseCampo} value={s.responsable} onChange={(e) => setSeg({ ...s, responsable: e.target.value })}>
                 <option value="">Sin asignar</option>
-                {opciones?.responsables.map((x) => <option key={x} value={x}>{x}</option>)}
+                {responsablesPermitidos(opciones).map((x) => <option key={x} value={x}>{x}</option>)}
               </select>}
             </Campo>
             <Campo etiqueta="Próxima acción">
@@ -409,12 +435,24 @@ function DetalleInteresado({ id, opciones, alCerrar, alCambiar }: {
             </div>
           </fieldset>
 
+          {/* v2.0 (RF41, RF42): la separación o venta vigente y su liberación con motivo. */}
+          <PanelSeparacion d={d} ocupado={ocupado}
+            alLiberar={(motivo, etapa) => accion(() => post(`/interesados/${id}/liberacion`, { motivo, etapa }),
+              "Separación liberada: el lote vuelve a estar disponible.")} />
+
+          {/* v2.0 (RF35): cita con tipo, fecha principal y fecha opcional. */}
+          {i.etapa !== "VENTA" && i.etapa !== "DESCARTADO" && (
+            <FormularioCita ocupado={ocupado} alAgendar={(cuerpo) => accion(() => post(`/interesados/${id}/citas`, cuerpo), "Cita agendada.")} />
+          )}
+
           {d.citas.length > 0 && (
             <section aria-labelledby="titulo-citas" className="space-y-3">
               <h3 id="titulo-citas" className="font-bold text-foreground">Citas</h3>
               {d.citas.map((c) => <GestionCita key={c.id} c={c} ocupado={ocupado} accion={accion} />)}
             </section>
           )}
+
+          <HistorialEtapas historial={d.historialEtapas} />
 
           <section aria-labelledby="titulo-notas" className="space-y-3">
             <h3 id="titulo-notas" className="font-bold text-foreground">Notas</h3>
